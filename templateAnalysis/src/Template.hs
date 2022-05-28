@@ -85,8 +85,8 @@ normalize = canonHoles . canonVars . orderparts where
   orderparts e@(Equation s (lt,rt)) = if measure lt <= measure rt then e else (Equation s (rt,lt))
   orderparts (Implication ps p)     = Implication (sortBy (comparing measure) ps ) (orderparts p)
   orderparts (Negation p)           = Negation (orderparts p)
-  orderparts b@(BImplication p1 p2)   = if measure p1 <= measure p2 then b else (BImplication p2 p1)
-  orderparts x                    = x
+  orderparts b@(BImplication p1 p2) = if measure p1 <= measure p2 then b else (BImplication p2 p1)
+  orderparts x                      = x
 
 
 ---- possibly swap lhs and rhs of equations (need measure def for this?) - what about bimplications?
