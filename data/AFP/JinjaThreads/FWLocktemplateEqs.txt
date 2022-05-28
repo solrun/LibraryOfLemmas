@@ -1,0 +1,161 @@
+   [("FWLock.has_locks_release_all_conv",
+     "has_locks (release_all ?l ?t) ?t = 0",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 2,
+           template_app
+            (template_app (template_hole 1, template_var 1),
+             template_var 0)),
+         template_var 0),
+       template_hole 0)),
+    ("FWLock.may_lock_lock_lock_conv",
+     "may_lock (lock_lock ?l ?t) ?t = may_lock ?l ?t",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 1,
+           template_app
+            (template_app (template_hole 0, template_var 1),
+             template_var 0)),
+         template_var 0),
+       template_app
+        (template_app (template_hole 1, template_var 1), template_var 0))),
+    ("FWLock.may_lock_release_all_conv",
+     "may_lock (release_all ?l ?t) ?t = may_lock ?l ?t",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 1,
+           template_app
+            (template_app (template_hole 0, template_var 1),
+             template_var 0)),
+         template_var 0),
+       template_app
+        (template_app (template_hole 1, template_var 1), template_var 0))),
+    ("FWLock.has_lock_has_locks_conv",
+     "has_lock ?l ?t = (EX n. has_locks ?l ?t = Suc n)",
+     template_equation
+      (template_app
+        (template_app (template_hole 5, template_hole 4),
+         template_app
+          (template_app (template_hole 3, template_var 1), template_var 0)),
+       template_app (template_hole 2, t_empty))),
+    ("FWLock.upd_locks_append",
+     "upd_locks ?l ?t (?Ls @ ?Ls') =
+      upd_locks (upd_locks ?l ?t ?Ls) ?t ?Ls'",
+     template_equation
+      (template_app
+        (template_app
+          (template_app (template_hole 1, template_var 3), template_var 2),
+         template_app
+          (template_app (template_hole 0, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_app
+            (template_hole 1,
+             template_app
+              (template_app
+                (template_app (template_hole 1, template_var 3),
+                 template_var 2),
+               template_var 1)),
+           template_var 2),
+         template_var 0))),
+    ("FWLock.may_lock_iff",
+     "may_lock ?l ?t =
+      (case ?l of None => True | \<lfloor>(t', n)\<rfloor> => ?t = t')",
+     template_equation
+      (template_app
+        (template_app (template_hole 4, template_var 1), template_var 0),
+       template_app
+        (template_app
+          (template_app (template_hole 3, template_hole 2), t_empty),
+         template_var 1))),
+    ("FWLock.not_may_lock_conv",
+     "(~ may_lock ?l ?t) = (EX t'. t' ~= ?t & has_lock ?l t')",
+     template_equation
+      (template_app
+        (template_hole 7,
+         template_app
+          (template_app (template_hole 6, template_var 1), template_var 0)),
+       template_app (template_hole 5, t_empty))),
+    ("FWLock.lock_actions_ok_append",
+     "lock_actions_ok ?l ?t (?Ls @ ?Ls') =
+      (lock_actions_ok ?l ?t ?Ls &
+       lock_actions_ok (upd_locks ?l ?t ?Ls) ?t ?Ls')",
+     template_equation
+      (template_app
+        (template_app
+          (template_app (template_hole 3, template_var 3), template_var 2),
+         template_app
+          (template_app (template_hole 2, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 1,
+           template_app
+            (template_app
+              (template_app (template_hole 3, template_var 3),
+               template_var 2),
+             template_var 1)),
+         template_app
+          (template_app
+            (template_app
+              (template_hole 3,
+               template_app
+                (template_app
+                  (template_app (template_hole 0, template_var 3),
+                   template_var 2),
+                 template_var 1)),
+             template_var 2),
+           template_var 0)))),
+    ("FWLock.acquire_locks_conv",
+     "acquire_locks ?L ?t ?n =
+      (case ?L of
+       None => case ?n of 0 => None | Suc m => \<lfloor>(?t, m)\<rfloor>
+       | \<lfloor>(t', m)\<rfloor> => \<lfloor>(t', ?n + m)\<rfloor>)",
+     template_equation
+      (template_app
+        (template_app
+          (template_app (template_hole 7, template_var 2), template_var 1),
+         template_var 0),
+       template_app
+        (template_app
+          (template_app
+            (template_hole 6,
+             template_app
+              (template_app
+                (template_app (template_hole 5, template_hole 4), t_empty),
+               template_var 0)),
+           t_empty),
+         template_var 2))),
+    ("FWLock.lock_actions_ok'_iff",
+     "lock_actions_ok' ?l ?t ?las =
+      (lock_actions_ok ?l ?t ?las |
+       (EX xs ys.
+           ?las = xs @ Lock # ys &
+           lock_actions_ok ?l ?t xs & ~ may_lock (upd_locks ?l ?t xs) ?t))",
+     template_equation
+      (template_app
+        (template_app
+          (template_app (template_hole 11, template_var 2), template_var 1),
+         template_var 0),
+       template_app
+        (template_app
+          (template_hole 10,
+           template_app
+            (template_app
+              (template_app (template_hole 9, template_var 2),
+               template_var 1),
+             template_var 0)),
+         template_app (template_hole 8, t_empty)))),
+    ("FWLock.has_locks_iff",
+     "(has_locks ?l ?t = ?n) =
+      (?l = None & ?n = 0 |
+       (EX n'. ?l = \<lfloor>(?t, n')\<rfloor> & Suc n' = ?n) |
+       (EX t' n'. ?l = \<lfloor>(t', n')\<rfloor> & t' ~= ?t & ?n = 0))",
+     template_bimplication
+      (template_equation
+        (template_app
+          (template_app (template_hole 12, template_var 2), template_var 1),
+         template_var 0),
+       template_dunno))]

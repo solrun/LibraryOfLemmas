@@ -1,0 +1,110 @@
+   [("RBT_Comparator_Impl.rbt_comp_inter_swap_rec",
+     "rbt_comp_inter_swap_rec ?c ?f ?\<gamma> ?t1.0 ?t2.0 =
+      rbt_comp_inter_rec ?c (if ?\<gamma> then %k v v'. ?f k v' v else ?f)
+       ?t1.0 ?t2.0",
+     template_equation
+      (template_app
+        (template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 2, template_var 4),
+               template_var 3),
+             template_var 2),
+           template_var 1),
+         template_var 0),
+       template_app
+        (template_app
+          (template_app
+            (template_app (template_hole 1, template_var 4),
+             template_app
+              (template_app
+                (template_app (template_hole 0, template_var 2), t_empty),
+               template_var 3)),
+           template_var 1),
+         template_var 0))),
+    ("RBT_Comparator_Impl.rbt_comp_union_swap_rec",
+     "rbt_comp_union_swap_rec ?c ?f ?\<gamma> ?t1.0 ?t2.0 =
+      rbt_comp_union_rec ?c (if ?\<gamma> then %k v v'. ?f k v' v else ?f)
+       ?t1.0 ?t2.0",
+     template_equation
+      (template_app
+        (template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 2, template_var 4),
+               template_var 3),
+             template_var 2),
+           template_var 1),
+         template_var 0),
+       template_app
+        (template_app
+          (template_app
+            (template_app (template_hole 1, template_var 4),
+             template_app
+              (template_app
+                (template_app (template_hole 0, template_var 2), t_empty),
+               template_var 3)),
+           template_var 1),
+         template_var 0))),
+    ("RBT_Comparator_Impl.rbt_comp_union_swap_rec_code",
+     "rbt_comp_union_swap_rec ?c ?f ?\<gamma> ?t1.0 ?t2.0 =
+      (let bh1 = bheight ?t1.0; bh2 = bheight ?t2.0;
+           (\<gamma>, t2, bh2, t1, bh1) =
+             if bh1 < bh2 then (~ ?\<gamma>, ?t1.0, bh1, ?t2.0, bh2)
+             else (?\<gamma>, ?t2.0, bh2, ?t1.0, bh1);
+           f' = if \<gamma> then %k v v'. ?f k v' v else ?f
+       in if bh2 < 4
+          then RBT_Impl.fold (rbt_comp_insert_with_key ?c f') t2 t1
+          else case t1 of rbt.Empty => t2
+               | Branch x l1 a b r1 =>
+                   case rbt_split_comp ?c t2 a of
+                   (l2, \<beta>, r2) =>
+                     rbt_join (rbt_comp_union_swap_rec ?c ?f \<gamma> l1 l2)
+                      a (case \<beta> of None => b | Some x => f' a b x)
+                      (rbt_comp_union_swap_rec ?c ?f \<gamma> r1 r2))",
+     template_equation
+      (template_app
+        (template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 28, template_var 4),
+               template_var 3),
+             template_var 2),
+           template_var 1),
+         template_var 0),
+       template_app
+        (template_app
+          (template_hole 27,
+           template_app (template_hole 26, template_var 1)),
+         t_empty))),
+    ("RBT_Comparator_Impl.comp_inter_with_key_code",
+     "rbt_comp_inter_swap_rec ?c ?f ?\<gamma> ?t1.0 ?t2.0 =
+      (let bh1 = bheight ?t1.0; bh2 = bheight ?t2.0;
+           (\<gamma>, t2, bh2, t1, bh1) =
+             if bh1 < bh2 then (~ ?\<gamma>, ?t1.0, bh1, ?t2.0, bh2)
+             else (?\<gamma>, ?t2.0, bh2, ?t1.0, bh1);
+           f' = if \<gamma> then %k v v'. ?f k v' v else ?f
+       in if bh2 < 4 then rbtreeify (map_filter_comp_inter ?c f' t1 t2)
+          else case t1 of rbt.Empty => rbt.Empty
+               | Branch x l1 a b r1 =>
+                   case rbt_split_comp ?c t2 a of
+                   (l2, \<beta>, r2) =>
+                     let l' = rbt_comp_inter_swap_rec ?c ?f \<gamma> l1 l2;
+                         r' = rbt_comp_inter_swap_rec ?c ?f \<gamma> r1 r2
+                     in case \<beta> of None => rbt_join2 l' r'
+                        | Some b' => rbt_join l' a (f' a b b') r')",
+     template_equation
+      (template_app
+        (template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 31, template_var 4),
+               template_var 3),
+             template_var 2),
+           template_var 1),
+         template_var 0),
+       template_app
+        (template_app
+          (template_hole 30,
+           template_app (template_hole 29, template_var 1)),
+         t_empty)))]
