@@ -1,0 +1,453 @@
+Loading theory "Draft.Old_Show" (required by "Draft.Old_ShowTemplates")
+Loading theory "Draft.Templates" (required by "Draft.Old_ShowTemplates" via "Draft.ExtrEqs")
+datatype template_term
+=
+     t_empty
+   | template_app of template_term * template_term
+   | template_hole of int
+   | template_var of int
+datatype sign
+= equals | greater_equals | greater_than | less_equals | less_than
+datatype template
+=
+     template_bimplication of template * template
+   | template_dunno
+   | template_equation of template_term * template_term
+   | template_implication of template list * template
+   | template_inequation of sign * template_term * template_term
+   | template_negation of template
+   | template_predicate of template_term
+constructor t_empty: template_term
+constructor template_app: template_term * template_term -> template_term
+constructor template_hole: int -> template_term
+constructor template_var: int -> template_term
+constructor equals: sign
+constructor greater_equals: sign
+constructor greater_than: sign
+constructor less_equals: sign
+constructor less_than: sign
+constructor template_bimplication: template * template -> template
+constructor template_dunno: template
+constructor template_equation: template_term * template_term -> template
+constructor template_implication: template list * template -> template
+constructor template_inequation:
+   sign * template_term * template_term -> template
+constructor template_negation: template -> template
+constructor template_predicate: template_term -> template
+val vfs = fn: term -> (indexname * typ) list * (string * typ) list
+val indexOf = fn: ''a list -> ''a -> int -> int
+val has_eq = fn: term -> bool
+val term2template = fn:
+   (indexname * typ) list -> (string * typ) list -> term -> template_term
+val lemma2predicate = fn: term -> term -> template
+val makeTemplatewithContext = fn: term -> term -> template
+val lemma2template = fn: term -> template
+val thm2template = fn: thm -> template
+val tterm2string = fn: template_term -> string
+val template2string = fn: template -> string
+val t = "height ?t <= size ?t": thm
+val th =
+   Const ("HOL.Trueprop", "bool => prop") $
+     (Const ("Orderings.ord_class.less_eq", "nat => nat => bool") $
+       (Const ("Tree.height_class.height", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree")) $
+       (Const ("Nat.size_class.size", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree"))):
+   term
+### theory "Draft.Templates"
+### 0.062s elapsed time, 0.159s cpu time, 0.000s GC time
+Loading theory "Draft.ExtrEqs" (required by "Draft.Old_ShowTemplates")
+class show = type +
+  fixes shows_prec :: "nat => 'a => char list => char list"
+    and shows_list :: "'a list => char list => char list"
+  assumes
+    "assoc": "!!d x r s. shows_prec d x r @ s = shows_prec d x (r @ s)"
+      "!!xs r s. shows_list xs r @ s = shows_list xs (r @ s)"
+Found termination order: "(%p. length (snd (snd p))) <*mlex*> {}"
+val it = (): unit
+instantiation
+  char :: show
+  shows_prec_char == shows_prec :: nat => char => char list => char list
+  shows_list_char == shows_list :: char list => char list => char list
+instantiation
+  list :: (show) show
+  shows_prec_list == shows_prec :: nat => 'a list => char list => char list
+  shows_list_list == shows_list :: 'a list list => char list => char list
+Found termination order: "(%p. length (snd p)) <*mlex*> {}"
+Found termination order: "length <*mlex*> {}"
+### theory "Draft.Old_Show"
+### 0.411s elapsed time, 0.862s cpu time, 0.035s GC time
+val eqpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Var (("_dummy_", 2), "?'a"))
+       ):
+   term Find_Theorems.criterion
+val badeqpattern = Pattern (Const ("Pure.eq", "?'a => ?'a => prop")):
+   term Find_Theorems.criterion
+val undefpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Const ("HOL.undefined", "?'a"))
+       ):
+   term Find_Theorems.criterion
+val thmpattern =
+   Pattern
+    (Const ("HOL.Trueprop", "bool => prop") $ Var (("_dummy_", 1), "bool")):
+   term Find_Theorems.criterion
+val badnames =
+   ["*nitpick*", "*Nitpick*", "*full_exhaustive*", "*_def*", "Enum.finite*",
+    "*Quickcheck*", "ATP*", "*Nunchaku*", "*Code*", "*BNF*", "*SMT*",
+    "*.*.*"]:
+   string list
+val unwanted_names =
+   [(false, Name "*nitpick*"), (false, Name "*Nitpick*"),
+    (false, Name "*full_exhaustive*"), (false, Name "*_def*"),
+    (false, Name "Enum.finite*"), (false, Name "*Quickcheck*"),
+    (false, Name "ATP*"), (false, Name "*Nunchaku*"),
+    (false, Name "*Code*"), (false, Name "*BNF*"), (false, Name "*SMT*"),
+    (false, Name "*.*.*")]:
+   (bool * term Find_Theorems.criterion) list
+val has_vars = fn: term -> bool
+val get_all_eqs = fn: string -> Proof.context -> (string * thm) list
+val get_all_thms = fn: string -> Proof.context -> (string * thm) list
+val get_noneq_thms = fn: string -> Proof.context -> (string * thm) list
+val template_eqs = fn:
+   string -> Proof.context -> (string * thm * template) list
+val template_thms = fn:
+   string -> Proof.context -> (string * thm * template) list
+### theory "Draft.ExtrEqs"
+### 0.548s elapsed time, 0.964s cpu time, 0.101s GC time
+Loading theory "Draft.Old_ShowTemplates"
+val templateLemmas =
+   [("Old_Show.shows_id_assoc", "id ?r @ ?s = id (?r @ ?s)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 1, template_app (template_hole 0, template_var 1)),
+         template_var 0),
+       template_app
+        (template_hole 0,
+         template_app
+          (template_app (template_hole 1, template_var 1),
+           template_var 0)))),
+    ("Old_Show.shows_nl_assoc", "shows_nl ?r @ ?s = shows_nl (?r @ ?s)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 1, template_app (template_hole 0, template_var 1)),
+         template_var 0),
+       template_app
+        (template_hole 0,
+         template_app
+          (template_app (template_hole 1, template_var 1),
+           template_var 0)))),
+    ("Old_Show.shows_space_assoc",
+     "shows_space ?r @ ?s = shows_space (?r @ ?s)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 1, template_app (template_hole 0, template_var 1)),
+         template_var 0),
+       template_app
+        (template_hole 0,
+         template_app
+          (template_app (template_hole 1, template_var 1),
+           template_var 0)))),
+    ("Old_Show.shows_lines_assoc",
+     "shows_lines ?xs ?r @ ?s = shows_lines ?xs (?r @ ?s)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 1,
+           template_app
+            (template_app (template_hole 0, template_var 2),
+             template_var 1)),
+         template_var 0),
+       template_app
+        (template_app (template_hole 0, template_var 2),
+         template_app
+          (template_app (template_hole 1, template_var 1),
+           template_var 0)))),
+    ("Old_Show.shows_many_assoc",
+     "shows_many ?xs ?r @ ?s = shows_many ?xs (?r @ ?s)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 1,
+           template_app
+            (template_app (template_hole 0, template_var 2),
+             template_var 1)),
+         template_var 0),
+       template_app
+        (template_app (template_hole 0, template_var 2),
+         template_app
+          (template_app (template_hole 1, template_var 1),
+           template_var 0)))),
+    ("Old_Show.shows_string_assoc",
+     "shows_string ?x ?r @ ?s = shows_string ?x (?r @ ?s)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 1,
+           template_app
+            (template_app (template_hole 0, template_var 2),
+             template_var 1)),
+         template_var 0),
+       template_app
+        (template_app (template_hole 0, template_var 2),
+         template_app
+          (template_app (template_hole 1, template_var 1),
+           template_var 0)))),
+    ("Old_Show.shows_words_assoc",
+     "shows_words ?xs ?r @ ?s = shows_words ?xs (?r @ ?s)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 1,
+           template_app
+            (template_app (template_hole 0, template_var 2),
+             template_var 1)),
+         template_var 0),
+       template_app
+        (template_app (template_hole 0, template_var 2),
+         template_app
+          (template_app (template_hole 1, template_var 1),
+           template_var 0)))),
+    ("Old_Show.assoc_list",
+     "shows_prec ?d ?x ?r @ ?s = shows_prec ?d ?x (?r @ ?s)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 1,
+           template_app
+            (template_app
+              (template_app (template_hole 0, template_var 3),
+               template_var 2),
+             template_var 1)),
+         template_var 0),
+       template_app
+        (template_app
+          (template_app (template_hole 0, template_var 3), template_var 2),
+         template_app
+          (template_app (template_hole 1, template_var 1),
+           template_var 0)))),
+    ("Old_Show.assoc_elt",
+     "ALL x:set ?xs. shows x ?r @ ?s = shows x (?r @ ?s)",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_hole 5,
+             template_app (template_hole 4, template_var 2)),
+           t_empty)
+         )),
+    ("Old_Show.shows_map_cong",
+     "[| ?xs = ?ys; !!x. x : set ?ys ==> ?f x = ?g x |]
+      ==> shows_map ?f ?xs = shows_map ?g ?ys",
+     template_implication
+      ([template_equation (template_var 3, template_var 2),
+        template_predicate (template_app (template_hole 4, t_empty))],
+       template_equation
+        (template_app
+          (template_app (template_hole 0, template_var 1), template_var 3),
+         template_app
+          (template_app (template_hole 0, template_var 0),
+           template_var 2)))),
+    ("Old_Show.shows_sep_cong",
+     "[| ?xs = ?ys; !!x. x : set ?ys ==> ?f x = ?g x |]
+      ==> shows_sep ?f ?sep ?xs = shows_sep ?g ?sep ?ys",
+     template_implication
+      ([template_equation (template_var 4, template_var 3),
+        template_predicate (template_app (template_hole 4, t_empty))],
+       template_equation
+        (template_app
+          (template_app
+            (template_app (template_hole 0, template_var 2),
+             template_var 0),
+           template_var 4),
+         template_app
+          (template_app
+            (template_app (template_hole 0, template_var 1),
+             template_var 0),
+           template_var 3)))),
+    ("Old_Show.shows_list_aux_assoc",
+     "(!!r s. ALL x:set ?xs. ?elt x r @ s = ?elt x (r @ s)) ==>
+      shows_list_aux ?elt ?xs ?r @ ?s = shows_list_aux ?elt ?xs (?r @ ?s)",
+     template_implication
+      ([template_predicate (template_app (template_hole 6, t_empty))],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 1,
+             template_app
+              (template_app
+                (template_app (template_hole 0, template_var 2),
+                 template_var 3),
+               template_var 1)),
+           template_var 0),
+         template_app
+          (template_app
+            (template_app (template_hole 0, template_var 2),
+             template_var 3),
+           template_app
+            (template_app (template_hole 1, template_var 1),
+             template_var 0))))),
+    ("Old_Show.shows_map_assoc",
+     "(!!r s. ALL x:set ?xs. ?elt x r @ s = ?elt x (r @ s)) ==>
+      shows_map ?elt ?xs ?r @ ?s = shows_map ?elt ?xs (?r @ ?s)",
+     template_implication
+      ([template_predicate (template_app (template_hole 6, t_empty))],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 1,
+             template_app
+              (template_app
+                (template_app (template_hole 0, template_var 2),
+                 template_var 3),
+               template_var 1)),
+           template_var 0),
+         template_app
+          (template_app
+            (template_app (template_hole 0, template_var 2),
+             template_var 3),
+           template_app
+            (template_app (template_hole 1, template_var 1),
+             template_var 0))))),
+    ("Old_Show.shows_list_gen_cong",
+     "[| ?xs = ?ys; !!x. x : set ?ys ==> ?f x = ?g x |]
+      ==> shows_list_gen ?f ?e ?l ?sep ?r ?xs =
+          shows_list_gen ?g ?e ?l ?sep ?r ?ys",
+     template_implication
+      ([template_equation (template_var 7, template_var 6),
+        template_predicate (template_app (template_hole 4, t_empty))],
+       template_equation
+        (template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_app (template_hole 0, template_var 5),
+                   template_var 3),
+                 template_var 2),
+               template_var 1),
+             template_var 0),
+           template_var 7),
+         template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_app (template_hole 0, template_var 4),
+                   template_var 3),
+                 template_var 2),
+               template_var 1),
+             template_var 0),
+           template_var 6)))),
+    ("Old_Show.shows_list_gen_assoc",
+     "(!!r s. ALL x:set ?xs. ?elt x r @ s = ?elt x (r @ s)) ==>
+      shows_list_gen ?elt ?e ?l ?sep ?r ?xs ?s @ ?t =
+      shows_list_gen ?elt ?e ?l ?sep ?r ?xs (?s @ ?t)",
+     template_implication
+      ([template_predicate (template_app (template_hole 6, t_empty))],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 1,
+             template_app
+              (template_app
+                (template_app
+                  (template_app
+                    (template_app
+                      (template_app
+                        (template_app (template_hole 0, template_var 6),
+                         template_var 5),
+                       template_var 4),
+                     template_var 3),
+                   template_var 2),
+                 template_var 7),
+               template_var 1)),
+           template_var 0),
+         template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_app
+                    (template_app (template_hole 0, template_var 6),
+                     template_var 5),
+                   template_var 4),
+                 template_var 3),
+               template_var 2),
+             template_var 7),
+           template_app
+            (template_app (template_hole 1, template_var 1),
+             template_var 0))))),
+    ("Old_Show.shows_sep_assoc",
+     "[| !!r s. ALL x:set ?xs. ?elt x r @ s = ?elt x (r @ s);
+         !!r s. ?sep r @ s = ?sep (r @ s) |]
+      ==> shows_sep ?elt ?sep ?xs ?r @ ?s =
+          shows_sep ?elt ?sep ?xs (?r @ ?s)",
+     template_implication
+      ([template_predicate (template_app (template_hole 6, t_empty)),
+        template_predicate (template_app (template_hole 6, t_empty))],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 1,
+             template_app
+              (template_app
+                (template_app
+                  (template_app (template_hole 0, template_var 3),
+                   template_var 2),
+                 template_var 4),
+               template_var 1)),
+           template_var 0),
+         template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 0, template_var 3),
+               template_var 2),
+             template_var 4),
+           template_app
+            (template_app (template_hole 1, template_var 1),
+             template_var 0))))),
+    ("Old_Show.shows_between_assoc",
+     "[| !!s t. ?l s @ t = ?l (s @ t); !!s t. ?m s @ t = ?m (s @ t);
+         !!s t. ?r s @ t = ?r (s @ t) |]
+      ==> shows_between ?l ?m ?r ?s @ ?t =
+          shows_between ?l ?m ?r (?s @ ?t)",
+     template_implication
+      ([template_predicate (template_app (template_hole 4, t_empty)),
+        template_predicate (template_app (template_hole 4, t_empty)),
+        template_predicate (template_app (template_hole 4, t_empty))],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 1,
+             template_app
+              (template_app
+                (template_app
+                  (template_app (template_hole 0, template_var 4),
+                   template_var 3),
+                 template_var 2),
+               template_var 1)),
+           template_var 0),
+         template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 0, template_var 4),
+               template_var 3),
+             template_var 2),
+           template_app
+            (template_app (template_hole 1, template_var 1),
+             template_var 0)))))]:
+   (string * thm * template) list
+### theory "Draft.Old_ShowTemplates"
+### 0.304s elapsed time, 0.399s cpu time, 0.000s GC time
+val it = (): unit

@@ -1,0 +1,2889 @@
+Loading theory "Draft.Hiding_Type_Variables" (required by "Draft.Heap_Error_MonadTemplates" via "Draft.Heap_Error_Monad")
+Loading theory "Draft.Templates" (required by "Draft.Heap_Error_MonadTemplates" via "Draft.ExtrEqs")
+datatype template_term
+=
+     t_empty
+   | template_app of template_term * template_term
+   | template_hole of int
+   | template_var of int
+datatype sign
+= equals | greater_equals | greater_than | less_equals | less_than
+datatype template
+=
+     template_bimplication of template * template
+   | template_dunno
+   | template_equation of template_term * template_term
+   | template_implication of template list * template
+   | template_inequation of sign * template_term * template_term
+   | template_negation of template
+   | template_predicate of template_term
+constructor t_empty: template_term
+constructor template_app: template_term * template_term -> template_term
+constructor template_hole: int -> template_term
+constructor template_var: int -> template_term
+constructor equals: sign
+constructor greater_equals: sign
+constructor greater_than: sign
+constructor less_equals: sign
+constructor less_than: sign
+constructor template_bimplication: template * template -> template
+constructor template_dunno: template
+constructor template_equation: template_term * template_term -> template
+constructor template_implication: template list * template -> template
+constructor template_inequation:
+   sign * template_term * template_term -> template
+constructor template_negation: template -> template
+constructor template_predicate: template_term -> template
+val vfs = fn: term -> (indexname * typ) list * (string * typ) list
+val indexOf = fn: ''a list -> ''a -> int -> int
+val has_eq = fn: term -> bool
+val term2template = fn:
+   (indexname * typ) list -> (string * typ) list -> term -> template_term
+val lemma2predicate = fn: term -> term -> template
+val makeTemplatewithContext = fn: term -> term -> template
+val lemma2template = fn: term -> template
+val thm2template = fn: thm -> template
+val tterm2string = fn: template_term -> string
+val template2string = fn: template -> string
+val t = "height ?t <= size ?t": thm
+val th =
+   Const ("HOL.Trueprop", "bool => prop") $
+     (Const ("Orderings.ord_class.less_eq", "nat => nat => bool") $
+       (Const ("Tree.height_class.height", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree")) $
+       (Const ("Nat.size_class.size", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree"))):
+   term
+### theory "Draft.Templates"
+### 0.056s elapsed time, 0.136s cpu time, 0.000s GC time
+Loading theory "Draft.ExtrEqs" (required by "Draft.Heap_Error_MonadTemplates")
+signature HIDE_TVAR =
+  sig
+    val hide_tvar_ast_tr: Proof.context -> Ast.ast list -> Ast.ast
+    val hide_tvar_subst_ast_tr:
+       tvar_subst -> Proof.context -> Ast.ast list -> Ast.ast
+    val hide_tvar_subst_return_ast_tr:
+       tvar_subst -> Proof.context -> Ast.ast list -> Ast.ast
+    val hide_tvar_tr': string -> Proof.context -> term list -> term
+    type hide_varT =
+       {name: string,
+        parse_mode: parse_mode,
+        print_mode: print_mode,
+        tvars: typ list,
+        typ_syn_tab: (string * typ list * string) Symtab.table}
+    val lookup: theory -> string -> hide_varT option
+    datatype parse_mode = noparse | parse
+    val parse_parse_mode: string -> parse_mode
+    val parse_print_mode: string -> print_mode
+    datatype print_mode = noprint | print | print_all
+    val register:
+       string -> print_mode option -> parse_mode option -> theory -> theory
+    datatype tvar_subst = left | right
+    val update_mode:
+       string -> print_mode option -> parse_mode option -> theory -> theory
+  end
+structure Hide_Tvar: HIDE_TVAR
+val modeP = fn: Token.T list -> (string * string) * Token.T list
+val typ_modeP = fn:
+   Token.T list -> (string * (string * string)) * Token.T list
+### theory "Draft.Hiding_Type_Variables"
+### 0.609s elapsed time, 1.270s cpu time, 0.094s GC time
+Loading theory "Draft.Heap_Error_Monad" (required by "Draft.Heap_Error_MonadTemplates")
+val eqpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Var (("_dummy_", 2), "?'a"))
+       ):
+   term Find_Theorems.criterion
+val badeqpattern = Pattern (Const ("Pure.eq", "?'a => ?'a => prop")):
+   term Find_Theorems.criterion
+val undefpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Const ("HOL.undefined", "?'a"))
+       ):
+   term Find_Theorems.criterion
+val thmpattern =
+   Pattern
+    (Const ("HOL.Trueprop", "bool => prop") $ Var (("_dummy_", 1), "bool")):
+   term Find_Theorems.criterion
+val badnames =
+   ["*nitpick*", "*Nitpick*", "*full_exhaustive*", "*_def*", "Enum.finite*",
+    "*Quickcheck*", "ATP*", "*Nunchaku*", "*Code*", "*BNF*", "*SMT*",
+    "*.*.*"]:
+   string list
+val unwanted_names =
+   [(false, Name "*nitpick*"), (false, Name "*Nitpick*"),
+    (false, Name "*full_exhaustive*"), (false, Name "*_def*"),
+    (false, Name "Enum.finite*"), (false, Name "*Quickcheck*"),
+    (false, Name "ATP*"), (false, Name "*Nunchaku*"),
+    (false, Name "*Code*"), (false, Name "*BNF*"), (false, Name "*SMT*"),
+    (false, Name "*.*.*")]:
+   (bool * term Find_Theorems.criterion) list
+val has_vars = fn: term -> bool
+val get_all_eqs = fn: string -> Proof.context -> (string * thm) list
+val get_all_thms = fn: string -> Proof.context -> (string * thm) list
+val get_noneq_thms = fn: string -> Proof.context -> (string * thm) list
+val template_eqs = fn:
+   string -> Proof.context -> (string * thm * template) list
+val template_thms = fn:
+   string -> Proof.context -> (string * thm * template) list
+### theory "Draft.ExtrEqs"
+### 0.575s elapsed time, 1.180s cpu time, 0.094s GC time
+Found termination order: "{}"
+Found termination order: "{}"
+Found termination order: "{}"
+Found termination order: "(%p. length (snd p)) <*mlex*> {}"
+Found termination order: "(%p. length (snd p)) <*mlex*> {}"
+Found termination order: "(%p. length (snd (snd p))) <*mlex*> {}"
+Found termination order: "(%p. length (snd p)) <*mlex*> {}"
+### Ambiguous input (line 569 of "$AFP/Core_SC_DOM/common/preliminaries/Heap_Error_Monad.thy") produces 2 parse trees:
+### ("\<^const>Pure.imp"
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^const>Heap_Error_Monad.returns_result" ("_position" h)
+###       ("_applC" ("_position" filter_M)
+###         ("_cargs" ("_position" P) ("_position" xs)))
+###       ("_position" ys)))
+###   ("\<^const>Pure.imp"
+###     ("\<^const>Pure.all_binder" ("_position" x)
+###       ("\<^const>Pure.imp"
+###         ("\<^const>HOL.Trueprop"
+###           ("\<^const>Set.member" ("_position" x)
+###             ("_applC" ("_position" set) ("_position" xs))))
+###         ("\<^const>HOL.Trueprop"
+###           ("_applC" ("_position" pure)
+###             ("_cargs" ("_applC" ("_position" P) ("_position" x))
+###               ("_position" h))))))
+###     ("\<^const>HOL.Trueprop"
+###       ("\<^const>HOL.conj"
+###         ("_Ball" ("_position" x)
+###           ("_applC" ("_position" set) ("_position" xs))
+###           ("_applC"
+###             ("\<^const>Heap_Error_Monad.is_OK" ("_position" h)
+###               ("_position" P))
+###             ("_position" x)))
+###         ("\<^const>HOL.eq" ("_position" ys)
+###           ("_applC" ("_position" filter)
+###             ("_cargs"
+###               ("_lambda" ("_position" x)
+###                 ("\<^const>Heap_Error_Monad.select_result"
+###                   ("\<^const>Heap_Error_Monad.execute" ("_position" h)
+###                     ("_applC" ("_position" P) ("_position" x)))))
+###               ("_position" xs))))))))
+### ("\<^const>Pure.imp"
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^const>Heap_Error_Monad.returns_result" ("_position" h)
+###       ("_applC" ("_position" filter_M)
+###         ("_cargs" ("_position" P) ("_position" xs)))
+###       ("_position" ys)))
+###   ("\<^const>Pure.imp"
+###     ("\<^const>Pure.all_binder" ("_position" x)
+###       ("\<^const>Pure.imp"
+###         ("\<^const>HOL.Trueprop"
+###           ("\<^const>Set.member" ("_position" x)
+###             ("_applC" ("_position" set) ("_position" xs))))
+###         ("\<^const>HOL.Trueprop"
+###           ("_applC" ("_position" pure)
+###             ("_cargs" ("_applC" ("_position" P) ("_position" x))
+###               ("_position" h))))))
+###     ("\<^const>HOL.Trueprop"
+###       ("\<^const>HOL.conj"
+###         ("_Ball" ("_position" x)
+###           ("_applC" ("_position" set) ("_position" xs))
+###           ("\<^const>Heap_Error_Monad.is_OK" ("_position" h)
+###             ("_applC" ("_position" P) ("_position" x))))
+###         ("\<^const>HOL.eq" ("_position" ys)
+###           ("_applC" ("_position" filter)
+###             ("_cargs"
+###               ("_lambda" ("_position" x)
+###                 ("\<^const>Heap_Error_Monad.select_result"
+###                   ("\<^const>Heap_Error_Monad.execute" ("_position" h)
+###                     ("_applC" ("_position" P) ("_position" x)))))
+###               ("_position" xs))))))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ambiguous input (line 574 of "$AFP/Core_SC_DOM/common/preliminaries/Heap_Error_Monad.thy") produces 2 parse trees:
+### ("\<^const>Pure.imp"
+###   ("\<^const>Pure.all_binder" ("_position" x)
+###     ("\<^const>Pure.imp"
+###       ("\<^const>HOL.Trueprop"
+###         ("\<^const>Set.member" ("_position" x)
+###           ("_applC" ("_position" set) ("_position" xs))))
+###       ("\<^const>HOL.Trueprop"
+###         ("\<^const>HOL.conj"
+###           ("_applC" ("_position" pure)
+###             ("_cargs" ("_applC" ("_position" P) ("_position" x))
+###               ("_position" h)))
+###           ("_applC"
+###             ("\<^const>Heap_Error_Monad.is_OK" ("_position" h)
+###               ("_position" P))
+###             ("_position" x))))))
+###   ("\<^const>Pure.imp"
+###     ("\<^const>HOL.Trueprop"
+###       ("\<^const>HOL.eq"
+###         ("_applC" ("_position" filter)
+###           ("_cargs"
+###             ("_lambda" ("_position" x)
+###               ("\<^const>Heap_Error_Monad.select_result"
+###                 ("\<^const>Heap_Error_Monad.execute" ("_position" h)
+###                   ("_applC" ("_position" P) ("_position" x)))))
+###             ("_position" xs)))
+###         ("_position" ys)))
+###     ("\<^const>HOL.Trueprop"
+###       ("\<^const>Heap_Error_Monad.returns_result" ("_position" h)
+###         ("_applC" ("_position" filter_M)
+###           ("_cargs" ("_position" P) ("_position" xs)))
+###         ("_position" ys)))))
+### ("\<^const>Pure.imp"
+###   ("\<^const>Pure.all_binder" ("_position" x)
+###     ("\<^const>Pure.imp"
+###       ("\<^const>HOL.Trueprop"
+###         ("\<^const>Set.member" ("_position" x)
+###           ("_applC" ("_position" set) ("_position" xs))))
+###       ("\<^const>HOL.Trueprop"
+###         ("\<^const>HOL.conj"
+###           ("_applC" ("_position" pure)
+###             ("_cargs" ("_applC" ("_position" P) ("_position" x))
+###               ("_position" h)))
+###           ("\<^const>Heap_Error_Monad.is_OK" ("_position" h)
+###             ("_applC" ("_position" P) ("_position" x)))))))
+###   ("\<^const>Pure.imp"
+###     ("\<^const>HOL.Trueprop"
+###       ("\<^const>HOL.eq"
+###         ("_applC" ("_position" filter)
+###           ("_cargs"
+###             ("_lambda" ("_position" x)
+###               ("\<^const>Heap_Error_Monad.select_result"
+###                 ("\<^const>Heap_Error_Monad.execute" ("_position" h)
+###                   ("_applC" ("_position" P) ("_position" x)))))
+###             ("_position" xs)))
+###         ("_position" ys)))
+###     ("\<^const>HOL.Trueprop"
+###       ("\<^const>Heap_Error_Monad.returns_result" ("_position" h)
+###         ("_applC" ("_position" filter_M)
+###           ("_cargs" ("_position" P) ("_position" xs)))
+###         ("_position" ys)))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+Found termination order: "size_list size <*mlex*> {}"
+### Ambiguous input (line 681 of "$AFP/Core_SC_DOM/common/preliminaries/Heap_Error_Monad.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("\<^const>Monad_Syntax.bind"
+###       ("\<^const>Heap_Error_Monad.execute" ("_position" h) ("_position" f))
+###       ("_position" g))
+###     ("\<^const>Heap_Error_Monad.execute" ("_position" h')
+###       ("_applC" ("_position" g) ("_position" x)))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("\<^const>Heap_Error_Monad.execute" ("_position" h)
+###       ("\<^const>Monad_Syntax.bind" ("_position" f) ("_position" g)))
+###     ("\<^const>Heap_Error_Monad.execute" ("_position" h')
+###       ("_applC" ("_position" g) ("_position" x)))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### theory "Draft.Heap_Error_Monad"
+### 1.601s elapsed time, 1.949s cpu time, 0.485s GC time
+Loading theory "Draft.Heap_Error_MonadTemplates"
+val templateLemmas =
+   [("Heap_Error_Monad.get_heap_ok", "?h \<turnstile> ok get_heap",
+     template_predicate
+      (
+         template_app
+          (template_app (template_hole 1, template_var 0), template_hole 0)
+         )),
+    ("Heap_Error_Monad.get_pure", "pure get_heap ?h",
+     template_predicate
+      (
+         template_app
+          (template_app (template_hole 1, template_hole 0), template_var 0)
+         )),
+    ("Heap_Error_Monad.noop_pure", "pure noop ?h",
+     template_predicate
+      (
+         template_app
+          (template_app (template_hole 1, template_hole 0), template_var 0)
+         )),
+    ("Heap_Error_Monad.reflp_preserved_f", "reflp (preserved ?f)",
+     template_predicate
+      (
+         template_app
+          (template_hole 1, template_app (template_hole 0, template_var 0))
+         )),
+    ("Heap_Error_Monad.transp_preserved_f", "transp (preserved ?f)",
+     template_predicate
+      (
+         template_app
+          (template_hole 1, template_app (template_hole 0, template_var 0))
+         )),
+    ("Heap_Error_Monad.return_ok", "?h \<turnstile> ok return ?x",
+     template_predicate
+      (
+         template_app
+          (template_app (template_hole 1, template_var 1),
+           template_app (template_hole 0, template_var 0))
+         )),
+    ("Heap_Error_Monad.error_pure", "pure (error ?e) ?h",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_hole 1,
+             template_app (template_hole 0, template_var 1)),
+           template_var 0)
+         )),
+    ("Heap_Error_Monad.return_pure", "pure (return ?x) ?h",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_hole 1,
+             template_app (template_hole 0, template_var 1)),
+           template_var 0)
+         )),
+    ("Heap_Error_Monad.return_id", "?f >>= return = ?f",
+     template_equation
+      (template_app
+        (template_app (template_hole 1, template_var 0), template_hole 0),
+       template_var 0)),
+    ("Heap_Error_Monad.noop_reads", "reads {} noop ?h ?h'",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 2, template_hole 1),
+               template_hole 0),
+             template_var 1),
+           template_var 0)
+         )),
+    ("Heap_Error_Monad.error_returns_error",
+     "?h \<turnstile> error ?e \<rightarrow>\<^sub>e ?e",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_app (template_hole 1, template_var 1),
+             template_app (template_hole 0, template_var 0)),
+           template_var 0)
+         )),
+    ("Heap_Error_Monad.return_heap_returns_result",
+     "?h \<turnstile> return_heap ?h' \<rightarrow>\<^sub>r ()",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_app (template_hole 2, template_var 1),
+             template_app (template_hole 1, template_var 0)),
+           template_hole 0)
+         )),
+    ("Heap_Error_Monad.return_returns_error",
+     "~ ?h \<turnstile> return ?x \<rightarrow>\<^sub>e ?e",
+     template_negation
+      (
+         template_predicate
+          (
+             template_app
+              (template_app
+                (template_app (template_hole 1, template_var 2),
+                 template_app (template_hole 0, template_var 1)),
+               template_var 0)
+             )
+         )),
+    ("Heap_Error_Monad.error_returns_heap",
+     "~ ?h \<turnstile> error ?e \<rightarrow>\<^sub>h ?h'",
+     template_negation
+      (
+         template_predicate
+          (
+             template_app
+              (template_app
+                (template_app (template_hole 1, template_var 2),
+                 template_app (template_hole 0, template_var 1)),
+               template_var 0)
+             )
+         )),
+    ("Heap_Error_Monad.error_returns_result",
+     "~ ?h \<turnstile> error ?e \<rightarrow>\<^sub>r ?y",
+     template_negation
+      (
+         template_predicate
+          (
+             template_app
+              (template_app
+                (template_app (template_hole 1, template_var 2),
+                 template_app (template_hole 0, template_var 1)),
+               template_var 0)
+             )
+         )),
+    ("Heap_Error_Monad.error_reads", "reads {} (error ?e) ?h ?h'",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 2, template_hole 1),
+               template_app (template_hole 0, template_var 2)),
+             template_var 1),
+           template_var 0)
+         )),
+    ("Heap_Error_Monad.return_reads", "reads {} (return ?x) ?h ?h'",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 2, template_hole 1),
+               template_app (template_hole 0, template_var 2)),
+             template_var 1),
+           template_var 0)
+         )),
+    ("Heap_Error_Monad.writes_error", "writes ?S (error ?e) ?h ?h'",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 1, template_var 3),
+               template_app (template_hole 0, template_var 2)),
+             template_var 1),
+           template_var 0)
+         )),
+    ("Heap_Error_Monad.error_bind", "error ?e >>= ?g = error ?e",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 2, template_app (template_hole 1, template_var 1)),
+         template_var 0),
+       template_app (template_hole 0, template_var 1))),
+    ("Heap_Error_Monad.return_bind", "return ?x >>= ?g = ?g ?x",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 1, template_app (template_hole 0, template_var 1)),
+         template_var 0),
+       template_app (template_var 0, template_var 1))),
+    ("Heap_Error_Monad.writes_singleton",
+     "writes (all_args ?f) (?f ?a) ?h ?h'",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_hole 1,
+                 template_app (template_hole 0, template_var 3)),
+               template_app (template_var 3, template_var 2)),
+             template_var 1),
+           template_var 0)
+         )),
+    ("Heap_Error_Monad.writes_singleton2", "writes {?f} ?f ?h ?h'",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_hole 2,
+                 template_app
+                  (template_app (template_hole 1, template_var 2),
+                   template_hole 0)),
+               template_var 2),
+             template_var 1),
+           template_var 0)
+         )),
+    ("Heap_Error_Monad.noop_returns_heap",
+     "?h \<turnstile> noop \<rightarrow>\<^sub>h ?h' = (?h = ?h')",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 2, template_var 1),
+                template_hole 1),
+              template_var 0)
+            )],
+       template_equation (template_var 1, template_var 0))),
+    ("Heap_Error_Monad.reads_singleton", "reads {preserved ?f} ?f ?h ?h'",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_hole 3,
+                 template_app
+                  (template_app
+                    (template_hole 2,
+                     template_app (template_hole 1, template_var 2)),
+                   template_hole 0)),
+               template_var 2),
+             template_var 1),
+           template_var 0)
+         )),
+    ("Heap_Error_Monad.return_returns_heap",
+     "?h \<turnstile> return ?x \<rightarrow>\<^sub>h ?h' = (?h = ?h')",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 2, template_var 2),
+                template_app (template_hole 1, template_var 1)),
+              template_var 0)
+            )],
+       template_equation (template_var 2, template_var 0))),
+    ("Heap_Error_Monad.return_heap_E",
+     "?h \<turnstile> return_heap ?h' \<rightarrow>\<^sub>h ?h'' =
+      (?h'' = ?h')",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 2, template_var 2),
+                template_app (template_hole 1, template_var 1)),
+              template_var 0)
+            )],
+       template_equation (template_var 0, template_var 1))),
+    ("Heap_Error_Monad.return_returns_result",
+     "?h \<turnstile> return ?x \<rightarrow>\<^sub>r ?y = (?x = ?y)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 2, template_var 2),
+                template_app (template_hole 1, template_var 1)),
+              template_var 0)
+            )],
+       template_equation (template_var 1, template_var 0))),
+    ("Heap_Error_Monad.is_OK_returns_heap_I",
+     "?h \<turnstile> ?f \<rightarrow>\<^sub>h ?h' ==>
+      ?h \<turnstile> ok ?f",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 1, template_var 2),
+                template_var 1),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 0, template_var 2), template_var 1)
+           ))),
+    ("Heap_Error_Monad.get_heap_E",
+     "?h \<turnstile> get_heap \<rightarrow>\<^sub>r ?x ==> ?x = ?h",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 2, template_var 1),
+                template_hole 1),
+              template_var 0)
+            )],
+       template_equation (template_var 0, template_var 1))),
+    ("Heap_Error_Monad.is_OK_returns_result_I",
+     "?h \<turnstile> ?f \<rightarrow>\<^sub>r ?y ==>
+      ?h \<turnstile> ok ?f",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 1, template_var 2),
+                template_var 1),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 0, template_var 2), template_var 1)
+           ))),
+    ("Heap_Error_Monad.writes_pure", "pure ?f ?h ==> writes ?S ?f ?h ?h'",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 1, template_var 3),
+              template_var 2)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 0, template_var 1),
+                 template_var 3),
+               template_var 2),
+             template_var 0)
+           ))),
+    ("Heap_Error_Monad.writes_not_ok",
+     "~ ?h \<turnstile> ok ?f ==> writes ?S ?f ?h ?h'",
+     template_implication
+      ([template_negation
+         (
+            template_predicate
+             (
+                template_app
+                 (template_app (template_hole 1, template_var 3),
+                  template_var 2)
+                )
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 0, template_var 1),
+                 template_var 2),
+               template_var 3),
+             template_var 0)
+           ))),
+    ("Heap_Error_Monad.get_heap_is_OK",
+     "?h \<turnstile> ok (get_heap >>= ?f) = ?h \<turnstile> ok ?f ?h",
+     template_equation
+      (template_app
+        (template_app (template_hole 2, template_var 1),
+         template_app
+          (template_app (template_hole 1, template_hole 0), t_empty)),
+       template_app
+        (template_app (template_hole 2, template_var 1),
+         template_app (template_var 0, template_var 1)))),
+    ("Heap_Error_Monad.returns_result_select_result",
+     "?h \<turnstile> ok ?f ==>
+      ?h \<turnstile> ?f
+      \<rightarrow>\<^sub>r |?h \<turnstile> ?f|\<^sub>r",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 3, template_var 1),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app (template_hole 2, template_var 1),
+               template_var 0),
+             template_app
+              (template_hole 1,
+               template_app
+                (template_app (template_hole 0, template_var 1),
+                 template_var 0)))
+           ))),
+    ("Heap_Error_Monad.bind_returns_error_I",
+     "?h \<turnstile> ?f \<rightarrow>\<^sub>e ?e ==>
+      ?h \<turnstile> ?f >>= ?g \<rightarrow>\<^sub>e ?e",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 2, template_var 3),
+                template_var 2),
+              template_var 1)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app (template_hole 1, template_var 3),
+               template_app
+                (template_app (template_hole 0, template_var 2),
+                 template_var 0)),
+             template_var 1)
+           ))),
+    ("Heap_Error_Monad.select_result_I2",
+     "?h \<turnstile> ?f \<rightarrow>\<^sub>r ?x ==>
+      |?h \<turnstile> ?f|\<^sub>r = ?x",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 3, template_var 2),
+                template_var 1),
+              template_var 0)
+            )],
+       template_equation
+        (template_app
+          (template_hole 1,
+           template_app
+            (template_app (template_hole 0, template_var 2),
+             template_var 1)),
+         template_var 0))),
+    ("Heap_Error_Monad.bind_assoc",
+     "?f >>= ?g >>= ?h = ?f >>= (%x. ?g x >>= ?h)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 2,
+           template_app
+            (template_app (template_hole 1, template_var 2),
+             template_var 1)),
+         template_var 0),
+       template_app
+        (template_app (template_hole 0, template_var 2), t_empty))),
+    ("Heap_Error_Monad.filter_M_subset",
+     "?h \<turnstile> filter_M ?P ?xs \<rightarrow>\<^sub>r ?ys ==>
+      set ?ys <= set ?xs",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 3, template_var 3),
+                template_app
+                 (template_app (template_hole 2, template_var 2),
+                  template_var 1)),
+              template_var 0)
+            )],
+       template_inequation
+        (less_equals, template_app (template_hole 0, template_var 0),
+         template_app (template_hole 0, template_var 1)))),
+    ("Heap_Error_Monad.get_heap_returns_heap",
+     "?h \<turnstile> get_heap >>= ?f \<rightarrow>\<^sub>h ?h'' =
+      ?h \<turnstile> ?f ?h \<rightarrow>\<^sub>h ?h''",
+     template_equation
+      (template_app
+        (template_app
+          (template_app (template_hole 2, template_var 2),
+           template_app
+            (template_app (template_hole 1, template_hole 0), t_empty)),
+         template_var 0),
+       template_app
+        (template_app
+          (template_app (template_hole 2, template_var 2),
+           template_app (template_var 1, template_var 2)),
+         template_var 0))),
+    ("Heap_Error_Monad.get_heap_returns_result",
+     "?h \<turnstile> get_heap >>= ?f \<rightarrow>\<^sub>r ?x =
+      ?h \<turnstile> ?f ?h \<rightarrow>\<^sub>r ?x",
+     template_equation
+      (template_app
+        (template_app
+          (template_app (template_hole 2, template_var 2),
+           template_app
+            (template_app (template_hole 1, template_hole 0), t_empty)),
+         template_var 0),
+       template_app
+        (template_app
+          (template_app (template_hole 2, template_var 2),
+           template_app (template_var 1, template_var 2)),
+         template_var 0))),
+    ("Heap_Error_Monad.writes_union_left_I",
+     "writes ?S ?f ?h ?h' ==> writes (?S Un ?S') ?f ?h ?h'",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 1, template_var 4),
+                  template_var 3),
+                template_var 2),
+              template_var 1)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_hole 1,
+                   template_app
+                    (template_app (template_hole 0, template_var 4),
+                     template_var 0)),
+                 template_var 3),
+               template_var 2),
+             template_var 1)
+           ))),
+    ("Heap_Error_Monad.writes_union_right_I",
+     "writes ?S' ?f ?h ?h' ==> writes (?S Un ?S') ?f ?h ?h'",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 1, template_var 4),
+                  template_var 3),
+                template_var 2),
+              template_var 1)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_hole 1,
+                   template_app
+                    (template_app (template_hole 0, template_var 0),
+                     template_var 4)),
+                 template_var 3),
+               template_var 2),
+             template_var 1)
+           ))),
+    ("Heap_Error_Monad.pure_pure",
+     "[| ?h \<turnstile> ok ?f; pure ?f ?h |]
+      ==> ?h \<turnstile> ?f \<rightarrow>\<^sub>h ?h",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 2, template_var 1),
+              template_var 0)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 1, template_var 0),
+              template_var 1)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app (template_hole 0, template_var 1),
+               template_var 0),
+             template_var 1)
+           ))),
+    ("Heap_Error_Monad.pure_returns_heap_eq",
+     "[| ?h \<turnstile> ?f \<rightarrow>\<^sub>h ?h'; pure ?f ?h |]
+      ==> ?h = ?h'",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 2, template_var 2),
+                template_var 1),
+              template_var 0)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 1, template_var 1),
+              template_var 2)
+            )],
+       template_equation (template_var 2, template_var 0))),
+    ("Heap_Error_Monad.filter_M_distinct",
+     "[| ?h \<turnstile> filter_M ?P ?xs \<rightarrow>\<^sub>r ?ys;
+         distinct ?xs |]
+      ==> distinct ?ys",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 2, template_var 3),
+                template_app
+                 (template_app (template_hole 1, template_var 2),
+                  template_var 1)),
+              template_var 0)
+            ),
+        template_predicate
+         (template_app (template_hole 0, template_var 1))],
+       template_predicate
+        (template_app (template_hole 0, template_var 0)))),
+    ("Heap_Error_Monad.returns_heap_eq",
+     "[| ?h \<turnstile> ?f \<rightarrow>\<^sub>h ?h';
+         ?h \<turnstile> ?f \<rightarrow>\<^sub>h ?h'' |]
+      ==> ?h' = ?h''",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 1, template_var 3),
+                template_var 2),
+              template_var 1)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 1, template_var 3),
+                template_var 2),
+              template_var 0)
+            )],
+       template_equation (template_var 1, template_var 0))),
+    ("Heap_Error_Monad.returns_result_eq",
+     "[| ?h \<turnstile> ?f \<rightarrow>\<^sub>r ?y;
+         ?h \<turnstile> ?f \<rightarrow>\<^sub>r ?y' |]
+      ==> ?y = ?y'",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 1, template_var 3),
+                template_var 2),
+              template_var 1)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 1, template_var 3),
+                template_var 2),
+              template_var 0)
+            )],
+       template_equation (template_var 1, template_var 0))),
+    ("Heap_Error_Monad.fold_M_pure_I",
+     "(!!d x. pure (?f d x) ?h) ==> pure (fold_M ?f ?d ?xs) ?h",
+     template_implication
+      ([template_predicate (template_app (template_hole 4, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 1,
+               template_app
+                (template_app
+                  (template_app (template_hole 0, template_var 3),
+                   template_var 1),
+                 template_var 0)),
+             template_var 2)
+           ))),
+    ("Heap_Error_Monad.is_OK_returns_heap_E",
+     "[| ?h \<turnstile> ok ?f;
+         !!h'. ?h \<turnstile> ?f \<rightarrow>\<^sub>h h' ==> ?thesis |]
+      ==> ?thesis",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 2, template_var 2),
+              template_var 1)
+            ),
+        template_predicate (template_app (template_hole 1, t_empty))],
+       template_predicate (template_var 0))),
+    ("Heap_Error_Monad.is_OK_returns_result_E",
+     "[| ?h \<turnstile> ok ?f;
+         !!x. ?h \<turnstile> ?f \<rightarrow>\<^sub>r x ==> ?thesis |]
+      ==> ?thesis",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 2, template_var 2),
+              template_var 1)
+            ),
+        template_predicate (template_app (template_hole 1, t_empty))],
+       template_predicate (template_var 0))),
+    ("Heap_Error_Monad.writes_subset",
+     "[| writes ?S ?f ?h ?h'; ?S <= ?S' |] ==> writes ?S' ?f ?h ?h'",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 1, template_var 4),
+                  template_var 3),
+                template_var 2),
+              template_var 1)
+            ),
+        template_inequation (less_equals, template_var 4, template_var 0)],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 1, template_var 0),
+                 template_var 3),
+               template_var 2),
+             template_var 1)
+           ))),
+    ("Heap_Error_Monad.pure_forall_M_I",
+     "(!!x. x : set ?xs ==> pure (?P x) ?h) ==> pure (forall_M ?P ?xs) ?h",
+     template_implication
+      ([template_predicate (template_app (template_hole 6, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 1,
+               template_app
+                (template_app (template_hole 0, template_var 1),
+                 template_var 2)),
+             template_var 0)
+           ))),
+    ("Heap_Error_Monad.filter_M_pure_I",
+     "(!!x. x : set ?xs ==> pure (?P x) ?h) ==> pure (filter_M ?P ?xs) ?h",
+     template_implication
+      ([template_predicate (template_app (template_hole 6, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 1,
+               template_app
+                (template_app (template_hole 0, template_var 1),
+                 template_var 2)),
+             template_var 0)
+           ))),
+    ("Heap_Error_Monad.map_M_pure_I",
+     "(!!x. x : set ?xs ==> pure (?f x) ?h) ==> pure (map_M ?f ?xs) ?h",
+     template_implication
+      ([template_predicate (template_app (template_hole 6, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 1,
+               template_app
+                (template_app (template_hole 0, template_var 1),
+                 template_var 2)),
+             template_var 0)
+           ))),
+    ("Heap_Error_Monad.bind_returns_error_eq",
+     "[| ?h \<turnstile> ?f \<rightarrow>\<^sub>e ?e;
+         ?h \<turnstile> ?g \<rightarrow>\<^sub>e ?e |]
+      ==> ?h \<turnstile> ?f = ?h \<turnstile> ?g",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 2, template_var 3),
+                template_var 2),
+              template_var 1)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 2, template_var 3),
+                template_var 0),
+              template_var 1)
+            )],
+       template_equation
+        (template_app
+          (template_app (template_hole 0, template_var 3), template_var 2),
+         template_app
+          (template_app (template_hole 0, template_var 3),
+           template_var 0)))),
+    ("Heap_Error_Monad.pure_eq_iff",
+     "(ALL h' x.
+          ?h \<turnstile> ?f \<rightarrow>\<^sub>r x -->
+          ?h \<turnstile> ?f \<rightarrow>\<^sub>h h' --> ?h = h') =
+      pure ?f ?h",
+     template_equation
+      (template_app (template_hole 6, t_empty),
+       template_app
+        (template_app (template_hole 0, template_var 0), template_var 1))),
+    ("Heap_Error_Monad.map_filter_M_pure",
+     "(!!x h. x : set ?xs ==> pure (?f x) h) ==>
+      pure (map_filter_M ?f ?xs) ?h",
+     template_implication
+      ([template_predicate (template_app (template_hole 7, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 1,
+               template_app
+                (template_app (template_hole 0, template_var 1),
+                 template_var 2)),
+             template_var 0)
+           ))),
+    ("Heap_Error_Monad.iterate_M_concat",
+     "[| ?h \<turnstile> iterate_M ?xs \<rightarrow>\<^sub>h ?h';
+         ?h' \<turnstile> iterate_M ?ys \<rightarrow>\<^sub>h ?h'' |]
+      ==> ?h \<turnstile> iterate_M (?xs @ ?ys) \<rightarrow>\<^sub>h ?h''",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 2, template_var 4),
+                template_app (template_hole 1, template_var 3)),
+              template_var 2)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 2, template_var 2),
+                template_app (template_hole 1, template_var 1)),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app (template_hole 2, template_var 4),
+               template_app
+                (template_hole 1,
+                 template_app
+                  (template_app (template_hole 0, template_var 3),
+                   template_var 1))),
+             template_var 0)
+           ))),
+    ("Heap_Error_Monad.select_result_eq",
+     "(!!x. ?h \<turnstile> ?f \<rightarrow>\<^sub>r x =
+            ?h' \<turnstile> ?f \<rightarrow>\<^sub>r x) ==>
+      |?h \<turnstile> ?f|\<^sub>r = |?h' \<turnstile> ?f|\<^sub>r",
+     template_implication
+      ([template_predicate (template_app (template_hole 6, t_empty))],
+       template_equation
+        (template_app
+          (template_hole 1,
+           template_app
+            (template_app (template_hole 0, template_var 2),
+             template_var 1)),
+         template_app
+          (template_hole 1,
+           template_app
+            (template_app (template_hole 0, template_var 0),
+             template_var 1))))),
+    ("Heap_Error_Monad.select_result_I",
+     "[| ?h \<turnstile> ok ?f;
+         !!x. ?h \<turnstile> ?f \<rightarrow>\<^sub>r x ==> ?P x |]
+      ==> ?P |?h \<turnstile> ?f|\<^sub>r",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 4, template_var 2),
+              template_var 1)
+            ),
+        template_predicate (template_app (template_hole 3, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_var 0,
+             template_app
+              (template_hole 1,
+               template_app
+                (template_app (template_hole 0, template_var 2),
+                 template_var 1)))
+           ))),
+    ("Heap_Error_Monad.execute_bind_simp",
+     "[| ?h \<turnstile> ?f \<rightarrow>\<^sub>r ?x;
+         ?h \<turnstile> ?f \<rightarrow>\<^sub>h ?h' |]
+      ==> ?h \<turnstile> ?f >>= ?g = ?h' \<turnstile> ?g ?x",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 4, template_var 4),
+                template_var 3),
+              template_var 2)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 3, template_var 4),
+                template_var 3),
+              template_var 1)
+            )],
+       template_equation
+        (template_app
+          (template_app (template_hole 1, template_var 4),
+           template_app
+            (template_app (template_hole 0, template_var 3),
+             template_var 0)),
+         template_app
+          (template_app (template_hole 1, template_var 1),
+           template_app (template_var 0, template_var 2))))),
+    ("Heap_Error_Monad.reads_insert_writes_set_right",
+     "[| reflp ?getter; transp ?getter; reads ?S ?f ?h ?h' |]
+      ==> reads (insert ?getter ?S) ?f ?h ?h'",
+     template_implication
+      ([template_predicate (template_app (template_hole 3, template_var 4)),
+        template_predicate (template_app (template_hole 2, template_var 4)),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 1, template_var 3),
+                  template_var 2),
+                template_var 1),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_hole 1,
+                   template_app
+                    (template_app (template_hole 0, template_var 4),
+                     template_var 3)),
+                 template_var 2),
+               template_var 1),
+             template_var 0)
+           ))),
+    ("Heap_Error_Monad.bind_is_OK_I",
+     "[| ?h \<turnstile> ?f \<rightarrow>\<^sub>r ?x;
+         ?h \<turnstile> ?f \<rightarrow>\<^sub>h ?h';
+         ?h' \<turnstile> ok ?g ?x |]
+      ==> ?h \<turnstile> ok (?f >>= ?g)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 3, template_var 4),
+                template_var 3),
+              template_var 2)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 2, template_var 4),
+                template_var 3),
+              template_var 1)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 1, template_var 1),
+              template_app (template_var 0, template_var 2))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 1, template_var 4),
+             template_app
+              (template_app (template_hole 0, template_var 3),
+               template_var 0))
+           ))),
+    ("Heap_Error_Monad.return_result_heap_code",
+     "?h \<turnstile> ?p
+      \<rightarrow>\<^sub>r ?r \<rightarrow>\<^sub>h ?h' =
+      (case ?h \<turnstile> ?p of Inl x => False
+       | Inr (r', h'') => ?r = r' & ?h' = h'')",
+     template_equation
+      (template_app
+        (template_app
+          (template_app
+            (template_app (template_hole 7, template_var 3),
+             template_var 2),
+           template_var 1),
+         template_var 0),
+       template_app
+        (template_app (template_app (template_hole 6, t_empty), t_empty),
+         template_app
+          (template_app (template_hole 0, template_var 3),
+           template_var 2)))),
+    ("Heap_Error_Monad.bind_pure_I",
+     "[| pure ?f ?h;
+         !!x. ?h \<turnstile> ?f \<rightarrow>\<^sub>r x ==>
+              pure (?g x) ?h |]
+      ==> pure (?f >>= ?g) ?h",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 4, template_var 2),
+              template_var 1)
+            ),
+        template_predicate (template_app (template_hole 3, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 1,
+               template_app
+                (template_app (template_hole 0, template_var 2),
+                 template_var 0)),
+             template_var 1)
+           ))),
+    ("Heap_Error_Monad.bind_returns_error_I2",
+     "[| pure ?f ?h; ?h \<turnstile> ?f \<rightarrow>\<^sub>r ?x;
+         ?h \<turnstile> ?g ?x \<rightarrow>\<^sub>e ?e |]
+      ==> ?h \<turnstile> ?f >>= ?g \<rightarrow>\<^sub>e ?e",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 3, template_var 4),
+              template_var 3)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 2, template_var 3),
+                template_var 4),
+              template_var 2)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 1, template_var 3),
+                template_app (template_var 1, template_var 2)),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app (template_hole 1, template_var 3),
+               template_app
+                (template_app (template_hole 0, template_var 4),
+                 template_var 1)),
+             template_var 0)
+           ))),
+    ("Heap_Error_Monad.bind_pure_returns_result_I",
+     "[| pure ?f ?h; ?h \<turnstile> ?f \<rightarrow>\<^sub>r ?x;
+         ?h \<turnstile> ?g ?x \<rightarrow>\<^sub>r ?y |]
+      ==> ?h \<turnstile> ?f >>= ?g \<rightarrow>\<^sub>r ?y",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 3, template_var 4),
+              template_var 3)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 2, template_var 3),
+                template_var 4),
+              template_var 2)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 1, template_var 3),
+                template_app (template_var 1, template_var 2)),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app (template_hole 1, template_var 3),
+               template_app
+                (template_app (template_hole 0, template_var 4),
+                 template_var 1)),
+             template_var 0)
+           ))),
+    ("Heap_Error_Monad.bind_returns_heap_E3",
+     "[| ?h \<turnstile> ?f >>= ?g \<rightarrow>\<^sub>h ?h';
+         ?h \<turnstile> ?f \<rightarrow>\<^sub>r ?x; pure ?f ?h |]
+      ==> ?h \<turnstile> ?g ?x \<rightarrow>\<^sub>h ?h'",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 3, template_var 4),
+                template_app
+                 (template_app (template_hole 2, template_var 3),
+                  template_var 2)),
+              template_var 1)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 1, template_var 4),
+                template_var 3),
+              template_var 0)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 0, template_var 3),
+              template_var 4)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app (template_hole 3, template_var 4),
+               template_app (template_var 2, template_var 0)),
+             template_var 1)
+           ))),
+    ("Heap_Error_Monad.bind_returns_result_E3",
+     "[| ?h \<turnstile> ?f >>= ?g \<rightarrow>\<^sub>r ?y;
+         ?h \<turnstile> ?f \<rightarrow>\<^sub>r ?x; pure ?f ?h |]
+      ==> ?h \<turnstile> ?g ?x \<rightarrow>\<^sub>r ?y",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 3, template_var 4),
+                template_app
+                 (template_app (template_hole 2, template_var 3),
+                  template_var 2)),
+              template_var 1)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 1, template_var 4),
+                template_var 3),
+              template_var 0)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 0, template_var 3),
+              template_var 4)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app (template_hole 3, template_var 4),
+               template_app (template_var 2, template_var 0)),
+             template_var 1)
+           ))),
+    ("Heap_Error_Monad.filter_M_empty_I",
+     "[| !!x. pure (?P x) ?h;
+         ALL x:set ?xs. ?h \<turnstile> ?P x \<rightarrow>\<^sub>r False |]
+      ==> ?h \<turnstile> filter_M ?P ?xs \<rightarrow>\<^sub>r []",
+     template_implication
+      ([template_predicate (template_app (template_hole 9, t_empty)),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 6,
+                template_app (template_hole 5, template_var 0)),
+              t_empty)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app (template_hole 2, template_var 1),
+               template_app
+                (template_app (template_hole 1, template_var 2),
+                 template_var 0)),
+             template_hole 0)
+           ))),
+    ("Heap_Error_Monad.bind_returns_error_I3",
+     "[| ?h \<turnstile> ?f \<rightarrow>\<^sub>r ?x;
+         ?h \<turnstile> ?f \<rightarrow>\<^sub>h ?h';
+         ?h' \<turnstile> ?g ?x \<rightarrow>\<^sub>e ?e |]
+      ==> ?h \<turnstile> ?f >>= ?g \<rightarrow>\<^sub>e ?e",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 3, template_var 5),
+                template_var 4),
+              template_var 3)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 2, template_var 5),
+                template_var 4),
+              template_var 2)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 1, template_var 2),
+                template_app (template_var 1, template_var 3)),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app (template_hole 1, template_var 5),
+               template_app
+                (template_app (template_hole 0, template_var 4),
+                 template_var 1)),
+             template_var 0)
+           ))),
+    ("Heap_Error_Monad.bind_returns_heap_I",
+     "[| ?h \<turnstile> ?f \<rightarrow>\<^sub>r ?x;
+         ?h \<turnstile> ?f \<rightarrow>\<^sub>h ?h';
+         ?h' \<turnstile> ?g ?x \<rightarrow>\<^sub>h ?h'' |]
+      ==> ?h \<turnstile> ?f >>= ?g \<rightarrow>\<^sub>h ?h''",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 3, template_var 5),
+                template_var 4),
+              template_var 3)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 2, template_var 5),
+                template_var 4),
+              template_var 2)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 1, template_var 2),
+                template_app (template_var 1, template_var 3)),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app (template_hole 1, template_var 5),
+               template_app
+                (template_app (template_hole 0, template_var 4),
+                 template_var 1)),
+             template_var 0)
+           ))),
+    ("Heap_Error_Monad.bind_returns_result_I",
+     "[| ?h \<turnstile> ?f \<rightarrow>\<^sub>r ?x;
+         ?h \<turnstile> ?f \<rightarrow>\<^sub>h ?h';
+         ?h' \<turnstile> ?g ?x \<rightarrow>\<^sub>r ?y |]
+      ==> ?h \<turnstile> ?f >>= ?g \<rightarrow>\<^sub>r ?y",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 3, template_var 5),
+                template_var 4),
+              template_var 3)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 2, template_var 5),
+                template_var 4),
+              template_var 2)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 1, template_var 2),
+                template_app (template_var 1, template_var 3)),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app (template_hole 1, template_var 5),
+               template_app
+                (template_app (template_hole 0, template_var 4),
+                 template_var 1)),
+             template_var 0)
+           ))),
+    ("Heap_Error_Monad.reads_insert_writes_set_left",
+     "[| ALL P:?S. reflp P & transp P; reads {?getter} ?f ?h ?h' |]
+      ==> reads (insert ?getter ?S) ?f ?h ?h'",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 6, template_var 4), t_empty)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_hole 2,
+                    template_app
+                     (template_app (template_hole 1, template_var 3),
+                      template_hole 0)),
+                  template_var 2),
+                template_var 1),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_hole 2,
+                   template_app
+                    (template_app (template_hole 1, template_var 3),
+                     template_var 4)),
+                 template_var 2),
+               template_var 1),
+             template_var 0)
+           ))),
+    ("Heap_Error_Monad.bind_returns_heap_I2",
+     "[| ?h \<turnstile> ?f \<rightarrow>\<^sub>h ?h';
+         !!x. ?h \<turnstile> ?f \<rightarrow>\<^sub>r x ==>
+              ?h' \<turnstile> ?g x \<rightarrow>\<^sub>h ?h'' |]
+      ==> ?h \<turnstile> ?f >>= ?g \<rightarrow>\<^sub>h ?h''",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 4, template_var 4),
+                template_var 3),
+              template_var 2)
+            ),
+        template_predicate (template_app (template_hole 3, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app (template_hole 1, template_var 4),
+               template_app
+                (template_app (template_hole 0, template_var 3),
+                 template_var 1)),
+             template_var 0)
+           ))),
+    ("Heap_Error_Monad.writes_union_minus_split",
+     "[| writes (?S - ?S2.0) ?f ?h ?h'; writes (?S' - ?S2.0) ?f ?h ?h' |]
+      ==> writes (?S Un ?S' - ?S2.0) ?f ?h ?h'",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_hole 2,
+                    template_app
+                     (template_app (template_hole 1, template_var 5),
+                      template_var 4)),
+                  template_var 3),
+                template_var 2),
+              template_var 1)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_hole 2,
+                    template_app
+                     (template_app (template_hole 1, template_var 0),
+                      template_var 4)),
+                  template_var 3),
+                template_var 2),
+              template_var 1)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_hole 2,
+                   template_app
+                    (template_app
+                      (template_hole 1,
+                       template_app
+                        (template_app (template_hole 0, template_var 5),
+                         template_var 0)),
+                     template_var 4)),
+                 template_var 3),
+               template_var 2),
+             template_var 1)
+           ))),
+    ("Heap_Error_Monad.writes_bind_pure",
+     "[| pure ?f ?h;
+         !!x. ?h \<turnstile> ?f \<rightarrow>\<^sub>r x ==>
+              writes ?S (?g x) ?h ?h' |]
+      ==> writes ?S (?f >>= ?g) ?h ?h'",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 4, template_var 4),
+              template_var 3)
+            ),
+        template_predicate (template_app (template_hole 3, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 1, template_var 2),
+                 template_app
+                  (template_app (template_hole 0, template_var 4),
+                   template_var 1)),
+               template_var 3),
+             template_var 0)
+           ))),
+    ("Heap_Error_Monad.select_result_E",
+     "[| ?P |?h \<turnstile> ?f|\<^sub>r; ?h \<turnstile> ok ?f;
+         !!x. [| ?h \<turnstile> ?f \<rightarrow>\<^sub>r x; ?P x |]
+              ==> ?thesis |]
+      ==> ?thesis",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_var 3,
+              template_app
+               (template_hole 4,
+                template_app
+                 (template_app (template_hole 3, template_var 2),
+                  template_var 1)))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 2, template_var 2),
+              template_var 1)
+            ),
+        template_predicate (template_app (template_hole 1, t_empty))],
+       template_predicate (template_var 0))),
+    ("Heap_Error_Monad.bind_is_OK_pure_I",
+     "[| pure ?f ?h; ?h \<turnstile> ok ?f;
+         !!x. ?h \<turnstile> ?f \<rightarrow>\<^sub>r x ==>
+              ?h \<turnstile> ok ?g x |]
+      ==> ?h \<turnstile> ok (?f >>= ?g)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 5, template_var 2),
+              template_var 1)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 4, template_var 1),
+              template_var 2)
+            ),
+        template_predicate (template_app (template_hole 3, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 1, template_var 1),
+             template_app
+              (template_app (template_hole 0, template_var 2),
+               template_var 0))
+           ))),
+    ("Heap_Error_Monad.reads_subset",
+     "[| reads ?S ?f ?h ?h'; ALL P:?S' - ?S. reflp P & transp P;
+         ?S <= ?S' |]
+      ==> reads ?S' ?f ?h ?h'",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 6, template_var 4),
+                  template_var 3),
+                template_var 2),
+              template_var 1)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 5,
+                template_app
+                 (template_app (template_hole 4, template_var 0),
+                  template_var 4)),
+              t_empty)
+            ),
+        template_inequation (less_equals, template_var 4, template_var 0)],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 6, template_var 0),
+                 template_var 3),
+               template_var 2),
+             template_var 1)
+           ))),
+    ("Heap_Error_Monad.bind_pure_returns_result_I2",
+     "[| pure ?f ?h; ?h \<turnstile> ok ?f;
+         !!x. ?h \<turnstile> ?f \<rightarrow>\<^sub>r x ==>
+              ?h \<turnstile> ?g x \<rightarrow>\<^sub>r ?y |]
+      ==> ?h \<turnstile> ?f >>= ?g \<rightarrow>\<^sub>r ?y",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 5, template_var 3),
+              template_var 2)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 4, template_var 2),
+              template_var 3)
+            ),
+        template_predicate (template_app (template_hole 3, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app (template_hole 1, template_var 2),
+               template_app
+                (template_app (template_hole 0, template_var 3),
+                 template_var 1)),
+             template_var 0)
+           ))),
+    ("Heap_Error_Monad.bind_is_OK_E2",
+     "[| ?h \<turnstile> ok (?f >>= ?g);
+         ?h \<turnstile> ?f \<rightarrow>\<^sub>r ?x;
+         !!h'. [| ?h \<turnstile> ?f \<rightarrow>\<^sub>h h';
+                  h' \<turnstile> ok ?g ?x |]
+               ==> ?thesis |]
+      ==> ?thesis",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 4, template_var 4),
+              template_app
+               (template_app (template_hole 3, template_var 3),
+                template_var 2))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 2, template_var 4),
+                template_var 3),
+              template_var 1)
+            ),
+        template_predicate (template_app (template_hole 1, t_empty))],
+       template_predicate (template_var 0))),
+    ("Heap_Error_Monad.preserved_code",
+     "preserved ?f ?h ?h' =
+      (?h \<turnstile> ok ?f &
+       ?h' \<turnstile> ok ?f &
+       |?h \<turnstile> ?f|\<^sub>r = |?h' \<turnstile> ?f|\<^sub>r |
+       ~ ?h \<turnstile> ok ?f & ~ ?h' \<turnstile> ok ?f)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 7, template_var 2),
+                template_var 1),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 6,
+               template_app
+                (template_app
+                  (template_hole 5,
+                   template_app
+                    (template_app (template_hole 4, template_var 1),
+                     template_var 2)),
+                 template_app
+                  (template_app
+                    (template_hole 5,
+                     template_app
+                      (template_app (template_hole 4, template_var 0),
+                       template_var 2)),
+                   template_app
+                    (template_app
+                      (template_hole 3,
+                       template_app
+                        (template_hole 2,
+                         template_app
+                          (template_app (template_hole 1, template_var 1),
+                           template_var 2))),
+                     template_app
+                      (template_hole 2,
+                       template_app
+                        (template_app (template_hole 1, template_var 0),
+                         template_var 2)))))),
+             template_app
+              (template_app
+                (template_hole 5,
+                 template_app
+                  (template_hole 0,
+                   template_app
+                    (template_app (template_hole 4, template_var 1),
+                     template_var 2))),
+               template_app
+                (template_hole 0,
+                 template_app
+                  (template_app (template_hole 4, template_var 0),
+                   template_var 2))))
+           ))),
+    ("Heap_Error_Monad.bind_is_OK_I2",
+     "[| ?h \<turnstile> ok ?f;
+         !!x h'.
+            [| ?h \<turnstile> ?f \<rightarrow>\<^sub>r x;
+               ?h \<turnstile> ?f \<rightarrow>\<^sub>h h' |]
+            ==> h' \<turnstile> ok ?g x |]
+      ==> ?h \<turnstile> ok (?f >>= ?g)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 6, template_var 2),
+              template_var 1)
+            ),
+        template_predicate (template_app (template_hole 5, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 1, template_var 2),
+             template_app
+              (template_app (template_hole 0, template_var 1),
+               template_var 0))
+           ))),
+    ("Heap_Error_Monad.bind_returns_heap_E2",
+     "[| ?h \<turnstile> ?f >>= ?g \<rightarrow>\<^sub>h ?h'; pure ?f ?h;
+         !!x. [| ?h \<turnstile> ?f \<rightarrow>\<^sub>r x;
+                 ?h \<turnstile> ?g x \<rightarrow>\<^sub>h ?h' |]
+              ==> ?thesis |]
+      ==> ?thesis",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 4, template_var 4),
+                template_app
+                 (template_app (template_hole 3, template_var 3),
+                  template_var 2)),
+              template_var 1)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 2, template_var 3),
+              template_var 4)
+            ),
+        template_predicate (template_app (template_hole 1, t_empty))],
+       template_predicate (template_var 0))),
+    ("Heap_Error_Monad.bind_returns_result_E2",
+     "[| ?h \<turnstile> ?f >>= ?g \<rightarrow>\<^sub>r ?y; pure ?f ?h;
+         !!x. [| ?h \<turnstile> ?f \<rightarrow>\<^sub>r x;
+                 ?h \<turnstile> ?g x \<rightarrow>\<^sub>r ?y |]
+              ==> ?thesis |]
+      ==> ?thesis",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 4, template_var 4),
+                template_app
+                 (template_app (template_hole 3, template_var 3),
+                  template_var 2)),
+              template_var 1)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 2, template_var 3),
+              template_var 4)
+            ),
+        template_predicate (template_app (template_hole 1, t_empty))],
+       template_predicate (template_var 0))),
+    ("Heap_Error_Monad.filter_M_not_more_elements",
+     "[| ?h \<turnstile> filter_M ?P ?xs \<rightarrow>\<^sub>r ?ys;
+         !!x. x : set ?xs ==> pure (?P x) ?h; ?x : set ?ys |]
+      ==> ?x : set ?xs",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 5, template_var 4),
+                template_app
+                 (template_app (template_hole 4, template_var 3),
+                  template_var 2)),
+              template_var 1)
+            ),
+        template_predicate (template_app (template_hole 3, t_empty)),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 2, template_var 0),
+              template_app (template_hole 1, template_var 1))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 2, template_var 0),
+             template_app (template_hole 1, template_var 2))
+           ))),
+    ("Heap_Error_Monad.filter_ex1",
+     "[| EX! x. x : set ?xs & ?P x; ?P ?x; ?x : set ?xs; distinct ?xs |]
+      ==> filter ?P ?xs = [?x]",
+     template_implication
+      ([template_predicate (template_app (template_hole 8, t_empty)),
+        template_predicate (template_app (template_var 1, template_var 0)),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 6, template_var 0),
+              template_app (template_hole 5, template_var 2))
+            ),
+        template_predicate
+         (template_app (template_hole 4, template_var 2))],
+       template_equation
+        (template_app
+          (template_app (template_hole 2, template_var 1), template_var 2),
+         template_app
+          (template_app (template_hole 1, template_var 0),
+           template_hole 0)))),
+    ("Heap_Error_Monad.bind_is_OK_E",
+     "[| ?h \<turnstile> ok (?f >>= ?g);
+         !!x h'.
+            [| ?h \<turnstile> ?f \<rightarrow>\<^sub>r x;
+               ?h \<turnstile> ?f \<rightarrow>\<^sub>h h';
+               h' \<turnstile> ok ?g x |]
+            ==> ?thesis |]
+      ==> ?thesis",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 5, template_var 3),
+              template_app
+               (template_app (template_hole 4, template_var 2),
+                template_var 1))
+            ),
+        template_predicate (template_app (template_hole 3, t_empty))],
+       template_predicate (template_var 0))),
+    ("Heap_Error_Monad.map_M_ok_I",
+     "[| !!x. x : set ?xs ==> ?h \<turnstile> ok ?f x;
+         !!x. x : set ?xs ==> pure (?f x) ?h |]
+      ==> ?h \<turnstile> ok map_M ?f ?xs",
+     template_implication
+      ([template_predicate (template_app (template_hole 7, t_empty)),
+        template_predicate (template_app (template_hole 7, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 1, template_var 1),
+             template_app
+              (template_app (template_hole 0, template_var 0),
+               template_var 2))
+           ))),
+    ("Heap_Error_Monad.filter_M_is_OK_I",
+     "[| !!x. x : set ?xs ==> ?h \<turnstile> ok ?P x;
+         !!x. x : set ?xs ==> pure (?P x) ?h |]
+      ==> ?h \<turnstile> ok filter_M ?P ?xs",
+     template_implication
+      ([template_predicate (template_app (template_hole 7, t_empty)),
+        template_predicate (template_app (template_hole 7, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 1, template_var 1),
+             template_app
+              (template_app (template_hole 0, template_var 0),
+               template_var 2))
+           ))),
+    ("Heap_Error_Monad.bind_returns_heap_E4",
+     "[| ?h \<turnstile> ?f >>= ?g \<rightarrow>\<^sub>h ?h'';
+         ?h \<turnstile> ?f \<rightarrow>\<^sub>h ?h';
+         !!x. [| ?h \<turnstile> ?f \<rightarrow>\<^sub>r x;
+                 ?h' \<turnstile> ?g x \<rightarrow>\<^sub>h ?h'' |]
+              ==> ?thesis |]
+      ==> ?thesis",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 4, template_var 5),
+                template_app
+                 (template_app (template_hole 3, template_var 4),
+                  template_var 3)),
+              template_var 2)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 2, template_var 5),
+                template_var 4),
+              template_var 1)
+            ),
+        template_predicate (template_app (template_hole 1, t_empty))],
+       template_predicate (template_var 0))),
+    ("Heap_Error_Monad.bind_returns_result_E4",
+     "[| ?h \<turnstile> ?f >>= ?g \<rightarrow>\<^sub>r ?y;
+         ?h \<turnstile> ?f \<rightarrow>\<^sub>r ?x;
+         !!h'. [| ?h \<turnstile> ?f \<rightarrow>\<^sub>h h';
+                  h' \<turnstile> ?g ?x \<rightarrow>\<^sub>r ?y |]
+               ==> ?thesis |]
+      ==> ?thesis",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 4, template_var 5),
+                template_app
+                 (template_app (template_hole 3, template_var 4),
+                  template_var 3)),
+              template_var 2)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 2, template_var 5),
+                template_var 4),
+              template_var 1)
+            ),
+        template_predicate (template_app (template_hole 1, t_empty))],
+       template_predicate (template_var 0))),
+    ("Heap_Error_Monad.bind_returns_heap_E",
+     "[| ?h \<turnstile> ?f >>= ?g \<rightarrow>\<^sub>h ?h'';
+         !!x h'.
+            [| ?h \<turnstile> ?f \<rightarrow>\<^sub>r x;
+               ?h \<turnstile> ?f \<rightarrow>\<^sub>h h';
+               h' \<turnstile> ?g x \<rightarrow>\<^sub>h ?h'' |]
+            ==> ?thesis |]
+      ==> ?thesis",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 5, template_var 4),
+                template_app
+                 (template_app (template_hole 4, template_var 3),
+                  template_var 2)),
+              template_var 1)
+            ),
+        template_predicate (template_app (template_hole 3, t_empty))],
+       template_predicate (template_var 0))),
+    ("Heap_Error_Monad.bind_returns_result_E",
+     "[| ?h \<turnstile> ?f >>= ?g \<rightarrow>\<^sub>r ?y;
+         !!x h'.
+            [| ?h \<turnstile> ?f \<rightarrow>\<^sub>r x;
+               ?h \<turnstile> ?f \<rightarrow>\<^sub>h h';
+               h' \<turnstile> ?g x \<rightarrow>\<^sub>r ?y |]
+            ==> ?thesis |]
+      ==> ?thesis",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 5, template_var 4),
+                template_app
+                 (template_app (template_hole 4, template_var 3),
+                  template_var 2)),
+              template_var 1)
+            ),
+        template_predicate (template_app (template_hole 3, t_empty))],
+       template_predicate (template_var 0))),
+    ("Heap_Error_Monad.filter_M_holds_for_result",
+     "[| ?h \<turnstile> filter_M ?P ?xs \<rightarrow>\<^sub>r ?ys;
+         ?x : set ?ys; !!x h. x : set ?xs ==> pure (?P x) h |]
+      ==> ?h \<turnstile> ?P ?x \<rightarrow>\<^sub>r True",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 8, template_var 4),
+                template_app
+                 (template_app (template_hole 7, template_var 3),
+                  template_var 2)),
+              template_var 1)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 6, template_var 0),
+              template_app (template_hole 5, template_var 1))
+            ),
+        template_predicate (template_app (template_hole 4, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app (template_hole 1, template_var 4),
+               template_app (template_var 3, template_var 0)),
+             template_hole 0)
+           ))),
+    ("Heap_Error_Monad.bind_case_cong",
+     "[| ?x = ?x'; !!a. ?x = Some a ==> ?f a ?h = ?f' a ?h |]
+      ==> (case ?x of None => ?g | Some a => ?f a) ?h =
+          (case ?x' of None => ?g | Some a => ?f' a) ?h",
+     template_implication
+      ([template_equation (template_var 5, template_var 4),
+        template_predicate (template_app (template_hole 3, t_empty))],
+       template_equation
+        (template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 0, template_var 0), t_empty),
+             template_var 5),
+           template_var 2),
+         template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 0, template_var 0), t_empty),
+             template_var 4),
+           template_var 2)))),
+    ("Heap_Error_Monad.filter_M_filter2",
+     "[| !!x. x : set ?xs ==> pure (?P x) ?h & ?h \<turnstile> ok ?P x;
+         filter (%x. |?h \<turnstile> ?P x|\<^sub>r) ?xs = ?ys |]
+      ==> ?h \<turnstile> filter_M ?P ?xs \<rightarrow>\<^sub>r ?ys",
+     template_implication
+      ([template_predicate (template_app (template_hole 12, t_empty)),
+        template_equation
+         (template_app
+           (template_app (template_hole 4, t_empty), template_var 3),
+          template_var 0)],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app (template_hole 1, template_var 1),
+               template_app
+                (template_app (template_hole 0, template_var 2),
+                 template_var 3)),
+             template_var 0)
+           ))),
+    ("Heap_Error_Monad.writes_bind",
+     "[| !!h2. writes ?S ?f ?h h2;
+         !!x h2.
+            [| ?h \<turnstile> ?f \<rightarrow>\<^sub>r x;
+               ?h \<turnstile> ?f \<rightarrow>\<^sub>h h2 |]
+            ==> writes ?S (?g x) h2 ?h' |]
+      ==> writes ?S (?f >>= ?g) ?h ?h'",
+     template_implication
+      ([template_predicate (template_app (template_hole 7, t_empty)),
+        template_predicate (template_app (template_hole 4, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 1, template_var 4),
+                 template_app
+                  (template_app (template_hole 0, template_var 3),
+                   template_var 1)),
+               template_var 2),
+             template_var 0)
+           ))),
+    ("Heap_Error_Monad.reads_bind_pure",
+     "[| pure ?f ?h; pure ?f ?h'; reads ?S ?f ?h ?h';
+         !!x. ?h \<turnstile> ?f \<rightarrow>\<^sub>r x ==>
+              reads ?S (?g x) ?h ?h' |]
+      ==> reads ?S (?f >>= ?g) ?h ?h'",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 5, template_var 4),
+              template_var 3)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 5, template_var 4),
+              template_var 2)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 4, template_var 1),
+                  template_var 4),
+                template_var 3),
+              template_var 2)
+            ),
+        template_predicate (template_app (template_hole 3, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 1, template_var 1),
+                 template_app
+                  (template_app (template_hole 0, template_var 4),
+                   template_var 0)),
+               template_var 3),
+             template_var 2)
+           ))),
+    ("Heap_Error_Monad.filter_M_filter",
+     "[| ?h \<turnstile> filter_M ?P ?xs \<rightarrow>\<^sub>r ?ys;
+         !!x. x : set ?xs ==> pure (?P x) ?h |]
+      ==> (ALL x:set ?xs. ?h \<turnstile> ok ?P x) &
+          ?ys = filter (%x. |?h \<turnstile> ?P x|\<^sub>r) ?xs",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 12, template_var 3),
+                template_app
+                 (template_app (template_hole 11, template_var 2),
+                  template_var 1)),
+              template_var 0)
+            ),
+        template_predicate (template_app (template_hole 10, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 6,
+               template_app
+                (template_app
+                  (template_hole 5,
+                   template_app (template_hole 8, template_var 1)),
+                 t_empty)),
+             template_app
+              (template_app (template_hole 3, template_var 0),
+               template_app
+                (template_app (template_hole 2, t_empty), template_var 1)))
+           ))),
+    ("Heap_Error_Monad.filter_M_in_result_if_ok",
+     "[| ?h \<turnstile> filter_M ?P ?xs \<rightarrow>\<^sub>r ?ys;
+         !!h x. x : set ?xs ==> pure (?P x) h; ?x : set ?xs;
+         ?h \<turnstile> ?P ?x \<rightarrow>\<^sub>r True |]
+      ==> ?x : set ?ys",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 8, template_var 4),
+                template_app
+                 (template_app (template_hole 7, template_var 3),
+                  template_var 2)),
+              template_var 1)
+            ),
+        template_predicate (template_app (template_hole 6, t_empty)),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 4, template_var 0),
+              template_app (template_hole 3, template_var 2))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 1, template_var 4),
+                template_app (template_var 3, template_var 0)),
+              template_hole 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 4, template_var 0),
+             template_app (template_hole 3, template_var 1))
+           ))),
+    ("Heap_Error_Monad.writes_small_big",
+     "[| writes ?SW ?setter ?h ?h';
+         ?h \<turnstile> ?setter \<rightarrow>\<^sub>h ?h';
+         !!h h' w.
+            [| w : ?SW; h \<turnstile> w \<rightarrow>\<^sub>h h' |]
+            ==> ?P h h';
+         reflp ?P; transp ?P |]
+      ==> ?P ?h ?h'",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 7, template_var 4),
+                  template_var 3),
+                template_var 2),
+              template_var 1)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 6, template_var 2),
+                template_var 3),
+              template_var 1)
+            ),
+        template_predicate (template_app (template_hole 5, t_empty)),
+        template_predicate (template_app (template_hole 1, template_var 0)),
+        template_predicate
+         (template_app (template_hole 0, template_var 0))],
+       template_predicate
+        (
+           template_app
+            (template_app (template_var 0, template_var 2), template_var 1)
+           ))),
+    ("Heap_Error_Monad.bind_cong",
+     "[| ?h \<turnstile> ?f1.0 = ?h \<turnstile> ?f2.0;
+         !!y h'.
+            [| ?h \<turnstile> ?f1.0 \<rightarrow>\<^sub>r y;
+               ?h \<turnstile> ?f1.0 \<rightarrow>\<^sub>h h' |]
+            ==> h' \<turnstile> ?g1.0 y = h' \<turnstile> ?g2.0 y |]
+      ==> ?h \<turnstile> ?f1.0 >>= ?g1.0 =
+          ?h \<turnstile> ?f2.0 >>= ?g2.0",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app (template_hole 7, template_var 4), template_var 3),
+          template_app
+           (template_app (template_hole 7, template_var 4),
+            template_var 2)),
+        template_predicate (template_app (template_hole 6, t_empty))],
+       template_equation
+        (template_app
+          (template_app (template_hole 1, template_var 4),
+           template_app
+            (template_app (template_hole 0, template_var 3),
+             template_var 1)),
+         template_app
+          (template_app (template_hole 1, template_var 4),
+           template_app
+            (template_app (template_hole 0, template_var 2),
+             template_var 0))))),
+    ("Heap_Error_Monad.reads_writes_preserved",
+     "[| reads ?SR ?getter ?h ?h'; writes ?SW ?setter ?h ?h';
+         ?h \<turnstile> ?setter \<rightarrow>\<^sub>h ?h';
+         !!h h'.
+            ALL w:?SW.
+               h \<turnstile> w \<rightarrow>\<^sub>h h' -->
+               (ALL r:?SR. r h h') |]
+      ==> ?h \<turnstile> ?getter \<rightarrow>\<^sub>r ?x =
+          ?h' \<turnstile> ?getter \<rightarrow>\<^sub>r ?x",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 9, template_var 6),
+                  template_var 5),
+                template_var 4),
+              template_var 3)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 8, template_var 2),
+                  template_var 1),
+                template_var 4),
+              template_var 3)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 7, template_var 4),
+                template_var 1),
+              template_var 3)
+            ),
+        template_predicate (template_app (template_hole 6, t_empty))],
+       template_equation
+        (template_app
+          (template_app
+            (template_app (template_hole 0, template_var 4),
+             template_var 5),
+           template_var 0),
+         template_app
+          (template_app
+            (template_app (template_hole 0, template_var 3),
+             template_var 5),
+           template_var 0)))),
+    ("Heap_Error_Monad.map_M_pure_E2",
+     "[| ?h \<turnstile> map_M ?g ?xs \<rightarrow>\<^sub>r ?ys;
+         ?y : set ?ys; !!x h. x : set ?xs ==> pure (?g x) h;
+         !!x. [| ?h \<turnstile> ?g x \<rightarrow>\<^sub>r ?y;
+                 x : set ?xs |]
+              ==> ?thesis |]
+      ==> ?thesis",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 9, template_var 5),
+                template_app
+                 (template_app (template_hole 8, template_var 4),
+                  template_var 3)),
+              template_var 2)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 7, template_var 1),
+              template_app (template_hole 6, template_var 2))
+            ),
+        template_predicate (template_app (template_hole 5, t_empty)),
+        template_predicate (template_app (template_hole 5, t_empty))],
+       template_predicate (template_var 0))),
+    ("Heap_Error_Monad.map_M_pure_E",
+     "[| ?h \<turnstile> map_M ?g ?xs \<rightarrow>\<^sub>r ?ys;
+         ?x : set ?xs; !!x h. x : set ?xs ==> pure (?g x) h;
+         !!y. [| ?h \<turnstile> ?g ?x \<rightarrow>\<^sub>r y;
+                 y : set ?ys |]
+              ==> ?thesis |]
+      ==> ?thesis",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 10, template_var 5),
+                template_app
+                 (template_app (template_hole 9, template_var 4),
+                  template_var 3)),
+              template_var 2)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 8, template_var 1),
+              template_app (template_hole 7, template_var 3))
+            ),
+        template_predicate (template_app (template_hole 6, t_empty)),
+        template_predicate (template_app (template_hole 3, t_empty))],
+       template_predicate (template_var 0))),
+    ("Heap_Error_Monad.map_filter_M_pure_E",
+     "[| ?h \<turnstile> map_filter_M ?f ?xs \<rightarrow>\<^sub>r ?ys;
+         ?y : set ?ys; !!x h. x : set ?xs ==> pure (?f x) h;
+         !!x. [| ?h \<turnstile> ?f x \<rightarrow>\<^sub>r Some ?y;
+                 x : set ?xs |]
+              ==> ?thesis |]
+      ==> ?thesis",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 10, template_var 5),
+                template_app
+                 (template_app (template_hole 9, template_var 4),
+                  template_var 3)),
+              template_var 2)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 8, template_var 1),
+              template_app (template_hole 7, template_var 2))
+            ),
+        template_predicate (template_app (template_hole 6, t_empty)),
+        template_predicate (template_app (template_hole 6, t_empty))],
+       template_predicate (template_var 0))),
+    ("Heap_Error_Monad.reads_writes_separate_forwards",
+     "[| reads ?SR ?getter ?h ?h'; writes ?SW ?setter ?h ?h';
+         ?h \<turnstile> ?setter \<rightarrow>\<^sub>h ?h';
+         ?h \<turnstile> ?getter \<rightarrow>\<^sub>r ?x;
+         !!h h'.
+            ALL w:?SW.
+               h \<turnstile> w \<rightarrow>\<^sub>h h' -->
+               (ALL r:?SR. r h h') |]
+      ==> ?h' \<turnstile> ?getter \<rightarrow>\<^sub>r ?x",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 8, template_var 6),
+                  template_var 5),
+                template_var 4),
+              template_var 3)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 7, template_var 2),
+                  template_var 1),
+                template_var 4),
+              template_var 3)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 6, template_var 4),
+                template_var 1),
+              template_var 3)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 5, template_var 4),
+                template_var 5),
+              template_var 0)
+            ),
+        template_predicate (template_app (template_hole 4, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app (template_hole 5, template_var 3),
+               template_var 5),
+             template_var 0)
+           ))),
+    ("Heap_Error_Monad.reads_writes_separate_backwards",
+     "[| reads ?SR ?getter ?h ?h'; writes ?SW ?setter ?h ?h';
+         ?h \<turnstile> ?setter \<rightarrow>\<^sub>h ?h';
+         ?h' \<turnstile> ?getter \<rightarrow>\<^sub>r ?x;
+         !!h h'.
+            ALL w:?SW.
+               h \<turnstile> w \<rightarrow>\<^sub>h h' -->
+               (ALL r:?SR. r h h') |]
+      ==> ?h \<turnstile> ?getter \<rightarrow>\<^sub>r ?x",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 8, template_var 6),
+                  template_var 5),
+                template_var 4),
+              template_var 3)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 7, template_var 2),
+                  template_var 1),
+                template_var 4),
+              template_var 3)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 6, template_var 4),
+                template_var 1),
+              template_var 3)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 5, template_var 3),
+                template_var 5),
+              template_var 0)
+            ),
+        template_predicate (template_app (template_hole 4, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app (template_hole 5, template_var 4),
+               template_var 5),
+             template_var 0)
+           ))),
+    ("Heap_Error_Monad.filter_M_eq",
+     "[| !!x. pure (?P x) ?h; !!x. pure (?P x) ?h';
+         !!b x.
+            x : set ?xs ==>
+            ?h \<turnstile> ?P x \<rightarrow>\<^sub>r b =
+            ?h' \<turnstile> ?P x \<rightarrow>\<^sub>r b |]
+      ==> ?h \<turnstile> filter_M ?P ?xs \<rightarrow>\<^sub>r ?ys =
+          ?h' \<turnstile> filter_M ?P ?xs \<rightarrow>\<^sub>r ?ys",
+     template_implication
+      ([template_predicate (template_app (template_hole 9, t_empty)),
+        template_predicate (template_app (template_hole 9, t_empty)),
+        template_predicate (template_app (template_hole 6, t_empty))],
+       template_equation
+        (template_app
+          (template_app
+            (template_app (template_hole 1, template_var 3),
+             template_app
+              (template_app (template_hole 0, template_var 4),
+               template_var 1)),
+           template_var 0),
+         template_app
+          (template_app
+            (template_app (template_hole 1, template_var 2),
+             template_app
+              (template_app (template_hole 0, template_var 4),
+               template_var 1)),
+           template_var 0)))),
+    ("Heap_Error_Monad.bind_cong_2",
+     "[| pure ?f ?h; pure ?f ?h';
+         !!x. ?h \<turnstile> ?f \<rightarrow>\<^sub>r x =
+              ?h' \<turnstile> ?f \<rightarrow>\<^sub>r x;
+         !!x. ?h \<turnstile> ?f \<rightarrow>\<^sub>r x ==>
+              ?h \<turnstile> ?g x \<rightarrow>\<^sub>r ?y =
+              ?h' \<turnstile> ?g x \<rightarrow>\<^sub>r ?y' |]
+      ==> ?h \<turnstile> ?f >>= ?g \<rightarrow>\<^sub>r ?y =
+          ?h' \<turnstile> ?f >>= ?g \<rightarrow>\<^sub>r ?y'",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 5, template_var 5),
+              template_var 4)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 5, template_var 5),
+              template_var 3)
+            ),
+        template_predicate (template_app (template_hole 4, t_empty)),
+        template_predicate (template_app (template_hole 4, t_empty))],
+       template_equation
+        (template_app
+          (template_app
+            (template_app (template_hole 1, template_var 4),
+             template_app
+              (template_app (template_hole 0, template_var 5),
+               template_var 2)),
+           template_var 1),
+         template_app
+          (template_app
+            (template_app (template_hole 1, template_var 3),
+             template_app
+              (template_app (template_hole 0, template_var 5),
+               template_var 2)),
+           template_var 0)))),
+    ("Heap_Error_Monad.filter_M_subset_2",
+     "[| ?h \<turnstile> filter_M ?P ?xs \<rightarrow>\<^sub>r ?ys;
+         ?h' \<turnstile> filter_M ?P ?xs \<rightarrow>\<^sub>r ?ys';
+         !!x. pure (?P x) ?h; !!x. pure (?P x) ?h';
+         ALL b.
+            ALL x:set ?xs.
+               ?h \<turnstile> ?P x \<rightarrow>\<^sub>r True -->
+               ?h' \<turnstile> ?P x \<rightarrow>\<^sub>r b --> b |]
+      ==> set ?ys <= set ?ys'",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 10, template_var 5),
+                template_app
+                 (template_app (template_hole 9, template_var 4),
+                  template_var 3)),
+              template_var 2)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 10, template_var 1),
+                template_app
+                 (template_app (template_hole 9, template_var 4),
+                  template_var 3)),
+              template_var 0)
+            ),
+        template_predicate (template_app (template_hole 8, t_empty)),
+        template_predicate (template_app (template_hole 8, t_empty)),
+        template_predicate (template_app (template_hole 6, t_empty))],
+       template_inequation
+        (less_equals, template_app (template_hole 4, template_var 2),
+         template_app (template_hole 4, template_var 0)))),
+    ("Heap_Error_Monad.filter_M_ex1",
+     "[| ?h \<turnstile> filter_M ?P ?xs \<rightarrow>\<^sub>r ?ys;
+         ?x : set ?xs;
+         EX! x.
+            x : set ?xs & ?h \<turnstile> ?P x \<rightarrow>\<^sub>r True;
+         !!x. x : set ?xs ==> pure (?P x) ?h; distinct ?xs;
+         ?h \<turnstile> ?P ?x \<rightarrow>\<^sub>r True |]
+      ==> ?ys = [?x]",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 13, template_var 4),
+                template_app
+                 (template_app (template_hole 12, template_var 3),
+                  template_var 2)),
+              template_var 1)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 11, template_var 0),
+              template_app (template_hole 10, template_var 2))
+            ),
+        template_predicate (template_app (template_hole 9, t_empty)),
+        template_predicate (template_app (template_hole 5, t_empty)),
+        template_predicate (template_app (template_hole 3, template_var 2)),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 7, template_var 4),
+                template_app (template_var 3, template_var 0)),
+              template_hole 6)
+            )],
+       template_equation
+        (template_var 1,
+         template_app
+          (template_app (template_hole 1, template_var 0),
+           template_hole 0)))),
+    ("Heap_Error_Monad.filter_M_reads",
+     "[| !!x. x : set ?xs ==> pure (?P x) ?h;
+         !!x. x : set ?xs ==> pure (?P x) ?h';
+         !!x. x : set ?xs ==> reads ?S (?P x) ?h ?h';
+         ALL P:?S. reflp P & transp P |]
+      ==> reads ?S (filter_M ?P ?xs) ?h ?h'",
+     template_implication
+      ([template_predicate (template_app (template_hole 11, t_empty)),
+        template_predicate (template_app (template_hole 11, t_empty)),
+        template_predicate (template_app (template_hole 11, t_empty)),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 5, template_var 0), t_empty)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 1, template_var 0),
+                 template_app
+                  (template_app (template_hole 0, template_var 3),
+                   template_var 4)),
+               template_var 2),
+             template_var 1)
+           )))]:
+   (string * thm * template) list
+### theory "Draft.Heap_Error_MonadTemplates"
+### 0.397s elapsed time, 0.502s cpu time, 0.026s GC time
+val it = (): unit

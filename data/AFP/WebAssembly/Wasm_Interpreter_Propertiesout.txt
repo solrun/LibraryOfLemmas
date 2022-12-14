@@ -1,0 +1,2471 @@
+Loading theory "Draft.Wasm_Type_Abs" (required by "Draft.Wasm_Interpreter_PropertiesTemplates" via "Draft.Wasm_Interpreter_Properties" via "Draft.Wasm_Interpreter" via "Draft.Wasm" via "Draft.Wasm_Base_Defs")
+Loading theory "Draft.Wasm_Ast" (required by "Draft.Wasm_Interpreter_PropertiesTemplates" via "Draft.Wasm_Interpreter_Properties" via "Draft.Wasm_Interpreter" via "Draft.Wasm" via "Draft.Wasm_Base_Defs")
+Loading theory "Draft.Templates" (required by "Draft.Wasm_Interpreter_PropertiesTemplates" via "Draft.ExtrEqs")
+datatype template_term
+=
+     t_empty
+   | template_app of template_term * template_term
+   | template_hole of int
+   | template_var of int
+datatype sign
+= equals | greater_equals | greater_than | less_equals | less_than
+datatype template
+=
+     template_bimplication of template * template
+   | template_dunno
+   | template_equation of template_term * template_term
+   | template_implication of template list * template
+   | template_inequation of sign * template_term * template_term
+   | template_negation of template
+   | template_predicate of template_term
+constructor t_empty: template_term
+constructor template_app: template_term * template_term -> template_term
+constructor template_hole: int -> template_term
+constructor template_var: int -> template_term
+constructor equals: sign
+constructor greater_equals: sign
+constructor greater_than: sign
+constructor less_equals: sign
+constructor less_than: sign
+constructor template_bimplication: template * template -> template
+constructor template_dunno: template
+constructor template_equation: template_term * template_term -> template
+constructor template_implication: template list * template -> template
+constructor template_inequation:
+   sign * template_term * template_term -> template
+constructor template_negation: template -> template
+constructor template_predicate: template_term -> template
+val vfs = fn: term -> (indexname * typ) list * (string * typ) list
+val indexOf = fn: ''a list -> ''a -> int -> int
+val has_eq = fn: term -> bool
+val term2template = fn:
+   (indexname * typ) list -> (string * typ) list -> term -> template_term
+val lemma2predicate = fn: term -> term -> template
+val makeTemplatewithContext = fn: term -> term -> template
+val lemma2template = fn: term -> template
+val thm2template = fn: thm -> template
+val tterm2string = fn: template_term -> string
+val template2string = fn: template -> string
+val t = "height ?t <= size ?t": thm
+val th =
+   Const ("HOL.Trueprop", "bool => prop") $
+     (Const ("Orderings.ord_class.less_eq", "nat => nat => bool") $
+       (Const ("Tree.height_class.height", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree")) $
+       (Const ("Nat.size_class.size", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree"))):
+   term
+### theory "Draft.Templates"
+### 0.086s elapsed time, 0.287s cpu time, 0.000s GC time
+Loading theory "Draft.ExtrEqs" (required by "Draft.Wasm_Interpreter_PropertiesTemplates")
+class wasm_int = wasm_base +
+  fixes int_clz :: "'a => 'a"
+    and int_ctz :: "'a => 'a"
+    and int_popcnt :: "'a => 'a"
+    and int_add :: "'a => 'a => 'a"
+    and int_sub :: "'a => 'a => 'a"
+    and int_mul :: "'a => 'a => 'a"
+    and int_div_u :: "'a => 'a => 'a option"
+    and int_div_s :: "'a => 'a => 'a option"
+    and int_rem_u :: "'a => 'a => 'a option"
+    and int_rem_s :: "'a => 'a => 'a option"
+    and int_and :: "'a => 'a => 'a"
+    and int_or :: "'a => 'a => 'a"
+    and int_xor :: "'a => 'a => 'a"
+    and int_shl :: "'a => 'a => 'a"
+    and int_shr_u :: "'a => 'a => 'a"
+    and int_shr_s :: "'a => 'a => 'a"
+    and int_rotl :: "'a => 'a => 'a"
+    and int_rotr :: "'a => 'a => 'a"
+    and int_eqz :: "'a => bool"
+    and int_eq :: "'a => 'a => bool"
+    and int_lt_u :: "'a => 'a => bool"
+    and int_lt_s :: "'a => 'a => bool"
+    and int_gt_u :: "'a => 'a => bool"
+    and int_gt_s :: "'a => 'a => bool"
+    and int_le_u :: "'a => 'a => bool"
+    and int_le_s :: "'a => 'a => bool"
+    and int_ge_u :: "'a => 'a => bool"
+    and int_ge_s :: "'a => 'a => bool"
+    and int_of_nat :: "nat => 'a"
+    and nat_of_int :: "'a => nat"
+class wasm_float = wasm_base +
+  fixes float_neg :: "'a => 'a"
+    and float_abs :: "'a => 'a"
+    and float_ceil :: "'a => 'a"
+    and float_floor :: "'a => 'a"
+    and float_trunc :: "'a => 'a"
+    and float_nearest :: "'a => 'a"
+    and float_sqrt :: "'a => 'a"
+    and float_add :: "'a => 'a => 'a"
+    and float_sub :: "'a => 'a => 'a"
+    and float_mul :: "'a => 'a => 'a"
+    and float_div :: "'a => 'a => 'a"
+    and float_min :: "'a => 'a => 'a"
+    and float_max :: "'a => 'a => 'a"
+    and float_copysign :: "'a => 'a => 'a"
+    and float_eq :: "'a => 'a => bool"
+    and float_lt :: "'a => 'a => bool"
+    and float_gt :: "'a => 'a => bool"
+    and float_le :: "'a => 'a => bool"
+    and float_ge :: "'a => 'a => bool"
+### theory "Draft.Wasm_Type_Abs"
+### 0.177s elapsed time, 0.553s cpu time, 0.031s GC time
+val eqpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Var (("_dummy_", 2), "?'a"))
+       ):
+   term Find_Theorems.criterion
+val badeqpattern = Pattern (Const ("Pure.eq", "?'a => ?'a => prop")):
+   term Find_Theorems.criterion
+val undefpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Const ("HOL.undefined", "?'a"))
+       ):
+   term Find_Theorems.criterion
+val thmpattern =
+   Pattern
+    (Const ("HOL.Trueprop", "bool => prop") $ Var (("_dummy_", 1), "bool")):
+   term Find_Theorems.criterion
+val badnames =
+   ["*nitpick*", "*Nitpick*", "*full_exhaustive*", "*_def*", "Enum.finite*",
+    "*Quickcheck*", "ATP*", "*Nunchaku*", "*Code*", "*BNF*", "*SMT*",
+    "*.*.*"]:
+   string list
+val unwanted_names =
+   [(false, Name "*nitpick*"), (false, Name "*Nitpick*"),
+    (false, Name "*full_exhaustive*"), (false, Name "*_def*"),
+    (false, Name "Enum.finite*"), (false, Name "*Quickcheck*"),
+    (false, Name "ATP*"), (false, Name "*Nunchaku*"),
+    (false, Name "*Code*"), (false, Name "*BNF*"), (false, Name "*SMT*"),
+    (false, Name "*.*.*")]:
+   (bool * term Find_Theorems.criterion) list
+val has_vars = fn: term -> bool
+val get_all_eqs = fn: string -> Proof.context -> (string * thm) list
+val get_all_thms = fn: string -> Proof.context -> (string * thm) list
+val get_noneq_thms = fn: string -> Proof.context -> (string * thm) list
+val template_eqs = fn:
+   string -> Proof.context -> (string * thm * template) list
+val template_thms = fn:
+   string -> Proof.context -> (string * thm * template) list
+### theory "Draft.ExtrEqs"
+### 0.545s elapsed time, 1.214s cpu time, 0.109s GC time
+### theory "Draft.Wasm_Ast"
+### 9.101s elapsed time, 11.697s cpu time, 2.588s GC time
+Loading theory "Draft.Wasm_Base_Defs" (required by "Draft.Wasm_Interpreter_PropertiesTemplates" via "Draft.Wasm_Interpreter_Properties" via "Draft.Wasm_Interpreter" via "Draft.Wasm")
+instantiation
+  i32 :: wasm_int
+  int_clz_i32 == int_clz :: i32 => i32
+  int_ctz_i32 == int_ctz :: i32 => i32
+  int_popcnt_i32 == int_popcnt :: i32 => i32
+  int_add_i32 == int_add :: i32 => i32 => i32
+  int_sub_i32 == int_sub :: i32 => i32 => i32
+  int_mul_i32 == int_mul :: i32 => i32 => i32
+  int_div_u_i32 == int_div_u :: i32 => i32 => i32 option
+  int_div_s_i32 == int_div_s :: i32 => i32 => i32 option
+  int_rem_u_i32 == int_rem_u :: i32 => i32 => i32 option
+  int_rem_s_i32 == int_rem_s :: i32 => i32 => i32 option
+  int_and_i32 == int_and :: i32 => i32 => i32
+  int_or_i32 == int_or :: i32 => i32 => i32
+  int_xor_i32 == int_xor :: i32 => i32 => i32
+  int_shl_i32 == int_shl :: i32 => i32 => i32
+  int_shr_u_i32 == int_shr_u :: i32 => i32 => i32
+  int_shr_s_i32 == int_shr_s :: i32 => i32 => i32
+  int_rotl_i32 == int_rotl :: i32 => i32 => i32
+  int_rotr_i32 == int_rotr :: i32 => i32 => i32
+  int_eqz_i32 == int_eqz :: i32 => bool
+  int_eq_i32 == int_eq :: i32 => i32 => bool
+  int_lt_u_i32 == int_lt_u :: i32 => i32 => bool
+  int_lt_s_i32 == int_lt_s :: i32 => i32 => bool
+  int_gt_u_i32 == int_gt_u :: i32 => i32 => bool
+  int_gt_s_i32 == int_gt_s :: i32 => i32 => bool
+  int_le_u_i32 == int_le_u :: i32 => i32 => bool
+  int_le_s_i32 == int_le_s :: i32 => i32 => bool
+  int_ge_u_i32 == int_ge_u :: i32 => i32 => bool
+  int_ge_s_i32 == int_ge_s :: i32 => i32 => bool
+  int_of_nat_i32 == int_of_nat :: nat => i32
+  nat_of_int_i32 == nat_of_int :: i32 => nat
+  zero_i32 == zero_class.zero :: i32
+instantiation
+  i64 :: wasm_int
+  int_clz_i64 == int_clz :: i64 => i64
+  int_ctz_i64 == int_ctz :: i64 => i64
+  int_popcnt_i64 == int_popcnt :: i64 => i64
+  int_add_i64 == int_add :: i64 => i64 => i64
+  int_sub_i64 == int_sub :: i64 => i64 => i64
+  int_mul_i64 == int_mul :: i64 => i64 => i64
+  int_div_u_i64 == int_div_u :: i64 => i64 => i64 option
+  int_div_s_i64 == int_div_s :: i64 => i64 => i64 option
+  int_rem_u_i64 == int_rem_u :: i64 => i64 => i64 option
+  int_rem_s_i64 == int_rem_s :: i64 => i64 => i64 option
+  int_and_i64 == int_and :: i64 => i64 => i64
+  int_or_i64 == int_or :: i64 => i64 => i64
+  int_xor_i64 == int_xor :: i64 => i64 => i64
+  int_shl_i64 == int_shl :: i64 => i64 => i64
+  int_shr_u_i64 == int_shr_u :: i64 => i64 => i64
+  int_shr_s_i64 == int_shr_s :: i64 => i64 => i64
+  int_rotl_i64 == int_rotl :: i64 => i64 => i64
+  int_rotr_i64 == int_rotr :: i64 => i64 => i64
+  int_eqz_i64 == int_eqz :: i64 => bool
+  int_eq_i64 == int_eq :: i64 => i64 => bool
+  int_lt_u_i64 == int_lt_u :: i64 => i64 => bool
+  int_lt_s_i64 == int_lt_s :: i64 => i64 => bool
+  int_gt_u_i64 == int_gt_u :: i64 => i64 => bool
+  int_gt_s_i64 == int_gt_s :: i64 => i64 => bool
+  int_le_u_i64 == int_le_u :: i64 => i64 => bool
+  int_le_s_i64 == int_le_s :: i64 => i64 => bool
+  int_ge_u_i64 == int_ge_u :: i64 => i64 => bool
+  int_ge_s_i64 == int_ge_s :: i64 => i64 => bool
+  int_of_nat_i64 == int_of_nat :: nat => i64
+  nat_of_int_i64 == nat_of_int :: i64 => nat
+  zero_i64 == zero_class.zero :: i64
+instantiation
+  f32 :: wasm_float
+  float_neg_f32 == float_neg :: f32 => f32
+  float_abs_f32 == float_abs :: f32 => f32
+  float_ceil_f32 == float_ceil :: f32 => f32
+  float_floor_f32 == float_floor :: f32 => f32
+  float_trunc_f32 == float_trunc :: f32 => f32
+  float_nearest_f32 == float_nearest :: f32 => f32
+  float_sqrt_f32 == float_sqrt :: f32 => f32
+  float_add_f32 == float_add :: f32 => f32 => f32
+  float_sub_f32 == float_sub :: f32 => f32 => f32
+  float_mul_f32 == float_mul :: f32 => f32 => f32
+  float_div_f32 == float_div :: f32 => f32 => f32
+  float_min_f32 == float_min :: f32 => f32 => f32
+  float_max_f32 == float_max :: f32 => f32 => f32
+  float_copysign_f32 == float_copysign :: f32 => f32 => f32
+  float_eq_f32 == float_eq :: f32 => f32 => bool
+  float_lt_f32 == float_lt :: f32 => f32 => bool
+  float_gt_f32 == float_gt :: f32 => f32 => bool
+  float_le_f32 == float_le :: f32 => f32 => bool
+  float_ge_f32 == float_ge :: f32 => f32 => bool
+  zero_f32 == zero_class.zero :: f32
+instantiation
+  f64 :: wasm_float
+  float_neg_f64 == float_neg :: f64 => f64
+  float_abs_f64 == float_abs :: f64 => f64
+  float_ceil_f64 == float_ceil :: f64 => f64
+  float_floor_f64 == float_floor :: f64 => f64
+  float_trunc_f64 == float_trunc :: f64 => f64
+  float_nearest_f64 == float_nearest :: f64 => f64
+  float_sqrt_f64 == float_sqrt :: f64 => f64
+  float_add_f64 == float_add :: f64 => f64 => f64
+  float_sub_f64 == float_sub :: f64 => f64 => f64
+  float_mul_f64 == float_mul :: f64 => f64 => f64
+  float_div_f64 == float_div :: f64 => f64 => f64
+  float_min_f64 == float_min :: f64 => f64 => f64
+  float_max_f64 == float_max :: f64 => f64 => f64
+  float_copysign_f64 == float_copysign :: f64 => f64 => f64
+  float_eq_f64 == float_eq :: f64 => f64 => bool
+  float_lt_f64 == float_lt :: f64 => f64 => bool
+  float_gt_f64 == float_gt :: f64 => f64 => bool
+  float_le_f64 == float_le :: f64 => f64 => bool
+  float_ge_f64 == float_ge :: f64 => f64 => bool
+  zero_f64 == zero_class.zero :: f64
+Proofs for inductive predicate(s) "store_extension"
+  Proving monotonicity ...
+Proofs for inductive predicate(s) "Lfilled"
+  Proving monotonicity ...
+Proofs for inductive predicate(s) "Lfilled_exact"
+  Proving monotonicity ...
+### theory "Draft.Wasm_Base_Defs"
+### 0.678s elapsed time, 0.759s cpu time, 0.068s GC time
+Loading theory "Draft.Wasm" (required by "Draft.Wasm_Interpreter_PropertiesTemplates" via "Draft.Wasm_Interpreter_Properties" via "Draft.Wasm_Interpreter")
+Proofs for inductive predicate(s) "b_e_typing"
+  Proving monotonicity ...
+Proofs for inductive predicate(s) "cl_typing"
+  Proving monotonicity ...
+Proofs for inductive predicate(s) "e_typing", "s_typing"
+  Proving monotonicity ...
+Proofs for inductive predicate(s) "inst_typing"
+  Proving monotonicity ...
+Proofs for inductive predicate(s) "store_typing"
+  Proving monotonicity ...
+Proofs for inductive predicate(s) "config_typing"
+  Proving monotonicity ...
+Proofs for inductive predicate(s) "reduce_simple"
+  Proving monotonicity ...
+Proofs for inductive predicate(s) "reduce"
+  Proving monotonicity ...
+### theory "Draft.Wasm"
+### 0.757s elapsed time, 0.894s cpu time, 0.103s GC time
+Loading theory "Draft.Wasm_Axioms" (required by "Draft.Wasm_Interpreter_PropertiesTemplates" via "Draft.Wasm_Interpreter_Properties" via "Draft.Wasm_Properties" via "Draft.Wasm_Properties_Aux")
+Loading theory "Draft.Wasm_Interpreter" (required by "Draft.Wasm_Interpreter_PropertiesTemplates" via "Draft.Wasm_Interpreter_Properties")
+### theory "Draft.Wasm_Axioms"
+### 0.038s elapsed time, 0.078s cpu time, 0.000s GC time
+Loading theory "Draft.Wasm_Properties_Aux" (required by "Draft.Wasm_Interpreter_PropertiesTemplates" via "Draft.Wasm_Interpreter_Properties" via "Draft.Wasm_Properties")
+### theory "Draft.Wasm_Properties_Aux"
+### 0.317s elapsed time, 0.658s cpu time, 0.071s GC time
+Loading theory "Draft.Wasm_Properties" (required by "Draft.Wasm_Interpreter_PropertiesTemplates" via "Draft.Wasm_Interpreter_Properties")
+### theory "Draft.Wasm_Properties"
+### 0.410s elapsed time, 0.866s cpu time, 0.115s GC time
+Found termination order: "size_list size <*mlex*> {}"
+Found termination order: "size_list size <*mlex*> {}"
+Found termination order: "(%p. size (snd p)) <*mlex*> {}"
+Found termination order: "(%p. size (fst p)) <*mlex*> {}"
+### theory "Draft.Wasm_Interpreter"
+### 4.205s elapsed time, 5.817s cpu time, 0.652s GC time
+Loading theory "Draft.Wasm_Interpreter_Properties" (required by "Draft.Wasm_Interpreter_PropertiesTemplates")
+Lfilled ?a1.0 ?a2.0 ?a3.0 [e] =
+(?a1.0 = 0 &
+ (EX vs es'.
+     [e] = vs @ ?a3.0 @ es' & const_list vs & ?a2.0 = LBase vs es') |
+ (EX vs n es' l es'' k.
+     ?a1.0 = Suc k &
+     (EX lfilledk.
+         [e] = vs @ Label n es' lfilledk # es'' &
+         const_list vs &
+         ?a2.0 = LRec vs n es' l es'' & Lfilled k l ?a3.0 lfilledk)))
+Lfilled ?a1.0 ?a2.0 es es =
+(?a1.0 = 0 &
+ (EX vs es'. es = vs @ es @ es' & const_list vs & ?a2.0 = LBase vs es') |
+ (EX vs n es' l es'' k.
+     ?a1.0 = Suc k &
+     (EX lfilledk.
+         es = vs @ Label n es' lfilledk # es'' &
+         const_list vs &
+         ?a2.0 = LRec vs n es' l es'' & Lfilled k l es lfilledk)))
+[| !!d i s vs es.
+      (!!x xa y x21 x22.
+          [| x = split_vals_e es; (xa, y) = x; y = x21 # x22;
+             ~ e_is_trap x21 |]
+          ==> ?Q d i (s, vs, rev xa, x21)) ==>
+      ?P d i (s, vs, es);
+   !!d i s vs ves e.
+      [| !!x41 x42 x43.
+            [| e = Label x41 x42 x43; ~ es_is_trap x43; ~ const_list x43 |]
+            ==> ?P d i (s, vs, x43);
+         !!x51 x52 x53 x54 nat.
+            [| e = Local x51 x52 x53 x54; ~ es_is_trap x54;
+               ~ const_list x54; d = Suc nat |]
+            ==> ?P nat x52 (s, x53, x54) |]
+      ==> ?Q d i (s, vs, ves, e) |]
+==> ?P ?a0.0 ?a1.0 ?a2.0
+[| !!d i s vs es.
+      (!!x xa y x21 x22.
+          [| x = split_vals_e es; (xa, y) = x; y = x21 # x22;
+             ~ e_is_trap x21 |]
+          ==> ?Q d i (s, vs, rev xa, x21)) ==>
+      ?P d i (s, vs, es);
+   !!d i s vs ves e.
+      [| !!x41 x42 x43.
+            [| e = Label x41 x42 x43; ~ es_is_trap x43; ~ const_list x43 |]
+            ==> ?P d i (s, vs, x43);
+         !!x51 x52 x53 x54 nat.
+            [| e = Local x51 x52 x53 x54; ~ es_is_trap x54;
+               ~ const_list x54; d = Suc nat |]
+            ==> ?P nat x52 (s, x53, x54) |]
+      ==> ?Q d i (s, vs, ves, e) |]
+==> ?Q ?a3.0 ?a4.0 ?a5.0
+### theory "Draft.Wasm_Interpreter_Properties"
+### 0.449s elapsed time, 0.544s cpu time, 0.107s GC time
+Loading theory "Draft.Wasm_Interpreter_PropertiesTemplates"
+val templateLemmas =
+   [("Wasm_Interpreter_Properties.is_const_list_vs_to_es_list",
+     "const_list ($$* ?vs)",
+     template_predicate
+      (
+         template_app
+          (template_hole 3,
+           template_app
+            (template_app (template_hole 2, t_empty), template_var 0))
+         )),
+    ("Wasm_Interpreter_Properties.reduce_simple_call",
+     "~ \<lparr>[$Call ?j]\<rparr> \<leadsto> \<lparr>?es'\<rparr>",
+     template_negation
+      (
+         template_predicate
+          (
+             template_app
+              (template_app
+                (template_hole 4,
+                 template_app
+                  (template_app
+                    (template_hole 3,
+                     template_app
+                      (template_hole 2,
+                       template_app (template_hole 1, template_var 1))),
+                   template_hole 0)),
+               template_var 0)
+             )
+         )),
+    ("Wasm_Interpreter_Properties.neq_label_nested",
+     "[Label ?n ?les ?es] ~= ?es",
+     template_negation
+      (
+         template_equation
+          (template_app
+            (template_app
+              (template_hole 2,
+               template_app
+                (template_app
+                  (template_app (template_hole 1, template_var 2),
+                   template_var 1),
+                 template_var 0)),
+             template_hole 0),
+           template_var 0)
+         )),
+    ("Wasm_Interpreter_Properties.reduce_simple_not_nil",
+     "\<lparr>?es\<rparr> \<leadsto> \<lparr>?es'\<rparr> ==> ?es ~= []",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 3, template_var 1),
+              template_var 0)
+            )],
+       template_negation
+        (template_equation (template_var 1, template_hole 0)))),
+    ("Wasm_Interpreter_Properties.reduce_simple_not_eq",
+     "\<lparr>?es\<rparr> \<leadsto> \<lparr>?es'\<rparr> ==> ?es ~= ?es'",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 2, template_var 1),
+              template_var 0)
+            )],
+       template_negation
+        (template_equation (template_var 1, template_var 0)))),
+    ("Wasm_Interpreter_Properties.neq_local_nested",
+     "[Local ?n ?i ?lvs ?es] ~= ?es",
+     template_negation
+      (
+         template_equation
+          (template_app
+            (template_app
+              (template_hole 2,
+               template_app
+                (template_app
+                  (template_app
+                    (template_app (template_hole 1, template_var 3),
+                     template_var 2),
+                   template_var 1),
+                 template_var 0)),
+             template_hole 0),
+           template_var 0)
+         )),
+    ("Wasm_Interpreter_Properties.trap_not_value", "[Trap] ~= $$* ?es",
+     template_negation
+      (
+         template_equation
+          (template_app
+            (template_app (template_hole 5, template_hole 4),
+             template_hole 3),
+           template_app
+            (template_app (template_hole 2, t_empty), template_var 0))
+         )),
+    ("Wasm_Interpreter_Properties.reduce_simple_not_trap",
+     "\<lparr>?es\<rparr> \<leadsto> \<lparr>?es'\<rparr> ==>
+      ?es ~= [Trap]",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 5, template_var 1),
+              template_var 0)
+            )],
+       template_negation
+        (
+           template_equation
+            (template_var 1,
+             template_app
+              (template_app (template_hole 2, template_hole 1),
+               template_hole 0))
+           ))),
+    ("Wasm_Interpreter_Properties.reduce_simple_not_value",
+     "\<lparr>?es\<rparr> \<leadsto> \<lparr>?es'\<rparr> ==>
+      ?es ~= $$* ?vs",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 5, template_var 2),
+              template_var 1)
+            )],
+       template_negation
+        (
+           template_equation
+            (template_var 2,
+             template_app
+              (template_app (template_hole 2, t_empty), template_var 0))
+           ))),
+    ("Wasm_Interpreter_Properties.lfilled_size",
+     "Lfilled ?j ?lholed ?es ?LI ==>
+      size_list size ?es <= size_list size ?LI",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 3, template_var 3),
+                  template_var 2),
+                template_var 1),
+              template_var 0)
+            )],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_app (template_hole 1, template_hole 0), template_var 1),
+         template_app
+          (template_app (template_hole 1, template_hole 0),
+           template_var 0)))),
+    ("Wasm_Interpreter_Properties.reduce_not_nil",
+     "\<lparr>?s;?vs;?es\<rparr> \<leadsto>_ ?i \<lparr>?s';?vs';?es'\<rparr> ==>
+      ?es ~= []",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app
+                     (template_app
+                       (template_app (template_hole 3, template_var 6),
+                        template_var 5),
+                      template_var 4),
+                    template_var 3),
+                  template_var 2),
+                template_var 1),
+              template_var 0)
+            )],
+       template_negation
+        (template_equation (template_var 4, template_hole 0)))),
+    ("Wasm_Interpreter_Properties.reduce_not_eq",
+     "\<lparr>?s;?vs;?es\<rparr> \<leadsto>_ ?i \<lparr>?s';?vs';?es'\<rparr> ==>
+      ?es ~= ?es'",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app
+                     (template_app
+                       (template_app (template_hole 2, template_var 6),
+                        template_var 5),
+                      template_var 4),
+                    template_var 3),
+                  template_var 2),
+                template_var 1),
+              template_var 0)
+            )],
+       template_negation
+        (template_equation (template_var 4, template_var 0)))),
+    ("Wasm_Interpreter_Properties.reduce_not_trap",
+     "\<lparr>?s;?vs;?es\<rparr> \<leadsto>_ ?i \<lparr>?s';?vs';?es'\<rparr> ==>
+      ?es ~= [Trap]",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app
+                     (template_app
+                       (template_app (template_hole 5, template_var 6),
+                        template_var 5),
+                      template_var 4),
+                    template_var 3),
+                  template_var 2),
+                template_var 1),
+              template_var 0)
+            )],
+       template_negation
+        (
+           template_equation
+            (template_var 4,
+             template_app
+              (template_app (template_hole 2, template_hole 1),
+               template_hole 0))
+           ))),
+    ("Wasm_Interpreter_Properties.reduce_call",
+     "\<lparr>?s;?vs;[$Call
+                        ?j]\<rparr> \<leadsto>_ ?i \<lparr>?s';?vs';?es'\<rparr> ==>
+      ?vs = ?vs'",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app
+                     (template_app
+                       (template_app (template_hole 5, template_var 6),
+                        template_var 5),
+                      template_app
+                       (template_app
+                         (template_hole 4,
+                          template_app
+                           (template_hole 3,
+                            template_app
+                             (template_hole 2, template_var 4))),
+                        template_hole 1)),
+                    template_var 3),
+                  template_var 2),
+                template_var 1),
+              template_var 0)
+            )],
+       template_equation (template_var 5, template_var 1))),
+    ("Wasm_Interpreter_Properties.reduce_call",
+     "\<lparr>?s;?vs;[$Call
+                        ?j]\<rparr> \<leadsto>_ ?i \<lparr>?s';?vs';?es'\<rparr> ==>
+      ?s = ?s'",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app
+                     (template_app
+                       (template_app (template_hole 5, template_var 6),
+                        template_var 5),
+                      template_app
+                       (template_app
+                         (template_hole 4,
+                          template_app
+                           (template_hole 3,
+                            template_app
+                             (template_hole 2, template_var 4))),
+                        template_hole 1)),
+                    template_var 3),
+                  template_var 2),
+                template_var 1),
+              template_var 0)
+            )],
+       template_equation (template_var 6, template_var 2))),
+    ("Wasm_Interpreter_Properties.lfilled_eq",
+     "[| Lfilled ?j ?lholed ?es ?LI; Lfilled ?j ?lholed ?es' ?LI |]
+      ==> ?es = ?es'",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 1, template_var 4),
+                  template_var 3),
+                template_var 2),
+              template_var 1)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 1, template_var 4),
+                  template_var 3),
+                template_var 0),
+              template_var 1)
+            )],
+       template_equation (template_var 2, template_var 0))),
+    ("Wasm_Interpreter_Properties.reduce_not_value",
+     "\<lparr>?s;?vs;?es\<rparr> \<leadsto>_ ?i \<lparr>?s';?vs';?es'\<rparr> ==>
+      ?es ~= $$* ?ves",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app
+                     (template_app
+                       (template_app (template_hole 5, template_var 7),
+                        template_var 6),
+                      template_var 5),
+                    template_var 4),
+                  template_var 3),
+                template_var 2),
+              template_var 1)
+            )],
+       template_negation
+        (
+           template_equation
+            (template_var 5,
+             template_app
+              (template_app (template_hole 2, t_empty), template_var 0))
+           ))),
+    ("Wasm_Interpreter_Properties.not_const_vs_to_es_list",
+     "~ is_const ?e ==> ?vs1.0 @ [?e] @ ?vs2.0 ~= $$* ?vs",
+     template_implication
+      ([template_negation
+         (
+            template_predicate
+             (template_app (template_hole 7, template_var 3))
+            )],
+       template_negation
+        (
+           template_equation
+            (template_app
+              (template_app (template_hole 5, template_var 2),
+               template_app
+                (template_app
+                  (template_hole 5,
+                   template_app
+                    (template_app (template_hole 4, template_var 3),
+                     template_hole 3)),
+                 template_var 1)),
+             template_app
+              (template_app (template_hole 2, t_empty), template_var 0))
+           ))),
+    ("Wasm_Interpreter_Properties.run_step_return_imp_not_trap_const_list",
+     "run_step ?d ?i (?s, ?vs, ?es) = (?s', ?vs', RSReturn ?res) ==>
+      ~ const_list ?es",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app
+             (template_app (template_hole 7, template_var 7),
+              template_var 6),
+            template_app
+             (template_app (template_hole 6, template_var 5),
+              template_app
+               (template_app (template_hole 5, template_var 4),
+                template_var 3))),
+          template_app
+           (template_app (template_hole 4, template_var 2),
+            template_app
+             (template_app (template_hole 3, template_var 1),
+              template_app (template_hole 2, template_var 0))))],
+       template_negation
+        (
+           template_predicate
+            (template_app (template_hole 0, template_var 3))
+           ))),
+    ("Wasm_Interpreter_Properties.run_step_break_imp_not_trap_const_list",
+     "run_step ?d ?i (?s, ?vs, ?es) = (?s', ?vs', RSBreak ?n ?res) ==>
+      ~ const_list ?es",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app
+             (template_app (template_hole 7, template_var 8),
+              template_var 7),
+            template_app
+             (template_app (template_hole 6, template_var 6),
+              template_app
+               (template_app (template_hole 5, template_var 5),
+                template_var 4))),
+          template_app
+           (template_app (template_hole 4, template_var 3),
+            template_app
+             (template_app (template_hole 3, template_var 2),
+              template_app
+               (template_app (template_hole 2, template_var 1),
+                template_var 0))))],
+       template_negation
+        (
+           template_predicate
+            (template_app (template_hole 0, template_var 4))
+           ))),
+    ("Wasm_Interpreter_Properties.reduce_call",
+     "\<lparr>?s;?vs;[$Call
+                        ?j]\<rparr> \<leadsto>_ ?i \<lparr>?s';?vs';?es'\<rparr> ==>
+      ?es' = [Callcl (sfunc ?s ?i ?j)]",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app
+                     (template_app
+                       (template_app (template_hole 7, template_var 6),
+                        template_var 5),
+                      template_app
+                       (template_app
+                         (template_hole 6,
+                          template_app
+                           (template_hole 5,
+                            template_app
+                             (template_hole 4, template_var 4))),
+                        template_hole 3)),
+                    template_var 3),
+                  template_var 2),
+                template_var 1),
+              template_var 0)
+            )],
+       template_equation
+        (template_var 0,
+         template_app
+          (template_app
+            (template_hole 6,
+             template_app
+              (template_hole 1,
+               template_app
+                (template_app
+                  (template_app (template_hole 0, template_var 6),
+                   template_var 3),
+                 template_var 4))),
+           template_hole 3)))),
+    ("Wasm_Interpreter_Properties.run_step_return_imp_not_trap_const_list",
+     "run_step ?d ?i (?s, ?vs, ?es) = (?s', ?vs', RSReturn ?res) ==>
+      ?es ~= [Trap]",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app
+             (template_app (template_hole 10, template_var 7),
+              template_var 6),
+            template_app
+             (template_app (template_hole 9, template_var 5),
+              template_app
+               (template_app (template_hole 8, template_var 4),
+                template_var 3))),
+          template_app
+           (template_app (template_hole 7, template_var 2),
+            template_app
+             (template_app (template_hole 6, template_var 1),
+              template_app (template_hole 5, template_var 0))))],
+       template_negation
+        (
+           template_equation
+            (template_var 3,
+             template_app
+              (template_app (template_hole 2, template_hole 1),
+               template_hole 0))
+           ))),
+    ("Wasm_Interpreter_Properties.run_step_break_imp_not_trap_const_list",
+     "run_step ?d ?i (?s, ?vs, ?es) = (?s', ?vs', RSBreak ?n ?res) ==>
+      ?es ~= [Trap]",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app
+             (template_app (template_hole 10, template_var 8),
+              template_var 7),
+            template_app
+             (template_app (template_hole 9, template_var 6),
+              template_app
+               (template_app (template_hole 8, template_var 5),
+                template_var 4))),
+          template_app
+           (template_app (template_hole 7, template_var 3),
+            template_app
+             (template_app (template_hole 6, template_var 2),
+              template_app
+               (template_app (template_hole 5, template_var 1),
+                template_var 0))))],
+       template_negation
+        (
+           template_equation
+            (template_var 4,
+             template_app
+              (template_app (template_hole 2, template_hole 1),
+               template_hole 0))
+           ))),
+    ("Wasm_Interpreter_Properties.run_one_step_trap_result",
+     "run_one_step ?d ?i (?s, ?vs, ?ves, Trap) = (?s', ?vs', ?res) ==>
+      EX e. ?res = RSCrash e",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app
+             (template_app (template_hole 9, template_var 7),
+              template_var 6),
+            template_app
+             (template_app (template_hole 8, template_var 5),
+              template_app
+               (template_app (template_hole 7, template_var 4),
+                template_app
+                 (template_app (template_hole 6, template_var 3),
+                  template_hole 5)))),
+          template_app
+           (template_app (template_hole 4, template_var 2),
+            template_app
+             (template_app (template_hole 3, template_var 1),
+              template_var 0)))],
+       template_predicate (template_app (template_hole 2, t_empty)))),
+    ("Wasm_Interpreter_Properties.run_step_sound",
+     "run_step ?d ?i (?s, ?vs, ?es) = (?s', ?vs', RSNormal ?es') ==>
+      \<lparr>?s;?vs;?es\<rparr> \<leadsto>_ ?i \<lparr>?s';?vs';?es'\<rparr>",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app
+             (template_app (template_hole 6, template_var 7),
+              template_var 6),
+            template_app
+             (template_app (template_hole 5, template_var 5),
+              template_app
+               (template_app (template_hole 4, template_var 4),
+                template_var 3))),
+          template_app
+           (template_app (template_hole 3, template_var 2),
+            template_app
+             (template_app (template_hole 2, template_var 1),
+              template_app (template_hole 1, template_var 0))))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_app
+                    (template_app
+                      (template_app (template_hole 0, template_var 5),
+                       template_var 4),
+                     template_var 3),
+                   template_var 6),
+                 template_var 2),
+               template_var 1),
+             template_var 0)
+           ))),
+    ("Wasm_Interpreter_Properties.run_one_step_basic_nop_result",
+     "run_one_step ?d ?i (?s, ?vs, ?ves, $Nop) = (?s', ?vs', ?res) ==>
+      EX r. ?res = RSNormal r",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app
+             (template_app (template_hole 10, template_var 7),
+              template_var 6),
+            template_app
+             (template_app (template_hole 9, template_var 5),
+              template_app
+               (template_app (template_hole 8, template_var 4),
+                template_app
+                 (template_app (template_hole 7, template_var 3),
+                  template_app (template_hole 6, template_hole 5))))),
+          template_app
+           (template_app (template_hole 4, template_var 2),
+            template_app
+             (template_app (template_hole 3, template_var 1),
+              template_var 0)))],
+       template_predicate (template_app (template_hole 2, t_empty)))),
+    ("Wasm_Interpreter_Properties.run_one_step_basic_return_result",
+     "run_one_step ?d ?i (?s, ?vs, ?ves, $Return) = (?s', ?vs', ?res) ==>
+      EX vrs. ?res = RSReturn vrs",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app
+             (template_app (template_hole 10, template_var 7),
+              template_var 6),
+            template_app
+             (template_app (template_hole 9, template_var 5),
+              template_app
+               (template_app (template_hole 8, template_var 4),
+                template_app
+                 (template_app (template_hole 7, template_var 3),
+                  template_app (template_hole 6, template_hole 5))))),
+          template_app
+           (template_app (template_hole 4, template_var 2),
+            template_app
+             (template_app (template_hole 3, template_var 1),
+              template_var 0)))],
+       template_predicate (template_app (template_hole 2, t_empty)))),
+    ("Wasm_Interpreter_Properties.run_one_step_basic_unreachable_result",
+     "run_one_step ?d ?i (?s, ?vs, ?ves, $Unreachable) =
+      (?s', ?vs', ?res) ==>
+      EX r. ?res = RSNormal r",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app
+             (template_app (template_hole 10, template_var 7),
+              template_var 6),
+            template_app
+             (template_app (template_hole 9, template_var 5),
+              template_app
+               (template_app (template_hole 8, template_var 4),
+                template_app
+                 (template_app (template_hole 7, template_var 3),
+                  template_app (template_hole 6, template_hole 5))))),
+          template_app
+           (template_app (template_hole 4, template_var 2),
+            template_app
+             (template_app (template_hole 3, template_var 1),
+              template_var 0)))],
+       template_predicate (template_app (template_hole 2, t_empty)))),
+    ("Wasm_Interpreter_Properties.run_one_step_basic_call_result",
+     "run_one_step ?d ?i (?s, ?vs, ?ves, $Call ?x12.0) =
+      (?s', ?vs', ?res) ==>
+      EX r. ?res = RSNormal r",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app
+             (template_app (template_hole 10, template_var 8),
+              template_var 7),
+            template_app
+             (template_app (template_hole 9, template_var 6),
+              template_app
+               (template_app (template_hole 8, template_var 5),
+                template_app
+                 (template_app (template_hole 7, template_var 4),
+                  template_app
+                   (template_hole 6,
+                    template_app (template_hole 5, template_var 3)))))),
+          template_app
+           (template_app (template_hole 4, template_var 2),
+            template_app
+             (template_app (template_hole 3, template_var 1),
+              template_var 0)))],
+       template_predicate (template_app (template_hole 2, t_empty)))),
+    ("Wasm_Interpreter_Properties.run_one_step_basic_const_result",
+     "run_one_step ?d ?i (?s, ?vs, ?ves, $C ?x23.0) = (?s', ?vs', ?res) ==>
+      EX e. ?res = RSCrash e",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app
+             (template_app (template_hole 10, template_var 8),
+              template_var 7),
+            template_app
+             (template_app (template_hole 9, template_var 6),
+              template_app
+               (template_app (template_hole 8, template_var 5),
+                template_app
+                 (template_app (template_hole 7, template_var 4),
+                  template_app
+                   (template_hole 6,
+                    template_app (template_hole 5, template_var 3)))))),
+          template_app
+           (template_app (template_hole 4, template_var 2),
+            template_app
+             (template_app (template_hole 3, template_var 1),
+              template_var 0)))],
+       template_predicate (template_app (template_hole 2, t_empty)))),
+    ("Wasm_Interpreter_Properties.run_one_step_basic_br_result",
+     "run_one_step ?d ?i (?s, ?vs, ?ves, $Br ?x8.0) = (?s', ?vs', ?res) ==>
+      EX r vrs. ?res = RSBreak r vrs",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app
+             (template_app (template_hole 11, template_var 8),
+              template_var 7),
+            template_app
+             (template_app (template_hole 10, template_var 6),
+              template_app
+               (template_app (template_hole 9, template_var 5),
+                template_app
+                 (template_app (template_hole 8, template_var 4),
+                  template_app
+                   (template_hole 7,
+                    template_app (template_hole 6, template_var 3)))))),
+          template_app
+           (template_app (template_hole 5, template_var 2),
+            template_app
+             (template_app (template_hole 4, template_var 1),
+              template_var 0)))],
+       template_predicate (template_app (template_hole 3, t_empty)))),
+    ("Wasm_Interpreter_Properties.run_one_step_basic_current_memory_result",
+     "run_one_step ?d ?i (?s, ?vs, ?ves, $Current_memory) =
+      (?s', ?vs', ?res) ==>
+      (EX r. ?res = RSNormal r) | (EX e. ?res = RSCrash e)",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app
+             (template_app (template_hole 13, template_var 7),
+              template_var 6),
+            template_app
+             (template_app (template_hole 12, template_var 5),
+              template_app
+               (template_app (template_hole 11, template_var 4),
+                template_app
+                 (template_app (template_hole 10, template_var 3),
+                  template_app (template_hole 9, template_hole 8))))),
+          template_app
+           (template_app (template_hole 7, template_var 2),
+            template_app
+             (template_app (template_hole 6, template_var 1),
+              template_var 0)))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 5, template_app (template_hole 4, t_empty)),
+             template_app (template_hole 1, t_empty))
+           ))),
+    ("Wasm_Interpreter_Properties.run_one_step_basic_drop_result",
+     "run_one_step ?d ?i (?s, ?vs, ?ves, $Drop) = (?s', ?vs', ?res) ==>
+      (EX r. ?res = RSNormal r) | (EX e. ?res = RSCrash e)",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app
+             (template_app (template_hole 13, template_var 7),
+              template_var 6),
+            template_app
+             (template_app (template_hole 12, template_var 5),
+              template_app
+               (template_app (template_hole 11, template_var 4),
+                template_app
+                 (template_app (template_hole 10, template_var 3),
+                  template_app (template_hole 9, template_hole 8))))),
+          template_app
+           (template_app (template_hole 7, template_var 2),
+            template_app
+             (template_app (template_hole 6, template_var 1),
+              template_var 0)))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 5, template_app (template_hole 4, t_empty)),
+             template_app (template_hole 1, t_empty))
+           ))),
+    ("Wasm_Interpreter_Properties.run_one_step_basic_grow_memory_result",
+     "run_one_step ?d ?i (?s, ?vs, ?ves, $Grow_memory) =
+      (?s', ?vs', ?res) ==>
+      (EX r. ?res = RSNormal r) | (EX e. ?res = RSCrash e)",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app
+             (template_app (template_hole 13, template_var 7),
+              template_var 6),
+            template_app
+             (template_app (template_hole 12, template_var 5),
+              template_app
+               (template_app (template_hole 11, template_var 4),
+                template_app
+                 (template_app (template_hole 10, template_var 3),
+                  template_app (template_hole 9, template_hole 8))))),
+          template_app
+           (template_app (template_hole 7, template_var 2),
+            template_app
+             (template_app (template_hole 6, template_var 1),
+              template_var 0)))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 5, template_app (template_hole 4, t_empty)),
+             template_app (template_hole 1, t_empty))
+           ))),
+    ("Wasm_Interpreter_Properties.run_one_step_basic_select_result",
+     "run_one_step ?d ?i (?s, ?vs, ?ves, $Select) = (?s', ?vs', ?res) ==>
+      (EX r. ?res = RSNormal r) | (EX e. ?res = RSCrash e)",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app
+             (template_app (template_hole 13, template_var 7),
+              template_var 6),
+            template_app
+             (template_app (template_hole 12, template_var 5),
+              template_app
+               (template_app (template_hole 11, template_var 4),
+                template_app
+                 (template_app (template_hole 10, template_var 3),
+                  template_app (template_hole 9, template_hole 8))))),
+          template_app
+           (template_app (template_hole 7, template_var 2),
+            template_app
+             (template_app (template_hole 6, template_var 1),
+              template_var 0)))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 5, template_app (template_hole 4, t_empty)),
+             template_app (template_hole 1, t_empty))
+           ))),
+    ("Wasm_Interpreter_Properties.run_one_step_callcl_result",
+     "run_one_step ?d ?i (?s, ?vs, ?ves, Callcl ?cl) = (?s', ?vs', ?res) ==>
+      (EX r. ?res = RSNormal r) | (EX e. ?res = RSCrash e)",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app
+             (template_app (template_hole 12, template_var 8),
+              template_var 7),
+            template_app
+             (template_app (template_hole 11, template_var 6),
+              template_app
+               (template_app (template_hole 10, template_var 5),
+                template_app
+                 (template_app (template_hole 9, template_var 4),
+                  template_app (template_hole 8, template_var 3))))),
+          template_app
+           (template_app (template_hole 7, template_var 2),
+            template_app
+             (template_app (template_hole 6, template_var 1),
+              template_var 0)))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 5, template_app (template_hole 4, t_empty)),
+             template_app (template_hole 1, t_empty))
+           ))),
+    ("Wasm_Interpreter_Properties.run_one_step_basic_br_if_result",
+     "run_one_step ?d ?i (?s, ?vs, ?ves, $Br_if ?x9.0) =
+      (?s', ?vs', ?res) ==>
+      (EX r. ?res = RSNormal r) | (EX e. ?res = RSCrash e)",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app
+             (template_app (template_hole 13, template_var 8),
+              template_var 7),
+            template_app
+             (template_app (template_hole 12, template_var 6),
+              template_app
+               (template_app (template_hole 11, template_var 5),
+                template_app
+                 (template_app (template_hole 10, template_var 4),
+                  template_app
+                   (template_hole 9,
+                    template_app (template_hole 8, template_var 3)))))),
+          template_app
+           (template_app (template_hole 7, template_var 2),
+            template_app
+             (template_app (template_hole 6, template_var 1),
+              template_var 0)))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 5, template_app (template_hole 4, t_empty)),
+             template_app (template_hole 1, t_empty))
+           ))),
+    ("Wasm_Interpreter_Properties.run_one_step_basic_call_indirect_result",
+     "run_one_step ?d ?i (?s, ?vs, ?ves, $Call_indirect ?x13.0) =
+      (?s', ?vs', ?res) ==>
+      (EX r. ?res = RSNormal r) | (EX e. ?res = RSCrash e)",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app
+             (template_app (template_hole 13, template_var 8),
+              template_var 7),
+            template_app
+             (template_app (template_hole 12, template_var 6),
+              template_app
+               (template_app (template_hole 11, template_var 5),
+                template_app
+                 (template_app (template_hole 10, template_var 4),
+                  template_app
+                   (template_hole 9,
+                    template_app (template_hole 8, template_var 3)))))),
+          template_app
+           (template_app (template_hole 7, template_var 2),
+            template_app
+             (template_app (template_hole 6, template_var 1),
+              template_var 0)))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 5, template_app (template_hole 4, t_empty)),
+             template_app (template_hole 1, t_empty))
+           ))),
+    ("Wasm_Interpreter_Properties.run_one_step_basic_get_global_result",
+     "run_one_step ?d ?i (?s, ?vs, ?ves, $Get_global ?x17.0) =
+      (?s', ?vs', ?res) ==>
+      (EX r. ?res = RSNormal r) | (EX e. ?res = RSCrash e)",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app
+             (template_app (template_hole 13, template_var 8),
+              template_var 7),
+            template_app
+             (template_app (template_hole 12, template_var 6),
+              template_app
+               (template_app (template_hole 11, template_var 5),
+                template_app
+                 (template_app (template_hole 10, template_var 4),
+                  template_app
+                   (template_hole 9,
+                    template_app (template_hole 8, template_var 3)))))),
+          template_app
+           (template_app (template_hole 7, template_var 2),
+            template_app
+             (template_app (template_hole 6, template_var 1),
+              template_var 0)))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 5, template_app (template_hole 4, t_empty)),
+             template_app (template_hole 1, t_empty))
+           ))),
+    ("Wasm_Interpreter_Properties.run_one_step_basic_get_local_result",
+     "run_one_step ?d ?i (?s, ?vs, ?ves, $Get_local ?x14.0) =
+      (?s', ?vs', ?res) ==>
+      (EX r. ?res = RSNormal r) | (EX e. ?res = RSCrash e)",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app
+             (template_app (template_hole 13, template_var 8),
+              template_var 7),
+            template_app
+             (template_app (template_hole 12, template_var 6),
+              template_app
+               (template_app (template_hole 11, template_var 5),
+                template_app
+                 (template_app (template_hole 10, template_var 4),
+                  template_app
+                   (template_hole 9,
+                    template_app (template_hole 8, template_var 3)))))),
+          template_app
+           (template_app (template_hole 7, template_var 2),
+            template_app
+             (template_app (template_hole 6, template_var 1),
+              template_var 0)))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 5, template_app (template_hole 4, t_empty)),
+             template_app (template_hole 1, t_empty))
+           ))),
+    ("Wasm_Interpreter_Properties.run_one_step_basic_set_global_result",
+     "run_one_step ?d ?i (?s, ?vs, ?ves, $Set_global ?x18.0) =
+      (?s', ?vs', ?res) ==>
+      (EX r. ?res = RSNormal r) | (EX e. ?res = RSCrash e)",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app
+             (template_app (template_hole 13, template_var 8),
+              template_var 7),
+            template_app
+             (template_app (template_hole 12, template_var 6),
+              template_app
+               (template_app (template_hole 11, template_var 5),
+                template_app
+                 (template_app (template_hole 10, template_var 4),
+                  template_app
+                   (template_hole 9,
+                    template_app (template_hole 8, template_var 3)))))),
+          template_app
+           (template_app (template_hole 7, template_var 2),
+            template_app
+             (template_app (template_hole 6, template_var 1),
+              template_var 0)))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 5, template_app (template_hole 4, t_empty)),
+             template_app (template_hole 1, t_empty))
+           ))),
+    ("Wasm_Interpreter_Properties.run_one_step_basic_set_local_result",
+     "run_one_step ?d ?i (?s, ?vs, ?ves, $Set_local ?x15.0) =
+      (?s', ?vs', ?res) ==>
+      (EX r. ?res = RSNormal r) | (EX e. ?res = RSCrash e)",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app
+             (template_app (template_hole 13, template_var 8),
+              template_var 7),
+            template_app
+             (template_app (template_hole 12, template_var 6),
+              template_app
+               (template_app (template_hole 11, template_var 5),
+                template_app
+                 (template_app (template_hole 10, template_var 4),
+                  template_app
+                   (template_hole 9,
+                    template_app (template_hole 8, template_var 3)))))),
+          template_app
+           (template_app (template_hole 7, template_var 2),
+            template_app
+             (template_app (template_hole 6, template_var 1),
+              template_var 0)))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 5, template_app (template_hole 4, t_empty)),
+             template_app (template_hole 1, t_empty))
+           ))),
+    ("Wasm_Interpreter_Properties.run_one_step_basic_tee_local_result",
+     "run_one_step ?d ?i (?s, ?vs, ?ves, $Tee_local ?x16.0) =
+      (?s', ?vs', ?res) ==>
+      (EX r. ?res = RSNormal r) | (EX e. ?res = RSCrash e)",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app
+             (template_app (template_hole 13, template_var 8),
+              template_var 7),
+            template_app
+             (template_app (template_hole 12, template_var 6),
+              template_app
+               (template_app (template_hole 11, template_var 5),
+                template_app
+                 (template_app (template_hole 10, template_var 4),
+                  template_app
+                   (template_hole 9,
+                    template_app (template_hole 8, template_var 3)))))),
+          template_app
+           (template_app (template_hole 7, template_var 2),
+            template_app
+             (template_app (template_hole 6, template_var 1),
+              template_var 0)))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 5, template_app (template_hole 4, t_empty)),
+             template_app (template_hole 1, t_empty))
+           ))),
+    ("Wasm_Interpreter_Properties.run_one_step_basic_binop_f_result",
+     "run_one_step ?d ?i (?s, ?vs, ?ves, $Binop_f ?x271.0 ?x272.0) =
+      (?s', ?vs', ?res) ==>
+      (EX r. ?res = RSNormal r) | (EX e. ?res = RSCrash e)",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app
+             (template_app (template_hole 13, template_var 9),
+              template_var 8),
+            template_app
+             (template_app (template_hole 12, template_var 7),
+              template_app
+               (template_app (template_hole 11, template_var 6),
+                template_app
+                 (template_app (template_hole 10, template_var 5),
+                  template_app
+                   (template_hole 9,
+                    template_app
+                     (template_app (template_hole 8, template_var 4),
+                      template_var 3)))))),
+          template_app
+           (template_app (template_hole 7, template_var 2),
+            template_app
+             (template_app (template_hole 6, template_var 1),
+              template_var 0)))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 5, template_app (template_hole 4, t_empty)),
+             template_app (template_hole 1, t_empty))
+           ))),
+    ("Wasm_Interpreter_Properties.run_one_step_basic_binop_i_result",
+     "run_one_step ?d ?i (?s, ?vs, ?ves, $Binop_i ?x261.0 ?x262.0) =
+      (?s', ?vs', ?res) ==>
+      (EX r. ?res = RSNormal r) | (EX e. ?res = RSCrash e)",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app
+             (template_app (template_hole 13, template_var 9),
+              template_var 8),
+            template_app
+             (template_app (template_hole 12, template_var 7),
+              template_app
+               (template_app (template_hole 11, template_var 6),
+                template_app
+                 (template_app (template_hole 10, template_var 5),
+                  template_app
+                   (template_hole 9,
+                    template_app
+                     (template_app (template_hole 8, template_var 4),
+                      template_var 3)))))),
+          template_app
+           (template_app (template_hole 7, template_var 2),
+            template_app
+             (template_app (template_hole 6, template_var 1),
+              template_var 0)))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 5, template_app (template_hole 4, t_empty)),
+             template_app (template_hole 1, t_empty))
+           ))),
+    ("Wasm_Interpreter_Properties.run_one_step_basic_block_result",
+     "run_one_step ?d ?i (?s, ?vs, ?ves, $Block ?x51.0 ?x52.0) =
+      (?s', ?vs', ?res) ==>
+      (EX r. ?res = RSNormal r) | (EX e. ?res = RSCrash e)",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app
+             (template_app (template_hole 13, template_var 9),
+              template_var 8),
+            template_app
+             (template_app (template_hole 12, template_var 7),
+              template_app
+               (template_app (template_hole 11, template_var 6),
+                template_app
+                 (template_app (template_hole 10, template_var 5),
+                  template_app
+                   (template_hole 9,
+                    template_app
+                     (template_app (template_hole 8, template_var 4),
+                      template_var 3)))))),
+          template_app
+           (template_app (template_hole 7, template_var 2),
+            template_app
+             (template_app (template_hole 6, template_var 1),
+              template_var 0)))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 5, template_app (template_hole 4, t_empty)),
+             template_app (template_hole 1, t_empty))
+           ))),
+    ("Wasm_Interpreter_Properties.run_one_step_basic_br_table_result",
+     "run_one_step ?d ?i (?s, ?vs, ?ves, $Br_table ?js ?j) =
+      (?s', ?vs', ?res) ==>
+      (EX r. ?res = RSNormal r) | (EX e. ?res = RSCrash e)",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app
+             (template_app (template_hole 13, template_var 9),
+              template_var 8),
+            template_app
+             (template_app (template_hole 12, template_var 7),
+              template_app
+               (template_app (template_hole 11, template_var 6),
+                template_app
+                 (template_app (template_hole 10, template_var 5),
+                  template_app
+                   (template_hole 9,
+                    template_app
+                     (template_app (template_hole 8, template_var 4),
+                      template_var 3)))))),
+          template_app
+           (template_app (template_hole 7, template_var 2),
+            template_app
+             (template_app (template_hole 6, template_var 1),
+              template_var 0)))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 5, template_app (template_hole 4, t_empty)),
+             template_app (template_hole 1, t_empty))
+           ))),
+    ("Wasm_Interpreter_Properties.run_one_step_basic_loop_result",
+     "run_one_step ?d ?i (?s, ?vs, ?ves, $Loop ?x61.0 ?x62.0) =
+      (?s', ?vs', ?res) ==>
+      (EX r. ?res = RSNormal r) | (EX e. ?res = RSCrash e)",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app
+             (template_app (template_hole 13, template_var 9),
+              template_var 8),
+            template_app
+             (template_app (template_hole 12, template_var 7),
+              template_app
+               (template_app (template_hole 11, template_var 6),
+                template_app
+                 (template_app (template_hole 10, template_var 5),
+                  template_app
+                   (template_hole 9,
+                    template_app
+                     (template_app (template_hole 8, template_var 4),
+                      template_var 3)))))),
+          template_app
+           (template_app (template_hole 7, template_var 2),
+            template_app
+             (template_app (template_hole 6, template_var 1),
+              template_var 0)))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 5, template_app (template_hole 4, t_empty)),
+             template_app (template_hole 1, t_empty))
+           ))),
+    ("Wasm_Interpreter_Properties.run_one_step_basic_relop_f_result",
+     "run_one_step ?d ?i (?s, ?vs, ?ves, $Relop_f ?x301.0 ?x302.0) =
+      (?s', ?vs', ?res) ==>
+      (EX r. ?res = RSNormal r) | (EX e. ?res = RSCrash e)",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app
+             (template_app (template_hole 13, template_var 9),
+              template_var 8),
+            template_app
+             (template_app (template_hole 12, template_var 7),
+              template_app
+               (template_app (template_hole 11, template_var 6),
+                template_app
+                 (template_app (template_hole 10, template_var 5),
+                  template_app
+                   (template_hole 9,
+                    template_app
+                     (template_app (template_hole 8, template_var 4),
+                      template_var 3)))))),
+          template_app
+           (template_app (template_hole 7, template_var 2),
+            template_app
+             (template_app (template_hole 6, template_var 1),
+              template_var 0)))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 5, template_app (template_hole 4, t_empty)),
+             template_app (template_hole 1, t_empty))
+           ))),
+    ("Wasm_Interpreter_Properties.run_one_step_basic_relop_i_result",
+     "run_one_step ?d ?i (?s, ?vs, ?ves, $Relop_i ?x291.0 ?x292.0) =
+      (?s', ?vs', ?res) ==>
+      (EX r. ?res = RSNormal r) | (EX e. ?res = RSCrash e)",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app
+             (template_app (template_hole 13, template_var 9),
+              template_var 8),
+            template_app
+             (template_app (template_hole 12, template_var 7),
+              template_app
+               (template_app (template_hole 11, template_var 6),
+                template_app
+                 (template_app (template_hole 10, template_var 5),
+                  template_app
+                   (template_hole 9,
+                    template_app
+                     (template_app (template_hole 8, template_var 4),
+                      template_var 3)))))),
+          template_app
+           (template_app (template_hole 7, template_var 2),
+            template_app
+             (template_app (template_hole 6, template_var 1),
+              template_var 0)))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 5, template_app (template_hole 4, t_empty)),
+             template_app (template_hole 1, t_empty))
+           ))),
+    ("Wasm_Interpreter_Properties.run_one_step_basic_testop_result",
+     "run_one_step ?d ?i (?s, ?vs, ?ves, $Testop ?x281.0 ?x282.0) =
+      (?s', ?vs', ?res) ==>
+      (EX r. ?res = RSNormal r) | (EX e. ?res = RSCrash e)",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app
+             (template_app (template_hole 13, template_var 9),
+              template_var 8),
+            template_app
+             (template_app (template_hole 12, template_var 7),
+              template_app
+               (template_app (template_hole 11, template_var 6),
+                template_app
+                 (template_app (template_hole 10, template_var 5),
+                  template_app
+                   (template_hole 9,
+                    template_app
+                     (template_app (template_hole 8, template_var 4),
+                      template_var 3)))))),
+          template_app
+           (template_app (template_hole 7, template_var 2),
+            template_app
+             (template_app (template_hole 6, template_var 1),
+              template_var 0)))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 5, template_app (template_hole 4, t_empty)),
+             template_app (template_hole 1, t_empty))
+           ))),
+    ("Wasm_Interpreter_Properties.run_one_step_basic_unop_f_result",
+     "run_one_step ?d ?i (?s, ?vs, ?ves, $Unop_f ?x251.0 ?x252.0) =
+      (?s', ?vs', ?res) ==>
+      (EX r. ?res = RSNormal r) | (EX e. ?res = RSCrash e)",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app
+             (template_app (template_hole 13, template_var 9),
+              template_var 8),
+            template_app
+             (template_app (template_hole 12, template_var 7),
+              template_app
+               (template_app (template_hole 11, template_var 6),
+                template_app
+                 (template_app (template_hole 10, template_var 5),
+                  template_app
+                   (template_hole 9,
+                    template_app
+                     (template_app (template_hole 8, template_var 4),
+                      template_var 3)))))),
+          template_app
+           (template_app (template_hole 7, template_var 2),
+            template_app
+             (template_app (template_hole 6, template_var 1),
+              template_var 0)))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 5, template_app (template_hole 4, t_empty)),
+             template_app (template_hole 1, t_empty))
+           ))),
+    ("Wasm_Interpreter_Properties.run_one_step_basic_unop_i_result",
+     "run_one_step ?d ?i (?s, ?vs, ?ves, $Unop_i ?x241.0 ?x242.0) =
+      (?s', ?vs', ?res) ==>
+      (EX r. ?res = RSNormal r) | (EX e. ?res = RSCrash e)",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app
+             (template_app (template_hole 13, template_var 9),
+              template_var 8),
+            template_app
+             (template_app (template_hole 12, template_var 7),
+              template_app
+               (template_app (template_hole 11, template_var 6),
+                template_app
+                 (template_app (template_hole 10, template_var 5),
+                  template_app
+                   (template_hole 9,
+                    template_app
+                     (template_app (template_hole 8, template_var 4),
+                      template_var 3)))))),
+          template_app
+           (template_app (template_hole 7, template_var 2),
+            template_app
+             (template_app (template_hole 6, template_var 1),
+              template_var 0)))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 5, template_app (template_hole 4, t_empty)),
+             template_app (template_hole 1, t_empty))
+           ))),
+    ("Wasm_Interpreter_Properties.run_one_step_basic_if_result",
+     "run_one_step ?d ?i (?s, ?vs, ?ves, $b_e.If ?x71.0 ?x72.0 ?x73.0) =
+      (?s', ?vs', ?res) ==>
+      (EX r. ?res = RSNormal r) | (EX e. ?res = RSCrash e)",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app
+             (template_app (template_hole 13, template_var 10),
+              template_var 9),
+            template_app
+             (template_app (template_hole 12, template_var 8),
+              template_app
+               (template_app (template_hole 11, template_var 7),
+                template_app
+                 (template_app (template_hole 10, template_var 6),
+                  template_app
+                   (template_hole 9,
+                    template_app
+                     (template_app
+                       (template_app (template_hole 8, template_var 5),
+                        template_var 4),
+                      template_var 3)))))),
+          template_app
+           (template_app (template_hole 7, template_var 2),
+            template_app
+             (template_app (template_hole 6, template_var 1),
+              template_var 0)))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 5, template_app (template_hole 4, t_empty)),
+             template_app (template_hole 1, t_empty))
+           ))),
+    ("Wasm_Interpreter_Properties.run_one_step_local_result",
+     "run_one_step ?d ?i
+       (?s, ?vs, ?ves, Local ?x51.0 ?x52.0 ?x53.0 ?x54.0) =
+      (?s', ?vs', ?res) ==>
+      (EX r. ?res = RSNormal r) | (EX e. ?res = RSCrash e)",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app
+             (template_app (template_hole 12, template_var 11),
+              template_var 10),
+            template_app
+             (template_app (template_hole 11, template_var 9),
+              template_app
+               (template_app (template_hole 10, template_var 8),
+                template_app
+                 (template_app (template_hole 9, template_var 7),
+                  template_app
+                   (template_app
+                     (template_app
+                       (template_app (template_hole 8, template_var 6),
+                        template_var 5),
+                      template_var 4),
+                    template_var 3))))),
+          template_app
+           (template_app (template_hole 7, template_var 2),
+            template_app
+             (template_app (template_hole 6, template_var 1),
+              template_var 0)))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 5, template_app (template_hole 4, t_empty)),
+             template_app (template_hole 1, t_empty))
+           ))),
+    ("Wasm_Interpreter_Properties.run_one_step_return",
+     "run_one_step ?d ?i (?s, ?vs, ?ves, ?e) =
+      (?s', ?vs', RSReturn ?res) ==>
+      ?e = $Return | (EX n les es. ?e = Label n les es)",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app
+             (template_app (template_hole 13, template_var 8),
+              template_var 7),
+            template_app
+             (template_app (template_hole 12, template_var 6),
+              template_app
+               (template_app (template_hole 11, template_var 5),
+                template_app
+                 (template_app (template_hole 10, template_var 4),
+                  template_var 3)))),
+          template_app
+           (template_app (template_hole 9, template_var 2),
+            template_app
+             (template_app (template_hole 8, template_var 1),
+              template_app (template_hole 7, template_var 0))))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 6,
+               template_app
+                (template_app (template_hole 5, template_var 3),
+                 template_app (template_hole 4, template_hole 3))),
+             template_app (template_hole 2, t_empty))
+           ))),
+    ("Wasm_Interpreter_Properties.run_one_step_basic_cvtop_result",
+     "run_one_step ?d ?i (?s, ?vs, ?ves, $Cvtop ?t2.0 ?x312.0 ?t1.0 ?sx) =
+      (?s', ?vs', ?res) ==>
+      (EX r. ?res = RSNormal r) | (EX e. ?res = RSCrash e)",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app
+             (template_app (template_hole 13, template_var 11),
+              template_var 10),
+            template_app
+             (template_app (template_hole 12, template_var 9),
+              template_app
+               (template_app (template_hole 11, template_var 8),
+                template_app
+                 (template_app (template_hole 10, template_var 7),
+                  template_app
+                   (template_hole 9,
+                    template_app
+                     (template_app
+                       (template_app
+                         (template_app (template_hole 8, template_var 6),
+                          template_var 5),
+                        template_var 4),
+                      template_var 3)))))),
+          template_app
+           (template_app (template_hole 7, template_var 2),
+            template_app
+             (template_app (template_hole 6, template_var 1),
+              template_var 0)))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 5, template_app (template_hole 4, t_empty)),
+             template_app (template_hole 1, t_empty))
+           ))),
+    ("Wasm_Interpreter_Properties.run_one_step_basic_load_result",
+     "run_one_step ?d ?i
+       (?s, ?vs, ?ves, $Load ?x191.0 ?x192.0 ?x193.0 ?x194.0) =
+      (?s', ?vs', ?res) ==>
+      (EX r. ?res = RSNormal r) | (EX e. ?res = RSCrash e)",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app
+             (template_app (template_hole 13, template_var 11),
+              template_var 10),
+            template_app
+             (template_app (template_hole 12, template_var 9),
+              template_app
+               (template_app (template_hole 11, template_var 8),
+                template_app
+                 (template_app (template_hole 10, template_var 7),
+                  template_app
+                   (template_hole 9,
+                    template_app
+                     (template_app
+                       (template_app
+                         (template_app (template_hole 8, template_var 6),
+                          template_var 5),
+                        template_var 4),
+                      template_var 3)))))),
+          template_app
+           (template_app (template_hole 7, template_var 2),
+            template_app
+             (template_app (template_hole 6, template_var 1),
+              template_var 0)))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 5, template_app (template_hole 4, t_empty)),
+             template_app (template_hole 1, t_empty))
+           ))),
+    ("Wasm_Interpreter_Properties.run_one_step_basic_store_result",
+     "run_one_step ?d ?i
+       (?s, ?vs, ?ves, $Store ?x201.0 ?x202.0 ?x203.0 ?x204.0) =
+      (?s', ?vs', ?res) ==>
+      (EX r. ?res = RSNormal r) | (EX e. ?res = RSCrash e)",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app
+             (template_app (template_hole 13, template_var 11),
+              template_var 10),
+            template_app
+             (template_app (template_hole 12, template_var 9),
+              template_app
+               (template_app (template_hole 11, template_var 8),
+                template_app
+                 (template_app (template_hole 10, template_var 7),
+                  template_app
+                   (template_hole 9,
+                    template_app
+                     (template_app
+                       (template_app
+                         (template_app (template_hole 8, template_var 6),
+                          template_var 5),
+                        template_var 4),
+                      template_var 3)))))),
+          template_app
+           (template_app (template_hole 7, template_var 2),
+            template_app
+             (template_app (template_hole 6, template_var 1),
+              template_var 0)))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 5, template_app (template_hole 4, t_empty)),
+             template_app (template_hole 1, t_empty))
+           ))),
+    ("Wasm_Interpreter_Properties.run_one_step_label_return_imp_return",
+     "run_one_step ?d ?i (?s, ?vs, ?ves, Label ?n ?les ?es) =
+      (?s', ?vs', RSReturn ?res) ==>
+      run_step ?d ?i (?s, ?vs, ?es) = (?s', ?vs', RSReturn ?res)",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app
+             (template_app (template_hole 10, template_var 10),
+              template_var 9),
+            template_app
+             (template_app (template_hole 9, template_var 8),
+              template_app
+               (template_app (template_hole 8, template_var 7),
+                template_app
+                 (template_app (template_hole 7, template_var 6),
+                  template_app
+                   (template_app
+                     (template_app (template_hole 6, template_var 5),
+                      template_var 4),
+                    template_var 3))))),
+          template_app
+           (template_app (template_hole 5, template_var 2),
+            template_app
+             (template_app (template_hole 4, template_var 1),
+              template_app (template_hole 3, template_var 0))))],
+       template_equation
+        (template_app
+          (template_app
+            (template_app (template_hole 2, template_var 10),
+             template_var 9),
+           template_app
+            (template_app (template_hole 1, template_var 8),
+             template_app
+              (template_app (template_hole 0, template_var 7),
+               template_var 3))),
+         template_app
+          (template_app (template_hole 5, template_var 2),
+           template_app
+            (template_app (template_hole 4, template_var 1),
+             template_app (template_hole 3, template_var 0)))))),
+    ("Wasm_Interpreter_Properties.run_one_step_break",
+     "run_one_step ?d ?i (?s, ?vs, ?ves, ?e) =
+      (?s', ?vs', RSBreak ?n ?res) ==>
+      ?e = $Br ?n | (EX n les es. ?e = Label n les es)",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app
+             (template_app (template_hole 13, template_var 9),
+              template_var 8),
+            template_app
+             (template_app (template_hole 12, template_var 7),
+              template_app
+               (template_app (template_hole 11, template_var 6),
+                template_app
+                 (template_app (template_hole 10, template_var 5),
+                  template_var 4)))),
+          template_app
+           (template_app (template_hole 9, template_var 3),
+            template_app
+             (template_app (template_hole 8, template_var 2),
+              template_app
+               (template_app (template_hole 7, template_var 1),
+                template_var 0))))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 6,
+               template_app
+                (template_app (template_hole 5, template_var 4),
+                 template_app
+                  (template_hole 4,
+                   template_app (template_hole 3, template_var 1)))),
+             template_app (template_hole 2, t_empty))
+           ))),
+    ("Wasm_Interpreter_Properties.run_step_basic_sound",
+     "run_one_step ?d ?i (?s, ?vs, ?ves, $?b_e) =
+      (?s', ?vs', RSNormal ?es') ==>
+      \<lparr>?s;?vs;vs_to_es ?ves @
+                     [$?b_e]\<rparr> \<leadsto>_ ?i \<lparr>?s';?vs';?es'\<rparr>",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app
+             (template_app (template_hole 14, template_var 8),
+              template_var 7),
+            template_app
+             (template_app (template_hole 13, template_var 6),
+              template_app
+               (template_app (template_hole 12, template_var 5),
+                template_app
+                 (template_app (template_hole 11, template_var 4),
+                  template_app (template_hole 10, template_var 3))))),
+          template_app
+           (template_app (template_hole 9, template_var 2),
+            template_app
+             (template_app (template_hole 8, template_var 1),
+              template_app (template_hole 7, template_var 0))))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_app
+                    (template_app
+                      (template_app (template_hole 6, template_var 6),
+                       template_var 5),
+                     template_app
+                      (template_app
+                        (template_hole 5,
+                         template_app
+                          (template_app (template_hole 4, t_empty),
+                           template_app (template_hole 2, template_var 4))),
+                       template_app
+                        (template_app
+                          (template_hole 1,
+                           template_app (template_hole 10, template_var 3)),
+                         template_hole 0))),
+                   template_var 7),
+                 template_var 2),
+               template_var 1),
+             template_var 0)
+           ))),
+    ("Wasm_Interpreter_Properties.lfilled_single",
+     "[| Lfilled ?k ?lholed ?es [?e]; !!a b c. ?e ~= Label a b c |]
+      ==> ?es = [?e] & ?lholed = LBase [] [] | ?es = []",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 12, template_var 3),
+                  template_var 2),
+                template_var 1),
+              template_app
+               (template_app (template_hole 11, template_var 0),
+                template_hole 10))
+            ),
+        template_predicate (template_app (template_hole 9, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 4,
+               template_app
+                (template_app
+                  (template_hole 3,
+                   template_app
+                    (template_app (template_hole 2, template_var 1),
+                     template_app
+                      (template_app (template_hole 11, template_var 0),
+                       template_hole 10))),
+                 template_app
+                  (template_app (template_hole 1, template_var 2),
+                   template_app
+                    (template_app (template_hole 0, template_hole 10),
+                     template_hole 10)))),
+             template_app
+              (template_app (template_hole 2, template_var 1),
+               template_hole 10))
+           ))),
+    ("Wasm_Interpreter_Properties.run_one_step_label_break_imp_break",
+     "run_one_step ?d ?i (?s, ?vs, ?ves, Label ?ln ?les ?es) =
+      (?s', ?vs', RSBreak ?n ?res) ==>
+      run_step ?d ?i (?s, ?vs, ?es) = (?s', ?vs', RSBreak (Suc ?n) ?res)",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app
+             (template_app (template_hole 11, template_var 11),
+              template_var 10),
+            template_app
+             (template_app (template_hole 10, template_var 9),
+              template_app
+               (template_app (template_hole 9, template_var 8),
+                template_app
+                 (template_app (template_hole 8, template_var 7),
+                  template_app
+                   (template_app
+                     (template_app (template_hole 7, template_var 6),
+                      template_var 5),
+                    template_var 4))))),
+          template_app
+           (template_app (template_hole 6, template_var 3),
+            template_app
+             (template_app (template_hole 5, template_var 2),
+              template_app
+               (template_app (template_hole 4, template_var 1),
+                template_var 0))))],
+       template_equation
+        (template_app
+          (template_app
+            (template_app (template_hole 3, template_var 11),
+             template_var 10),
+           template_app
+            (template_app (template_hole 2, template_var 9),
+             template_app
+              (template_app (template_hole 1, template_var 8),
+               template_var 4))),
+         template_app
+          (template_app (template_hole 6, template_var 3),
+           template_app
+            (template_app (template_hole 5, template_var 2),
+             template_app
+              (template_app
+                (template_hole 4,
+                 template_app (template_hole 0, template_var 1)),
+               template_var 0)))))),
+    ("Wasm_Interpreter_Properties.run_step_return_imp_lfilled",
+     "run_step ?d ?i (?s, ?vs, ?es) = (?s', ?vs', RSReturn ?res) ==>
+      ?s = ?s' &
+      ?vs = ?vs' &
+      (EX n lfilled es_c.
+          Lfilled_exact n lfilled (vs_to_es ?res @ [$Return] @ es_c) ?es)",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app
+             (template_app (template_hole 20, template_var 7),
+              template_var 6),
+            template_app
+             (template_app (template_hole 19, template_var 5),
+              template_app
+               (template_app (template_hole 18, template_var 4),
+                template_var 3))),
+          template_app
+           (template_app (template_hole 17, template_var 2),
+            template_app
+             (template_app (template_hole 16, template_var 1),
+              template_app (template_hole 15, template_var 0))))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 14,
+               template_app
+                (template_app (template_hole 13, template_var 5),
+                 template_var 2)),
+             template_app
+              (template_app
+                (template_hole 14,
+                 template_app
+                  (template_app (template_hole 12, template_var 4),
+                   template_var 1)),
+               template_app (template_hole 11, t_empty)))
+           ))),
+    ("Wasm_Interpreter_Properties.run_one_step_label_result",
+     "run_one_step ?d ?i (?s, ?vs, ?ves, Label ?x41.0 ?x42.0 ?x43.0) =
+      (?s', ?vs', ?res) ==>
+      (EX r. ?res = RSNormal r) |
+      (EX r rvs. ?res = RSBreak r rvs) |
+      (EX rvs. ?res = RSReturn rvs) | (EX e. ?res = RSCrash e)",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app
+             (template_app (template_hole 16, template_var 10),
+              template_var 9),
+            template_app
+             (template_app (template_hole 15, template_var 8),
+              template_app
+               (template_app (template_hole 14, template_var 7),
+                template_app
+                 (template_app (template_hole 13, template_var 6),
+                  template_app
+                   (template_app
+                     (template_app (template_hole 12, template_var 5),
+                      template_var 4),
+                    template_var 3))))),
+          template_app
+           (template_app (template_hole 11, template_var 2),
+            template_app
+             (template_app (template_hole 10, template_var 1),
+              template_var 0)))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 9, template_app (template_hole 8, t_empty)),
+             template_app
+              (template_app
+                (template_hole 9, template_app (template_hole 5, t_empty)),
+               template_app
+                (template_app
+                  (template_hole 9,
+                   template_app (template_hole 4, t_empty)),
+                 template_app (template_hole 1, t_empty))))
+           ))),
+    ("Wasm_Interpreter_Properties.run_step_break_imp_lfilled",
+     "run_step ?d ?i (?s, ?vs, ?es) = (?s', ?vs', RSBreak ?n ?res) ==>
+      ?s = ?s' &
+      ?vs = ?vs' &
+      (EX n' lfilled es_c.
+          ?n <= n' &
+          Lfilled_exact (n' - ?n) lfilled (vs_to_es ?res @ [$Br n'] @ es_c)
+           ?es)",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app
+             (template_app (template_hole 22, template_var 8),
+              template_var 7),
+            template_app
+             (template_app (template_hole 21, template_var 6),
+              template_app
+               (template_app (template_hole 20, template_var 5),
+                template_var 4))),
+          template_app
+           (template_app (template_hole 19, template_var 3),
+            template_app
+             (template_app (template_hole 18, template_var 2),
+              template_app
+               (template_app (template_hole 17, template_var 1),
+                template_var 0))))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 16,
+               template_app
+                (template_app (template_hole 15, template_var 6),
+                 template_var 3)),
+             template_app
+              (template_app
+                (template_hole 16,
+                 template_app
+                  (template_app (template_hole 14, template_var 5),
+                   template_var 2)),
+               template_app (template_hole 13, t_empty)))
+           ))),
+    ("Wasm_Interpreter_Properties.run_step_basic_unop_testop_sound",
+     "[| run_one_step ?d ?i (?s, ?vs, ?ves, $?b_e) =
+         (?s', ?vs', RSNormal ?es');
+         ?b_e = Unop_i ?t ?iop |
+         ?b_e = Unop_f ?t ?fop | ?b_e = Testop ?t ?testop |]
+      ==> \<lparr>?s;?vs;vs_to_es ?ves @
+                         [$?b_e]\<rparr> \<leadsto>_ ?i \<lparr>?s';?vs';?es'\<rparr>",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app
+             (template_app (template_hole 19, template_var 12),
+              template_var 11),
+            template_app
+             (template_app (template_hole 18, template_var 10),
+              template_app
+               (template_app (template_hole 17, template_var 9),
+                template_app
+                 (template_app (template_hole 16, template_var 8),
+                  template_app (template_hole 15, template_var 7))))),
+          template_app
+           (template_app (template_hole 14, template_var 6),
+            template_app
+             (template_app (template_hole 13, template_var 5),
+              template_app (template_hole 12, template_var 4)))),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 11,
+                template_app
+                 (template_app (template_hole 10, template_var 7),
+                  template_app
+                   (template_app (template_hole 9, template_var 3),
+                    template_var 2))),
+              template_app
+               (template_app
+                 (template_hole 11,
+                  template_app
+                   (template_app (template_hole 10, template_var 7),
+                    template_app
+                     (template_app (template_hole 8, template_var 3),
+                      template_var 1))),
+                template_app
+                 (template_app (template_hole 10, template_var 7),
+                  template_app
+                   (template_app (template_hole 7, template_var 3),
+                    template_var 0))))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_app
+                    (template_app
+                      (template_app (template_hole 6, template_var 10),
+                       template_var 9),
+                     template_app
+                      (template_app
+                        (template_hole 5,
+                         template_app
+                          (template_app (template_hole 4, t_empty),
+                           template_app (template_hole 2, template_var 8))),
+                       template_app
+                        (template_app
+                          (template_hole 1,
+                           template_app (template_hole 15, template_var 7)),
+                         template_hole 0))),
+                   template_var 11),
+                 template_var 6),
+               template_var 5),
+             template_var 4)
+           ))),
+    ("Wasm_Interpreter_Properties.run_step_basic_binop_relop_sound",
+     "[| run_one_step ?d ?i (?s, ?vs, ?ves, $?b_e) =
+         (?s', ?vs', RSNormal ?es');
+         ?b_e = Binop_i ?t ?iop |
+         ?b_e = Binop_f ?t ?fop |
+         ?b_e = Relop_i ?t ?irop | ?b_e = Relop_f ?t ?frop |]
+      ==> \<lparr>?s;?vs;vs_to_es ?ves @
+                         [$?b_e]\<rparr> \<leadsto>_ ?i \<lparr>?s';?vs';?es'\<rparr>",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app
+             (template_app (template_hole 20, template_var 13),
+              template_var 12),
+            template_app
+             (template_app (template_hole 19, template_var 11),
+              template_app
+               (template_app (template_hole 18, template_var 10),
+                template_app
+                 (template_app (template_hole 17, template_var 9),
+                  template_app (template_hole 16, template_var 8))))),
+          template_app
+           (template_app (template_hole 15, template_var 7),
+            template_app
+             (template_app (template_hole 14, template_var 6),
+              template_app (template_hole 13, template_var 5)))),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 12,
+                template_app
+                 (template_app (template_hole 11, template_var 8),
+                  template_app
+                   (template_app (template_hole 10, template_var 4),
+                    template_var 3))),
+              template_app
+               (template_app
+                 (template_hole 12,
+                  template_app
+                   (template_app (template_hole 11, template_var 8),
+                    template_app
+                     (template_app (template_hole 9, template_var 4),
+                      template_var 2))),
+                template_app
+                 (template_app
+                   (template_hole 12,
+                    template_app
+                     (template_app (template_hole 11, template_var 8),
+                      template_app
+                       (template_app (template_hole 8, template_var 4),
+                        template_var 1))),
+                  template_app
+                   (template_app (template_hole 11, template_var 8),
+                    template_app
+                     (template_app (template_hole 7, template_var 4),
+                      template_var 0)))))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_app
+                    (template_app
+                      (template_app (template_hole 6, template_var 11),
+                       template_var 10),
+                     template_app
+                      (template_app
+                        (template_hole 5,
+                         template_app
+                          (template_app (template_hole 4, t_empty),
+                           template_app (template_hole 2, template_var 9))),
+                       template_app
+                        (template_app
+                          (template_hole 1,
+                           template_app (template_hole 16, template_var 8)),
+                         template_hole 0))),
+                   template_var 12),
+                 template_var 7),
+               template_var 6),
+             template_var 5)
+           )))]:
+   (string * thm * template) list
+### theory "Draft.Wasm_Interpreter_PropertiesTemplates"
+### 1.069s elapsed time, 1.310s cpu time, 0.183s GC time
+val it = (): unit

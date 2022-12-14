@@ -1,0 +1,4392 @@
+Loading theory "Draft.Language" (required by "Draft.ClosureTemplates" via "Draft.Closure" via "Draft.Hoare" via "Draft.HoarePartial" via "Draft.HoarePartialProps" via "Draft.HoarePartialDef" via "Draft.Semantic")
+Loading theory "HOL-Library.Nat_Bijection" (required by "Draft.ClosureTemplates" via "Draft.ExtrEqs" via "HOL-Library.Stream")
+Loading theory "HOL-Library.Function_Algebras" (required by "Draft.ClosureTemplates" via "Draft.ExtrEqs" via "HOL-Library.BigO")
+Loading theory "HOL-Library.Set_Algebras" (required by "Draft.ClosureTemplates" via "Draft.ExtrEqs" via "HOL-Library.BigO")
+instantiation
+  fun :: (type, plus) plus
+  plus_fun == plus :: ('a => 'b) => ('a => 'b) => 'a => 'b
+instantiation
+  set :: (plus) plus
+  plus_set == plus :: 'a set => 'a set => 'a set
+instantiation
+  set :: (times) times
+  times_set == times :: 'a set => 'a set => 'a set
+instantiation
+  fun :: (type, zero) zero
+  zero_fun == zero_class.zero :: 'a => 'b
+instantiation
+  set :: (zero) zero
+  zero_set == zero_class.zero :: 'a set
+instantiation
+  fun :: (type, times) times
+  times_fun == times :: ('a => 'b) => ('a => 'b) => 'a => 'b
+instantiation
+  set :: (one) one
+  one_set == one_class.one :: 'a set
+instantiation
+  fun :: (type, one) one
+  one_fun == one_class.one :: 'a => 'b
+Found termination order: "(%p. size (snd p)) <*mlex*> {}"
+### theory "HOL-Library.Function_Algebras"
+### 0.129s elapsed time, 0.548s cpu time, 0.000s GC time
+Loading theory "HOL-Library.Tree" (required by "Draft.ClosureTemplates" via "Draft.ExtrEqs" via "Draft.Templates")
+Found termination order: "size_list size <*mlex*> {}"
+### theory "HOL-Library.Set_Algebras"
+### 0.199s elapsed time, 0.818s cpu time, 0.102s GC time
+Loading theory "HOL-Library.BigO" (required by "Draft.ClosureTemplates" via "Draft.ExtrEqs")
+### theory "HOL-Library.Nat_Bijection"
+### 0.274s elapsed time, 1.121s cpu time, 0.102s GC time
+Loading theory "HOL-Library.Stream" (required by "Draft.ClosureTemplates" via "Draft.ExtrEqs")
+consts
+  left :: "'a tree => 'a tree"
+consts
+  right :: "'a tree => 'a tree"
+consts
+  shift :: "'a list => 'a stream => 'a stream"
+Proofs for coinductive predicate(s) "streamsp"
+  Proving monotonicity ...
+Found termination order: "size <*mlex*> {}"
+consts
+  snth :: "'a stream => nat => 'a"
+Found termination order: "size <*mlex*> {}"
+consts
+  stake :: "nat => 'a stream => 'a list"
+consts
+  sdrop :: "nat => 'a stream => 'a stream"
+Found termination order: "size <*mlex*> {}"
+consts
+  sfilter :: "('a => bool) => 'a stream => 'a stream"
+class height = type +
+  fixes height :: "'a => nat"
+instantiation
+  tree :: (type) height
+  height_tree == height :: 'a tree => nat
+consts
+  cycle :: "'a list => 'a stream"
+consts
+  siterate :: "('a => 'a) => 'a => 'a stream"
+Found termination order: "size <*mlex*> {}"
+### theory "HOL-Library.BigO"
+### 0.941s elapsed time, 3.559s cpu time, 0.809s GC time
+consts
+  flat :: "'a list stream => 'a stream"
+Found termination order: "size <*mlex*> {}"
+consts
+  sinterleave :: "'a stream => 'a stream => 'a stream"
+consts
+  szip :: "'a stream => 'b stream => ('a * 'b) stream"
+Found termination order: "size <*mlex*> {}"
+consts
+  smap2 :: "('a => 'b => 'c) => 'a stream => 'b stream => 'c stream"
+### theory "HOL-Library.Stream"
+### 0.984s elapsed time, 3.615s cpu time, 0.809s GC time
+Found termination order: "size <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+Found termination order: "(%p. size (fst p)) <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+Found termination order: "(%p. size (snd p)) <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+### theory "HOL-Library.Tree"
+### 1.839s elapsed time, 5.738s cpu time, 1.183s GC time
+Loading theory "Draft.Templates" (required by "Draft.ClosureTemplates" via "Draft.ExtrEqs")
+datatype template_term
+=
+     t_empty
+   | template_app of template_term * template_term
+   | template_hole of int
+   | template_var of int
+datatype sign
+= equals | greater_equals | greater_than | less_equals | less_than
+datatype template
+=
+     template_bimplication of template * template
+   | template_dunno
+   | template_equation of template_term * template_term
+   | template_implication of template list * template
+   | template_inequation of sign * template_term * template_term
+   | template_negation of template
+   | template_predicate of template_term
+constructor t_empty: template_term
+constructor template_app: template_term * template_term -> template_term
+constructor template_hole: int -> template_term
+constructor template_var: int -> template_term
+constructor equals: sign
+constructor greater_equals: sign
+constructor greater_than: sign
+constructor less_equals: sign
+constructor less_than: sign
+constructor template_bimplication: template * template -> template
+constructor template_dunno: template
+constructor template_equation: template_term * template_term -> template
+constructor template_implication: template list * template -> template
+constructor template_inequation:
+   sign * template_term * template_term -> template
+constructor template_negation: template -> template
+constructor template_predicate: template_term -> template
+val vfs = fn: term -> (indexname * typ) list * (string * typ) list
+val indexOf = fn: ''a list -> ''a -> int -> int
+val has_eq = fn: term -> bool
+val term2template = fn:
+   (indexname * typ) list -> (string * typ) list -> term -> template_term
+val lemma2predicate = fn: term -> term -> template
+val makeTemplatewithContext = fn: term -> term -> template
+val lemma2template = fn: term -> template
+val thm2template = fn: thm -> template
+val tterm2string = fn: template_term -> string
+val template2string = fn: template -> string
+val t = "height ?t <= size ?t": thm
+val th =
+   Const ("HOL.Trueprop", "bool => prop") $
+     (Const ("Orderings.ord_class.less_eq", "nat => nat => bool") $
+       (Const ("Tree.height_class.height", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree")) $
+       (Const ("Nat.size_class.size", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree"))):
+   term
+### theory "Draft.Templates"
+### 0.050s elapsed time, 0.098s cpu time, 0.000s GC time
+Loading theory "Draft.ExtrEqs" (required by "Draft.ClosureTemplates")
+consts
+  switch ::
+    "('s => 'v) => ('v set * ('s, 'p, 'f) com) list => ('s, 'p, 'f) com"
+consts
+  guards :: "('f * 's set) list => ('s, 'p, 'f) com => ('s, 'p, 'f) com"
+consts
+  flatten :: "('s, 'p, 'f) com => ('s, 'p, 'f) com list"
+consts
+  sequence ::
+    "(('s, 'p, 'f) com => ('s, 'p, 'f) com => ('s, 'p, 'f) com)
+     => ('s, 'p, 'f) com list => ('s, 'p, 'f) com"
+consts
+  normalize :: "('s, 'p, 'f) com => ('s, 'p, 'f) com"
+consts
+  strip_guards :: "'f set => ('s, 'p, 'f) com => ('s, 'p, 'f) com"
+val eqpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Var (("_dummy_", 2), "?'a"))
+       ):
+   term Find_Theorems.criterion
+val badeqpattern = Pattern (Const ("Pure.eq", "?'a => ?'a => prop")):
+   term Find_Theorems.criterion
+val undefpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Const ("HOL.undefined", "?'a"))
+       ):
+   term Find_Theorems.criterion
+val thmpattern =
+   Pattern
+    (Const ("HOL.Trueprop", "bool => prop") $ Var (("_dummy_", 1), "bool")):
+   term Find_Theorems.criterion
+val badnames =
+   ["*nitpick*", "*Nitpick*", "*full_exhaustive*", "*_def*", "Enum.finite*",
+    "*Quickcheck*", "ATP*", "*Nunchaku*", "*Code*", "*BNF*", "*SMT*",
+    "*.*.*"]:
+   string list
+val unwanted_names =
+   [(false, Name "*nitpick*"), (false, Name "*Nitpick*"),
+    (false, Name "*full_exhaustive*"), (false, Name "*_def*"),
+    (false, Name "Enum.finite*"), (false, Name "*Quickcheck*"),
+    (false, Name "ATP*"), (false, Name "*Nunchaku*"),
+    (false, Name "*Code*"), (false, Name "*BNF*"), (false, Name "*SMT*"),
+    (false, Name "*.*.*")]:
+   (bool * term Find_Theorems.criterion) list
+val has_vars = fn: term -> bool
+val get_all_eqs = fn: string -> Proof.context -> (string * thm) list
+val get_all_thms = fn: string -> Proof.context -> (string * thm) list
+val get_noneq_thms = fn: string -> Proof.context -> (string * thm) list
+val template_eqs = fn:
+   string -> Proof.context -> (string * thm * template) list
+val template_thms = fn:
+   string -> Proof.context -> (string * thm * template) list
+### theory "Draft.ExtrEqs"
+### 0.507s elapsed time, 1.055s cpu time, 0.087s GC time
+consts
+  mark_guards :: "'f => ('s, 'p, 'g) com => ('s, 'p, 'f) com"
+### No equation for constructor "Skip"
+### No equation for constructor "Basic"
+### No equation for constructor "Spec"
+### No equation for constructor "Seq"
+### No equation for constructor "Cond"
+### No equation for constructor "While"
+### No equation for constructor "Call"
+### No equation for constructor "DynCom"
+### No equation for constructor "Throw"
+### No equation for constructor "Catch"
+consts
+  dest_Guard :: "('s, 'p, 'f) com => 'f * 's set * ('s, 'p, 'f) com"
+consts
+  merge_guards :: "('s, 'p, 'f) com => ('s, 'p, 'f) com"
+consts
+  noguards :: "('s, 'p, 'f) com => bool"
+consts
+  nothrows :: "('s, 'p, 'f) com => bool"
+Proofs for inductive predicate(s) "com_relp"
+  Proving monotonicity ...
+### Legacy feature! Old 'recdef' command -- use 'fun' or 'function' instead
+Defining recursive function "Language.inter_guards" ...
+Proving induction theorem ...
+Postprocessing ...
+Simplifying nested TCs ...
+... Postprocessing finished
+Proving unsplit equation...
+th:
+(Skip \<inter>\<^sub>g Skip) = None ==> (Skip \<inter>\<^sub>g Skip) = None
+split ths:
+(Skip \<inter>\<^sub>g Basic ?bc) = None
+(Skip \<inter>\<^sub>g Spec ?bd) = None
+(Skip \<inter>\<^sub>g Seq ?be ?bf) = None
+(Skip \<inter>\<^sub>g Cond ?bg ?bh ?bi) = None
+(Skip \<inter>\<^sub>g While ?bj ?bk) = None
+(Skip \<inter>\<^sub>g Call ?bl) = None
+(Skip \<inter>\<^sub>g DynCom ?bm) = None
+(Skip \<inter>\<^sub>g Guard ?bn ?bo ?bp) = None
+(Skip \<inter>\<^sub>g Throw) = None
+(Skip \<inter>\<^sub>g Catch ?bq ?br) = None
+(Basic ?w \<inter>\<^sub>g Skip) = None
+(Basic ?w \<inter>\<^sub>g Spec ?cj) = None
+(Basic ?w \<inter>\<^sub>g Seq ?ck ?cl) = None
+(Basic ?w \<inter>\<^sub>g Cond ?cm ?cn ?co) = None
+(Basic ?w \<inter>\<^sub>g While ?cp ?cq) = None
+(Basic ?w \<inter>\<^sub>g Call ?cr) = None
+(Basic ?w \<inter>\<^sub>g DynCom ?cs) = None
+(Basic ?w \<inter>\<^sub>g Guard ?ct ?cu ?cv) = None
+(Basic ?w \<inter>\<^sub>g Throw) = None
+(Basic ?w \<inter>\<^sub>g Catch ?cw ?cx) = None
+(Spec ?x \<inter>\<^sub>g Skip) = None
+(Spec ?x \<inter>\<^sub>g Basic ?do) = None
+(Spec ?x \<inter>\<^sub>g Seq ?dq ?dr) = None
+(Spec ?x \<inter>\<^sub>g Cond ?ds ?dt ?du) = None
+(Spec ?x \<inter>\<^sub>g While ?dv ?dw) = None
+(Spec ?x \<inter>\<^sub>g Call ?dx) = None
+(Spec ?x \<inter>\<^sub>g DynCom ?dy) = None
+(Spec ?x \<inter>\<^sub>g Guard ?dz ?ea ?eb) = None
+(Spec ?x \<inter>\<^sub>g Throw) = None
+(Spec ?x \<inter>\<^sub>g Catch ?ec ?ed) = None
+(Seq ?y ?z \<inter>\<^sub>g Skip) = None
+(Seq ?y ?z \<inter>\<^sub>g Basic ?ev) = None
+(Seq ?y ?z \<inter>\<^sub>g Spec ?ew) = None
+(Seq ?y ?z \<inter>\<^sub>g Cond ?ez ?fa ?fb) = None
+(Seq ?y ?z \<inter>\<^sub>g While ?fc ?fd) = None
+(Seq ?y ?z \<inter>\<^sub>g Call ?fe) = None
+(Seq ?y ?z \<inter>\<^sub>g DynCom ?ff) = None
+(Seq ?y ?z \<inter>\<^sub>g Guard ?fg ?fh ?fi) = None
+(Seq ?y ?z \<inter>\<^sub>g Throw) = None
+(Seq ?y ?z \<inter>\<^sub>g Catch ?fj ?fk) = None
+(Cond ?aa ?ab ?ac \<inter>\<^sub>g Skip) = None
+(Cond ?aa ?ab ?ac \<inter>\<^sub>g Basic ?gb) = None
+(Cond ?aa ?ab ?ac \<inter>\<^sub>g Spec ?gc) = None
+(Cond ?aa ?ab ?ac \<inter>\<^sub>g Seq ?gd ?ge) = None
+(Cond ?aa ?ab ?ac \<inter>\<^sub>g While ?gi ?gj) = None
+(Cond ?aa ?ab ?ac \<inter>\<^sub>g Call ?gk) = None
+(Cond ?aa ?ab ?ac \<inter>\<^sub>g DynCom ?gl) = None
+(Cond ?aa ?ab ?ac \<inter>\<^sub>g Guard ?gm ?gn ?go) = None
+(Cond ?aa ?ab ?ac \<inter>\<^sub>g Throw) = None
+(Cond ?aa ?ab ?ac \<inter>\<^sub>g Catch ?gp ?gq) = None
+(While ?ad ?ae \<inter>\<^sub>g Skip) = None
+(While ?ad ?ae \<inter>\<^sub>g Basic ?hh) = None
+(While ?ad ?ae \<inter>\<^sub>g Spec ?hi) = None
+(While ?ad ?ae \<inter>\<^sub>g Seq ?hj ?hk) = None
+(While ?ad ?ae \<inter>\<^sub>g Cond ?hl ?hm ?hn) = None
+(While ?ad ?ae \<inter>\<^sub>g Call ?hq) = None
+(While ?ad ?ae \<inter>\<^sub>g DynCom ?hr) = None
+(While ?ad ?ae \<inter>\<^sub>g Guard ?hs ?ht ?hu) = None
+(While ?ad ?ae \<inter>\<^sub>g Throw) = None
+(While ?ad ?ae \<inter>\<^sub>g Catch ?hv ?hw) = None
+(Call ?af \<inter>\<^sub>g Skip) = None
+(Call ?af \<inter>\<^sub>g Basic ?in) = None
+(Call ?af \<inter>\<^sub>g Spec ?io) = None
+(Call ?af \<inter>\<^sub>g Seq ?ip ?iq) = None
+(Call ?af \<inter>\<^sub>g Cond ?ir ?is ?it) = None
+(Call ?af \<inter>\<^sub>g While ?iu ?iv) = None
+(Call ?af \<inter>\<^sub>g DynCom ?ix) = None
+(Call ?af \<inter>\<^sub>g Guard ?iy ?iz ?ja) = None
+(Call ?af \<inter>\<^sub>g Throw) = None
+(Call ?af \<inter>\<^sub>g Catch ?jb ?jc) = None
+(DynCom ?ag \<inter>\<^sub>g Skip) = None
+(DynCom ?ag \<inter>\<^sub>g Basic ?jt) = None
+(DynCom ?ag \<inter>\<^sub>g Spec ?ju) = None
+(DynCom ?ag \<inter>\<^sub>g Seq ?jv ?jw) = None
+(DynCom ?ag \<inter>\<^sub>g Cond ?jx ?jy ?jz) = None
+(DynCom ?ag \<inter>\<^sub>g While ?ka ?kb) = None
+(DynCom ?ag \<inter>\<^sub>g Call ?kc) = None
+(DynCom ?ag \<inter>\<^sub>g Guard ?ke ?kf ?kg) = None
+(DynCom ?ag \<inter>\<^sub>g Throw) = None
+(DynCom ?ag \<inter>\<^sub>g Catch ?kh ?ki) = None
+(Guard ?ah ?ai ?aj \<inter>\<^sub>g Skip) = None
+(Guard ?ah ?ai ?aj \<inter>\<^sub>g Basic ?kz) = None
+(Guard ?ah ?ai ?aj \<inter>\<^sub>g Spec ?la) = None
+(Guard ?ah ?ai ?aj \<inter>\<^sub>g Seq ?lb ?lc) = None
+(Guard ?ah ?ai ?aj \<inter>\<^sub>g Cond ?ld ?le ?lf) = None
+(Guard ?ah ?ai ?aj \<inter>\<^sub>g While ?lg ?lh) = None
+(Guard ?ah ?ai ?aj \<inter>\<^sub>g Call ?li) = None
+(Guard ?ah ?ai ?aj \<inter>\<^sub>g DynCom ?lj) = None
+(Guard ?ah ?ai ?aj \<inter>\<^sub>g Throw) = None
+(Guard ?ah ?ai ?aj \<inter>\<^sub>g Catch ?ln ?lo) = None
+(Throw \<inter>\<^sub>g Skip) = None
+(Throw \<inter>\<^sub>g Basic ?mf) = None
+(Throw \<inter>\<^sub>g Spec ?mg) = None
+(Throw \<inter>\<^sub>g Seq ?mh ?mi) = None
+(Throw \<inter>\<^sub>g Cond ?mj ?mk ?ml) = None
+(Throw \<inter>\<^sub>g While ?mm ?mn) = None
+(Throw \<inter>\<^sub>g Call ?mo) = None
+(Throw \<inter>\<^sub>g DynCom ?mp) = None
+(Throw \<inter>\<^sub>g Guard ?mq ?mr ?ms) = None
+(Throw \<inter>\<^sub>g Catch ?mt ?mu) = None
+(Catch ?ak ?al \<inter>\<^sub>g Skip) = None
+(Catch ?ak ?al \<inter>\<^sub>g Basic ?nl) = None
+(Catch ?ak ?al \<inter>\<^sub>g Spec ?nm) = None
+(Catch ?ak ?al \<inter>\<^sub>g Seq ?nn ?no) = None
+(Catch ?ak ?al \<inter>\<^sub>g Cond ?np ?nq ?nr) = None
+(Catch ?ak ?al \<inter>\<^sub>g While ?ns ?nt) = None
+(Catch ?ak ?al \<inter>\<^sub>g Call ?nu) = None
+(Catch ?ak ?al \<inter>\<^sub>g DynCom ?nv) = None
+(Catch ?ak ?al \<inter>\<^sub>g Guard ?nw ?nx ?ny) = None
+(Catch ?ak ?al \<inter>\<^sub>g Throw) = None
+--
+### recdef (solve_eq): splitto: cannot find variable to split on
+Proofs for inductive predicate(s) "subseteq_guards"
+  Proving monotonicity ...
+### theory "Draft.Language"
+### 4.045s elapsed time, 9.041s cpu time, 1.382s GC time
+Loading theory "Draft.Semantic" (required by "Draft.ClosureTemplates" via "Draft.Closure" via "Draft.Hoare" via "Draft.HoarePartial" via "Draft.HoarePartialProps" via "Draft.HoarePartialDef")
+Proofs for inductive predicate(s) "exec"
+  Proving monotonicity ...
+Proofs for inductive predicate(s) "execn"
+  Proving monotonicity ...
+### theory "Draft.Semantic"
+### 2.463s elapsed time, 3.464s cpu time, 1.141s GC time
+Loading theory "Draft.HoarePartialDef" (required by "Draft.ClosureTemplates" via "Draft.Closure" via "Draft.Hoare" via "Draft.HoarePartial" via "Draft.HoarePartialProps")
+Loading theory "Draft.Termination" (required by "Draft.ClosureTemplates" via "Draft.Closure" via "Draft.Hoare" via "Draft.HoareTotal" via "Draft.HoareTotalProps" via "Draft.SmallStep")
+Proofs for inductive predicate(s) "terminates"
+### Ambiguous input (line 84 of "$AFP/Simpl/HoarePartialDef.thy") produces 2 parse trees:
+### ("\<^const>Pure.imp"
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^const>HOL.All_binder" ("_position" n)
+###       ("\<^const>HoarePartialDef.cnvalid" ("_position" \<Gamma>)
+###         ("_position" \<Theta>) ("_position" n) ("_position" F)
+###         ("_position" P) ("_position" c) ("_position" Q) ("_position" A))))
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^const>HoarePartialDef.cvalid" ("_position" \<Gamma>)
+###       ("_position" \<Theta>) ("_position" F) ("_position" P) ("_position" c)
+###       ("_position" Q) ("_position" A))))
+### ("\<^const>Pure.imp"
+###   ("\<^const>HOL.Trueprop"
+###     ("_tuple"
+###       ("\<^const>HOL.All_binder" ("_position" n) ("_position" \<Gamma>))
+###       ("_tuple_arg"
+###         ("\<^const>HoarePartialDef.nvalid" ("_position" \<Theta>)
+###           ("_position" n) ("_position" F) ("_position" P) ("_position" c)
+###           ("_position" Q) ("_position" A)))))
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^const>HoarePartialDef.cvalid" ("_position" \<Gamma>)
+###       ("_position" \<Theta>) ("_position" F) ("_position" P) ("_position" c)
+###       ("_position" Q) ("_position" A))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+  Proving monotonicity ...
+Proofs for inductive predicate(s) "hoarep"
+  Proving monotonicity ...
+### theory "Draft.HoarePartialDef"
+### 0.412s elapsed time, 1.016s cpu time, 0.298s GC time
+Loading theory "Draft.HoarePartialProps" (required by "Draft.ClosureTemplates" via "Draft.Closure" via "Draft.Hoare" via "Draft.HoarePartial")
+### Ambiguous input (line 1078 of "$AFP/Simpl/HoarePartialProps.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("_Ball" ("_position" s) ("_position" P)
+###     ("\<^const>HOL.All_binder"
+###       ("_idtyp" ("_position" t)
+###         ("_tappl" ("_position_sort" 's) ("_position_sort" 'f)
+###           ("_type_name" xstate)))
+###       ("\<^const>HOL.Ex_binder"
+###         ("_idts" ("_position" P')
+###           ("_idts" ("_position" Q') ("_position" A')))
+###         ("\<^const>HOL.conj"
+###           ("\<^const>HOL.All_binder" ("_position" n)
+###             ("\<^const>HoarePartialDef.cnvalid" ("_position" \<Gamma>)
+###               ("_position" \<Theta>) ("_position" n) ("_position" F)
+###               ("_position" P') ("_position" c) ("_position" Q')
+###               ("_position" A')))
+###           ("\<^const>HOL.implies"
+###             ("\<^const>HOL.implies"
+###               ("\<^const>Set.member" ("_position" s) ("_position" P'))
+###               ("\<^const>Set.member" ("_position" t)
+###                 ("\<^const>Set.union"
+###                   ("\<^const>Set.image" ("_position" Normal)
+###                     ("_position" Q'))
+###                   ("\<^const>Set.image" ("_position" Abrupt)
+###                     ("_position" A')))))
+###             ("\<^const>Set.member" ("_position" t)
+###               ("\<^const>Set.union"
+###                 ("\<^const>Set.image" ("_position" Normal) ("_position" Q))
+###                 ("\<^const>Set.image" ("_position" Abrupt)
+###                   ("_position" A))))))))))
+### ("\<^const>HOL.Trueprop"
+###   ("_Ball" ("_position" s) ("_position" P)
+###     ("\<^const>HOL.All_binder"
+###       ("_idtyp" ("_position" t)
+###         ("_tappl" ("_position_sort" 's) ("_position_sort" 'f)
+###           ("_type_name" xstate)))
+###       ("\<^const>HOL.Ex_binder"
+###         ("_idts" ("_position" P')
+###           ("_idts" ("_position" Q') ("_position" A')))
+###         ("\<^const>HOL.conj"
+###           ("_tuple"
+###             ("\<^const>HOL.All_binder" ("_position" n)
+###               ("_position" \<Gamma>))
+###             ("_tuple_arg"
+###               ("\<^const>HoarePartialDef.nvalid" ("_position" \<Theta>)
+###                 ("_position" n) ("_position" F) ("_position" P')
+###                 ("_position" c) ("_position" Q') ("_position" A'))))
+###           ("\<^const>HOL.implies"
+###             ("\<^const>HOL.implies"
+###               ("\<^const>Set.member" ("_position" s) ("_position" P'))
+###               ("\<^const>Set.member" ("_position" t)
+###                 ("\<^const>Set.union"
+###                   ("\<^const>Set.image" ("_position" Normal)
+###                     ("_position" Q'))
+###                   ("\<^const>Set.image" ("_position" Abrupt)
+###                     ("_position" A')))))
+###             ("\<^const>Set.member" ("_position" t)
+###               ("\<^const>Set.union"
+###                 ("\<^const>Set.image" ("_position" Normal) ("_position" Q))
+###                 ("\<^const>Set.image" ("_position" Abrupt)
+###                   ("_position" A))))))))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### theory "Draft.Termination"
+### 0.648s elapsed time, 1.546s cpu time, 0.472s GC time
+Loading theory "Draft.HoareTotalDef" (required by "Draft.ClosureTemplates" via "Draft.Closure" via "Draft.Hoare" via "Draft.HoareTotal" via "Draft.HoareTotalProps")
+Loading theory "Draft.SmallStep" (required by "Draft.ClosureTemplates" via "Draft.Closure" via "Draft.Hoare" via "Draft.HoareTotal" via "Draft.HoareTotalProps")
+### No equation for constructor "Spec"
+consts
+  procs :: "('s, 'p, 'f) com => 'p set"
+consts
+  noSpec :: "('s, 'p, 'f) com => bool"
+consts
+  redex :: "('s, 'p, 'f) com => ('s, 'p, 'f) com"
+Proofs for inductive predicate(s) "step"
+  Proving monotonicity ...
+Proofs for inductive predicate(s) "hoaret"
+  Proving monotonicity ...
+### theory "Draft.HoarePartialProps"
+### 0.632s elapsed time, 1.840s cpu time, 0.413s GC time
+Loading theory "Draft.HoarePartial" (required by "Draft.ClosureTemplates" via "Draft.Closure" via "Draft.Hoare")
+### theory "Draft.HoareTotalDef"
+### 0.527s elapsed time, 1.701s cpu time, 0.353s GC time
+val tranclp_induct2 =
+   "[| ?r^++ (?aa, ?ab) (?ba, ?bb); !!a b. ?r (?aa, ?ab) (a, b) ==> ?P a b;
+       !!a b aa ba.
+          [| ?r^++ (?aa, ?ab) (a, b); ?r (a, b) (aa, ba); ?P a b |]
+          ==> ?P aa ba |]
+    ==> ?P ?ba ?bb":
+   thm
+val it = (): unit
+consts
+  subst_redex :: "('s, 'p, 'f) com => ('s, 'p, 'f) com => ('s, 'p, 'f) com"
+val trancl_induct2 =
+   "[| ((?aa, ?ab), ?ba, ?bb) : ?r^+;
+       !!a b. ((?aa, ?ab), a, b) : ?r ==> ?P a b;
+       !!a b aa ba.
+          [| ((?aa, ?ab), a, b) : ?r^+; ((a, b), aa, ba) : ?r; ?P a b |]
+          ==> ?P aa ba |]
+    ==> ?P ?ba ?bb":
+   thm
+val it = (): unit
+consts
+  seq :: "(nat => ('s, 'p, 'f) com) => 'p => nat => ('s, 'p, 'f) com"
+### theory "Draft.HoarePartial"
+### 1.081s elapsed time, 3.067s cpu time, 1.746s GC time
+consts
+  redexes :: "('s, 'p, 'f) com => ('s, 'p, 'f) com set"
+### theory "Draft.SmallStep"
+### 1.529s elapsed time, 4.376s cpu time, 1.985s GC time
+Loading theory "Draft.HoareTotalProps" (required by "Draft.ClosureTemplates" via "Draft.Closure" via "Draft.Hoare" via "Draft.HoareTotal")
+### theory "Draft.HoareTotalProps"
+### 0.743s elapsed time, 0.909s cpu time, 0.221s GC time
+Loading theory "Draft.HoareTotal" (required by "Draft.ClosureTemplates" via "Draft.Closure" via "Draft.Hoare")
+### theory "Draft.HoareTotal"
+### 0.565s elapsed time, 0.665s cpu time, 0.133s GC time
+Loading theory "Draft.Hoare" (required by "Draft.ClosureTemplates" via "Draft.Closure")
+"\<Gamma>|-/F P c Q"
+  :: "bool"
+"\<Gamma>|-P c Q,A"
+  :: "bool"
+"\<Gamma>|-P c Q"
+  :: "bool"
+locale hoare
+  fixes \<Gamma> :: "'p => ('s, 'p, 'f) com option"
+"\<Gamma>|-/F P c Q,A"
+  :: "bool"
+"\<Gamma>,\<Theta>|-P c Q"
+  :: "bool"
+"\<Gamma>,\<Theta>|-/F P c Q"
+  :: "bool"
+"\<Gamma>,\<Theta>|- P c Q,A"
+  :: "bool"
+"\<Gamma>,\<Theta>\<turnstile>\<^bsub>/F \<^esub>P c Q,A"
+  :: "bool"
+"\<Gamma>|-tP c Q"
+  :: "bool"
+"\<Gamma>|-tP c Q,A"
+  :: "bool"
+"\<Gamma>|-t/F P c Q"
+  :: "bool"
+"\<Gamma>|-t/F P c Q,A"
+  :: "bool"
+"\<Gamma>,\<Theta>|-t/F P c Q"
+  :: "bool"
+"\<Gamma>,\<Theta>|-P c Q"
+  :: "bool"
+"\<Gamma>,\<Theta>|- P c Q,A"
+  :: "bool"
+"\<Gamma>,\<Theta>\<turnstile>\<^sub>t\<^bsub>/F\<^esub> P c Q,A"
+  :: "bool"
+consts
+  assoc :: "('a * 'b) list => 'a => 'b"
+### theory "Draft.Hoare"
+### 0.186s elapsed time, 0.204s cpu time, 0.000s GC time
+Loading theory "Draft.Closure" (required by "Draft.ClosureTemplates")
+### theory "Draft.Closure"
+### 0.110s elapsed time, 0.110s cpu time, 0.000s GC time
+Loading theory "Draft.ClosureTemplates"
+val templateLemmas =
+   [("Transitive_Closure.reflp_rtranclp", "reflp ?R^**",
+     template_predicate
+      (
+         template_app
+          (template_hole 1, template_app (template_hole 0, template_var 0))
+         )),
+    ("Transitive_Closure.symp_symclp", "symp (symclp ?r)",
+     template_predicate
+      (
+         template_app
+          (template_hole 1, template_app (template_hole 0, template_var 0))
+         )),
+    ("Transitive_Closure.trans_rtrancl", "trans (?r^*)",
+     template_predicate
+      (
+         template_app
+          (template_hole 1, template_app (template_hole 0, template_var 0))
+         )),
+    ("Transitive_Closure.trans_trancl", "trans (?r^+)",
+     template_predicate
+      (
+         template_app
+          (template_hole 1, template_app (template_hole 0, template_var 0))
+         )),
+    ("Transitive_Closure.transp_rtranclp", "transp ?R^**",
+     template_predicate
+      (
+         template_app
+          (template_hole 1, template_app (template_hole 0, template_var 0))
+         )),
+    ("Transitive_Closure.symclp_greater", "?r <= symclp ?r",
+     template_inequation
+      (less_equals, template_var 0,
+       template_app (template_hole 0, template_var 0))),
+    ("Transitive_Closure.refl_rtrancl", "refl (?r^*)",
+     template_predicate
+      (
+         template_app
+          (template_app (template_hole 2, template_hole 1),
+           template_app (template_hole 0, template_var 0))
+         )),
+    ("Transitive_Closure.symp_rtranclp_symclp", "symp (symclp ?r)^**",
+     template_predicate
+      (
+         template_app
+          (template_hole 2,
+           template_app
+            (template_hole 1,
+             template_app (template_hole 0, template_var 0)))
+         )),
+    ("Transitive_Closure.relpowp_1", "?P ^^ 1 = ?P",
+     template_equation
+      (template_app
+        (template_app (template_hole 1, template_hole 0), template_var 0),
+       template_var 0)),
+    ("Transitive_Closure.Domain_rtrancl", "Domain (?R^*) = UNIV",
+     template_equation
+      (template_app
+        (template_hole 2, template_app (template_hole 1, template_var 0)),
+       template_hole 0)),
+    ("Transitive_Closure.Range_rtrancl", "Range (?R^*) = UNIV",
+     template_equation
+      (template_app
+        (template_hole 2, template_app (template_hole 1, template_var 0)),
+       template_hole 0)),
+    ("Transitive_Closure.relpow_1", "?R ^^ 1 = ?R",
+     template_equation
+      (template_app
+        (template_app (template_hole 1, template_hole 0), template_var 0),
+       template_var 0)),
+    ("Transitive_Closure.ntrancl_Zero", "ntrancl 0 ?R = ?R",
+     template_equation
+      (template_app
+        (template_app (template_hole 1, template_hole 0), template_var 0),
+       template_var 0)),
+    ("Transitive_Closure.relpowp_0_I", "(?P ^^ 0) ?x ?x",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 1, template_hole 0),
+               template_var 1),
+             template_var 0),
+           template_var 0)
+         )),
+    ("Transitive_Closure.refl_reflcl", "refl (?r^=)",
+     template_predicate
+      (
+         template_app
+          (template_app (template_hole 3, template_hole 2),
+           template_app
+            (template_app (template_hole 1, template_var 0),
+             template_hole 0))
+         )),
+    ("Transitive_Closure.rtranclp_idemp", "?r^**^** = ?r^**",
+     template_equation
+      (template_app
+        (template_hole 0, template_app (template_hole 0, template_var 0)),
+       template_app (template_hole 0, template_var 0))),
+    ("Transitive_Closure.tranclp_rtranclp_absorb", "?R^++^** = ?R^**",
+     template_equation
+      (template_app
+        (template_hole 1, template_app (template_hole 0, template_var 0)),
+       template_app (template_hole 1, template_var 0))),
+    ("Transitive_Closure.symclp_conversep", "symclp ?r^--1 = symclp ?r",
+     template_equation
+      (template_app
+        (template_hole 1, template_app (template_hole 0, template_var 0)),
+       template_app (template_hole 1, template_var 0))),
+    ("Transitive_Closure.symclp_idem", "symclp (symclp ?r) = symclp ?r",
+     template_equation
+      (template_app
+        (template_hole 0, template_app (template_hole 0, template_var 0)),
+       template_app (template_hole 0, template_var 0))),
+    ("Transitive_Closure.rtranclp_tranclp_absorb", "?R^**^++ = ?R^**",
+     template_equation
+      (template_app
+        (template_hole 1, template_app (template_hole 0, template_var 0)),
+       template_app (template_hole 0, template_var 0))),
+    ("Transitive_Closure.trancl_domain", "Domain (?r^+) = Domain ?r",
+     template_equation
+      (template_app
+        (template_hole 1, template_app (template_hole 0, template_var 0)),
+       template_app (template_hole 1, template_var 0))),
+    ("Transitive_Closure.trancl_range", "Range (?r^+) = Range ?r",
+     template_equation
+      (template_app
+        (template_hole 1, template_app (template_hole 0, template_var 0)),
+       template_app (template_hole 1, template_var 0))),
+    ("Transitive_Closure.rtrancl_idemp", "(?r^*)^* = ?r^*",
+     template_equation
+      (template_app
+        (template_hole 0, template_app (template_hole 0, template_var 0)),
+       template_app (template_hole 0, template_var 0))),
+    ("Transitive_Closure.trancl_rtrancl_absorb", "(?R^+)^* = ?R^*",
+     template_equation
+      (template_app
+        (template_hole 1, template_app (template_hole 0, template_var 0)),
+       template_app (template_hole 1, template_var 0))),
+    ("Transitive_Closure.rtrancl_trancl_absorb", "(?R^*)^+ = ?R^*",
+     template_equation
+      (template_app
+        (template_hole 1, template_app (template_hole 0, template_var 0)),
+       template_app (template_hole 0, template_var 0))),
+    ("Transitive_Closure.acyclic_irrefl", "acyclic ?r = irrefl (?r^+)",
+     template_equation
+      (template_app (template_hole 2, template_var 0),
+       template_app
+        (template_hole 1, template_app (template_hole 0, template_var 0)))),
+    ("Transitive_Closure.finite_trancl", "finite (?r^+) = finite ?r",
+     template_equation
+      (template_app
+        (template_hole 1, template_app (template_hole 0, template_var 0)),
+       template_app (template_hole 1, template_var 0))),
+    ("Transitive_Closure.acyclic_converse", "acyclic (?r^-1) = acyclic ?r",
+     template_equation
+      (template_app
+        (template_hole 1, template_app (template_hole 0, template_var 0)),
+       template_app (template_hole 1, template_var 0))),
+    ("Transitive_Closure.symclp_pointfree", "symclp ?r = sup ?r ?r^--1",
+     template_equation
+      (template_app (template_hole 2, template_var 0),
+       template_app
+        (template_app (template_hole 1, template_var 0),
+         template_app (template_hole 0, template_var 0)))),
+    ("Transitive_Closure.rtranclp_conversep", "?r^--1^** = ?r^**^--1",
+     template_equation
+      (template_app
+        (template_hole 1, template_app (template_hole 0, template_var 0)),
+       template_app
+        (template_hole 0, template_app (template_hole 1, template_var 0)))),
+    ("Transitive_Closure.tranclp_converse", "?r^--1^++ = ?r^++^--1",
+     template_equation
+      (template_app
+        (template_hole 1, template_app (template_hole 0, template_var 0)),
+       template_app
+        (template_hole 0, template_app (template_hole 1, template_var 0)))),
+    ("Transitive_Closure.rtranclp_reflclp_absorb", "?R^**^== = ?R^**",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 2, template_app (template_hole 1, template_var 0)),
+         template_hole 0),
+       template_app (template_hole 1, template_var 0))),
+    ("Transitive_Closure.reflclp_tranclp", "?r^++^== = ?r^**",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 3, template_app (template_hole 2, template_var 0)),
+         template_hole 1),
+       template_app (template_hole 0, template_var 0))),
+    ("Transitive_Closure.rtranclp_reflclp", "?R^==^** = ?R^**",
+     template_equation
+      (template_app
+        (template_hole 2,
+         template_app
+          (template_app (template_hole 1, template_var 0),
+           template_hole 0)),
+       template_app (template_hole 2, template_var 0))),
+    ("Transitive_Closure.rtrancl_trancl_reflcl", "?r^* = (?r^+)^=",
+     template_equation
+      (template_app (template_hole 3, template_var 0),
+       template_app
+        (template_app
+          (template_hole 2, template_app (template_hole 1, template_var 0)),
+         template_hole 0))),
+    ("Transitive_Closure.trancl_unfold_left", "?r^+ = ?r O ?r^*",
+     template_equation
+      (template_app (template_hole 2, template_var 0),
+       template_app
+        (template_app (template_hole 1, template_var 0),
+         template_app (template_hole 0, template_var 0)))),
+    ("Transitive_Closure.trancl_unfold_right", "?r^+ = ?r^* O ?r",
+     template_equation
+      (template_app (template_hole 2, template_var 0),
+       template_app
+        (template_app
+          (template_hole 1, template_app (template_hole 0, template_var 0)),
+         template_var 0))),
+    ("Transitive_Closure.rtrancl_converse", "(?r^-1)^* = (?r^*)^-1",
+     template_equation
+      (template_app
+        (template_hole 1, template_app (template_hole 0, template_var 0)),
+       template_app
+        (template_hole 0, template_app (template_hole 1, template_var 0)))),
+    ("Transitive_Closure.trancl_converse", "(?r^-1)^+ = (?r^+)^-1",
+     template_equation
+      (template_app
+        (template_hole 1, template_app (template_hole 0, template_var 0)),
+       template_app
+        (template_hole 0, template_app (template_hole 1, template_var 0)))),
+    ("Transitive_Closure.rtrancl_reflcl_absorb", "(?R^*)^= = ?R^*",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 2, template_app (template_hole 1, template_var 0)),
+         template_hole 0),
+       template_app (template_hole 1, template_var 0))),
+    ("Transitive_Closure.reflcl_trancl", "(?r^+)^= = ?r^*",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 3, template_app (template_hole 2, template_var 0)),
+         template_hole 1),
+       template_app (template_hole 0, template_var 0))),
+    ("Transitive_Closure.rtrancl_r_diff_Id", "(?r - Id)^* = ?r^*",
+     template_equation
+      (template_app
+        (template_hole 2,
+         template_app
+          (template_app (template_hole 1, template_var 0),
+           template_hole 0)),
+       template_app (template_hole 2, template_var 0))),
+    ("Transitive_Closure.rtrancl_reflcl", "(?R^=)^* = ?R^*",
+     template_equation
+      (template_app
+        (template_hole 2,
+         template_app
+          (template_app (template_hole 1, template_var 0),
+           template_hole 0)),
+       template_app (template_hole 2, template_var 0))),
+    ("Transitive_Closure.trancl_reflcl", "(?r^=)^+ = ?r^*",
+     template_equation
+      (template_app
+        (template_hole 3,
+         template_app
+          (template_app (template_hole 2, template_var 0),
+           template_hole 1)),
+       template_app (template_hole 0, template_var 0))),
+    ("Transitive_Closure.symp_conv_conversep_eq", "symp ?r = (?r^--1 = ?r)",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 2, template_var 0))],
+       template_equation
+        (template_app (template_hole 0, template_var 0), template_var 0))),
+    ("Transitive_Closure.antisym_reflcl", "antisym (?r^=) = antisym ?r",
+     template_equation
+      (template_app
+        (template_hole 2,
+         template_app
+          (template_app (template_hole 1, template_var 0),
+           template_hole 0)),
+       template_app (template_hole 2, template_var 0))),
+    ("Transitive_Closure.relpow_0_I", "(?x, ?x) : ?R ^^ 0",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_hole 3,
+             template_app
+              (template_app (template_hole 2, template_var 1),
+               template_var 1)),
+           template_app
+            (template_app (template_hole 1, template_hole 0),
+             template_var 0))
+         )),
+    ("Transitive_Closure.sym_rtrancl", "sym ?r ==> sym (?r^*)",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 1, template_var 0))],
+       template_predicate
+        (
+           template_app
+            (template_hole 1,
+             template_app (template_hole 0, template_var 0))
+           ))),
+    ("Transitive_Closure.sym_trancl", "sym ?r ==> sym (?r^+)",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 1, template_var 0))],
+       template_predicate
+        (
+           template_app
+            (template_hole 1,
+             template_app (template_hole 0, template_var 0))
+           ))),
+    ("Transitive_Closure.symp_rtranclp", "symp ?r ==> symp ?r^**",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 1, template_var 0))],
+       template_predicate
+        (
+           template_app
+            (template_hole 1,
+             template_app (template_hole 0, template_var 0))
+           ))),
+    ("Transitive_Closure.acyclic_impl_antisym_rtrancl",
+     "acyclic ?r ==> antisym (?r^*)",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 2, template_var 0))],
+       template_predicate
+        (
+           template_app
+            (template_hole 1,
+             template_app (template_hole 0, template_var 0))
+           ))),
+    ("Transitive_Closure.rtrancl_idemp_self_comp", "?R^* O ?R^* = ?R^*",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 1, template_app (template_hole 0, template_var 0)),
+         template_app (template_hole 0, template_var 0)),
+       template_app (template_hole 0, template_var 0))),
+    ("Transitive_Closure.single_valued_relpow",
+     "single_valued ?R ==> single_valued (?R ^^ ?n)",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 1, template_var 1))],
+       template_predicate
+        (
+           template_app
+            (template_hole 1,
+             template_app
+              (template_app (template_hole 0, template_var 0),
+               template_var 1))
+           ))),
+    ("Transitive_Closure.symp_symclp_eq", "symp ?r ==> symclp ?r = ?r",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 2, template_var 0))],
+       template_equation
+        (template_app (template_hole 0, template_var 0), template_var 0))),
+    ("Transitive_Closure.trancl_id", "trans ?r ==> ?r^+ = ?r",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 2, template_var 0))],
+       template_equation
+        (template_app (template_hole 0, template_var 0), template_var 0))),
+    ("Transitive_Closure.trans_reflclI", "trans ?r ==> trans (?r^=)",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 2, template_var 0))],
+       template_predicate
+        (
+           template_app
+            (template_hole 2,
+             template_app
+              (template_app (template_hole 1, template_var 0),
+               template_hole 0))
+           ))),
+    ("Transitive_Closure.reflclp_idemp", "?P^==^== = ?P^==",
+     template_bimplication
+      (template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 1,
+               template_app
+                (template_app (template_hole 1, template_var 0),
+                 template_hole 0)),
+             template_hole 0)
+           ),
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 1, template_var 0),
+             template_hole 0)
+           ))),
+    ("Transitive_Closure.rtrancl_unfold", "?r^* = Id Un ?r^* O ?r",
+     template_equation
+      (template_app (template_hole 3, template_var 0),
+       template_app
+        (template_app (template_hole 2, template_hole 1),
+         template_app
+          (template_app
+            (template_hole 0,
+             template_app (template_hole 3, template_var 0)),
+           template_var 0)))),
+    ("Transitive_Closure.trancl_unfold", "?r^+ = ?r Un ?r^+ O ?r",
+     template_equation
+      (template_app (template_hole 2, template_var 0),
+       template_app
+        (template_app (template_hole 1, template_var 0),
+         template_app
+          (template_app
+            (template_hole 0,
+             template_app (template_hole 2, template_var 0)),
+           template_var 0)))),
+    ("Transitive_Closure.r_comp_rtrancl_eq", "?r O ?r^* = ?r^* O ?r",
+     template_equation
+      (template_app
+        (template_app (template_hole 1, template_var 0),
+         template_app (template_hole 0, template_var 0)),
+       template_app
+        (template_app
+          (template_hole 1, template_app (template_hole 0, template_var 0)),
+         template_var 0))),
+    ("Transitive_Closure.trancl_subset_Field2",
+     "?r^+ <= Field ?r \<times> Field ?r",
+     template_inequation
+      (less_equals, template_app (template_hole 2, template_var 0),
+       template_app
+        (template_app
+          (template_hole 1, template_app (template_hole 0, template_var 0)),
+         t_empty))),
+    ("Transitive_Closure.r_into_rtrancl", "?p : ?r ==> ?p : ?r^*",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 1, template_var 1),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 1, template_var 1),
+             template_app (template_hole 0, template_var 0))
+           ))),
+    ("Transitive_Closure.r_into_trancl'", "?p : ?r ==> ?p : ?r^+",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 1, template_var 1),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 1, template_var 1),
+             template_app (template_hole 0, template_var 0))
+           ))),
+    ("Transitive_Closure.r_into_rtranclp", "?r ?x ?y ==> ?r^** ?x ?y",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_var 2, template_var 1), template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app (template_hole 0, template_var 2),
+               template_var 1),
+             template_var 0)
+           ))),
+    ("Transitive_Closure.symclpI1", "?r ?x ?y ==> symclp ?r ?x ?y",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_var 2, template_var 1), template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app (template_hole 0, template_var 2),
+               template_var 1),
+             template_var 0)
+           ))),
+    ("Transitive_Closure.symclpI2", "?r ?y ?x ==> symclp ?r ?x ?y",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_var 2, template_var 1), template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app (template_hole 0, template_var 2),
+               template_var 0),
+             template_var 1)
+           ))),
+    ("Transitive_Closure.rtranclp_is_Sup_relpowp",
+     "?P^** = Sup (range ((^^) ?P))",
+     template_equation
+      (template_app (template_hole 4, template_var 0),
+       template_app
+        (template_hole 3,
+         template_app
+          (template_app (template_hole 2, t_empty), template_hole 0)))),
+    ("Transitive_Closure.rtrancl_is_UN_relpow",
+     "?R^* = \<Union> (range ((^^) ?R))",
+     template_equation
+      (template_app (template_hole 4, template_var 0),
+       template_app
+        (template_hole 3,
+         template_app
+          (template_app (template_hole 2, t_empty), template_hole 0)))),
+    ("Transitive_Closure.rtrancl_Un_subset", "?R^* Un ?S^* <= (?R Un ?S)^*",
+     template_inequation
+      (less_equals,
+       template_app
+        (template_app
+          (template_hole 1, template_app (template_hole 0, template_var 1)),
+         template_app (template_hole 0, template_var 0)),
+       template_app
+        (template_hole 0,
+         template_app
+          (template_app (template_hole 1, template_var 1),
+           template_var 0)))),
+    ("Transitive_Closure.relpowp_bot", "0 < ?n ==> bot ^^ ?n = bot",
+     template_implication
+      ([template_inequation (less_than, template_hole 3, template_var 0)],
+       template_equation
+        (template_app
+          (template_app (template_hole 1, template_var 0), template_hole 0),
+         template_hole 0))),
+    ("Transitive_Closure.relpow_empty", "0 < ?n ==> {} ^^ ?n = {}",
+     template_implication
+      ([template_inequation (less_than, template_hole 3, template_var 0)],
+       template_equation
+        (template_app
+          (template_app (template_hole 1, template_var 0), template_hole 0),
+         template_hole 0))),
+    ("Transitive_Closure.rtranclp_mono", "?r <= ?s ==> ?r^** <= ?s^**",
+     template_implication
+      ([template_inequation (less_equals, template_var 1, template_var 0)],
+       template_inequation
+        (less_equals, template_app (template_hole 0, template_var 1),
+         template_app (template_hole 0, template_var 0)))),
+    ("Transitive_Closure.rtrancl_mono", "?r <= ?s ==> ?r^* <= ?s^*",
+     template_implication
+      ([template_inequation (less_equals, template_var 1, template_var 0)],
+       template_inequation
+        (less_equals, template_app (template_hole 0, template_var 1),
+         template_app (template_hole 0, template_var 0)))),
+    ("Transitive_Closure.tranclp_into_rtranclp",
+     "?r^++ ?a ?b ==> ?r^** ?a ?b",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 1, template_var 2),
+                template_var 1),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app (template_hole 0, template_var 2),
+               template_var 1),
+             template_var 0)
+           ))),
+    ("Transitive_Closure.relpowp_commute",
+     "?P OO ?P ^^ ?n = ?P ^^ ?n OO ?P",
+     template_equation
+      (template_app
+        (template_app (template_hole 1, template_var 1),
+         template_app
+          (template_app (template_hole 0, template_var 0), template_var 1)),
+       template_app
+        (template_app
+          (template_hole 1,
+           template_app
+            (template_app (template_hole 0, template_var 0),
+             template_var 1)),
+         template_var 1))),
+    ("Transitive_Closure.rtranclp_sup_rtranclp",
+     "(sup ?R^** ?S^**)^** = (sup ?R ?S)^**",
+     template_equation
+      (template_app
+        (template_hole 1,
+         template_app
+          (template_app
+            (template_hole 0,
+             template_app (template_hole 1, template_var 1)),
+           template_app (template_hole 1, template_var 0))),
+       template_app
+        (template_hole 1,
+         template_app
+          (template_app (template_hole 0, template_var 1),
+           template_var 0)))),
+    ("Transitive_Closure.relpow_commute", "?R O ?R ^^ ?n = ?R ^^ ?n O ?R",
+     template_equation
+      (template_app
+        (template_app (template_hole 1, template_var 1),
+         template_app
+          (template_app (template_hole 0, template_var 0), template_var 1)),
+       template_app
+        (template_app
+          (template_hole 1,
+           template_app
+            (template_app (template_hole 0, template_var 0),
+             template_var 1)),
+         template_var 1))),
+    ("Transitive_Closure.rtrancl_Un_rtrancl",
+     "(?R^* Un ?S^*)^* = (?R Un ?S)^*",
+     template_equation
+      (template_app
+        (template_hole 1,
+         template_app
+          (template_app
+            (template_hole 0,
+             template_app (template_hole 1, template_var 1)),
+           template_app (template_hole 1, template_var 0))),
+       template_app
+        (template_hole 1,
+         template_app
+          (template_app (template_hole 0, template_var 1),
+           template_var 0)))),
+    ("Transitive_Closure.rtrancl_subset_rtrancl",
+     "?r <= ?s^* ==> ?r^* <= ?s^*",
+     template_implication
+      ([template_inequation
+         (less_equals, template_var 1,
+          template_app (template_hole 0, template_var 0))],
+       template_inequation
+        (less_equals, template_app (template_hole 0, template_var 1),
+         template_app (template_hole 0, template_var 0)))),
+    ("Transitive_Closure.rtranclp_converseI",
+     "?r^** ?y ?x ==> ?r^--1^** ?x ?y",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 1, template_var 2),
+                template_var 1),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_hole 1,
+                 template_app (template_hole 0, template_var 2)),
+               template_var 0),
+             template_var 1)
+           ))),
+    ("Transitive_Closure.relpowp_imp_rtranclp",
+     "(?P ^^ ?n) ?x ?y ==> ?P^** ?x ?y",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 1, template_var 3),
+                  template_var 2),
+                template_var 1),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app (template_hole 0, template_var 2),
+               template_var 1),
+             template_var 0)
+           ))),
+    ("Transitive_Closure.relpow_imp_rtrancl", "?p : ?R ^^ ?n ==> ?p : ?R^*",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 2, template_var 2),
+              template_app
+               (template_app (template_hole 1, template_var 1),
+                template_var 0))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 2, template_var 2),
+             template_app (template_hole 0, template_var 0))
+           ))),
+    ("Transitive_Closure.rtranclp_converseD",
+     "?r^--1^** ?x ?y ==> ?r^** ?y ?x",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_hole 1,
+                  template_app (template_hole 0, template_var 2)),
+                template_var 1),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app (template_hole 1, template_var 2),
+               template_var 0),
+             template_var 1)
+           ))),
+    ("Transitive_Closure.acyclic_subset",
+     "[| acyclic ?s; ?r <= ?s |] ==> acyclic ?r",
+     template_implication
+      ([template_predicate (template_app (template_hole 1, template_var 1)),
+        template_inequation (less_equals, template_var 0, template_var 1)],
+       template_predicate
+        (template_app (template_hole 1, template_var 0)))),
+    ("Transitive_Closure.rtranclp_r_diff_Id",
+     "(inf_class.inf ?r (~=))^** = ?r^**",
+     template_equation
+      (template_app
+        (template_hole 3,
+         template_app
+          (template_app (template_hole 2, template_var 0), t_empty)),
+       template_app (template_hole 3, template_var 0))),
+    ("Transitive_Closure.ntrancl_Suc",
+     "ntrancl (Suc ?n) ?R = ntrancl ?n ?R O (Id Un ?R)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 4, template_app (template_hole 3, template_var 1)),
+         template_var 0),
+       template_app
+        (template_app
+          (template_hole 2,
+           template_app
+            (template_app (template_hole 4, template_var 1),
+             template_var 0)),
+         template_app
+          (template_app (template_hole 1, template_hole 0),
+           template_var 0)))),
+    ("Transitive_Closure.rtrancl_power",
+     "(?p : ?R^*) = (EX n. ?p : ?R ^^ n)",
+     template_equation
+      (template_app
+        (template_app (template_hole 3, template_var 1),
+         template_app (template_hole 2, template_var 0)),
+       template_app (template_hole 1, t_empty))),
+    ("Transitive_Closure.rtranclp_power",
+     "?P^** ?x ?y = (EX n. (?P ^^ n) ?x ?y)",
+     template_equation
+      (template_app
+        (template_app
+          (template_app (template_hole 2, template_var 2), template_var 1),
+         template_var 0),
+       template_app (template_hole 1, t_empty))),
+    ("Transitive_Closure.tranclp_converseI",
+     "?r^++^--1 ?x ?y ==> ?r^--1^++ ?x ?y",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_hole 1,
+                  template_app (template_hole 0, template_var 2)),
+                template_var 1),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_hole 0,
+                 template_app (template_hole 1, template_var 2)),
+               template_var 1),
+             template_var 0)
+           ))),
+    ("Transitive_Closure.rtranclp_symclp_sym",
+     "(symclp ?r)^** ?x ?y ==> (symclp ?r)^** ?y ?x",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_hole 1,
+                  template_app (template_hole 0, template_var 2)),
+                template_var 1),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_hole 1,
+                 template_app (template_hole 0, template_var 2)),
+               template_var 0),
+             template_var 1)
+           ))),
+    ("Transitive_Closure.tranclp_converseD",
+     "?r^--1^++ ?x ?y ==> ?r^++^--1 ?x ?y",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_hole 1,
+                  template_app (template_hole 0, template_var 2)),
+                template_var 1),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_hole 0,
+                 template_app (template_hole 1, template_var 2)),
+               template_var 1),
+             template_var 0)
+           ))),
+    ("Transitive_Closure.finite_relcomp",
+     "[| finite ?R; finite ?S |] ==> finite (?R O ?S)",
+     template_implication
+      ([template_predicate (template_app (template_hole 3, template_var 1)),
+        template_predicate
+         (template_app (template_hole 2, template_var 0))],
+       template_predicate
+        (
+           template_app
+            (template_hole 1,
+             template_app
+              (template_app (template_hole 0, template_var 1),
+               template_var 0))
+           ))),
+    ("Transitive_Closure.relpowp_add",
+     "?P ^^ (?m + ?n) = ?P ^^ ?m OO ?P ^^ ?n",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 2,
+           template_app
+            (template_app (template_hole 1, template_var 2),
+             template_var 1)),
+         template_var 0),
+       template_app
+        (template_app
+          (template_hole 0,
+           template_app
+            (template_app (template_hole 2, template_var 2),
+             template_var 0)),
+         template_app
+          (template_app (template_hole 2, template_var 1),
+           template_var 0)))),
+    ("Closure.gen_upd_app",
+     "gen_upd ?var (?es @ ?es') = gen_upd ?var ?es' o gen_upd ?var ?es",
+     template_equation
+      (template_app
+        (template_app (template_hole 2, template_var 2),
+         template_app
+          (template_app (template_hole 1, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 0,
+           template_app
+            (template_app (template_hole 2, template_var 2),
+             template_var 0)),
+         template_app
+          (template_app (template_hole 2, template_var 2),
+           template_var 1)))),
+    ("Transitive_Closure.relpow_add",
+     "?R ^^ (?m + ?n) = ?R ^^ ?m O ?R ^^ ?n",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 2,
+           template_app
+            (template_app (template_hole 1, template_var 2),
+             template_var 1)),
+         template_var 0),
+       template_app
+        (template_app
+          (template_hole 0,
+           template_app
+            (template_app (template_hole 2, template_var 2),
+             template_var 0)),
+         template_app
+          (template_app (template_hole 2, template_var 1),
+           template_var 0)))),
+    ("Transitive_Closure.finite_trancl_ntranl",
+     "finite ?R ==> ?R^+ = ntrancl (card ?R - 1) ?R",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 6, template_var 0))],
+       template_equation
+        (template_app (template_hole 4, template_var 0),
+         template_app
+          (template_app
+            (template_hole 3,
+             template_app
+              (template_app
+                (template_hole 2,
+                 template_app (template_hole 1, template_var 0)),
+               template_hole 0)),
+           template_var 0)))),
+    ("Transitive_Closure.rtrancl_imp_relpow",
+     "?p : ?R^* ==> EX n. ?p : ?R ^^ n",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 3, template_var 1),
+              template_app (template_hole 2, template_var 0))
+            )],
+       template_predicate (template_app (template_hole 1, t_empty)))),
+    ("Transitive_Closure.rtranclp_imp_relpowp",
+     "?P^** ?x ?y ==> EX n. (?P ^^ n) ?x ?y",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 2, template_var 2),
+                template_var 1),
+              template_var 0)
+            )],
+       template_predicate (template_app (template_hole 1, t_empty)))),
+    ("Transitive_Closure.Image_closed_trancl",
+     "?r `` ?X <= ?X ==> ?r^* `` ?X = ?X",
+     template_implication
+      ([template_inequation
+         (less_equals,
+          template_app
+           (template_app (template_hole 2, template_var 1), template_var 0),
+          template_var 0)],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 2,
+             template_app (template_hole 0, template_var 1)),
+           template_var 0),
+         template_var 0))),
+    ("Transitive_Closure.acyclicI", "ALL x. (x, x) ~: ?r^+ ==> acyclic ?r",
+     template_implication
+      ([template_predicate (template_app (template_hole 5, t_empty))],
+       template_predicate
+        (template_app (template_hole 0, template_var 0)))),
+    ("Transitive_Closure.finite_rtrancl_Image",
+     "[| finite ?R; finite ?A |] ==> finite (?R^* `` ?A)",
+     template_implication
+      ([template_predicate (template_app (template_hole 3, template_var 1)),
+        template_predicate
+         (template_app (template_hole 2, template_var 0))],
+       template_predicate
+        (
+           template_app
+            (template_hole 2,
+             template_app
+              (template_app
+                (template_hole 1,
+                 template_app (template_hole 0, template_var 1)),
+               template_var 0))
+           ))),
+    ("Transitive_Closure.finite_relpow",
+     "[| finite ?R; 0 < ?n |] ==> finite (?R ^^ ?n)",
+     template_implication
+      ([template_predicate (template_app (template_hole 3, template_var 1)),
+        template_inequation (less_than, template_hole 1, template_var 0)],
+       template_predicate
+        (
+           template_app
+            (template_hole 3,
+             template_app
+              (template_app (template_hole 0, template_var 0),
+               template_var 1))
+           ))),
+    ("Closure.in_subsetD", "[| ?P <= ?P'; ?x : ?P |] ==> ?x : ?P'",
+     template_implication
+      ([template_inequation (less_equals, template_var 2, template_var 1),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 0, template_var 0),
+              template_var 2)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 0, template_var 0), template_var 1)
+           ))),
+    ("Transitive_Closure.trancl_into_rtrancl",
+     "(?a, ?b) : ?r^+ ==> (?a, ?b) : ?r^*",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 3,
+                template_app
+                 (template_app (template_hole 2, template_var 2),
+                  template_var 1)),
+              template_app (template_hole 1, template_var 0))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 3,
+               template_app
+                (template_app (template_hole 2, template_var 2),
+                 template_var 1)),
+             template_app (template_hole 0, template_var 0))
+           ))),
+    ("Transitive_Closure.rtrancl_imp_UN_relpow",
+     "?p : ?R^* ==> ?p : \<Union> (range ((^^) ?R))",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 5, template_var 1),
+              template_app (template_hole 4, template_var 0))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 5, template_var 1),
+             template_app
+              (template_hole 3,
+               template_app
+                (template_app (template_hole 2, t_empty), template_hole 0)))
+           ))),
+    ("Transitive_Closure.rtranclp_imp_Sup_relpowp",
+     "?P^** ?x ?y ==> Sup (range ((^^) ?P)) ?x ?y",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 4, template_var 2),
+                template_var 1),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_hole 3,
+                 template_app
+                  (template_app (template_hole 2, t_empty),
+                   template_hole 0)),
+               template_var 1),
+             template_var 0)
+           ))),
+    ("Transitive_Closure.trancl_subset_Sigma",
+     "?r <= ?A \<times> ?A ==> ?r^+ <= ?A \<times> ?A",
+     template_implication
+      ([template_inequation
+         (less_equals, template_var 1,
+          template_app
+           (template_app (template_hole 1, template_var 0), t_empty))],
+       template_inequation
+        (less_equals, template_app (template_hole 0, template_var 1),
+         template_app
+          (template_app (template_hole 1, template_var 0), t_empty)))),
+    ("Transitive_Closure.rtrancl_converseI",
+     "(?y, ?x) : ?r^* ==> (?x, ?y) : (?r^-1)^*",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 3,
+                template_app
+                 (template_app (template_hole 2, template_var 2),
+                  template_var 1)),
+              template_app (template_hole 1, template_var 0))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 3,
+               template_app
+                (template_app (template_hole 2, template_var 1),
+                 template_var 2)),
+             template_app
+              (template_hole 1,
+               template_app (template_hole 0, template_var 0)))
+           ))),
+    ("Transitive_Closure.rtrancl_converseD",
+     "(?x, ?y) : (?r^-1)^* ==> (?y, ?x) : ?r^*",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 3,
+                template_app
+                 (template_app (template_hole 2, template_var 2),
+                  template_var 1)),
+              template_app
+               (template_hole 1,
+                template_app (template_hole 0, template_var 0)))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 3,
+               template_app
+                (template_app (template_hole 2, template_var 1),
+                 template_var 2)),
+             template_app (template_hole 1, template_var 0))
+           ))),
+    ("Transitive_Closure.converse_rtranclp_into_rtranclp",
+     "[| ?r ?a ?b; ?r^** ?b ?c |] ==> ?r^** ?a ?c",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_var 3, template_var 2), template_var 1)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 0, template_var 3),
+                template_var 1),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app (template_hole 0, template_var 3),
+               template_var 2),
+             template_var 0)
+           ))),
+    ("Transitive_Closure.rtranclp_into_tranclp2",
+     "[| ?r ?a ?b; ?r^** ?b ?c |] ==> ?r^++ ?a ?c",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_var 3, template_var 2), template_var 1)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 1, template_var 3),
+                template_var 1),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app (template_hole 0, template_var 3),
+               template_var 2),
+             template_var 0)
+           ))),
+    ("Transitive_Closure.tranclp_into_tranclp2",
+     "[| ?r ?a ?b; ?r^++ ?b ?c |] ==> ?r^++ ?a ?c",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_var 3, template_var 2), template_var 1)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 0, template_var 3),
+                template_var 1),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app (template_hole 0, template_var 3),
+               template_var 2),
+             template_var 0)
+           ))),
+    ("Transitive_Closure.trancl_mono",
+     "[| ?p : ?r^+; ?r <= ?s |] ==> ?p : ?s^+",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 2, template_var 2),
+              template_app (template_hole 1, template_var 1))
+            ),
+        template_inequation (less_equals, template_var 1, template_var 0)],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 2, template_var 2),
+             template_app (template_hole 1, template_var 0))
+           ))),
+    ("Transitive_Closure.transitive_closurep_trans'",
+     "[| ?r^** ?a ?b; ?r ?b ?c |] ==> ?r^** ?a ?c",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 0, template_var 3),
+                template_var 2),
+              template_var 1)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_var 3, template_var 1), template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app (template_hole 0, template_var 3),
+               template_var 2),
+             template_var 0)
+           ))),
+    ("Transitive_Closure.rtranclp_into_tranclp1",
+     "[| ?r^** ?a ?b; ?r ?b ?c |] ==> ?r^++ ?a ?c",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 1, template_var 3),
+                template_var 2),
+              template_var 1)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_var 3, template_var 1), template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app (template_hole 0, template_var 3),
+               template_var 2),
+             template_var 0)
+           ))),
+    ("Transitive_Closure.transitive_closurep_trans'",
+     "[| ?r^++ ?a ?b; ?r ?b ?c |] ==> ?r^++ ?a ?c",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 0, template_var 3),
+                template_var 2),
+              template_var 1)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_var 3, template_var 1), template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app (template_hole 0, template_var 3),
+               template_var 2),
+             template_var 0)
+           ))),
+    ("Closure.gen_upd_ap",
+     "gen_upd ?var (fst (ap ?es (?es', ?p))) =
+      gen_upd ?var ?es' o gen_upd ?var ?es",
+     template_equation
+      (template_app
+        (template_app (template_hole 4, template_var 3),
+         template_app
+          (template_hole 3,
+           template_app
+            (template_app (template_hole 2, template_var 2),
+             template_app
+              (template_app (template_hole 1, template_var 1),
+               template_var 0)))),
+       template_app
+        (template_app
+          (template_hole 0,
+           template_app
+            (template_app (template_hole 4, template_var 3),
+             template_var 1)),
+         template_app
+          (template_app (template_hole 4, template_var 3),
+           template_var 2)))),
+    ("Transitive_Closure.trancl_power",
+     "(?p : ?R^+) = (EX n>0. ?p : ?R ^^ n)",
+     template_equation
+      (template_app
+        (template_app (template_hole 6, template_var 1),
+         template_app (template_hole 5, template_var 0)),
+       template_app (template_hole 4, t_empty))),
+    ("Transitive_Closure.tranclp_power",
+     "?P^++ ?x ?y = (EX n>0. (?P ^^ n) ?x ?y)",
+     template_equation
+      (template_app
+        (template_app
+          (template_app (template_hole 5, template_var 2), template_var 1),
+         template_var 0),
+       template_app (template_hole 4, t_empty))),
+    ("Transitive_Closure.tranclpD",
+     "?R^++ ?x ?y ==> EX z. ?R ?x z & ?R^** z ?y",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 3, template_var 2),
+                template_var 1),
+              template_var 0)
+            )],
+       template_predicate (template_app (template_hole 2, t_empty)))),
+    ("Transitive_Closure.irrefl_tranclI",
+     "?r^-1 Int ?r^* = {} ==> (?x, ?x) ~: ?r^+",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app
+             (template_hole 7,
+              template_app (template_hole 6, template_var 1)),
+            template_app (template_hole 5, template_var 1)),
+          template_hole 4)],
+       template_negation
+        (
+           template_predicate
+            (
+               template_app
+                (template_app
+                  (template_hole 2,
+                   template_app
+                    (template_app (template_hole 1, template_var 0),
+                     template_var 0)),
+                 template_app (template_hole 0, template_var 1))
+               )
+           ))),
+    ("Transitive_Closure.trancl_converseI",
+     "(?x, ?y) : (?r^+)^-1 ==> (?x, ?y) : (?r^-1)^+",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 3,
+                template_app
+                 (template_app (template_hole 2, template_var 2),
+                  template_var 1)),
+              template_app
+               (template_hole 1,
+                template_app (template_hole 0, template_var 0)))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 3,
+               template_app
+                (template_app (template_hole 2, template_var 2),
+                 template_var 1)),
+             template_app
+              (template_hole 0,
+               template_app (template_hole 1, template_var 0)))
+           ))),
+    ("Transitive_Closure.trancl_converseD",
+     "(?x, ?y) : (?r^-1)^+ ==> (?x, ?y) : (?r^+)^-1",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 3,
+                template_app
+                 (template_app (template_hole 2, template_var 2),
+                  template_var 1)),
+              template_app
+               (template_hole 1,
+                template_app (template_hole 0, template_var 0)))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 3,
+               template_app
+                (template_app (template_hole 2, template_var 2),
+                 template_var 1)),
+             template_app
+              (template_hole 0,
+               template_app (template_hole 1, template_var 0)))
+           ))),
+    ("Transitive_Closure.rtranclp_subset",
+     "[| ?R <= ?S; ?S <= ?R^** |] ==> ?S^** = ?R^**",
+     template_implication
+      ([template_inequation (less_equals, template_var 1, template_var 0),
+        template_inequation
+         (less_equals, template_var 0,
+          template_app (template_hole 1, template_var 1))],
+       template_equation
+        (template_app (template_hole 1, template_var 0),
+         template_app (template_hole 1, template_var 1)))),
+    ("Transitive_Closure.rtrancl_subset",
+     "[| ?R <= ?S; ?S <= ?R^* |] ==> ?S^* = ?R^*",
+     template_implication
+      ([template_inequation (less_equals, template_var 1, template_var 0),
+        template_inequation
+         (less_equals, template_var 0,
+          template_app (template_hole 1, template_var 1))],
+       template_equation
+        (template_app (template_hole 1, template_var 0),
+         template_app (template_hole 1, template_var 1)))),
+    ("Transitive_Closure.rtranclp_trans",
+     "[| ?r^** ?x ?y; ?r^** ?y ?z |] ==> ?r^** ?x ?z",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 0, template_var 3),
+                template_var 2),
+              template_var 1)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 0, template_var 3),
+                template_var 1),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app (template_hole 0, template_var 3),
+               template_var 2),
+             template_var 0)
+           ))),
+    ("Transitive_Closure.rtranclp_tranclp_tranclp",
+     "[| ?r^** ?x ?y; ?r^++ ?y ?z |] ==> ?r^++ ?x ?z",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 1, template_var 3),
+                template_var 2),
+              template_var 1)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 0, template_var 3),
+                template_var 1),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app (template_hole 0, template_var 3),
+               template_var 2),
+             template_var 0)
+           ))),
+    ("Transitive_Closure.tranclp_rtranclp_tranclp",
+     "[| ?r^++ ?a ?b; ?r^** ?b ?c |] ==> ?r^++ ?a ?c",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 1, template_var 3),
+                template_var 2),
+              template_var 1)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 0, template_var 3),
+                template_var 1),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app (template_hole 1, template_var 3),
+               template_var 2),
+             template_var 0)
+           ))),
+    ("Transitive_Closure.tranclp_trans",
+     "[| ?r^++ ?x ?y; ?r^++ ?y ?z |] ==> ?r^++ ?x ?z",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 0, template_var 3),
+                template_var 2),
+              template_var 1)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 0, template_var 3),
+                template_var 1),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app (template_hole 0, template_var 3),
+               template_var 2),
+             template_var 0)
+           ))),
+    ("Transitive_Closure.relpowp_0_E",
+     "[| (?P ^^ 0) ?x ?y; ?x = ?y ==> ?Q |] ==> ?Q",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 2, template_hole 1),
+                  template_var 3),
+                template_var 2),
+              template_var 1)
+            ),
+        template_implication
+         ([template_equation (template_var 2, template_var 1)],
+          template_predicate (template_var 0))],
+       template_predicate (template_var 0))),
+    ("Transitive_Closure.rtranclp_rtrancl_eq",
+     "(%x xa. (x, xa) : ?r)^** = (%x xa. (x, xa) : ?r^*)",
+     template_equation (template_app (template_hole 3, t_empty), t_empty)),
+    ("Transitive_Closure.tranclp_trancl_eq",
+     "(%x xa. (x, xa) : ?r)^++ = (%x xa. (x, xa) : ?r^+)",
+     template_equation (template_app (template_hole 3, t_empty), t_empty)),
+    ("Transitive_Closure.acyclic_insert",
+     "acyclic (insert (?y, ?x) ?r) = (acyclic ?r & (?x, ?y) ~: ?r^*)",
+     template_equation
+      (template_app
+        (template_hole 6,
+         template_app
+          (template_app
+            (template_hole 5,
+             template_app
+              (template_app (template_hole 4, template_var 2),
+               template_var 1)),
+           template_var 0)),
+       template_app
+        (template_app
+          (template_hole 3, template_app (template_hole 6, template_var 0)),
+         template_app
+          (template_hole 2,
+           template_app
+            (template_app
+              (template_hole 1,
+               template_app
+                (template_app (template_hole 4, template_var 1),
+                 template_var 2)),
+             template_app (template_hole 0, template_var 0)))))),
+    ("Transitive_Closure.Not_Domain_rtrancl",
+     "?x ~: Domain ?R ==> ((?x, ?y) : ?R^*) = (?x = ?y)",
+     template_implication
+      ([template_negation
+         (
+            template_predicate
+             (
+                template_app
+                 (template_app (template_hole 6, template_var 2),
+                  template_app (template_hole 5, template_var 1))
+                )
+            )],
+       template_implication
+        ([template_predicate
+           (
+              template_app
+               (template_app
+                 (template_hole 3,
+                  template_app
+                   (template_app (template_hole 2, template_var 2),
+                    template_var 0)),
+                template_app (template_hole 1, template_var 1))
+              )],
+         template_equation (template_var 2, template_var 0)))),
+    ("Transitive_Closure.in_rtrancl_UnI",
+     "?x : ?R^* | ?x : ?S^* ==> ?x : (?R Un ?S)^*",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 3,
+                template_app
+                 (template_app (template_hole 2, template_var 2),
+                  template_app (template_hole 1, template_var 1))),
+              template_app
+               (template_app (template_hole 2, template_var 2),
+                template_app (template_hole 1, template_var 0)))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 2, template_var 2),
+             template_app
+              (template_hole 1,
+               template_app
+                (template_app (template_hole 0, template_var 1),
+                 template_var 0)))
+           ))),
+    ("Transitive_Closure.acyclicP_converse",
+     "acyclicP ?r^--1 = acyclicP ?r",
+     template_equation
+      (template_app
+        (template_hole 3,
+         template_app
+          (template_hole 2, template_app (template_hole 1, t_empty))),
+       template_app
+        (template_hole 3,
+         template_app
+          (template_hole 2, template_app (template_hole 1, t_empty))))),
+    ("Transitive_Closure.relpowp_Suc_I2",
+     "[| ?P ?x ?y; (?P ^^ ?n) ?y ?z |] ==> (?P ^^ Suc ?n) ?x ?z",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_var 4, template_var 3), template_var 2)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 1, template_var 1),
+                  template_var 4),
+                template_var 2),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_hole 1,
+                   template_app (template_hole 0, template_var 1)),
+                 template_var 4),
+               template_var 3),
+             template_var 0)
+           ))),
+    ("Transitive_Closure.relpowp_Suc_I",
+     "[| (?P ^^ ?n) ?x ?y; ?P ?y ?z |] ==> (?P ^^ Suc ?n) ?x ?z",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 1, template_var 4),
+                  template_var 3),
+                template_var 2),
+              template_var 1)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_var 3, template_var 1), template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_hole 1,
+                   template_app (template_hole 0, template_var 4)),
+                 template_var 3),
+               template_var 2),
+             template_var 0)
+           ))),
+    ("Transitive_Closure.relpow_0_E",
+     "[| (?x, ?y) : ?R ^^ 0; ?x = ?y ==> ?P |] ==> ?P",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 4,
+                template_app
+                 (template_app (template_hole 3, template_var 3),
+                  template_var 2)),
+              template_app
+               (template_app (template_hole 2, template_hole 1),
+                template_var 1))
+            ),
+        template_implication
+         ([template_equation (template_var 3, template_var 2)],
+          template_predicate (template_var 0))],
+       template_predicate (template_var 0))),
+    ("Transitive_Closure.reflcl_set_eq",
+     "(%x y. (x, y) : ?r)^== = (%x y. (x, y) : ?r^=)",
+     template_equation
+      (template_app
+        (template_app (template_hole 5, t_empty), template_hole 2),
+       t_empty)),
+    ("Transitive_Closure.relpowp_relpow_eq",
+     "(%x y. (x, y) : ?R) ^^ ?n = (%x y. (x, y) : ?R ^^ ?n)",
+     template_equation
+      (template_app
+        (template_app (template_hole 3, template_var 1), t_empty),
+       t_empty)),
+    ("Transitive_Closure.rtrancl_finite_eq_relpow",
+     "finite ?R ==> ?R^* = \<Union> ((^^) ?R ` {n. n <= card ?R})",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 8, template_var 0))],
+       template_equation
+        (template_app (template_hole 6, template_var 0),
+         template_app
+          (template_hole 5,
+           template_app
+            (template_app (template_hole 4, t_empty),
+             template_app (template_hole 2, t_empty)))))),
+    ("Transitive_Closure.rtranclpD",
+     "?R^** ?a ?b ==> ?a = ?b | ?a ~= ?b & ?R^++ ?a ?b",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 5, template_var 2),
+                template_var 1),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 4,
+               template_app
+                (template_app (template_hole 3, template_var 1),
+                 template_var 0)),
+             template_app
+              (template_app
+                (template_hole 2,
+                 template_app
+                  (template_hole 1,
+                   template_app
+                    (template_app (template_hole 3, template_var 1),
+                     template_var 0))),
+               template_app
+                (template_app
+                  (template_app (template_hole 0, template_var 2),
+                   template_var 1),
+                 template_var 0)))
+           ))),
+    ("Transitive_Closure.relpowp_Suc_D2",
+     "(?P ^^ Suc ?n) ?x ?z ==> EX y. ?P ?x y & (?P ^^ ?n) y ?z",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_hole 3,
+                    template_app (template_hole 2, template_var 3)),
+                  template_var 2),
+                template_var 1),
+              template_var 0)
+            )],
+       template_predicate (template_app (template_hole 1, t_empty)))),
+    ("Transitive_Closure.rtrancl_Int_subset",
+     "[| Id <= ?s; (?r^* Int ?s) O ?r <= ?s |] ==> ?r^* <= ?s",
+     template_implication
+      ([template_inequation (less_equals, template_hole 3, template_var 1),
+        template_inequation
+         (less_equals,
+          template_app
+           (template_app
+             (template_hole 2,
+              template_app
+               (template_app
+                 (template_hole 1,
+                  template_app (template_hole 0, template_var 0)),
+                template_var 1)),
+            template_var 0),
+          template_var 1)],
+       template_inequation
+        (less_equals, template_app (template_hole 0, template_var 0),
+         template_var 1))),
+    ("Transitive_Closure.trancl_Int_subset",
+     "[| ?r <= ?s; (?r^+ Int ?s) O ?r <= ?s |] ==> ?r^+ <= ?s",
+     template_implication
+      ([template_inequation (less_equals, template_var 1, template_var 0),
+        template_inequation
+         (less_equals,
+          template_app
+           (template_app
+             (template_hole 2,
+              template_app
+               (template_app
+                 (template_hole 1,
+                  template_app (template_hole 0, template_var 1)),
+                template_var 0)),
+            template_var 1),
+          template_var 0)],
+       template_inequation
+        (less_equals, template_app (template_hole 0, template_var 1),
+         template_var 0))),
+    ("Transitive_Closure.relpow_finite_bounded",
+     "finite ?R ==> ?R ^^ ?k <= \<Union> ((^^) ?R ` {n. n <= card ?R})",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 7, template_var 1))],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_app (template_hole 5, template_var 0), template_var 1),
+         template_app
+          (template_hole 4,
+           template_app
+            (template_app (template_hole 3, t_empty),
+             template_app (template_hole 2, t_empty)))))),
+    ("Transitive_Closure.r_r_into_trancl",
+     "[| (?a, ?b) : ?R; (?b, ?c) : ?R |] ==> (?a, ?c) : ?R^+",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 2,
+                template_app
+                 (template_app (template_hole 1, template_var 3),
+                  template_var 2)),
+              template_var 1)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 2,
+                template_app
+                 (template_app (template_hole 1, template_var 2),
+                  template_var 0)),
+              template_var 1)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 2,
+               template_app
+                (template_app (template_hole 1, template_var 3),
+                 template_var 0)),
+             template_app (template_hole 0, template_var 1))
+           ))),
+    ("Transitive_Closure.converse_rtrancl_into_rtrancl",
+     "[| (?a, ?b) : ?r; (?b, ?c) : ?r^* |] ==> (?a, ?c) : ?r^*",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 2,
+                template_app
+                 (template_app (template_hole 1, template_var 3),
+                  template_var 2)),
+              template_var 1)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 2,
+                template_app
+                 (template_app (template_hole 1, template_var 2),
+                  template_var 0)),
+              template_app (template_hole 0, template_var 1))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 2,
+               template_app
+                (template_app (template_hole 1, template_var 3),
+                 template_var 0)),
+             template_app (template_hole 0, template_var 1))
+           ))),
+    ("Transitive_Closure.rtrancl_into_trancl2",
+     "[| (?a, ?b) : ?r; (?b, ?c) : ?r^* |] ==> (?a, ?c) : ?r^+",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 3,
+                template_app
+                 (template_app (template_hole 2, template_var 3),
+                  template_var 2)),
+              template_var 1)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 3,
+                template_app
+                 (template_app (template_hole 2, template_var 2),
+                  template_var 0)),
+              template_app (template_hole 1, template_var 1))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 3,
+               template_app
+                (template_app (template_hole 2, template_var 3),
+                 template_var 0)),
+             template_app (template_hole 0, template_var 1))
+           ))),
+    ("Transitive_Closure.trancl_into_trancl2",
+     "[| (?a, ?b) : ?r; (?b, ?c) : ?r^+ |] ==> (?a, ?c) : ?r^+",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 2,
+                template_app
+                 (template_app (template_hole 1, template_var 3),
+                  template_var 2)),
+              template_var 1)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 2,
+                template_app
+                 (template_app (template_hole 1, template_var 2),
+                  template_var 0)),
+              template_app (template_hole 0, template_var 1))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 2,
+               template_app
+                (template_app (template_hole 1, template_var 3),
+                 template_var 0)),
+             template_app (template_hole 0, template_var 1))
+           ))),
+    ("Transitive_Closure.transitive_closure_trans",
+     "[| (?a, ?b) : ?r^*; (?b, ?c) : ?r |] ==> (?a, ?c) : ?r^*",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 2,
+                template_app
+                 (template_app (template_hole 1, template_var 3),
+                  template_var 2)),
+              template_app (template_hole 0, template_var 1))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 2,
+                template_app
+                 (template_app (template_hole 1, template_var 2),
+                  template_var 0)),
+              template_var 1)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 2,
+               template_app
+                (template_app (template_hole 1, template_var 3),
+                 template_var 0)),
+             template_app (template_hole 0, template_var 1))
+           ))),
+    ("Transitive_Closure.rtrancl_into_trancl1",
+     "[| (?a, ?b) : ?r^*; (?b, ?c) : ?r |] ==> (?a, ?c) : ?r^+",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 3,
+                template_app
+                 (template_app (template_hole 2, template_var 3),
+                  template_var 2)),
+              template_app (template_hole 1, template_var 1))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 3,
+                template_app
+                 (template_app (template_hole 2, template_var 2),
+                  template_var 0)),
+              template_var 1)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 3,
+               template_app
+                (template_app (template_hole 2, template_var 3),
+                 template_var 0)),
+             template_app (template_hole 0, template_var 1))
+           ))),
+    ("Transitive_Closure.trancl_into_trancl",
+     "[| (?a, ?b) : ?r^+; (?b, ?c) : ?r |] ==> (?a, ?c) : ?r^+",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 2,
+                template_app
+                 (template_app (template_hole 1, template_var 3),
+                  template_var 2)),
+              template_app (template_hole 0, template_var 1))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 2,
+                template_app
+                 (template_app (template_hole 1, template_var 2),
+                  template_var 0)),
+              template_var 1)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 2,
+               template_app
+                (template_app (template_hole 1, template_var 3),
+                 template_var 0)),
+             template_app (template_hole 0, template_var 1))
+           ))),
+    ("Transitive_Closure.rtrancl_eq_or_trancl",
+     "((?x, ?y) : ?R^*) = (?x = ?y | ?x ~= ?y & (?x, ?y) : ?R^+)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 7,
+                template_app
+                 (template_app (template_hole 6, template_var 2),
+                  template_var 1)),
+              template_app (template_hole 5, template_var 0))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 4,
+               template_app
+                (template_app (template_hole 3, template_var 2),
+                 template_var 1)),
+             template_app
+              (template_app
+                (template_hole 2,
+                 template_app
+                  (template_hole 1,
+                   template_app
+                    (template_app (template_hole 3, template_var 2),
+                     template_var 1))),
+               template_app
+                (template_app
+                  (template_hole 7,
+                   template_app
+                    (template_app (template_hole 6, template_var 2),
+                     template_var 1)),
+                 template_app (template_hole 0, template_var 0))))
+           ))),
+    ("Transitive_Closure.tranclD",
+     "(?x, ?y) : ?R^+ ==> EX z. (?x, z) : ?R & (z, ?y) : ?R^*",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 5,
+                template_app
+                 (template_app (template_hole 4, template_var 2),
+                  template_var 1)),
+              template_app (template_hole 3, template_var 0))
+            )],
+       template_predicate (template_app (template_hole 2, t_empty)))),
+    ("Transitive_Closure.tranclD2",
+     "(?x, ?y) : ?R^+ ==> EX z. (?x, z) : ?R^* & (z, ?y) : ?R",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 5,
+                template_app
+                 (template_app (template_hole 4, template_var 2),
+                  template_var 1)),
+              template_app (template_hole 3, template_var 0))
+            )],
+       template_predicate (template_app (template_hole 2, t_empty)))),
+    ("Transitive_Closure.mono_rtranclp",
+     "(!!a b. ?x a b --> ?y a b) ==> ?x^** ?a ?b --> ?y^** ?a ?b",
+     template_implication
+      ([template_predicate (template_app (template_hole 3, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 1,
+               template_app
+                (template_app
+                  (template_app (template_hole 0, template_var 3),
+                   template_var 1),
+                 template_var 0)),
+             template_app
+              (template_app
+                (template_app (template_hole 0, template_var 2),
+                 template_var 1),
+               template_var 0))
+           ))),
+    ("Transitive_Closure.trancl_rtrancl_trancl",
+     "[| (?a, ?b) : ?r^+; (?b, ?c) : ?r^* |] ==> (?a, ?c) : ?r^+",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 3,
+                template_app
+                 (template_app (template_hole 2, template_var 3),
+                  template_var 2)),
+              template_app (template_hole 1, template_var 1))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 3,
+                template_app
+                 (template_app (template_hole 2, template_var 2),
+                  template_var 0)),
+              template_app (template_hole 0, template_var 1))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 3,
+               template_app
+                (template_app (template_hole 2, template_var 3),
+                 template_var 0)),
+             template_app (template_hole 1, template_var 1))
+           ))),
+    ("Transitive_Closure.rtrancl_trans",
+     "[| (?x, ?y) : ?r^*; (?y, ?z) : ?r^* |] ==> (?x, ?z) : ?r^*",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 2,
+                template_app
+                 (template_app (template_hole 1, template_var 3),
+                  template_var 2)),
+              template_app (template_hole 0, template_var 1))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 2,
+                template_app
+                 (template_app (template_hole 1, template_var 2),
+                  template_var 0)),
+              template_app (template_hole 0, template_var 1))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 2,
+               template_app
+                (template_app (template_hole 1, template_var 3),
+                 template_var 0)),
+             template_app (template_hole 0, template_var 1))
+           ))),
+    ("Transitive_Closure.rtrancl_trancl_trancl",
+     "[| (?x, ?y) : ?r^*; (?y, ?z) : ?r^+ |] ==> (?x, ?z) : ?r^+",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 3,
+                template_app
+                 (template_app (template_hole 2, template_var 3),
+                  template_var 2)),
+              template_app (template_hole 1, template_var 1))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 3,
+                template_app
+                 (template_app (template_hole 2, template_var 2),
+                  template_var 0)),
+              template_app (template_hole 0, template_var 1))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 3,
+               template_app
+                (template_app (template_hole 2, template_var 3),
+                 template_var 0)),
+             template_app (template_hole 0, template_var 1))
+           ))),
+    ("Transitive_Closure.trancl_trans",
+     "[| (?x, ?y) : ?r^+; (?y, ?z) : ?r^+ |] ==> (?x, ?z) : ?r^+",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 2,
+                template_app
+                 (template_app (template_hole 1, template_var 3),
+                  template_var 2)),
+              template_app (template_hole 0, template_var 1))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 2,
+                template_app
+                 (template_app (template_hole 1, template_var 2),
+                  template_var 0)),
+              template_app (template_hole 0, template_var 1))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 2,
+               template_app
+                (template_app (template_hole 1, template_var 3),
+                 template_var 0)),
+             template_app (template_hole 0, template_var 1))
+           ))),
+    ("Transitive_Closure.irrefl_trancl_rD",
+     "[| ALL x. (x, x) ~: ?r^+; (?x, ?y) : ?r |] ==> ?x ~= ?y",
+     template_implication
+      ([template_predicate (template_app (template_hole 5, t_empty)),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 3,
+                template_app
+                 (template_app (template_hole 2, template_var 1),
+                  template_var 0)),
+              template_var 2)
+            )],
+       template_negation
+        (template_equation (template_var 1, template_var 0)))),
+    ("Transitive_Closure.trancl_finite_eq_relpow",
+     "finite ?R ==> ?R^+ = \<Union> ((^^) ?R ` {n. 0 < n & n <= card ?R})",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 11, template_var 0))],
+       template_equation
+        (template_app (template_hole 9, template_var 0),
+         template_app
+          (template_hole 8,
+           template_app
+            (template_app (template_hole 7, t_empty),
+             template_app (template_hole 5, t_empty)))))),
+    ("Transitive_Closure.rtranclD",
+     "(?a, ?b) : ?R^* ==> ?a = ?b | ?a ~= ?b & (?a, ?b) : ?R^+",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 7,
+                template_app
+                 (template_app (template_hole 6, template_var 2),
+                  template_var 1)),
+              template_app (template_hole 5, template_var 0))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 4,
+               template_app
+                (template_app (template_hole 3, template_var 2),
+                 template_var 1)),
+             template_app
+              (template_app
+                (template_hole 2,
+                 template_app
+                  (template_hole 1,
+                   template_app
+                    (template_app (template_hole 3, template_var 2),
+                     template_var 1))),
+               template_app
+                (template_app
+                  (template_hole 7,
+                   template_app
+                    (template_app (template_hole 6, template_var 2),
+                     template_var 1)),
+                 template_app (template_hole 0, template_var 0))))
+           ))),
+    ("Closure.conseq_extract_pre",
+     "ALL s:?P.
+         ?\<Gamma>,?\<Theta>\<turnstile>\<^bsub>/?F \<^esub>{s} ?c ?Q,?A ==>
+      ?\<Gamma>,?\<Theta>\<turnstile>\<^bsub>/?F \<^esub>?P ?c ?Q,?A",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 3, template_var 6), t_empty)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_app
+                    (template_app
+                      (template_app (template_hole 2, template_var 5),
+                       template_var 4),
+                     template_var 3),
+                   template_var 6),
+                 template_var 2),
+               template_var 1),
+             template_var 0)
+           ))),
+    ("Transitive_Closure.trancl_subset_Sigma_aux",
+     "[| (?a, ?b) : ?r^*; ?r <= ?A \<times> ?A |] ==> ?a = ?b | ?a : ?A",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 7,
+                template_app
+                 (template_app (template_hole 6, template_var 3),
+                  template_var 2)),
+              template_app (template_hole 5, template_var 1))
+            ),
+        template_inequation
+         (less_equals, template_var 1,
+          template_app
+           (template_app (template_hole 3, template_var 0), t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 2,
+               template_app
+                (template_app (template_hole 1, template_var 3),
+                 template_var 2)),
+             template_app
+              (template_app (template_hole 0, template_var 3),
+               template_var 0))
+           ))),
+    ("Transitive_Closure.symclpE",
+     "[| symclp ?r ?x ?y; ?r ?x ?y ==> ?thesis; ?r ?y ?x ==> ?thesis |]
+      ==> ?thesis",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 0, template_var 3),
+                template_var 2),
+              template_var 1)
+            ),
+        template_implication
+         ([template_predicate
+            (
+               template_app
+                (template_app (template_var 3, template_var 2),
+                 template_var 1)
+               )],
+          template_predicate (template_var 0)),
+        template_implication
+         ([template_predicate
+            (
+               template_app
+                (template_app (template_var 3, template_var 1),
+                 template_var 2)
+               )],
+          template_predicate (template_var 0))],
+       template_predicate (template_var 0))),
+    ("Transitive_Closure.relpow_Suc_I2",
+     "[| (?x, ?y) : ?R; (?y, ?z) : ?R ^^ ?n |] ==> (?x, ?z) : ?R ^^ Suc ?n",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 3,
+                template_app
+                 (template_app (template_hole 2, template_var 4),
+                  template_var 3)),
+              template_var 2)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 3,
+                template_app
+                 (template_app (template_hole 2, template_var 3),
+                  template_var 1)),
+              template_app
+               (template_app (template_hole 1, template_var 0),
+                template_var 2))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 3,
+               template_app
+                (template_app (template_hole 2, template_var 4),
+                 template_var 1)),
+             template_app
+              (template_app
+                (template_hole 1,
+                 template_app (template_hole 0, template_var 0)),
+               template_var 2))
+           ))),
+    ("Transitive_Closure.relpow_Suc_I",
+     "[| (?x, ?y) : ?R ^^ ?n; (?y, ?z) : ?R |] ==> (?x, ?z) : ?R ^^ Suc ?n",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 3,
+                template_app
+                 (template_app (template_hole 2, template_var 4),
+                  template_var 3)),
+              template_app
+               (template_app (template_hole 1, template_var 2),
+                template_var 1))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 3,
+                template_app
+                 (template_app (template_hole 2, template_var 3),
+                  template_var 0)),
+              template_var 1)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 3,
+               template_app
+                (template_app (template_hole 2, template_var 4),
+                 template_var 0)),
+             template_app
+              (template_app
+                (template_hole 1,
+                 template_app (template_hole 0, template_var 2)),
+               template_var 1))
+           ))),
+    ("Transitive_Closure.relpow_Suc_D2",
+     "(?x, ?z) : ?R ^^ Suc ?n ==> EX y. (?x, y) : ?R & (y, ?z) : ?R ^^ ?n",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 5,
+                template_app
+                 (template_app (template_hole 4, template_var 3),
+                  template_var 2)),
+              template_app
+               (template_app
+                 (template_hole 3,
+                  template_app (template_hole 2, template_var 1)),
+                template_var 0))
+            )],
+       template_predicate (template_app (template_hole 1, t_empty)))),
+    ("Transitive_Closure.relpowp_Suc_E2",
+     "[| (?P ^^ Suc ?n) ?x ?z; !!y. [| ?P ?x y; (?P ^^ ?n) y ?z |] ==> ?Q |]
+      ==> ?Q",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_hole 2,
+                    template_app (template_hole 1, template_var 4)),
+                  template_var 3),
+                template_var 2),
+              template_var 1)
+            ),
+        template_predicate (template_app (template_hole 0, t_empty))],
+       template_predicate (template_var 0))),
+    ("Transitive_Closure.relpowp_Suc_E",
+     "[| (?P ^^ Suc ?n) ?x ?z; !!y. [| (?P ^^ ?n) ?x y; ?P y ?z |] ==> ?Q |]
+      ==> ?Q",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_hole 2,
+                    template_app (template_hole 1, template_var 4)),
+                  template_var 3),
+                template_var 2),
+              template_var 1)
+            ),
+        template_predicate (template_app (template_hole 0, t_empty))],
+       template_predicate (template_var 0))),
+    ("Transitive_Closure.relpowp_Suc_D2'",
+     "ALL x y z.
+         (?P ^^ ?n) x y & ?P y z --> (EX w. ?P x w & (?P ^^ ?n) w z)",
+     template_predicate (template_app (template_hole 4, t_empty))),
+    ("Transitive_Closure.rtrancl_insert",
+     "(insert (?a, ?b) ?r)^* =
+      ?r^* Un {(x, y). (x, ?a) : ?r^* & (?b, y) : ?r^*}",
+     template_equation
+      (template_app
+        (template_hole 7,
+         template_app
+          (template_app
+            (template_hole 6,
+             template_app
+              (template_app (template_hole 5, template_var 2),
+               template_var 1)),
+           template_var 0)),
+       template_app
+        (template_app
+          (template_hole 4, template_app (template_hole 7, template_var 0)),
+         template_app
+          (template_hole 3, template_app (template_hole 2, t_empty))))),
+    ("Transitive_Closure.trancl_insert",
+     "(insert (?y, ?x) ?r)^+ =
+      ?r^+ Un {(a, b). (a, ?y) : ?r^* & (?x, b) : ?r^*}",
+     template_equation
+      (template_app
+        (template_hole 8,
+         template_app
+          (template_app
+            (template_hole 7,
+             template_app
+              (template_app (template_hole 6, template_var 2),
+               template_var 1)),
+           template_var 0)),
+       template_app
+        (template_app
+          (template_hole 5, template_app (template_hole 8, template_var 0)),
+         template_app
+          (template_hole 4, template_app (template_hole 3, t_empty))))),
+    ("Transitive_Closure.relpow_finite_bounded1",
+     "[| finite ?R; 0 < ?k |]
+      ==> ?R ^^ ?k <= \<Union> ((^^) ?R ` {n. 0 < n & n <= card ?R})",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 10, template_var 1)),
+        template_inequation (less_than, template_hole 8, template_var 0)],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_app (template_hole 6, template_var 0), template_var 1),
+         template_app
+          (template_hole 5,
+           template_app
+            (template_app (template_hole 4, t_empty),
+             template_app (template_hole 3, t_empty)))))),
+    ("Transitive_Closure.relpowp_fun_conv",
+     "(?P ^^ ?n) ?x ?y =
+      (EX f. f 0 = ?x & f ?n = ?y & (ALL i<?n. ?P (f i) (f (Suc i))))",
+     template_equation
+      (template_app
+        (template_app
+          (template_app
+            (template_app (template_hole 8, template_var 3),
+             template_var 2),
+           template_var 1),
+         template_var 0),
+       template_app (template_hole 7, t_empty))),
+    ("Transitive_Closure.converse_rtranclpE",
+     "[| ?r^** ?x ?z; ?x = ?z ==> ?P;
+         !!y. [| ?r ?x y; ?r^** y ?z |] ==> ?P |]
+      ==> ?P",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 2, template_var 3),
+                template_var 2),
+              template_var 1)
+            ),
+        template_implication
+         ([template_equation (template_var 2, template_var 1)],
+          template_predicate (template_var 0)),
+        template_predicate (template_app (template_hole 0, t_empty))],
+       template_predicate (template_var 0))),
+    ("Transitive_Closure.converse_tranclpE",
+     "[| ?r^++ ?x ?z; ?r ?x ?z ==> ?P;
+         !!y. [| ?r ?x y; ?r^++ y ?z |] ==> ?P |]
+      ==> ?P",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 1, template_var 3),
+                template_var 2),
+              template_var 1)
+            ),
+        template_implication
+         ([template_predicate
+            (
+               template_app
+                (template_app (template_var 3, template_var 2),
+                 template_var 1)
+               )],
+          template_predicate (template_var 0)),
+        template_predicate (template_app (template_hole 0, t_empty))],
+       template_predicate (template_var 0))),
+    ("Transitive_Closure.relpow_Suc_E2",
+     "[| (?x, ?z) : ?R ^^ Suc ?n;
+         !!y. [| (?x, y) : ?R; (y, ?z) : ?R ^^ ?n |] ==> ?P |]
+      ==> ?P",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 4,
+                template_app
+                 (template_app (template_hole 3, template_var 4),
+                  template_var 3)),
+              template_app
+               (template_app
+                 (template_hole 2,
+                  template_app (template_hole 1, template_var 2)),
+                template_var 1))
+            ),
+        template_predicate (template_app (template_hole 0, t_empty))],
+       template_predicate (template_var 0))),
+    ("Transitive_Closure.relpow_Suc_E",
+     "[| (?x, ?z) : ?R ^^ Suc ?n;
+         !!y. [| (?x, y) : ?R ^^ ?n; (y, ?z) : ?R |] ==> ?P |]
+      ==> ?P",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 4,
+                template_app
+                 (template_app (template_hole 3, template_var 4),
+                  template_var 3)),
+              template_app
+               (template_app
+                 (template_hole 2,
+                  template_app (template_hole 1, template_var 2)),
+                template_var 1))
+            ),
+        template_predicate (template_app (template_hole 0, t_empty))],
+       template_predicate (template_var 0))),
+    ("Transitive_Closure.single_valued_confluent",
+     "[| single_valued ?r; (?x, ?y) : ?r^*; (?x, ?z) : ?r^* |]
+      ==> (?y, ?z) : ?r^* | (?z, ?y) : ?r^*",
+     template_implication
+      ([template_predicate (template_app (template_hole 4, template_var 3)),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 3,
+                template_app
+                 (template_app (template_hole 2, template_var 2),
+                  template_var 1)),
+              template_app (template_hole 1, template_var 3))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 3,
+                template_app
+                 (template_app (template_hole 2, template_var 2),
+                  template_var 0)),
+              template_app (template_hole 1, template_var 3))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 0,
+               template_app
+                (template_app
+                  (template_hole 3,
+                   template_app
+                    (template_app (template_hole 2, template_var 1),
+                     template_var 0)),
+                 template_app (template_hole 1, template_var 3))),
+             template_app
+              (template_app
+                (template_hole 3,
+                 template_app
+                  (template_app (template_hole 2, template_var 0),
+                   template_var 1)),
+               template_app (template_hole 1, template_var 3)))
+           ))),
+    ("Transitive_Closure.relpow_fun_conv",
+     "((?a, ?b) : ?R ^^ ?n) =
+      (EX f. f 0 = ?a & f ?n = ?b & (ALL i<?n. (f i, f (Suc i)) : ?R))",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 10,
+           template_app
+            (template_app (template_hole 9, template_var 3),
+             template_var 2)),
+         template_app
+          (template_app (template_hole 8, template_var 1), template_var 0)),
+       template_app (template_hole 7, t_empty))),
+    ("Transitive_Closure.relpow_Suc_D2'",
+     "ALL x y z.
+         (x, y) : ?R ^^ ?n & (y, z) : ?R -->
+         (EX w. (x, w) : ?R & (w, z) : ?R ^^ ?n)",
+     template_predicate (template_app (template_hole 6, t_empty))),
+    ("Transitive_Closure.trancl_insert2",
+     "(insert (?a, ?b) ?r)^+ =
+      ?r^+ Un
+      {(x, y). ((x, ?a) : ?r^+ | x = ?a) & ((?b, y) : ?r^+ | y = ?b)}",
+     template_equation
+      (template_app
+        (template_hole 9,
+         template_app
+          (template_app
+            (template_hole 8,
+             template_app
+              (template_app (template_hole 7, template_var 2),
+               template_var 1)),
+           template_var 0)),
+       template_app
+        (template_app
+          (template_hole 6, template_app (template_hole 9, template_var 0)),
+         template_app
+          (template_hole 5, template_app (template_hole 4, t_empty))))),
+    ("Transitive_Closure.rtranclp_induct",
+     "[| ?r^** ?a ?b; ?P ?a;
+         !!y z. [| ?r^** ?a y; ?r y z; ?P y |] ==> ?P z |]
+      ==> ?P ?b",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 1, template_var 3),
+                template_var 2),
+              template_var 1)
+            ),
+        template_predicate (template_app (template_var 0, template_var 2)),
+        template_predicate (template_app (template_hole 0, t_empty))],
+       template_predicate (template_app (template_var 0, template_var 1)))),
+    ("Transitive_Closure.converse_rtranclp_induct",
+     "[| ?r^** ?a ?b; ?P ?b;
+         !!y z. [| ?r y z; ?r^** z ?b; ?P z |] ==> ?P y |]
+      ==> ?P ?a",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 1, template_var 3),
+                template_var 2),
+              template_var 1)
+            ),
+        template_predicate (template_app (template_var 0, template_var 1)),
+        template_predicate (template_app (template_hole 0, t_empty))],
+       template_predicate (template_app (template_var 0, template_var 2)))),
+    ("Transitive_Closure.rtranclE",
+     "[| (?a, ?b) : ?r^*; ?a = ?b ==> ?thesis;
+         !!y. [| (?a, y) : ?r^*; (y, ?b) : ?r |] ==> ?thesis |]
+      ==> ?thesis",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 4,
+                template_app
+                 (template_app (template_hole 3, template_var 3),
+                  template_var 2)),
+              template_app (template_hole 2, template_var 1))
+            ),
+        template_implication
+         ([template_equation (template_var 3, template_var 2)],
+          template_predicate (template_var 0)),
+        template_predicate (template_app (template_hole 0, t_empty))],
+       template_predicate (template_var 0))),
+    ("Transitive_Closure.converse_rtranclE",
+     "[| (?x, ?z) : ?r^*; ?x = ?z ==> ?P;
+         !!y. [| (?x, y) : ?r; (y, ?z) : ?r^* |] ==> ?P |]
+      ==> ?P",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 4,
+                template_app
+                 (template_app (template_hole 3, template_var 3),
+                  template_var 2)),
+              template_app (template_hole 2, template_var 1))
+            ),
+        template_implication
+         ([template_equation (template_var 3, template_var 2)],
+          template_predicate (template_var 0)),
+        template_predicate (template_app (template_hole 0, t_empty))],
+       template_predicate (template_var 0))),
+    ("Transitive_Closure.rtrancl_Un_separatorE",
+     "[| (?a, ?b) : (?P Un ?Q)^*;
+         ALL x y. (?a, x) : ?P^* --> (x, y) : ?Q --> x = y |]
+      ==> (?a, ?b) : ?P^*",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 6,
+                template_app
+                 (template_app (template_hole 5, template_var 3),
+                  template_var 2)),
+              template_app
+               (template_hole 4,
+                template_app
+                 (template_app (template_hole 3, template_var 1),
+                  template_var 0)))
+            ),
+        template_predicate (template_app (template_hole 2, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 6,
+               template_app
+                (template_app (template_hole 5, template_var 3),
+                 template_var 2)),
+             template_app (template_hole 4, template_var 1))
+           ))),
+    ("Transitive_Closure.rtrancl_Un_separator_converseE",
+     "[| (?a, ?b) : (?P Un ?Q)^*;
+         ALL x y. (x, ?b) : ?P^* --> (y, x) : ?Q --> y = x |]
+      ==> (?a, ?b) : ?P^*",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 6,
+                template_app
+                 (template_app (template_hole 5, template_var 3),
+                  template_var 2)),
+              template_app
+               (template_hole 4,
+                template_app
+                 (template_app (template_hole 3, template_var 1),
+                  template_var 0)))
+            ),
+        template_predicate (template_app (template_hole 2, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 6,
+               template_app
+                (template_app (template_hole 5, template_var 3),
+                 template_var 2)),
+             template_app (template_hole 4, template_var 1))
+           ))),
+    ("Transitive_Closure.tranclE",
+     "[| (?a, ?b) : ?r^+; (?a, ?b) : ?r ==> ?thesis;
+         !!c. [| (?a, c) : ?r^+; (c, ?b) : ?r |] ==> ?thesis |]
+      ==> ?thesis",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 3,
+                template_app
+                 (template_app (template_hole 2, template_var 3),
+                  template_var 2)),
+              template_app (template_hole 1, template_var 1))
+            ),
+        template_implication
+         ([template_predicate
+            (
+               template_app
+                (template_app
+                  (template_hole 3,
+                   template_app
+                    (template_app (template_hole 2, template_var 3),
+                     template_var 2)),
+                 template_var 1)
+               )],
+          template_predicate (template_var 0)),
+        template_predicate (template_app (template_hole 0, t_empty))],
+       template_predicate (template_var 0))),
+    ("Transitive_Closure.converse_tranclE",
+     "[| (?x, ?z) : ?r^+; (?x, ?z) : ?r ==> ?P;
+         !!y. [| (?x, y) : ?r; (y, ?z) : ?r^+ |] ==> ?P |]
+      ==> ?P",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 3,
+                template_app
+                 (template_app (template_hole 2, template_var 3),
+                  template_var 2)),
+              template_app (template_hole 1, template_var 1))
+            ),
+        template_implication
+         ([template_predicate
+            (
+               template_app
+                (template_app
+                  (template_hole 3,
+                   template_app
+                    (template_app (template_hole 2, template_var 3),
+                     template_var 2)),
+                 template_var 1)
+               )],
+          template_predicate (template_var 0)),
+        template_predicate (template_app (template_hole 0, t_empty))],
+       template_predicate (template_var 0))),
+    ("Transitive_Closure.rtrancl_induct",
+     "[| (?a, ?b) : ?r^*; ?P ?a;
+         !!y z. [| (?a, y) : ?r^*; (y, z) : ?r; ?P y |] ==> ?P z |]
+      ==> ?P ?b",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 3,
+                template_app
+                 (template_app (template_hole 2, template_var 3),
+                  template_var 2)),
+              template_app (template_hole 1, template_var 1))
+            ),
+        template_predicate (template_app (template_var 0, template_var 3)),
+        template_predicate (template_app (template_hole 0, t_empty))],
+       template_predicate (template_app (template_var 0, template_var 2)))),
+    ("Transitive_Closure.converse_rtrancl_induct",
+     "[| (?a, ?b) : ?r^*; ?P ?b;
+         !!y z. [| (y, z) : ?r; (z, ?b) : ?r^*; ?P z |] ==> ?P y |]
+      ==> ?P ?a",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 3,
+                template_app
+                 (template_app (template_hole 2, template_var 3),
+                  template_var 2)),
+              template_app (template_hole 1, template_var 1))
+            ),
+        template_predicate (template_app (template_var 0, template_var 2)),
+        template_predicate (template_app (template_hole 0, t_empty))],
+       template_predicate (template_app (template_var 0, template_var 3)))),
+    ("Transitive_Closure.converse_tranclp_induct",
+     "[| ?r^++ ?a ?b; !!y. ?r y ?b ==> ?P y;
+         !!y z. [| ?r y z; ?r^++ z ?b; ?P z |] ==> ?P y |]
+      ==> ?P ?a",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 1, template_var 3),
+                template_var 2),
+              template_var 1)
+            ),
+        template_predicate (template_app (template_hole 0, t_empty)),
+        template_predicate (template_app (template_hole 0, t_empty))],
+       template_predicate (template_app (template_var 0, template_var 2)))),
+    ("Transitive_Closure.tranclp_induct",
+     "[| ?r^++ ?a ?b; !!y. ?r ?a y ==> ?P y;
+         !!y z. [| ?r^++ ?a y; ?r y z; ?P y |] ==> ?P z |]
+      ==> ?P ?b",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 1, template_var 3),
+                template_var 2),
+              template_var 1)
+            ),
+        template_predicate (template_app (template_hole 0, t_empty)),
+        template_predicate (template_app (template_hole 0, t_empty))],
+       template_predicate (template_app (template_var 0, template_var 1)))),
+    ("Transitive_Closure.relpowp_E2",
+     "[| (?P ^^ ?n) ?x ?z; [| ?n = 0; ?x = ?z |] ==> ?Q;
+         !!y m. [| ?n = Suc m; ?P ?x y; (?P ^^ m) y ?z |] ==> ?Q |]
+      ==> ?Q",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 6, template_var 4),
+                  template_var 3),
+                template_var 2),
+              template_var 1)
+            ),
+        template_implication
+         ([template_equation (template_var 4, template_hole 4)],
+          template_implication
+           ([template_equation (template_var 2, template_var 1)],
+            template_predicate (template_var 0))),
+        template_predicate (template_app (template_hole 2, t_empty))],
+       template_predicate (template_var 0))),
+    ("Transitive_Closure.relpowp_E",
+     "[| (?P ^^ ?n) ?x ?z; [| ?n = 0; ?x = ?z |] ==> ?Q;
+         !!y m. [| ?n = Suc m; (?P ^^ m) ?x y; ?P y ?z |] ==> ?Q |]
+      ==> ?Q",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 6, template_var 4),
+                  template_var 3),
+                template_var 2),
+              template_var 1)
+            ),
+        template_implication
+         ([template_equation (template_var 4, template_hole 4)],
+          template_implication
+           ([template_equation (template_var 2, template_var 1)],
+            template_predicate (template_var 0))),
+        template_predicate (template_app (template_hole 2, t_empty))],
+       template_predicate (template_var 0))),
+    ("Transitive_Closure.converse_rtranclpE2",
+     "[| ?r^** (?xa, ?xb) (?za, ?zb); (?xa, ?xb) = (?za, ?zb) ==> ?P;
+         !!a b.
+            [| ?r (?xa, ?xb) (a, b); ?r^** (a, b) (?za, ?zb) |] ==> ?P |]
+      ==> ?P",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 4, template_var 5),
+                template_app
+                 (template_app (template_hole 3, template_var 4),
+                  template_var 3)),
+              template_app
+               (template_app (template_hole 3, template_var 2),
+                template_var 1))
+            ),
+        template_implication
+         ([template_equation
+            (template_app
+              (template_app (template_hole 3, template_var 4),
+               template_var 3),
+             template_app
+              (template_app (template_hole 3, template_var 2),
+               template_var 1))],
+          template_predicate (template_var 0)),
+        template_predicate (template_app (template_hole 1, t_empty))],
+       template_predicate (template_var 0))),
+    ("Transitive_Closure.converse_trancl_induct",
+     "[| (?a, ?b) : ?r^+; !!y. (y, ?b) : ?r ==> ?P y;
+         !!y z. [| (y, z) : ?r; (z, ?b) : ?r^+; ?P z |] ==> ?P y |]
+      ==> ?P ?a",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 3,
+                template_app
+                 (template_app (template_hole 2, template_var 3),
+                  template_var 2)),
+              template_app (template_hole 1, template_var 1))
+            ),
+        template_predicate (template_app (template_hole 0, t_empty)),
+        template_predicate (template_app (template_hole 0, t_empty))],
+       template_predicate (template_app (template_var 0, template_var 3)))),
+    ("Transitive_Closure.trancl_induct",
+     "[| (?a, ?b) : ?r^+; !!y. (?a, y) : ?r ==> ?P y;
+         !!y z. [| (?a, y) : ?r^+; (y, z) : ?r; ?P y |] ==> ?P z |]
+      ==> ?P ?b",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 3,
+                template_app
+                 (template_app (template_hole 2, template_var 3),
+                  template_var 2)),
+              template_app (template_hole 1, template_var 1))
+            ),
+        template_predicate (template_app (template_hole 0, t_empty)),
+        template_predicate (template_app (template_hole 0, t_empty))],
+       template_predicate (template_app (template_var 0, template_var 2)))),
+    ("Closure.ap_closure",
+     "?P <= {s. EX P' Q' A'.
+                   ?\<Gamma>,?\<Theta>
+                      \<turnstile>\<^bsub>/?F \<^esub>P'
+                callClosure (gen_upd ?var) ?c Q',A' &
+                   gen_upd ?var ?es s : P' & Q' <= ?Q & A' <= ?A} ==>
+      ?\<Gamma>,?\<Theta>
+         \<turnstile>\<^bsub>/?F \<^esub>?P
+   callClosure (gen_upd ?var) (ap ?es ?c) ?Q,?A",
+     template_implication
+      ([template_inequation
+         (less_equals, template_var 8,
+          template_app (template_hole 7, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_app
+                    (template_app
+                      (template_app (template_hole 4, template_var 7),
+                       template_var 6),
+                     template_var 5),
+                   template_var 8),
+                 template_app
+                  (template_app
+                    (template_hole 3,
+                     template_app (template_hole 2, template_var 4)),
+                   template_app
+                    (template_app (template_hole 0, template_var 2),
+                     template_var 3))),
+               template_var 1),
+             template_var 0)
+           ))),
+    ("Transitive_Closure.relpow_E2",
+     "[| (?x, ?z) : ?R ^^ ?n; [| ?n = 0; ?x = ?z |] ==> ?P;
+         !!y m. [| ?n = Suc m; (?x, y) : ?R; (y, ?z) : ?R ^^ m |] ==> ?P |]
+      ==> ?P",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 8,
+                template_app
+                 (template_app (template_hole 7, template_var 4),
+                  template_var 3)),
+              template_app
+               (template_app (template_hole 6, template_var 2),
+                template_var 1))
+            ),
+        template_implication
+         ([template_equation (template_var 2, template_hole 4)],
+          template_implication
+           ([template_equation (template_var 4, template_var 3)],
+            template_predicate (template_var 0))),
+        template_predicate (template_app (template_hole 2, t_empty))],
+       template_predicate (template_var 0))),
+    ("Transitive_Closure.relpow_E",
+     "[| (?x, ?z) : ?R ^^ ?n; [| ?n = 0; ?x = ?z |] ==> ?P;
+         !!y m. [| ?n = Suc m; (?x, y) : ?R ^^ m; (y, ?z) : ?R |] ==> ?P |]
+      ==> ?P",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 8,
+                template_app
+                 (template_app (template_hole 7, template_var 4),
+                  template_var 3)),
+              template_app
+               (template_app (template_hole 6, template_var 2),
+                template_var 1))
+            ),
+        template_implication
+         ([template_equation (template_var 2, template_hole 4)],
+          template_implication
+           ([template_equation (template_var 4, template_var 3)],
+            template_predicate (template_var 0))),
+        template_predicate (template_app (template_hole 2, t_empty))],
+       template_predicate (template_var 0))),
+    ("Transitive_Closure.rtranclp_induct2",
+     "[| ?r^** (?ax, ?ay) (?bx, ?by); ?P ?ax ?ay;
+         !!a b aa ba.
+            [| ?r^** (?ax, ?ay) (a, b); ?r (a, b) (aa, ba); ?P a b |]
+            ==> ?P aa ba |]
+      ==> ?P ?bx ?by",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 3, template_var 5),
+                template_app
+                 (template_app (template_hole 2, template_var 4),
+                  template_var 3)),
+              template_app
+               (template_app (template_hole 2, template_var 2),
+                template_var 1))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_var 0, template_var 4), template_var 3)
+            ),
+        template_predicate (template_app (template_hole 1, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app (template_var 0, template_var 2), template_var 1)
+           ))),
+    ("Transitive_Closure.converse_rtranclp_induct2",
+     "[| ?r^** (?ax, ?ay) (?bx, ?by); ?P ?bx ?by;
+         !!a b aa ba.
+            [| ?r (a, b) (aa, ba); ?r^** (aa, ba) (?bx, ?by); ?P aa ba |]
+            ==> ?P a b |]
+      ==> ?P ?ax ?ay",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 3, template_var 5),
+                template_app
+                 (template_app (template_hole 2, template_var 4),
+                  template_var 3)),
+              template_app
+               (template_app (template_hole 2, template_var 2),
+                template_var 1))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_var 0, template_var 2), template_var 1)
+            ),
+        template_predicate (template_app (template_hole 1, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app (template_var 0, template_var 4), template_var 3)
+           ))),
+    ("Transitive_Closure.converse_rtranclE2",
+     "[| ((?xa, ?xb), ?za, ?zb) : ?r^*; (?xa, ?xb) = (?za, ?zb) ==> ?P;
+         !!a b.
+            [| ((?xa, ?xb), a, b) : ?r; ((a, b), ?za, ?zb) : ?r^* |]
+            ==> ?P |]
+      ==> ?P",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 6,
+                template_app
+                 (template_app
+                   (template_hole 5,
+                    template_app
+                     (template_app (template_hole 4, template_var 5),
+                      template_var 4)),
+                  template_app
+                   (template_app (template_hole 4, template_var 3),
+                    template_var 2))),
+              template_app (template_hole 3, template_var 1))
+            ),
+        template_implication
+         ([template_equation
+            (template_app
+              (template_app (template_hole 4, template_var 5),
+               template_var 4),
+             template_app
+              (template_app (template_hole 4, template_var 3),
+               template_var 2))],
+          template_predicate (template_var 0)),
+        template_predicate (template_app (template_hole 1, t_empty))],
+       template_predicate (template_var 0))),
+    ("Closure.ap_closure_spec",
+     "[| ?P <= {s. EX Z. gen_upd ?var ?es s : ?P' Z &
+                         ?Q' Z <= ?Q & ?A' Z <= ?A};
+         ALL Z.
+            ?\<Gamma>,?\<Theta>
+               \<turnstile>\<^bsub>/?F \<^esub>(?P' Z)
+         callClosure (gen_upd ?var) ?c (?Q' Z),(?A' Z) |]
+      ==> ?\<Gamma>,?\<Theta>
+             \<turnstile>\<^bsub>/?F \<^esub>?P
+       callClosure (gen_upd ?var) (ap ?es ?c) ?Q,?A",
+     template_implication
+      ([template_inequation
+         (less_equals, template_var 11,
+          template_app (template_hole 8, t_empty)),
+        template_predicate (template_app (template_hole 3, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_app
+                    (template_app
+                      (template_app (template_hole 2, template_var 3),
+                       template_var 2),
+                     template_var 1),
+                   template_var 11),
+                 template_app
+                  (template_app
+                    (template_hole 1,
+                     template_app (template_hole 4, template_var 10)),
+                   template_app
+                    (template_app (template_hole 0, template_var 9),
+                     template_var 0))),
+               template_var 6),
+             template_var 4)
+           ))),
+    ("Transitive_Closure.tranclp_trans_induct",
+     "[| ?r^++ ?x ?y; !!x y. ?r x y ==> ?P x y;
+         !!x y z. [| ?r^++ x y; ?P x y; ?r^++ y z; ?P y z |] ==> ?P x z |]
+      ==> ?P ?x ?y",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 1, template_var 3),
+                template_var 2),
+              template_var 1)
+            ),
+        template_predicate (template_app (template_hole 0, t_empty)),
+        template_predicate (template_app (template_hole 0, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app (template_var 0, template_var 2), template_var 1)
+           ))),
+    ("Closure.app_closure",
+     "[| ?P <= {s. EX P' Q' A'.
+                      ?\<Gamma>,?\<Theta>
+                         \<turnstile>\<^bsub>/?F \<^esub>P'
+                   callClosure ?upd (?e', ?p) Q',A' &
+                      ?upd ?x s : P' & Q' <= ?Q & A' <= ?A};
+         ?upd ?e = ?upd ?e' o ?upd ?x |]
+      ==> ?\<Gamma>,?\<Theta>
+             \<turnstile>\<^bsub>/?F \<^esub>?P callClosure ?upd (?e, ?p)
+       ?Q,?A",
+     template_implication
+      ([template_inequation
+         (less_equals, template_var 10,
+          template_app (template_hole 8, t_empty)),
+        template_equation
+         (template_app (template_var 6, template_var 0),
+          template_app
+           (template_app
+             (template_hole 0,
+              template_app (template_var 6, template_var 5)),
+            template_app (template_var 6, template_var 3)))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_app
+                    (template_app
+                      (template_app (template_hole 5, template_var 9),
+                       template_var 8),
+                     template_var 7),
+                   template_var 10),
+                 template_app
+                  (template_app (template_hole 4, template_var 6),
+                   template_app
+                    (template_app (template_hole 3, template_var 0),
+                     template_var 4))),
+               template_var 2),
+             template_var 1)
+           ))),
+    ("Transitive_Closure.rtrancl_induct2",
+     "[| ((?ax, ?ay), ?bx, ?by) : ?r^*; ?P ?ax ?ay;
+         !!a b aa ba.
+            [| ((?ax, ?ay), a, b) : ?r^*; ((a, b), aa, ba) : ?r; ?P a b |]
+            ==> ?P aa ba |]
+      ==> ?P ?bx ?by",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 5,
+                template_app
+                 (template_app
+                   (template_hole 4,
+                    template_app
+                     (template_app (template_hole 3, template_var 5),
+                      template_var 4)),
+                  template_app
+                   (template_app (template_hole 3, template_var 3),
+                    template_var 2))),
+              template_app (template_hole 2, template_var 1))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_var 0, template_var 5), template_var 4)
+            ),
+        template_predicate (template_app (template_hole 1, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app (template_var 0, template_var 3), template_var 2)
+           ))),
+    ("Transitive_Closure.converse_rtrancl_induct2",
+     "[| ((?ax, ?ay), ?bx, ?by) : ?r^*; ?P ?bx ?by;
+         !!a b aa ba.
+            [| ((a, b), aa, ba) : ?r; ((aa, ba), ?bx, ?by) : ?r^*;
+               ?P aa ba |]
+            ==> ?P a b |]
+      ==> ?P ?ax ?ay",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 5,
+                template_app
+                 (template_app
+                   (template_hole 4,
+                    template_app
+                     (template_app (template_hole 3, template_var 5),
+                      template_var 4)),
+                  template_app
+                   (template_app (template_hole 3, template_var 3),
+                    template_var 2))),
+              template_app (template_hole 2, template_var 1))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_var 0, template_var 3), template_var 2)
+            ),
+        template_predicate (template_app (template_hole 1, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app (template_var 0, template_var 5), template_var 4)
+           ))),
+    ("Closure.app_closure_sound",
+     "[| ?P <= {s. EX P' Q' A'.
+                      ALL n.
+                         ?\<Gamma>,?\<Theta>|=n:/?F
+                         P' callClosure ?upd (?e', ?p) Q',A' &
+                         ?upd ?x s : P' & Q' <= ?Q & A' <= ?A};
+         ?upd ?e = ?upd ?e' o ?upd ?x |]
+      ==> ?\<Gamma>,?\<Theta>|=?n:/?F ?P callClosure ?upd (?e, ?p) ?Q,?A",
+     template_implication
+      ([template_inequation
+         (less_equals, template_var 11,
+          template_app (template_hole 9, t_empty)),
+        template_equation
+         (template_app (template_var 7, template_var 1),
+          template_app
+           (template_app
+             (template_hole 0,
+              template_app (template_var 7, template_var 6)),
+            template_app (template_var 7, template_var 4)))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_app
+                    (template_app
+                      (template_app
+                        (template_app (template_hole 5, template_var 10),
+                         template_var 9),
+                       template_var 0),
+                     template_var 8),
+                   template_var 11),
+                 template_app
+                  (template_app (template_hole 4, template_var 7),
+                   template_app
+                    (template_app (template_hole 3, template_var 1),
+                     template_var 5))),
+               template_var 3),
+             template_var 2)
+           ))),
+    ("Transitive_Closure.trancl_trans_induct",
+     "[| (?x, ?y) : ?r^+; !!x y. (x, y) : ?r ==> ?P x y;
+         !!x y z.
+            [| (x, y) : ?r^+; ?P x y; (y, z) : ?r^+; ?P y z |] ==> ?P x z |]
+      ==> ?P ?x ?y",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 3,
+                template_app
+                 (template_app (template_hole 2, template_var 3),
+                  template_var 2)),
+              template_app (template_hole 1, template_var 1))
+            ),
+        template_predicate (template_app (template_hole 0, t_empty)),
+        template_predicate (template_app (template_hole 0, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app (template_var 0, template_var 3), template_var 2)
+           ))),
+    ("Closure.app_closure_spec",
+     "[| ?P <= {s. EX Z. ?upd ?x s : ?P' Z & ?Q' Z <= ?Q & ?A' Z <= ?A};
+         ?upd ?e = ?upd ?e' o ?upd ?x;
+         ALL Z.
+            ?\<Gamma>,?\<Theta>
+               \<turnstile>\<^bsub>/?F \<^esub>(?P' Z)
+         callClosure ?upd (?e', ?p) (?Q' Z),(?A' Z) |]
+      ==> ?\<Gamma>,?\<Theta>
+             \<turnstile>\<^bsub>/?F \<^esub>?P callClosure ?upd (?e, ?p)
+       ?Q,?A",
+     template_implication
+      ([template_inequation
+         (less_equals, template_var 13,
+          template_app (template_hole 9, t_empty)),
+        template_equation
+         (template_app (template_var 12, template_var 5),
+          template_app
+           (template_app
+             (template_hole 4,
+              template_app (template_var 12, template_var 4)),
+            template_app (template_var 12, template_var 11))),
+        template_predicate (template_app (template_hole 3, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_app
+                    (template_app
+                      (template_app (template_hole 2, template_var 3),
+                       template_var 2),
+                     template_var 1),
+                   template_var 13),
+                 template_app
+                  (template_app (template_hole 1, template_var 12),
+                   template_app
+                    (template_app (template_hole 0, template_var 5),
+                     template_var 0))),
+               template_var 8),
+             template_var 6)
+           ))),
+    ("Transitive_Closure.tranclp_induct2",
+     "[| ?r^++ (?ax, ?ay) (?bx, ?by);
+         !!a b. ?r (?ax, ?ay) (a, b) ==> ?P a b;
+         !!a b aa ba.
+            [| ?r^++ (?ax, ?ay) (a, b); ?r (a, b) (aa, ba); ?P a b |]
+            ==> ?P aa ba |]
+      ==> ?P ?bx ?by",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 3, template_var 5),
+                template_app
+                 (template_app (template_hole 2, template_var 4),
+                  template_var 3)),
+              template_app
+               (template_app (template_hole 2, template_var 2),
+                template_var 1))
+            ),
+        template_predicate (template_app (template_hole 1, t_empty)),
+        template_predicate (template_app (template_hole 1, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app (template_var 0, template_var 2), template_var 1)
+           ))),
+    ("Transitive_Closure.trancl_induct2",
+     "[| ((?ax, ?ay), ?bx, ?by) : ?r^+;
+         !!a b. ((?ax, ?ay), a, b) : ?r ==> ?P a b;
+         !!a b aa ba.
+            [| ((?ax, ?ay), a, b) : ?r^+; ((a, b), aa, ba) : ?r; ?P a b |]
+            ==> ?P aa ba |]
+      ==> ?P ?bx ?by",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 5,
+                template_app
+                 (template_app
+                   (template_hole 4,
+                    template_app
+                     (template_app (template_hole 3, template_var 5),
+                      template_var 4)),
+                  template_app
+                   (template_app (template_hole 3, template_var 3),
+                    template_var 2))),
+              template_app (template_hole 2, template_var 1))
+            ),
+        template_predicate (template_app (template_hole 1, t_empty)),
+        template_predicate (template_app (template_hole 1, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app (template_var 0, template_var 3), template_var 2)
+           ))),
+    ("Closure.dynCallClosure",
+     "[| ?P <= {s. EX P' Q' A'.
+                      ?\<Gamma>,?\<Theta>
+                         \<turnstile>\<^bsub>/?F \<^esub>P'
+                   callClosure ?upd (?cl s) Q',A' &
+                      ?init s : P' &
+                      (ALL t:Q'. ?return s t : ?R s t) &
+                      (ALL t:A'. ?return s t : ?A)};
+         ALL s t.
+            ?\<Gamma>,?\<Theta>
+               \<turnstile>\<^bsub>/?F \<^esub>(?R s t) ?c s t ?Q,?A |]
+      ==> ?\<Gamma>,?\<Theta>
+             \<turnstile>\<^bsub>/?F \<^esub>?P
+       dynCallClosure ?init ?upd ?cl ?return ?c ?Q,?A",
+     template_implication
+      ([template_inequation
+         (less_equals, template_var 11,
+          template_app (template_hole 8, t_empty)),
+        template_predicate (template_app (template_hole 1, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_app
+                    (template_app
+                      (template_app (template_hole 5, template_var 10),
+                       template_var 9),
+                     template_var 8),
+                   template_var 11),
+                 template_app
+                  (template_app
+                    (template_app
+                      (template_app
+                        (template_app (template_hole 0, template_var 5),
+                         template_var 7),
+                       template_var 6),
+                     template_var 4),
+                   template_var 1)),
+               template_var 0),
+             template_var 2)
+           ))),
+    ("Closure.dynCallClosure_sound",
+     "[| ?P <= {s. EX P' Q' A'.
+                      ALL n.
+                         ?\<Gamma>,?\<Theta>|=n:/?F
+                         P' callClosure ?upd (?cl s) Q',A' &
+                         ?init s : P' &
+                         (ALL t:Q'. ?return s t : ?R s t) &
+                         (ALL t:A'. ?return s t : ?A)};
+         ALL s t n. ?\<Gamma>,?\<Theta>|=n:/?F (?R s t) ?c s t ?Q,?A |]
+      ==> ?\<Gamma>,?\<Theta>|=?n:/?F
+          ?P dynCallClosure ?init ?upd ?cl ?return ?c ?Q,?A",
+     template_implication
+      ([template_inequation
+         (less_equals, template_var 12,
+          template_app (template_hole 9, t_empty)),
+        template_predicate (template_app (template_hole 1, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_app
+                    (template_app
+                      (template_app
+                        (template_app (template_hole 5, template_var 11),
+                         template_var 10),
+                       template_var 0),
+                     template_var 9),
+                   template_var 12),
+                 template_app
+                  (template_app
+                    (template_app
+                      (template_app
+                        (template_app (template_hole 0, template_var 6),
+                         template_var 8),
+                       template_var 7),
+                     template_var 5),
+                   template_var 2)),
+               template_var 1),
+             template_var 3)
+           ))),
+    ("Closure.dynCallClosureFix",
+     "[| ?P <= {s. EX Z. ?cl' = ?cl s &
+                         ?init s : ?P' Z &
+                         (ALL t:?Q' Z. ?return s t : ?R s t) &
+                         (ALL t:?A' Z. ?return s t : ?A)};
+         ALL s t.
+            ?\<Gamma>,?\<Theta>
+               \<turnstile>\<^bsub>/?F \<^esub>(?R s t) ?c s t ?Q,?A;
+         ALL Z.
+            ?\<Gamma>,?\<Theta>
+               \<turnstile>\<^bsub>/?F \<^esub>(?P' Z) callClosure ?upd ?cl'
+         (?Q' Z),(?A' Z) |]
+      ==> ?\<Gamma>,?\<Theta>
+             \<turnstile>\<^bsub>/?F \<^esub>?P
+       dynCallClosure ?init ?upd ?cl ?return ?c ?Q,?A",
+     template_implication
+      ([template_inequation
+         (less_equals, template_var 15,
+          template_app (template_hole 10, t_empty)),
+        template_predicate (template_app (template_hole 4, t_empty)),
+        template_predicate (template_app (template_hole 2, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_app
+                    (template_app
+                      (template_app (template_hole 3, template_var 5),
+                       template_var 4),
+                     template_var 3),
+                   template_var 15),
+                 template_app
+                  (template_app
+                    (template_app
+                      (template_app
+                        (template_app (template_hole 0, template_var 12),
+                         template_var 0),
+                       template_var 13),
+                     template_var 9),
+                   template_var 2)),
+               template_var 1),
+             template_var 6)
+           )))]:
+   (string * thm * template) list
+### theory "Draft.ClosureTemplates"
+### 0.436s elapsed time, 0.651s cpu time, 0.118s GC time
+val it = (): unit

@@ -1,0 +1,820 @@
+Loading theory "Draft.Missing_Lemmas" (required by "Draft.NormsTemplates" via "Draft.Norms")
+Loading theory "Draft.Templates" (required by "Draft.NormsTemplates" via "Draft.ExtrEqs")
+datatype template_term
+=
+     t_empty
+   | template_app of template_term * template_term
+   | template_hole of int
+   | template_var of int
+datatype sign
+= equals | greater_equals | greater_than | less_equals | less_than
+datatype template
+=
+     template_bimplication of template * template
+   | template_dunno
+   | template_equation of template_term * template_term
+   | template_implication of template list * template
+   | template_inequation of sign * template_term * template_term
+   | template_negation of template
+   | template_predicate of template_term
+constructor t_empty: template_term
+constructor template_app: template_term * template_term -> template_term
+constructor template_hole: int -> template_term
+constructor template_var: int -> template_term
+constructor equals: sign
+constructor greater_equals: sign
+constructor greater_than: sign
+constructor less_equals: sign
+constructor less_than: sign
+constructor template_bimplication: template * template -> template
+constructor template_dunno: template
+constructor template_equation: template_term * template_term -> template
+constructor template_implication: template list * template -> template
+constructor template_inequation:
+   sign * template_term * template_term -> template
+constructor template_negation: template -> template
+constructor template_predicate: template_term -> template
+val vfs = fn: term -> (indexname * typ) list * (string * typ) list
+val indexOf = fn: ''a list -> ''a -> int -> int
+val has_eq = fn: term -> bool
+val term2template = fn:
+   (indexname * typ) list -> (string * typ) list -> term -> template_term
+val lemma2predicate = fn: term -> term -> template
+val makeTemplatewithContext = fn: term -> term -> template
+val lemma2template = fn: term -> template
+val thm2template = fn: thm -> template
+val tterm2string = fn: template_term -> string
+val template2string = fn: template -> string
+val t = "height ?t <= size ?t": thm
+val th =
+   Const ("HOL.Trueprop", "bool => prop") $
+     (Const ("Orderings.ord_class.less_eq", "nat => nat => bool") $
+       (Const ("Tree.height_class.height", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree")) $
+       (Const ("Nat.size_class.size", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree"))):
+   term
+### theory "Draft.Templates"
+### 0.068s elapsed time, 0.182s cpu time, 0.000s GC time
+Loading theory "Draft.ExtrEqs" (required by "Draft.NormsTemplates")
+val eqpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Var (("_dummy_", 2), "?'a"))
+       ):
+   term Find_Theorems.criterion
+val badeqpattern = Pattern (Const ("Pure.eq", "?'a => ?'a => prop")):
+   term Find_Theorems.criterion
+val undefpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Const ("HOL.undefined", "?'a"))
+       ):
+   term Find_Theorems.criterion
+val thmpattern =
+   Pattern
+    (Const ("HOL.Trueprop", "bool => prop") $ Var (("_dummy_", 1), "bool")):
+   term Find_Theorems.criterion
+val badnames =
+   ["*nitpick*", "*Nitpick*", "*full_exhaustive*", "*_def*", "Enum.finite*",
+    "*Quickcheck*", "ATP*", "*Nunchaku*", "*Code*", "*BNF*", "*SMT*",
+    "*.*.*"]:
+   string list
+val unwanted_names =
+   [(false, Name "*nitpick*"), (false, Name "*Nitpick*"),
+    (false, Name "*full_exhaustive*"), (false, Name "*_def*"),
+    (false, Name "Enum.finite*"), (false, Name "*Quickcheck*"),
+    (false, Name "ATP*"), (false, Name "*Nunchaku*"),
+    (false, Name "*Code*"), (false, Name "*BNF*"), (false, Name "*SMT*"),
+    (false, Name "*.*.*")]:
+   (bool * term Find_Theorems.criterion) list
+val has_vars = fn: term -> bool
+val get_all_eqs = fn: string -> Proof.context -> (string * thm) list
+val get_all_thms = fn: string -> Proof.context -> (string * thm) list
+val get_noneq_thms = fn: string -> Proof.context -> (string * thm) list
+val template_eqs = fn:
+   string -> Proof.context -> (string * thm * template) list
+val template_thms = fn:
+   string -> Proof.context -> (string * thm * template) list
+### theory "Draft.ExtrEqs"
+### 0.621s elapsed time, 1.255s cpu time, 0.163s GC time
+Found termination order: "length <*mlex*> {}"
+consts
+  rev_upt :: "nat => nat => nat list"
+### theory "Draft.Missing_Lemmas"
+### 6.812s elapsed time, 8.469s cpu time, 1.679s GC time
+Loading theory "Draft.Norms" (required by "Draft.NormsTemplates")
+class semiring_real_line = ordered_semiring_strict + ordered_semiring_0 +
+  assumes
+    "add_pos_neg_is_real":
+      "!!a b. [| (0::'a) < a; b < (0::'a) |] ==> is_real (a + b)"
+    and
+    "mult_neg_neg":
+      "!!a b. [| a < (0::'a); b < (0::'a) |] ==> (0::'a) < a * b"
+    and
+    "pos_pos_linear":
+      "!!a b. [| (0::'a) < a; (0::'a) < b |] ==> a < b | a = b | b < a"
+    and
+    "neg_neg_linear":
+      "!!a b. [| a < (0::'a); b < (0::'a) |] ==> a < b | a = b | b < a"
+class conjugatable_ring_1_abs_real_line = conjugatable_ring +
+  ring_1_abs_real_line +
+  assumes
+    "sq_norm_as_sq_abs": "!!a. a * conjugate a = \<bar>a\<bar>\<^sup>2"
+class trivial_conjugatable = conjugate +
+  assumes "conjugate_id": "!!x. conjugate x = x"
+### theory "Draft.Norms"
+### 17.926s elapsed time, 20.172s cpu time, 3.732s GC time
+Loading theory "Draft.NormsTemplates"
+val templateLemmas =
+   [("Norms.linf_norm_poly_ge_0",
+     "(0::?'a) <= \<parallel>?f\<parallel>\<^sub>\<infinity>",
+     template_inequation
+      (less_equals, template_hole 1,
+       template_app (template_hole 0, template_var 0))),
+    ("Norms.linf_norm_vec_ge_0",
+     "(0::?'a) <= \<parallel>?v\<parallel>\<^sub>\<infinity>",
+     template_inequation
+      (less_equals, template_hole 1,
+       template_app (template_hole 0, template_var 0))),
+    ("Norms.norm1_ge_0", "(0::?'a) <= norm1 ?f",
+     template_inequation
+      (less_equals, template_hole 1,
+       template_app (template_hole 0, template_var 0))),
+    ("Norms.sq_norm_poly_ge_0",
+     "(0::?'a) <= \<parallel>?p\<parallel>\<^sup>2",
+     template_inequation
+      (less_equals, template_hole 1,
+       template_app (template_hole 0, template_var 0))),
+    ("Norms.sq_norm_vec_ge_0",
+     "(0::?'a) <= \<parallel>?v\<parallel>\<^sup>2",
+     template_inequation
+      (less_equals, template_hole 1,
+       template_app (template_hole 0, template_var 0))),
+    ("Norms.sq_norm_zero_vec",
+     "\<parallel>0\<^sub>v ?n\<parallel>\<^sup>2 = (0::?'a)",
+     template_equation
+      (template_app
+        (template_hole 2, template_app (template_hole 1, template_var 0)),
+       template_hole 0)),
+    ("Norms.linf_norm_zero_vec",
+     "\<parallel>0\<^sub>v ?n\<parallel>\<^sub>\<infinity> = (0::?'a)",
+     template_equation
+      (template_app
+        (template_hole 2, template_app (template_hole 1, template_var 0)),
+       template_hole 0)),
+    ("Norms.scalar_prod_ge_0", "(0::?'a) <= ?x \<bullet> ?x",
+     template_inequation
+      (less_equals, template_hole 1,
+       template_app
+        (template_app (template_hole 0, template_var 0), template_var 0))),
+    ("Norms.linf_norm_vec_0",
+     "\<parallel>vec 0 ?f\<parallel>\<^sub>\<infinity> = (0::?'a)",
+     template_equation
+      (template_app
+        (template_hole 3,
+         template_app
+          (template_app (template_hole 2, template_hole 1),
+           template_var 0)),
+       template_hole 0)),
+    ("Norms.sq_norm_vec_0",
+     "\<parallel>vec 0 ?f\<parallel>\<^sup>2 = (0::?'a)",
+     template_equation
+      (template_app
+        (template_hole 3,
+         template_app
+          (template_app (template_hole 2, template_hole 1),
+           template_var 0)),
+       template_hole 0)),
+    ("Norms.linf_norm_vec_of_poly",
+     "\<parallel>vec_of_poly ?f\<parallel>\<^sub>\<infinity> =
+      \<parallel>?f\<parallel>\<^sub>\<infinity>",
+     template_equation
+      (template_app
+        (template_hole 2, template_app (template_hole 1, template_var 0)),
+       template_app (template_hole 0, template_var 0))),
+    ("Norms.sq_norm_poly_of_vec",
+     "\<parallel>poly_of_vec ?v\<parallel>\<^sup>2 =
+      \<parallel>?v\<parallel>\<^sup>2",
+     template_equation
+      (template_app
+        (template_hole 2, template_app (template_hole 1, template_var 0)),
+       template_app (template_hole 0, template_var 0))),
+    ("Norms.sq_norm_vec_of_poly",
+     "\<parallel>vec_of_poly ?p\<parallel>\<^sup>2 =
+      \<parallel>?p\<parallel>\<^sup>2",
+     template_equation
+      (template_app
+        (template_hole 2, template_app (template_hole 1, template_var 0)),
+       template_app (template_hole 0, template_var 0))),
+    ("Norms.conjugate_of_int", "conjugate (of_int ?x) = of_int ?x",
+     template_equation
+      (template_app
+        (template_hole 1, template_app (template_hole 0, template_var 0)),
+       template_app (template_hole 0, template_var 0))),
+    ("Norms.sq_norm_vec_as_cscalar_prod",
+     "\<parallel>?v\<parallel>\<^sup>2 = ?v \<bullet>c ?v",
+     template_equation
+      (template_app (template_hole 2, template_var 0),
+       template_app
+        (template_app (template_hole 1, template_var 0),
+         template_app (template_hole 0, template_var 0)))),
+    ("Norms.coeff_le_linf_norm",
+     "\<bar>coeff ?f ?i\<bar>
+      <= \<parallel>?f\<parallel>\<^sub>\<infinity>",
+     template_inequation
+      (less_equals,
+       template_app
+        (template_hole 2,
+         template_app
+          (template_app (template_hole 1, template_var 1), template_var 0)),
+       template_app (template_hole 0, template_var 1))),
+    ("Norms.vec_index_vec_of_list", "vec_of_list ?xs $ ?i = ?xs ! ?i",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 2, template_app (template_hole 1, template_var 1)),
+         template_var 0),
+       template_app
+        (template_app (template_hole 0, template_var 1), template_var 0))),
+    ("Norms.sq_norm_of_int",
+     "\<parallel>of_int_hom.vec_hom ?v\<parallel>\<^sup>2 =
+      of_int \<parallel>?v\<parallel>\<^sup>2",
+     template_equation
+      (template_app
+        (template_hole 3,
+         template_app
+          (template_app (template_hole 2, template_hole 1),
+           template_var 0)),
+       template_app
+        (template_hole 1, template_app (template_hole 0, template_var 0)))),
+    ("Norms.cscalar_prod_is_scalar_prod",
+     "?x \<bullet>c ?y = ?x \<bullet> ?y",
+     template_equation
+      (template_app
+        (template_app (template_hole 1, template_var 1),
+         template_app (template_hole 0, template_var 0)),
+       template_app
+        (template_app (template_hole 1, template_var 1), template_var 0))),
+    ("Norms.linf_norm_poly_eq_0",
+     "(\<parallel>?f\<parallel>\<^sub>\<infinity> = (0::?'a)) = (?f = 0)",
+     template_bimplication
+      (template_equation
+        (template_app (template_hole 3, template_var 0), template_hole 2),
+       template_equation (template_var 0, template_hole 0))),
+    ("Norms.sq_norm_poly_eq_0",
+     "(\<parallel>?p\<parallel>\<^sup>2 = (0::?'a)) = (?p = 0)",
+     template_bimplication
+      (template_equation
+        (template_app (template_hole 3, template_var 0), template_hole 2),
+       template_equation (template_var 0, template_hole 0))),
+    ("Norms.max_norm_witness",
+     "EX i. \<parallel>?f\<parallel>\<^sub>\<infinity> =
+            \<bar>coeff ?f i\<bar>",
+     template_predicate (template_app (template_hole 4, t_empty))),
+    ("Norms.linf_norm_poly_greater_0",
+     "((0::?'a) < \<parallel>?f\<parallel>\<^sub>\<infinity>) = (?f ~= 0)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 5, template_hole 4),
+              template_app (template_hole 3, template_var 0))
+            )],
+       template_negation
+        (template_equation (template_var 0, template_hole 0)))),
+    ("Norms.sq_norm_poly_pos",
+     "((0::?'a) < \<parallel>?p\<parallel>\<^sup>2) = (?p ~= 0)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 5, template_hole 4),
+              template_app (template_hole 3, template_var 0))
+            )],
+       template_negation
+        (template_equation (template_var 0, template_hole 0)))),
+    ("Norms.max_norm_le_sq_norm",
+     "\<parallel>?f\<parallel>\<^sub>\<infinity>\<^sup>2
+      <= \<parallel>?f\<parallel>\<^sup>2",
+     template_inequation
+      (less_equals,
+       template_app
+        (template_app
+          (template_hole 5, template_app (template_hole 4, template_var 0)),
+         template_app
+          (template_hole 3,
+           template_app (template_hole 2, template_hole 1))),
+       template_app (template_hole 0, template_var 0))),
+    ("Norms.norm2_le_norm1_int",
+     "\<parallel>?f\<parallel>\<^sup>2 <= (norm1 ?f)\<^sup>2",
+     template_inequation
+      (less_equals, template_app (template_hole 5, template_var 0),
+       template_app
+        (template_app
+          (template_hole 4, template_app (template_hole 3, template_var 0)),
+         template_app
+          (template_hole 2,
+           template_app (template_hole 1, template_hole 0))))),
+    ("Norms.linf_norm_vec_vCons",
+     "\<parallel>vCons ?a ?v\<parallel>\<^sub>\<infinity> =
+      max \<bar>?a\<bar> \<parallel>?v\<parallel>\<^sub>\<infinity>",
+     template_equation
+      (template_app
+        (template_hole 3,
+         template_app
+          (template_app (template_hole 2, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 1, template_app (template_hole 0, template_var 1)),
+         template_app (template_hole 3, template_var 0)))),
+    ("Norms.linf_norm_pCons",
+     "\<parallel>pCons ?a ?p\<parallel>\<^sub>\<infinity> =
+      max \<bar>?a\<bar> \<parallel>?p\<parallel>\<^sub>\<infinity>",
+     template_equation
+      (template_app
+        (template_hole 3,
+         template_app
+          (template_app (template_hole 2, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 1, template_app (template_hole 0, template_var 1)),
+         template_app (template_hole 3, template_var 0)))),
+    ("Norms.vec_of_list_append",
+     "vec_of_list (?xs @ ?ys) = vec_of_list ?xs @\<^sub>v vec_of_list ?ys",
+     template_equation
+      (template_app
+        (template_hole 2,
+         template_app
+          (template_app (template_hole 1, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 0, template_app (template_hole 2, template_var 1)),
+         template_app (template_hole 2, template_var 0)))),
+    ("Norms.coeff_le_sq_norm",
+     "\<bar>coeff ?f ?i\<bar>\<^sup>2 <= \<parallel>?f\<parallel>\<^sup>2",
+     template_inequation
+      (less_equals,
+       template_app
+        (template_app
+          (template_hole 6,
+           template_app
+            (template_hole 5,
+             template_app
+              (template_app (template_hole 4, template_var 1),
+               template_var 0))),
+         template_app
+          (template_hole 3,
+           template_app (template_hole 2, template_hole 1))),
+       template_app (template_hole 0, template_var 1))),
+    ("Norms.linf_norm_vec_of_list",
+     "\<parallel>vec_of_list ?xs\<parallel>\<^sub>\<infinity> =
+      Missing_Lemmas.max_list (map abs ?xs @ [0::?'a])",
+     template_equation
+      (template_app
+        (template_hole 8, template_app (template_hole 7, template_var 0)),
+       template_app
+        (template_hole 6,
+         template_app
+          (template_app
+            (template_hole 5,
+             template_app
+              (template_app (template_hole 4, template_hole 3),
+               template_var 0)),
+           template_app
+            (template_app (template_hole 2, template_hole 1),
+             template_hole 0))))),
+    ("Norms.sq_norm_vec_vCons",
+     "\<parallel>vCons ?a ?v\<parallel>\<^sup>2 =
+      sq_norm_conjugate ?a + \<parallel>?v\<parallel>\<^sup>2",
+     template_equation
+      (template_app
+        (template_hole 4,
+         template_app
+          (template_app (template_hole 3, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 2,
+           template_app
+            (template_app (template_hole 1, template_var 1),
+             template_app (template_hole 0, template_var 1))),
+         template_app (template_hole 4, template_var 0)))),
+    ("Norms.sq_norm_poly_pCons",
+     "\<parallel>pCons ?a ?p\<parallel>\<^sup>2 =
+      sq_norm_conjugate ?a + \<parallel>?p\<parallel>\<^sup>2",
+     template_equation
+      (template_app
+        (template_hole 4,
+         template_app
+          (template_app (template_hole 3, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 2,
+           template_app
+            (template_app (template_hole 1, template_var 1),
+             template_app (template_hole 0, template_var 1))),
+         template_app (template_hole 4, template_var 0)))),
+    ("Norms.sq_norm_smult_vec",
+     "\<parallel>?c \<cdot>\<^sub>v ?v\<parallel>\<^sup>2 =
+      sq_norm_conjugate ?c * \<parallel>?v\<parallel>\<^sup>2",
+     template_equation
+      (template_app
+        (template_hole 3,
+         template_app
+          (template_app (template_hole 2, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 1,
+           template_app
+            (template_app (template_hole 1, template_var 1),
+             template_app (template_hole 0, template_var 1))),
+         template_app (template_hole 3, template_var 0)))),
+    ("Norms.vec_of_poly_as_vec_of_list",
+     "?f ~= 0 ==> vec_of_poly ?f = vec_of_list (rev (coeffs ?f))",
+     template_implication
+      ([template_negation
+         (template_equation (template_var 0, template_hole 5))],
+       template_equation
+        (template_app (template_hole 3, template_var 0),
+         template_app
+          (template_hole 2,
+           template_app
+            (template_hole 1,
+             template_app (template_hole 0, template_var 0)))))),
+    ("Norms.vec_index_le_linf_norm",
+     "?i < dim_vec ?v ==>
+      \<bar>?v $ ?i\<bar> <= \<parallel>?v\<parallel>\<^sub>\<infinity>",
+     template_implication
+      ([template_inequation
+         (less_than, template_var 1,
+          template_app (template_hole 4, template_var 0))],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_hole 2,
+           template_app
+            (template_app (template_hole 1, template_var 0),
+             template_var 1)),
+         template_app (template_hole 0, template_var 0)))),
+    ("Norms.sq_norm_poly_le_linf_norm",
+     "\<parallel>?p\<parallel>\<^sup>2
+      <= of_nat (degree ?p + 1) *
+         \<parallel>?p\<parallel>\<^sub>\<infinity>\<^sup>2",
+     template_inequation
+      (less_equals, template_app (template_hole 10, template_var 0),
+       template_app
+        (template_app
+          (template_hole 9,
+           template_app
+            (template_hole 8,
+             template_app
+              (template_app
+                (template_hole 7,
+                 template_app (template_hole 6, template_var 0)),
+               template_hole 5))),
+         template_app
+          (template_app
+            (template_hole 4,
+             template_app (template_hole 3, template_var 0)),
+           template_app
+            (template_hole 2,
+             template_app (template_hole 1, template_hole 0)))))),
+    ("Norms.linf_norm_vec_eq_0",
+     "?v : carrier_vec ?n ==>
+      (\<parallel>?v\<parallel>\<^sub>\<infinity> = (0::?'a)) =
+      (?v = 0\<^sub>v ?n)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 7, template_var 1),
+              template_app (template_hole 6, template_var 0))
+            )],
+       template_bimplication
+        (template_equation
+          (template_app (template_hole 3, template_var 1), template_hole 2),
+         template_equation
+          (template_var 1,
+           template_app (template_hole 0, template_var 0))))),
+    ("Norms.sq_norm_vec_eq_0",
+     "?v : carrier_vec ?n ==>
+      (\<parallel>?v\<parallel>\<^sup>2 = (0::?'a)) = (?v = 0\<^sub>v ?n)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 7, template_var 1),
+              template_app (template_hole 6, template_var 0))
+            )],
+       template_bimplication
+        (template_equation
+          (template_app (template_hole 3, template_var 1), template_hole 2),
+         template_equation
+          (template_var 1,
+           template_app (template_hole 0, template_var 0))))),
+    ("Norms.linf_norm_poly_as_Greatest",
+     "\<parallel>?f\<parallel>\<^sub>\<infinity> =
+      (GREATEST a. a : abs ` set (coeffs ?f) Un {0::?'a})",
+     template_equation
+      (template_app (template_hole 10, template_var 0),
+       template_app (template_hole 9, t_empty))),
+    ("Norms.linf_norm_vec_as_Greatest",
+     "\<parallel>?v\<parallel>\<^sub>\<infinity> =
+      (GREATEST a. a : abs ` set (list_of_vec ?v) Un {0::?'a})",
+     template_equation
+      (template_app (template_hole 10, template_var 0),
+       template_app (template_hole 9, t_empty))),
+    ("Norms.linf_norm_vec_greater_0",
+     "?v : carrier_vec ?n ==>
+      ((0::?'a) < \<parallel>?v\<parallel>\<^sub>\<infinity>) =
+      (?v ~= 0\<^sub>v ?n)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 8, template_var 1),
+              template_app (template_hole 7, template_var 0))
+            )],
+       template_implication
+        ([template_predicate
+           (
+              template_app
+               (template_app (template_hole 5, template_hole 4),
+                template_app (template_hole 3, template_var 1))
+              )],
+         template_negation
+          (
+             template_equation
+              (template_var 1,
+               template_app (template_hole 0, template_var 0))
+             )))),
+    ("Norms.sq_norm_vec_greater_0",
+     "?v : carrier_vec ?n ==>
+      ((0::?'a) < \<parallel>?v\<parallel>\<^sup>2) = (?v ~= 0\<^sub>v ?n)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 8, template_var 1),
+              template_app (template_hole 7, template_var 0))
+            )],
+       template_implication
+        ([template_predicate
+           (
+              template_app
+               (template_app (template_hole 5, template_hole 4),
+                template_app (template_hole 3, template_var 1))
+              )],
+         template_negation
+          (
+             template_equation
+              (template_var 1,
+               template_app (template_hole 0, template_var 0))
+             )))),
+    ("Norms.linf_norm_vec",
+     "\<parallel>vec ?n ?f\<parallel>\<^sub>\<infinity> =
+      Missing_Lemmas.max_list (map (abs o ?f) [0..<?n] @ [0::?'a])",
+     template_equation
+      (template_app
+        (template_hole 11,
+         template_app
+          (template_app (template_hole 10, template_var 1),
+           template_var 0)),
+       template_app
+        (template_hole 9,
+         template_app
+          (template_app
+            (template_hole 8,
+             template_app
+              (template_app
+                (template_hole 7,
+                 template_app
+                  (template_app (template_hole 6, template_hole 5),
+                   template_var 0)),
+               template_app
+                (template_app (template_hole 4, template_hole 3),
+                 template_var 1))),
+           template_app
+            (template_app (template_hole 2, template_hole 1),
+             template_hole 0))))),
+    ("Norms.vec_of_poly_pCons",
+     "?f ~= 0 ==>
+      vec_of_poly (pCons ?a ?f) =
+      vec_of_poly ?f @\<^sub>v vec_of_list [?a]",
+     template_implication
+      ([template_negation
+         (template_equation (template_var 1, template_hole 7))],
+       template_equation
+        (template_app
+          (template_hole 5,
+           template_app
+            (template_app (template_hole 4, template_var 0),
+             template_var 1)),
+         template_app
+          (template_app
+            (template_hole 3,
+             template_app (template_hole 5, template_var 1)),
+           template_app
+            (template_hole 2,
+             template_app
+              (template_app (template_hole 1, template_var 0),
+               template_hole 0)))))),
+    ("Norms.sq_norm_vec_le_linf_norm",
+     "?v : carrier_vec ?n ==>
+      \<parallel>?v\<parallel>\<^sup>2
+      <= of_nat ?n * \<parallel>?v\<parallel>\<^sub>\<infinity>\<^sup>2",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 10, template_var 1),
+              template_app (template_hole 9, template_var 0))
+            )],
+       template_inequation
+        (less_equals, template_app (template_hole 7, template_var 1),
+         template_app
+          (template_app
+            (template_hole 6,
+             template_app (template_hole 5, template_var 0)),
+           template_app
+            (template_app
+              (template_hole 4,
+               template_app (template_hole 3, template_var 1)),
+             template_app
+              (template_hole 2,
+               template_app (template_hole 1, template_hole 0))))))),
+    ("Norms.vec_le_sq_norm",
+     "[| ?v : carrier_vec ?n; ?i < ?n |]
+      ==> \<bar>?v $ ?i\<bar>\<^sup>2 <= \<parallel>?v\<parallel>\<^sup>2",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 10, template_var 2),
+              template_app (template_hole 9, template_var 1))
+            ),
+        template_inequation (less_than, template_var 0, template_var 1)],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_app
+            (template_hole 6,
+             template_app
+              (template_hole 5,
+               template_app
+                (template_app (template_hole 4, template_var 2),
+                 template_var 0))),
+           template_app
+            (template_hole 3,
+             template_app (template_hole 2, template_hole 1))),
+         template_app (template_hole 0, template_var 2)))),
+    ("Norms.norm2_norm1_main_inequality",
+     "(SUM i = 0..<?n. ?f i * ?f i)
+      <= (SUM i = 0..<?n. \<bar>?f i\<bar>)\<^sup>2",
+     template_inequation
+      (less_equals,
+       template_app
+        (template_app (template_hole 8, t_empty),
+         template_app
+          (template_app (template_hole 6, template_hole 5),
+           template_var 0)),
+       template_app
+        (template_app
+          (template_hole 4,
+           template_app
+            (template_app (template_hole 8, t_empty),
+             template_app
+              (template_app (template_hole 6, template_hole 5),
+               template_var 0))),
+         template_app
+          (template_hole 2,
+           template_app (template_hole 1, template_hole 0))))),
+    ("Norms.scalar_prod_Cauchy",
+     "[| ?u : carrier_vec ?n; ?v : carrier_vec ?n |]
+      ==> (?u \<bullet> ?v)\<^sup>2
+          <= \<parallel>?u\<parallel>\<^sup>2 *
+             \<parallel>?v\<parallel>\<^sup>2",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 9, template_var 2),
+              template_app (template_hole 8, template_var 1))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 9, template_var 0),
+              template_app (template_hole 8, template_var 1))
+            )],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_app
+            (template_hole 6,
+             template_app
+              (template_app (template_hole 5, template_var 2),
+               template_var 0)),
+           template_app
+            (template_hole 4,
+             template_app (template_hole 3, template_hole 2))),
+         template_app
+          (template_app
+            (template_hole 1,
+             template_app (template_hole 0, template_var 2)),
+           template_app (template_hole 0, template_var 0))))),
+    ("Norms.real_pos_mult_max",
+     "[| (0::?'a) < ?c; is_real ?a; is_real ?b |]
+      ==> ?c * max ?a ?b = max (?c * ?a) (?c * ?b)",
+     template_implication
+      ([template_inequation (less_than, template_hole 4, template_var 2),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 3,
+                template_app
+                 (template_app (template_hole 5, template_var 1),
+                  template_hole 4)),
+              template_app
+               (template_app
+                 (template_hole 3,
+                  template_app
+                   (template_app (template_hole 2, template_var 1),
+                    template_hole 4)),
+                template_app
+                 (template_app (template_hole 5, template_hole 4),
+                  template_var 1)))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 3,
+                template_app
+                 (template_app (template_hole 5, template_var 0),
+                  template_hole 4)),
+              template_app
+               (template_app
+                 (template_hole 3,
+                  template_app
+                   (template_app (template_hole 2, template_var 0),
+                    template_hole 4)),
+                template_app
+                 (template_app (template_hole 5, template_hole 4),
+                  template_var 0)))
+            )],
+       template_equation
+        (template_app
+          (template_app (template_hole 1, template_var 2),
+           template_app
+            (template_app (template_hole 0, template_var 1),
+             template_var 0)),
+         template_app
+          (template_app
+            (template_hole 0,
+             template_app
+              (template_app (template_hole 1, template_var 2),
+               template_var 1)),
+           template_app
+            (template_app (template_hole 1, template_var 2),
+             template_var 0))))),
+    ("Norms.norm2_norm1_main_equality",
+     "(SUM i = 0..<?n. \<bar>?f i\<bar>)\<^sup>2 =
+      (SUM i = 0..<?n. ?f i * ?f i) +
+      (SUM i = 0..<?n.
+       SUM j = 0..<?n.
+       if i = j then 0::?'a else \<bar>?f i\<bar> * \<bar>?f j\<bar>)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 12,
+           template_app
+            (template_app (template_hole 11, t_empty),
+             template_app
+              (template_app (template_hole 9, template_hole 8),
+               template_var 0))),
+         template_app
+          (template_hole 7,
+           template_app (template_hole 6, template_hole 5))),
+       template_app
+        (template_app
+          (template_hole 4,
+           template_app
+            (template_app (template_hole 11, t_empty),
+             template_app
+              (template_app (template_hole 9, template_hole 8),
+               template_var 0))),
+         template_app
+          (template_app (template_hole 11, t_empty),
+           template_app
+            (template_app (template_hole 9, template_hole 8),
+             template_var 0)))))]:
+   (string * thm * template) list
+### theory "Draft.NormsTemplates"
+### 2.121s elapsed time, 2.488s cpu time, 0.231s GC time
+val it = (): unit

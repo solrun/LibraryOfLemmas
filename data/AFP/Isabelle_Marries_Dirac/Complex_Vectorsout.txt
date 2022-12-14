@@ -1,0 +1,360 @@
+Loading theory "Draft.Basics" (required by "Draft.Complex_VectorsTemplates" via "Draft.Complex_Vectors" via "Draft.Quantum")
+Loading theory "Draft.Templates" (required by "Draft.Complex_VectorsTemplates" via "Draft.ExtrEqs")
+datatype template_term
+=
+     t_empty
+   | template_app of template_term * template_term
+   | template_hole of int
+   | template_var of int
+datatype sign
+= equals | greater_equals | greater_than | less_equals | less_than
+datatype template
+=
+     template_bimplication of template * template
+   | template_dunno
+   | template_equation of template_term * template_term
+   | template_implication of template list * template
+   | template_inequation of sign * template_term * template_term
+   | template_negation of template
+   | template_predicate of template_term
+constructor t_empty: template_term
+constructor template_app: template_term * template_term -> template_term
+constructor template_hole: int -> template_term
+constructor template_var: int -> template_term
+constructor equals: sign
+constructor greater_equals: sign
+constructor greater_than: sign
+constructor less_equals: sign
+constructor less_than: sign
+constructor template_bimplication: template * template -> template
+constructor template_dunno: template
+constructor template_equation: template_term * template_term -> template
+constructor template_implication: template list * template -> template
+constructor template_inequation:
+   sign * template_term * template_term -> template
+constructor template_negation: template -> template
+constructor template_predicate: template_term -> template
+val vfs = fn: term -> (indexname * typ) list * (string * typ) list
+val indexOf = fn: ''a list -> ''a -> int -> int
+val has_eq = fn: term -> bool
+val term2template = fn:
+   (indexname * typ) list -> (string * typ) list -> term -> template_term
+val lemma2predicate = fn: term -> term -> template
+val makeTemplatewithContext = fn: term -> term -> template
+val lemma2template = fn: term -> template
+val thm2template = fn: thm -> template
+val tterm2string = fn: template_term -> string
+val template2string = fn: template -> string
+val t = "height ?t <= size ?t": thm
+val th =
+   Const ("HOL.Trueprop", "bool => prop") $
+     (Const ("Orderings.ord_class.less_eq", "nat => nat => bool") $
+       (Const ("Tree.height_class.height", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree")) $
+       (Const ("Nat.size_class.size", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree"))):
+   term
+### theory "Draft.Templates"
+### 0.071s elapsed time, 0.177s cpu time, 0.000s GC time
+Loading theory "Draft.ExtrEqs" (required by "Draft.Complex_VectorsTemplates")
+### theory "Draft.Basics"
+### 0.167s elapsed time, 0.363s cpu time, 0.043s GC time
+Loading theory "Draft.Binary_Nat" (required by "Draft.Complex_VectorsTemplates" via "Draft.Complex_Vectors" via "Draft.Quantum")
+consts
+  bin_rep_aux :: "nat => nat => nat list"
+### theory "Draft.Binary_Nat"
+### 0.086s elapsed time, 0.170s cpu time, 0.000s GC time
+Loading theory "Draft.Quantum" (required by "Draft.Complex_VectorsTemplates" via "Draft.Complex_Vectors")
+val eqpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Var (("_dummy_", 2), "?'a"))
+       ):
+   term Find_Theorems.criterion
+val badeqpattern = Pattern (Const ("Pure.eq", "?'a => ?'a => prop")):
+   term Find_Theorems.criterion
+val undefpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Const ("HOL.undefined", "?'a"))
+       ):
+   term Find_Theorems.criterion
+val thmpattern =
+   Pattern
+    (Const ("HOL.Trueprop", "bool => prop") $ Var (("_dummy_", 1), "bool")):
+   term Find_Theorems.criterion
+val badnames =
+   ["*nitpick*", "*Nitpick*", "*full_exhaustive*", "*_def*", "Enum.finite*",
+    "*Quickcheck*", "ATP*", "*Nunchaku*", "*Code*", "*BNF*", "*SMT*",
+    "*.*.*"]:
+   string list
+val unwanted_names =
+   [(false, Name "*nitpick*"), (false, Name "*Nitpick*"),
+    (false, Name "*full_exhaustive*"), (false, Name "*_def*"),
+    (false, Name "Enum.finite*"), (false, Name "*Quickcheck*"),
+    (false, Name "ATP*"), (false, Name "*Nunchaku*"),
+    (false, Name "*Code*"), (false, Name "*BNF*"), (false, Name "*SMT*"),
+    (false, Name "*.*.*")]:
+   (bool * term Find_Theorems.criterion) list
+val has_vars = fn: term -> bool
+val get_all_eqs = fn: string -> Proof.context -> (string * thm) list
+val get_all_thms = fn: string -> Proof.context -> (string * thm) list
+val get_noneq_thms = fn: string -> Proof.context -> (string * thm) list
+val template_eqs = fn:
+   string -> Proof.context -> (string * thm * template) list
+val template_thms = fn:
+   string -> Proof.context -> (string * thm * template) list
+### theory "Draft.ExtrEqs"
+### 0.568s elapsed time, 1.150s cpu time, 0.133s GC time
+locale state
+  fixes n :: "nat"
+    and v :: "complex mat"
+  assumes "state n v"
+locale gate
+  fixes n :: "nat"
+    and A :: "complex mat"
+  assumes "gate n A"
+### Ambiguous input (line 282 of "$AFP/Isabelle_Marries_Dirac/Quantum.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("\<^const>Matrix.transpose_mat"
+###       ("\<^const>Groups.times_class.times" ("_position" M) ("_position" N)))
+###     ("\<^const>Groups.times_class.times"
+###       ("\<^const>Matrix.transpose_mat" ("_position" N))
+###       ("\<^const>Matrix.transpose_mat" ("_position" M)))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>Groups.times_class.times"
+###     ("\<^const>Matrix.transpose_mat"
+###       ("\<^const>HOL.eq"
+###         ("\<^const>Matrix.transpose_mat"
+###           ("\<^const>Groups.times_class.times" ("_position" M)
+###             ("_position" N)))
+###         ("_position" N)))
+###     ("\<^const>Matrix.transpose_mat" ("_position" M))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ambiguous input (line 338 of "$AFP/Isabelle_Marries_Dirac/Quantum.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("\<^const>Quantum.dagger"
+###       ("\<^const>Groups.times_class.times" ("_position" M) ("_position" N)))
+###     ("\<^const>Groups.times_class.times"
+###       ("\<^const>Quantum.dagger" ("_position" N))
+###       ("\<^const>Quantum.dagger" ("_position" M)))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>Groups.times_class.times"
+###     ("\<^const>Quantum.dagger"
+###       ("\<^const>HOL.eq"
+###         ("\<^const>Quantum.dagger"
+###           ("\<^const>Groups.times_class.times" ("_position" M)
+###             ("_position" N)))
+###         ("_position" N)))
+###     ("\<^const>Quantum.dagger" ("_position" M))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ambiguous input (line 1313 of "$AFP/Isabelle_Marries_Dirac/Quantum.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>Quantum.bip"
+###     ("\<^const>HOL.eq"
+###       ("\<^const>Quantum.bip" ("_position" i)
+###         ("_applC" ("_position" Suc) ("_position" n)) ("_position" j))
+###       ("\<^const>Rings.modulo_class.modulo" ("_position" i)
+###         ("\<^const>Power.power_class.power"
+###           ("_Numeral" ("_constify" ("_position" 2))) ("_position" n))))
+###     ("_position" n)
+###     ("\<^const>Rings.modulo_class.modulo" ("_position" j)
+###       ("\<^const>Power.power_class.power"
+###         ("_Numeral" ("_constify" ("_position" 2))) ("_position" n)))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("\<^const>Quantum.bip" ("_position" i)
+###       ("_applC" ("_position" Suc) ("_position" n)) ("_position" j))
+###     ("\<^const>Quantum.bip"
+###       ("\<^const>Rings.modulo_class.modulo" ("_position" i)
+###         ("\<^const>Power.power_class.power"
+###           ("_Numeral" ("_constify" ("_position" 2))) ("_position" n)))
+###       ("_position" n)
+###       ("\<^const>Rings.modulo_class.modulo" ("_position" j)
+###         ("\<^const>Power.power_class.power"
+###           ("_Numeral" ("_constify" ("_position" 2))) ("_position" n))))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### theory "Draft.Quantum"
+### 1.038s elapsed time, 1.486s cpu time, 0.178s GC time
+Loading theory "Draft.Complex_Vectors" (required by "Draft.Complex_VectorsTemplates")
+### theory "Draft.Complex_Vectors"
+### 0.394s elapsed time, 0.439s cpu time, 0.077s GC time
+Loading theory "Draft.Complex_VectorsTemplates"
+val templateLemmas =
+   [("Complex_Vectors.module_cpx_vec",
+     "Module.module cpx_rng (module_cpx_vec ?n)",
+     template_predicate
+      (
+         template_app
+          (template_app (template_hole 2, template_hole 1),
+           template_app (template_hole 0, template_var 0))
+         )),
+    ("Complex_Vectors.vecspace_cpx_vec",
+     "vectorspace cpx_rng (module_cpx_vec ?n)",
+     template_predicate
+      (
+         template_app
+          (template_app (template_hole 2, template_hole 1),
+           template_app (template_hole 0, template_var 0))
+         )),
+    ("Complex_Vectors.unit_vectors_carrier_vec",
+     "unit_vectors ?n <= carrier_vec ?n",
+     template_inequation
+      (less_equals, template_app (template_hole 1, template_var 0),
+       template_app (template_hole 0, template_var 0))),
+    ("Complex_Vectors.unit_vectors_is_basis",
+     "vectorspace.basis cpx_rng (module_cpx_vec ?n) (unit_vectors ?n)",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_app (template_hole 3, template_hole 2),
+             template_app (template_hole 1, template_var 0)),
+           template_app (template_hole 0, template_var 0))
+         )),
+    ("Complex_Vectors.unit_vectors_is_lin_indpt",
+     "~ module.lin_dep cpx_rng (module_cpx_vec ?n) (unit_vectors ?n)",
+     template_negation
+      (
+         template_predicate
+          (
+             template_app
+              (template_app
+                (template_app (template_hole 3, template_hole 2),
+                 template_app (template_hole 1, template_var 0)),
+               template_app (template_hole 0, template_var 0))
+             )
+         )),
+    ("Complex_Vectors.unit_vectors_is_genset",
+     "LinearCombinations.module.span cpx_rng (module_cpx_vec ?n)
+       (unit_vectors ?n) =
+      carrier (module_cpx_vec ?n)",
+     template_equation
+      (template_app
+        (template_app
+          (template_app (template_hole 4, template_hole 3),
+           template_app (template_hole 2, template_var 0)),
+         template_app (template_hole 1, template_var 0)),
+       template_app
+        (template_hole 0, template_app (template_hole 2, template_var 0)))),
+    ("Complex_Vectors.dim_vec_lincomb",
+     "[| finite ?F; ?f : ?F \<rightarrow> UNIV; ?F <= carrier_vec ?n |]
+      ==> dim_vec (module.lincomb (module_cpx_vec ?n) ?f ?F) = ?n",
+     template_implication
+      ([template_predicate (template_app (template_hole 9, template_var 2)),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 8, template_var 1),
+              template_app
+               (template_app (template_hole 7, template_var 2), t_empty))
+            ),
+        template_inequation
+         (less_equals, template_var 2,
+          template_app (template_hole 4, template_var 0))],
+       template_equation
+        (template_app
+          (template_hole 2,
+           template_app
+            (template_app
+              (template_app
+                (template_hole 1,
+                 template_app (template_hole 0, template_var 0)),
+               template_var 1),
+             template_var 2)),
+         template_var 0))),
+    ("Complex_Vectors.lincomb_over_singleton",
+     "[| ?x : carrier_vec ?n; ?f : {?x} \<rightarrow> UNIV |]
+      ==> module.lincomb (module_cpx_vec ?n) ?f {?x} =
+          ?f ?x \<cdot>\<^sub>v ?x",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 10, template_var 2),
+              template_app (template_hole 9, template_var 1))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 8, template_var 0),
+              template_app
+               (template_app
+                 (template_hole 7,
+                  template_app
+                   (template_app (template_hole 6, template_var 2),
+                    template_hole 5)),
+                t_empty))
+            )],
+       template_equation
+        (template_app
+          (template_app
+            (template_app
+              (template_hole 2,
+               template_app (template_hole 1, template_var 1)),
+             template_var 0),
+           template_app
+            (template_app (template_hole 6, template_var 2),
+             template_hole 5)),
+         template_app
+          (template_app
+            (template_hole 0,
+             template_app (template_var 0, template_var 2)),
+           template_var 2)))),
+    ("Complex_Vectors.lincomb_vec_index",
+     "[| finite ?F; ?i < ?n; ?F <= carrier_vec ?n;
+         ?f : ?F \<rightarrow> UNIV |]
+      ==> module.lincomb (module_cpx_vec ?n) ?f ?F $ ?i =
+          (SUM v:?F. ?f v * v $ ?i)",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 12, template_var 3)),
+        template_inequation (less_than, template_var 2, template_var 1),
+        template_inequation
+         (less_equals, template_var 3,
+          template_app (template_hole 9, template_var 1)),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 8, template_var 0),
+              template_app
+               (template_app (template_hole 7, template_var 3), t_empty))
+            )],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 4,
+             template_app
+              (template_app
+                (template_app
+                  (template_hole 3,
+                   template_app (template_hole 2, template_var 1)),
+                 template_var 0),
+               template_var 3)),
+           template_var 2),
+         template_app
+          (template_app (template_hole 1, t_empty), template_var 3)))),
+    ("Complex_Vectors.state_qbit_is_lincomb",
+     "state_qbit ?n =
+      {module.lincomb (module_cpx_vec (2 ^ ?n)) a A |a A.
+       finite A &
+       A <= unit_vectors (2 ^ ?n) &
+       a : A \<rightarrow> UNIV &
+       \<parallel>module.lincomb (module_cpx_vec (2 ^ ?n)) a A\<parallel> =
+       1}",
+     template_equation
+      (template_app (template_hole 20, template_var 0),
+       template_app (template_hole 19, t_empty)))]:
+   (string * thm * template) list
+### theory "Draft.Complex_VectorsTemplates"
+### 0.635s elapsed time, 0.795s cpu time, 0.075s GC time
+val it = (): unit

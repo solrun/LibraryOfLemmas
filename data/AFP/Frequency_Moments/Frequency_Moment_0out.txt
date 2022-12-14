@@ -1,0 +1,1449 @@
+Loading theory "HOL-Library.Function_Algebras" (required by "Draft.Frequency_Moment_0Templates" via "Draft.ExtrEqs" via "HOL-Library.BigO")
+Loading theory "Draft.Templates" (required by "Draft.Frequency_Moment_0Templates" via "Draft.ExtrEqs")
+Loading theory "Draft.Landau_Ext" (required by "Draft.Frequency_Moment_0Templates" via "Draft.Frequency_Moment_0")
+Loading theory "Draft.Frequency_Moments_Preliminary_Results" (required by "Draft.Frequency_Moment_0Templates" via "Draft.Frequency_Moment_0")
+instantiation
+  fun :: (type, plus) plus
+  plus_fun == plus :: ('a => 'b) => ('a => 'b) => 'a => 'b
+instantiation
+  fun :: (type, zero) zero
+  zero_fun == zero_class.zero :: 'a => 'b
+instantiation
+  fun :: (type, times) times
+  times_fun == times :: ('a => 'b) => ('a => 'b) => 'a => 'b
+instantiation
+  fun :: (type, one) one
+  one_fun == one_class.one :: 'a => 'b
+datatype template_term
+=
+     t_empty
+   | template_app of template_term * template_term
+   | template_hole of int
+   | template_var of int
+datatype sign
+= equals | greater_equals | greater_than | less_equals | less_than
+datatype template
+=
+     template_bimplication of template * template
+   | template_dunno
+   | template_equation of template_term * template_term
+   | template_implication of template list * template
+   | template_inequation of sign * template_term * template_term
+   | template_negation of template
+   | template_predicate of template_term
+constructor t_empty: template_term
+constructor template_app: template_term * template_term -> template_term
+constructor template_hole: int -> template_term
+constructor template_var: int -> template_term
+constructor equals: sign
+constructor greater_equals: sign
+constructor greater_than: sign
+constructor less_equals: sign
+constructor less_than: sign
+constructor template_bimplication: template * template -> template
+constructor template_dunno: template
+constructor template_equation: template_term * template_term -> template
+constructor template_implication: template list * template -> template
+constructor template_inequation:
+   sign * template_term * template_term -> template
+constructor template_negation: template -> template
+constructor template_predicate: template_term -> template
+val vfs = fn: term -> (indexname * typ) list * (string * typ) list
+val indexOf = fn: ''a list -> ''a -> int -> int
+val has_eq = fn: term -> bool
+val term2template = fn:
+   (indexname * typ) list -> (string * typ) list -> term -> template_term
+val lemma2predicate = fn: term -> term -> template
+val makeTemplatewithContext = fn: term -> term -> template
+val lemma2template = fn: term -> template
+val thm2template = fn: thm -> template
+val tterm2string = fn: template_term -> string
+val template2string = fn: template -> string
+val t = "height ?t <= size ?t": thm
+val th =
+   Const ("HOL.Trueprop", "bool => prop") $
+     (Const ("Orderings.ord_class.less_eq", "nat => nat => bool") $
+       (Const ("Tree.height_class.height", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree")) $
+       (Const ("Nat.size_class.size", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree"))):
+   term
+### theory "Draft.Templates"
+### 0.119s elapsed time, 0.462s cpu time, 0.053s GC time
+instantiation
+  rat :: linorder_topology
+  open_rat == open :: rat set => bool
+### theory "Draft.Landau_Ext"
+### 0.134s elapsed time, 0.506s cpu time, 0.053s GC time
+### theory "HOL-Library.Function_Algebras"
+### 0.147s elapsed time, 0.532s cpu time, 0.053s GC time
+Loading theory "HOL-Library.BigO" (required by "Draft.Frequency_Moment_0Templates" via "Draft.ExtrEqs")
+### theory "Draft.Frequency_Moments_Preliminary_Results"
+### 0.690s elapsed time, 1.637s cpu time, 0.139s GC time
+Loading theory "Draft.Frequency_Moments" (required by "Draft.Frequency_Moment_0Templates" via "Draft.Frequency_Moment_0")
+Loading theory "Draft.K_Smallest" (required by "Draft.Frequency_Moment_0Templates" via "Draft.Frequency_Moment_0")
+Loading theory "Draft.Probability_Ext" (required by "Draft.Frequency_Moment_0Templates" via "Draft.Frequency_Moment_0" via "Draft.Product_PMF_Ext")
+### theory "HOL-Library.BigO"
+### 0.658s elapsed time, 1.524s cpu time, 0.176s GC time
+Loading theory "Draft.ExtrEqs" (required by "Draft.Frequency_Moment_0Templates")
+### theory "Draft.K_Smallest"
+### 0.580s elapsed time, 2.169s cpu time, 0.254s GC time
+val eqpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Var (("_dummy_", 2), "?'a"))
+       ):
+   term Find_Theorems.criterion
+val badeqpattern = Pattern (Const ("Pure.eq", "?'a => ?'a => prop")):
+   term Find_Theorems.criterion
+val undefpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Const ("HOL.undefined", "?'a"))
+       ):
+   term Find_Theorems.criterion
+val thmpattern =
+   Pattern
+    (Const ("HOL.Trueprop", "bool => prop") $ Var (("_dummy_", 1), "bool")):
+   term Find_Theorems.criterion
+val badnames =
+   ["*nitpick*", "*Nitpick*", "*full_exhaustive*", "*_def*", "Enum.finite*",
+    "*Quickcheck*", "ATP*", "*Nunchaku*", "*Code*", "*BNF*", "*SMT*",
+    "*.*.*"]:
+   string list
+val unwanted_names =
+   [(false, Name "*nitpick*"), (false, Name "*Nitpick*"),
+    (false, Name "*full_exhaustive*"), (false, Name "*_def*"),
+    (false, Name "Enum.finite*"), (false, Name "*Quickcheck*"),
+    (false, Name "ATP*"), (false, Name "*Nunchaku*"),
+    (false, Name "*Code*"), (false, Name "*BNF*"), (false, Name "*SMT*"),
+    (false, Name "*.*.*")]:
+   (bool * term Find_Theorems.criterion) list
+val has_vars = fn: term -> bool
+val get_all_eqs = fn: string -> Proof.context -> (string * thm) list
+val get_all_thms = fn: string -> Proof.context -> (string * thm) list
+val get_noneq_thms = fn: string -> Proof.context -> (string * thm) list
+val template_eqs = fn:
+   string -> Proof.context -> (string * thm * template) list
+val template_thms = fn:
+   string -> Proof.context -> (string * thm * template) list
+### theory "Draft.ExtrEqs"
+### 0.756s elapsed time, 2.693s cpu time, 0.700s GC time
+### theory "Draft.Frequency_Moments"
+### 0.896s elapsed time, 3.191s cpu time, 0.790s GC time
+locale prob_space
+  fixes M :: "'a measure"
+  assumes "prob_space M"
+### theory "Draft.Probability_Ext"
+### 1.112s elapsed time, 3.416s cpu time, 0.826s GC time
+Loading theory "Draft.Product_PMF_Ext" (required by "Draft.Frequency_Moment_0Templates" via "Draft.Frequency_Moment_0")
+### theory "Draft.Product_PMF_Ext"
+### 0.431s elapsed time, 0.435s cpu time, 0.000s GC time
+Loading theory "Draft.Frequency_Moment_0" (required by "Draft.Frequency_Moment_0Templates")
+Found termination order: "{}"
+Found termination order: "{}"
+Found termination order: "{}"
+Found termination order: "{}"
+### theory "Draft.Frequency_Moment_0"
+### 4.468s elapsed time, 5.124s cpu time, 1.030s GC time
+Loading theory "Draft.Frequency_Moment_0Templates"
+val templateLemmas =
+   [("Frequency_Moment_0.p_prime",
+     "[| ?\<epsilon> : {0<..<1}; ?\<delta> : {0<..<1}; set ?as <= {..<?n} |]
+      ==> normalization_semidom_class.prime (??.Frequency_Moment_0.p ?n)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 8, template_var 3),
+              template_app
+               (template_app (template_hole 7, template_hole 6),
+                template_hole 5))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 8, template_var 2),
+              template_app
+               (template_app (template_hole 7, template_hole 6),
+                template_hole 5))
+            ),
+        template_inequation
+         (less_equals, template_app (template_hole 3, template_var 1),
+          template_app (template_hole 2, template_var 0))],
+       template_predicate
+        (
+           template_app
+            (template_hole 1,
+             template_app (template_hole 0, template_var 0))
+           ))),
+    ("Frequency_Moment_0.p_gt_1",
+     "[| ?\<epsilon> : {0<..<1}; ?\<delta> : {0<..<1}; set ?as <= {..<?n} |]
+      ==> 1 < ??.Frequency_Moment_0.p ?n",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 9, template_var 3),
+              template_app
+               (template_app (template_hole 8, template_hole 7),
+                template_hole 6))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 9, template_var 2),
+              template_app
+               (template_app (template_hole 8, template_hole 7),
+                template_hole 6))
+            ),
+        template_inequation
+         (less_equals, template_app (template_hole 4, template_var 1),
+          template_app (template_hole 3, template_var 0))],
+       template_inequation
+        (less_than, template_hole 1,
+         template_app (template_hole 0, template_var 0)))),
+    ("Frequency_Moment_0.p_gt_0",
+     "[| ?\<epsilon> : {0<..<1}; ?\<delta> : {0<..<1}; set ?as <= {..<?n} |]
+      ==> 0 < ??.Frequency_Moment_0.p ?n",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 9, template_var 3),
+              template_app
+               (template_app (template_hole 8, template_hole 7),
+                template_hole 6))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 9, template_var 2),
+              template_app
+               (template_app (template_hole 8, template_hole 7),
+                template_hole 6))
+            ),
+        template_inequation
+         (less_equals, template_app (template_hole 4, template_var 1),
+          template_app (template_hole 3, template_var 0))],
+       template_inequation
+        (less_than, template_hole 1,
+         template_app (template_hole 0, template_var 0)))),
+    ("Frequency_Moment_0.s_gt_0",
+     "[| ?\<epsilon> : {0<..<1}; ?\<delta> : {0<..<1}; set ?as <= {..<?n} |]
+      ==> 0 < ??.Frequency_Moment_0.s ?\<epsilon>",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 9, template_var 3),
+              template_app
+               (template_app (template_hole 8, template_hole 7),
+                template_hole 6))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 9, template_var 2),
+              template_app
+               (template_app (template_hole 8, template_hole 7),
+                template_hole 6))
+            ),
+        template_inequation
+         (less_equals, template_app (template_hole 4, template_var 1),
+          template_app (template_hole 3, template_var 0))],
+       template_inequation
+        (less_than, template_hole 1,
+         template_app (template_hole 0, template_var 3)))),
+    ("Frequency_Moment_0.t_gt_0",
+     "[| ?\<epsilon> : {0<..<1}; ?\<delta> : {0<..<1}; set ?as <= {..<?n} |]
+      ==> 0 < ??.Frequency_Moment_0.t ?\<delta>",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 9, template_var 3),
+              template_app
+               (template_app (template_hole 8, template_hole 7),
+                template_hole 6))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 9, template_var 2),
+              template_app
+               (template_app (template_hole 8, template_hole 7),
+                template_hole 6))
+            ),
+        template_inequation
+         (less_equals, template_app (template_hole 4, template_var 1),
+          template_app (template_hole 3, template_var 0))],
+       template_inequation
+        (less_than, template_hole 1,
+         template_app (template_hole 0, template_var 2)))),
+    ("Frequency_Moment_0.n_le_p",
+     "[| ?\<epsilon> : {0<..<1}; ?\<delta> : {0<..<1}; set ?as <= {..<?n} |]
+      ==> ?n <= ??.Frequency_Moment_0.p ?n",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 8, template_var 3),
+              template_app
+               (template_app (template_hole 7, template_hole 6),
+                template_hole 5))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 8, template_var 2),
+              template_app
+               (template_app (template_hole 7, template_hole 6),
+                template_hole 5))
+            ),
+        template_inequation
+         (less_equals, template_app (template_hole 3, template_var 1),
+          template_app (template_hole 2, template_var 0))],
+       template_inequation
+        (less_equals, template_var 0,
+         template_app (template_hole 0, template_var 0)))),
+    ("Frequency_Moment_0.as_subset_p",
+     "[| ?\<epsilon> : {0<..<1}; ?\<delta> : {0<..<1}; set ?as <= {..<?n} |]
+      ==> set ?as <= {..<??.Frequency_Moment_0.p ?n}",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 7, template_var 3),
+              template_app
+               (template_app (template_hole 6, template_hole 5),
+                template_hole 4))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 7, template_var 2),
+              template_app
+               (template_app (template_hole 6, template_hole 5),
+                template_hole 4))
+            ),
+        template_inequation
+         (less_equals, template_app (template_hole 2, template_var 1),
+          template_app (template_hole 1, template_var 0))],
+       template_inequation
+        (less_equals, template_app (template_hole 2, template_var 1),
+         template_app
+          (template_hole 1,
+           template_app (template_hole 0, template_var 0))))),
+    ("Frequency_Moment_0.m_eq_F_0",
+     "[| ?\<epsilon> : {0<..<1}; ?\<delta> : {0<..<1}; set ?as <= {..<?n} |]
+      ==> real (??.Frequency_Moment_0.m ?as) = real_of_rat (F 0 ?as)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 12, template_var 3),
+              template_app
+               (template_app (template_hole 11, template_hole 10),
+                template_hole 9))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 12, template_var 2),
+              template_app
+               (template_app (template_hole 11, template_hole 10),
+                template_hole 9))
+            ),
+        template_inequation
+         (less_equals, template_app (template_hole 7, template_var 1),
+          template_app (template_hole 6, template_var 0))],
+       template_equation
+        (template_app
+          (template_hole 4, template_app (template_hole 3, template_var 1)),
+         template_app
+          (template_hole 2,
+           template_app
+            (template_app (template_hole 1, template_hole 0),
+             template_var 1))))),
+    ("Frequency_Moment_0.of_bool_square",
+     "[| ?\<epsilon> : {0<..<1}; ?\<delta> : {0<..<1}; set ?as <= {..<?n} |]
+      ==> (of_bool ?x)\<^sup>2 = of_bool ?x",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 12, template_var 4),
+              template_app
+               (template_app (template_hole 11, template_hole 10),
+                template_hole 9))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 12, template_var 3),
+              template_app
+               (template_app (template_hole 11, template_hole 10),
+                template_hole 9))
+            ),
+        template_inequation
+         (less_equals, template_app (template_hole 7, template_var 2),
+          template_app (template_hole 6, template_var 1))],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 4,
+             template_app (template_hole 3, template_var 0)),
+           template_app
+            (template_hole 2,
+             template_app (template_hole 1, template_hole 0))),
+         template_app (template_hole 3, template_var 0)))),
+    ("Frequency_Moment_0.p_ge_18",
+     "[| ?\<epsilon> : {0<..<1}; ?\<delta> : {0<..<1}; set ?as <= {..<?n} |]
+      ==> 18 <= ??.Frequency_Moment_0.p ?n",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 12, template_var 3),
+              template_app
+               (template_app (template_hole 11, template_hole 10),
+                template_hole 9))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 12, template_var 2),
+              template_app
+               (template_app (template_hole 11, template_hole 10),
+                template_hole 9))
+            ),
+        template_inequation
+         (less_equals, template_app (template_hole 7, template_var 1),
+          template_app (template_hole 6, template_var 0))],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_hole 4,
+           template_app
+            (template_hole 3,
+             template_app
+              (template_hole 2,
+               template_app
+                (template_hole 3,
+                 template_app (template_hole 3, template_hole 1))))),
+         template_app (template_hole 0, template_var 0)))),
+    ("Frequency_Moment_0.r_ge_23",
+     "[| ?\<epsilon> : {0<..<1}; ?\<delta> : {0<..<1}; set ?as <= {..<?n} |]
+      ==> 23 <= ??.Frequency_Moment_0.r ?\<delta>",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 12, template_var 3),
+              template_app
+               (template_app (template_hole 11, template_hole 10),
+                template_hole 9))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 12, template_var 2),
+              template_app
+               (template_app (template_hole 11, template_hole 10),
+                template_hole 9))
+            ),
+        template_inequation
+         (less_equals, template_app (template_hole 7, template_var 1),
+          template_app (template_hole 6, template_var 0))],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_hole 4,
+           template_app
+            (template_hole 3,
+             template_app
+              (template_hole 3,
+               template_app
+                (template_hole 3,
+                 template_app (template_hole 2, template_hole 1))))),
+         template_app (template_hole 0, template_var 2)))),
+    ("Frequency_Moment_0.as_lt_p",
+     "[| ?\<epsilon> : {0<..<1}; ?\<delta> : {0<..<1}; set ?as <= {..<?n};
+         ?x : set ?as |]
+      ==> ?x < ??.Frequency_Moment_0.p ?n",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 9, template_var 4),
+              template_app
+               (template_app (template_hole 8, template_hole 7),
+                template_hole 6))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 9, template_var 3),
+              template_app
+               (template_app (template_hole 8, template_hole 7),
+                template_hole 6))
+            ),
+        template_inequation
+         (less_equals, template_app (template_hole 4, template_var 2),
+          template_app (template_hole 3, template_var 1)),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 2, template_var 0),
+              template_app (template_hole 4, template_var 2))
+            )],
+       template_inequation
+        (less_than, template_var 0,
+         template_app (template_hole 0, template_var 1)))),
+    ("Frequency_Moment_0.two_pow_r_le_1",
+     "[| ?\<epsilon> : {0<..<1}; ?\<delta> : {0<..<1}; set ?as <= {..<?n} |]
+      ==> 0 < 1 - 2 powr - real (??.Frequency_Moment_0.r ?\<delta>)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 17, template_var 3),
+              template_app
+               (template_app (template_hole 16, template_hole 15),
+                template_hole 14))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 17, template_var 2),
+              template_app
+               (template_app (template_hole 16, template_hole 15),
+                template_hole 14))
+            ),
+        template_inequation
+         (less_equals, template_app (template_hole 12, template_var 1),
+          template_app (template_hole 11, template_var 0))],
+       template_inequation
+        (less_than, template_hole 9,
+         template_app
+          (template_app (template_hole 8, template_hole 7),
+           template_app
+            (template_app
+              (template_hole 6,
+               template_app
+                (template_hole 5,
+                 template_app (template_hole 4, template_hole 3))),
+             template_app
+              (template_hole 2,
+               template_app
+                (template_hole 1,
+                 template_app (template_hole 0, template_var 2)))))))),
+    ("Frequency_Moment_0.p_le_n",
+     "[| ?\<epsilon> : {0<..<1}; ?\<delta> : {0<..<1}; set ?as <= {..<?n} |]
+      ==> ??.Frequency_Moment_0.p ?n <= 2 * ?n + 40",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 14, template_var 3),
+              template_app
+               (template_app (template_hole 13, template_hole 12),
+                template_hole 11))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 14, template_var 2),
+              template_app
+               (template_app (template_hole 13, template_hole 12),
+                template_hole 11))
+            ),
+        template_inequation
+         (less_equals, template_app (template_hole 9, template_var 1),
+          template_app (template_hole 8, template_var 0))],
+       template_inequation
+        (less_equals, template_app (template_hole 6, template_var 0),
+         template_app
+          (template_app
+            (template_hole 5,
+             template_app
+              (template_app
+                (template_hole 4,
+                 template_app
+                  (template_hole 3,
+                   template_app (template_hole 2, template_hole 1))),
+               template_var 0)),
+           template_app
+            (template_hole 3,
+             template_app
+              (template_hole 2,
+               template_app
+                (template_hole 2,
+                 template_app
+                  (template_hole 2,
+                   template_app
+                    (template_hole 0,
+                     template_app
+                      (template_hole 2, template_hole 1)))))))))),
+    ("Frequency_Moment_0.t_bound",
+     "[| ?\<epsilon> : {0<..<1}; ?\<delta> : {0<..<1}; set ?as <= {..<?n} |]
+      ==> real (??.Frequency_Moment_0.t ?\<delta>)
+          <= 81 / (real_of_rat ?\<delta>)\<^sup>2",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 17, template_var 3),
+              template_app
+               (template_app (template_hole 16, template_hole 15),
+                template_hole 14))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 17, template_var 2),
+              template_app
+               (template_app (template_hole 16, template_hole 15),
+                template_hole 14))
+            ),
+        template_inequation
+         (less_equals, template_app (template_hole 12, template_var 1),
+          template_app (template_hole 11, template_var 0))],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_hole 9, template_app (template_hole 8, template_var 2)),
+         template_app
+          (template_app
+            (template_hole 7,
+             template_app
+              (template_hole 6,
+               template_app
+                (template_hole 5,
+                 template_app
+                  (template_hole 4,
+                   template_app
+                    (template_hole 4,
+                     template_app
+                      (template_hole 4,
+                       template_app
+                        (template_hole 5,
+                         template_app
+                          (template_hole 4, template_hole 3)))))))),
+           template_app
+            (template_app
+              (template_hole 2,
+               template_app (template_hole 1, template_var 2)),
+             template_app
+              (template_hole 0,
+               template_app (template_hole 4, template_hole 3))))))),
+    ("Frequency_Moment_0.card_nat_in_ball",
+     "[| ?\<epsilon> : {0<..<1}; ?\<delta> : {0<..<1}; set ?as <= {..<?n};
+         0 <= ?q |]
+      ==> finite {k. \<bar>real ?x - real k\<bar> <= ?q & k ~= ?x}",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 16, template_var 5),
+              template_app
+               (template_app (template_hole 15, template_hole 14),
+                template_hole 13))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 16, template_var 4),
+              template_app
+               (template_app (template_hole 15, template_hole 14),
+                template_hole 13))
+            ),
+        template_inequation
+         (less_equals, template_app (template_hole 11, template_var 3),
+          template_app (template_hole 10, template_var 2)),
+        template_inequation (less_equals, template_hole 8, template_var 1)],
+       template_predicate
+        (
+           template_app
+            (template_hole 7, template_app (template_hole 6, t_empty))
+           ))),
+    ("Frequency_Moment_0.prob_degree_lt_1",
+     "[| ?\<epsilon> : {0<..<1}; ?\<delta> : {0<..<1}; set ?as <= {..<?n} |]
+      ==> Sigma_Algebra.measure
+           (poly_hash_family.M (Field.mod_ring (??.Frequency_Moment_0.p ?n))
+             2)
+           {\<omega>. degree \<omega> < 1}
+          <= 1 / real (??.Frequency_Moment_0.p ?n)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 22, template_var 3),
+              template_app
+               (template_app (template_hole 21, template_hole 20),
+                template_hole 19))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 22, template_var 2),
+              template_app
+               (template_app (template_hole 21, template_hole 20),
+                template_hole 19))
+            ),
+        template_inequation
+         (less_equals, template_app (template_hole 17, template_var 1),
+          template_app (template_hole 16, template_var 0))],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_app
+            (template_hole 14,
+             template_app
+              (template_app
+                (template_hole 13,
+                 template_app
+                  (template_hole 12,
+                   template_app (template_hole 11, template_var 0))),
+               template_app
+                (template_hole 10,
+                 template_app (template_hole 9, template_hole 8)))),
+           template_app (template_hole 7, t_empty)),
+         template_app
+          (template_app (template_hole 2, template_hole 1),
+           template_app
+            (template_hole 0,
+             template_app (template_hole 11, template_var 0)))))),
+    ("Frequency_Moment_0.f_subset",
+     "[| ?\<epsilon> : {0<..<1}; ?\<delta> : {0<..<1}; set ?as <= {..<?n};
+         ?g ` ?A <= ?h ` ?B |]
+      ==> (%x. ?f (?g x)) ` ?A <= (%x. ?f (?h x)) ` ?B",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 12, template_var 8),
+              template_app
+               (template_app (template_hole 11, template_hole 10),
+                template_hole 9))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 12, template_var 7),
+              template_app
+               (template_app (template_hole 11, template_hole 10),
+                template_hole 9))
+            ),
+        template_inequation
+         (less_equals, template_app (template_hole 7, template_var 6),
+          template_app (template_hole 6, template_var 5)),
+        template_inequation
+         (less_equals,
+          template_app
+           (template_app (template_hole 4, template_var 4), template_var 3),
+          template_app
+           (template_app (template_hole 3, template_var 2),
+            template_var 1))],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_app (template_hole 1, t_empty), template_var 3),
+         template_app
+          (template_app (template_hole 0, t_empty), template_var 1)))),
+    ("Frequency_Moment_0.r_bound",
+     "[| ?\<epsilon> : {0<..<1}; ?\<delta> : {0<..<1}; set ?as <= {..<?n} |]
+      ==> 4 * log 2 (1 / real_of_rat ?\<delta>) + 23
+          <= real (??.Frequency_Moment_0.r ?\<delta>)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 19, template_var 3),
+              template_app
+               (template_app (template_hole 18, template_hole 17),
+                template_hole 16))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 19, template_var 2),
+              template_app
+               (template_app (template_hole 18, template_hole 17),
+                template_hole 16))
+            ),
+        template_inequation
+         (less_equals, template_app (template_hole 14, template_var 1),
+          template_app (template_hole 13, template_var 0))],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_app
+            (template_hole 11,
+             template_app
+              (template_app
+                (template_hole 10,
+                 template_app
+                  (template_hole 9,
+                   template_app
+                    (template_hole 8,
+                     template_app (template_hole 8, template_hole 7)))),
+               template_app
+                (template_app
+                  (template_hole 6,
+                   template_app
+                    (template_hole 9,
+                     template_app (template_hole 8, template_hole 7))),
+                 template_app
+                  (template_app (template_hole 5, template_hole 4),
+                   template_app (template_hole 3, template_var 2))))),
+           template_app
+            (template_hole 9,
+             template_app
+              (template_hole 2,
+               template_app
+                (template_hole 2,
+                 template_app
+                  (template_hole 2,
+                   template_app (template_hole 8, template_hole 7)))))),
+         template_app
+          (template_hole 1,
+           template_app (template_hole 0, template_var 2))))),
+    ("Frequency_Moment_0.f0_exact_space_usage",
+     "[| ?\<epsilon> : {0<..<1}; ?\<delta> : {0<..<1}; set ?as <= {..<?n} |]
+      ==> AE \<omega> in measure_pmf
+                          (fold (%a state. state >>= f0_update a) ?as
+                            (f0_init ?\<delta> ?\<epsilon>
+                              ?n)). bit_count (encode_f0_state \<omega>)
+                                    <= ereal
+  (f0_space_usage (?n, ?\<epsilon>, ?\<delta>))",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 20, template_var 3),
+              template_app
+               (template_app (template_hole 19, template_hole 18),
+                template_hole 17))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 20, template_var 2),
+              template_app
+               (template_app (template_hole 19, template_hole 18),
+                template_hole 17))
+            ),
+        template_inequation
+         (less_equals, template_app (template_hole 15, template_var 1),
+          template_app (template_hole 14, template_var 0))],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 13, t_empty),
+             template_app
+              (template_hole 5,
+               template_app
+                (template_hole 4,
+                 template_app
+                  (template_app
+                    (template_app (template_hole 3, t_empty),
+                     template_var 1),
+                   template_app
+                    (template_app
+                      (template_app (template_hole 0, template_var 2),
+                       template_var 3),
+                     template_var 0)))))
+           ))),
+    ("Frequency_Moment_0.card_nat_in_ball",
+     "[| ?\<epsilon> : {0<..<1}; ?\<delta> : {0<..<1}; set ?as <= {..<?n};
+         0 <= ?q |]
+      ==> real (card {k. \<bar>real ?x - real k\<bar> <= ?q & k ~= ?x})
+          <= 2 * ?q",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 20, template_var 5),
+              template_app
+               (template_app (template_hole 19, template_hole 18),
+                template_hole 17))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 20, template_var 4),
+              template_app
+               (template_app (template_hole 19, template_hole 18),
+                template_hole 17))
+            ),
+        template_inequation
+         (less_equals, template_app (template_hole 15, template_var 3),
+          template_app (template_hole 14, template_var 2)),
+        template_inequation
+         (less_equals, template_hole 12, template_var 1)],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_hole 11,
+           template_app
+            (template_hole 10, template_app (template_hole 9, t_empty))),
+         template_app
+          (template_app
+            (template_hole 3,
+             template_app
+              (template_hole 2,
+               template_app (template_hole 1, template_hole 0))),
+           template_var 1)))),
+    ("Frequency_Moment_0.t_r_bound",
+     "[| ?\<epsilon> : {0<..<1}; ?\<delta> : {0<..<1}; set ?as <= {..<?n} |]
+      ==> 18 * 40 * (real (??.Frequency_Moment_0.t ?\<delta>))\<^sup>2 *
+          2 powr - real (??.Frequency_Moment_0.r ?\<delta>)
+          <= 1",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 20, template_var 3),
+              template_app
+               (template_app (template_hole 19, template_hole 18),
+                template_hole 17))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 20, template_var 2),
+              template_app
+               (template_app (template_hole 19, template_hole 18),
+                template_hole 17))
+            ),
+        template_inequation
+         (less_equals, template_app (template_hole 15, template_var 1),
+          template_app (template_hole 14, template_var 0))],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_app
+            (template_hole 12,
+             template_app
+              (template_app
+                (template_hole 12,
+                 template_app
+                  (template_app
+                    (template_hole 12,
+                     template_app
+                      (template_hole 11,
+                       template_app
+                        (template_hole 10,
+                         template_app
+                          (template_hole 9,
+                           template_app
+                            (template_hole 10,
+                             template_app
+                              (template_hole 10, template_hole 8)))))),
+                   template_app
+                    (template_hole 11,
+                     template_app
+                      (template_hole 10,
+                       template_app
+                        (template_hole 10,
+                         template_app
+                          (template_hole 10,
+                           template_app
+                            (template_hole 9,
+                             template_app
+                              (template_hole 10, template_hole 8)))))))),
+               template_app
+                (template_app
+                  (template_hole 7,
+                   template_app
+                    (template_hole 6,
+                     template_app (template_hole 5, template_var 2))),
+                 template_app
+                  (template_hole 4,
+                   template_app (template_hole 10, template_hole 8))))),
+           template_app
+            (template_app
+              (template_hole 3,
+               template_app
+                (template_hole 11,
+                 template_app (template_hole 10, template_hole 8))),
+             template_app
+              (template_hole 2,
+               template_app
+                (template_hole 6,
+                 template_app (template_hole 1, template_var 2))))),
+         template_hole 0))),
+    ("Frequency_Moment_0.estimate'_bounds",
+     "[| ?\<epsilon> : {0<..<1}; ?\<delta> : {0<..<1}; set ?as <= {..<?n} |]
+      ==> Sigma_Algebra.measure
+           (poly_hash_family.M (Field.mod_ring (??.Frequency_Moment_0.p ?n))
+             2)
+           {\<omega>.
+            real_of_rat ?\<delta> * real_of_rat (F 0 ?as)
+            < \<bar>??.Frequency_Moment_0.estimate' ?\<delta> ?n
+                     (??.Frequency_Moment_0.sketch_rv' ?\<delta> ?n ?as
+                       \<omega>) -
+                    real_of_rat (F 0 ?as)\<bar>}
+          <= 1 / 3",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 28, template_var 3),
+              template_app
+               (template_app (template_hole 27, template_hole 26),
+                template_hole 25))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 28, template_var 2),
+              template_app
+               (template_app (template_hole 27, template_hole 26),
+                template_hole 25))
+            ),
+        template_inequation
+         (less_equals, template_app (template_hole 23, template_var 1),
+          template_app (template_hole 22, template_var 0))],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_app
+            (template_hole 20,
+             template_app
+              (template_app
+                (template_hole 19,
+                 template_app
+                  (template_hole 18,
+                   template_app (template_hole 17, template_var 0))),
+               template_app
+                (template_hole 16,
+                 template_app (template_hole 15, template_hole 14)))),
+           template_app (template_hole 13, t_empty)),
+         template_app
+          (template_app (template_hole 3, template_hole 2),
+           template_app
+            (template_hole 1,
+             template_app (template_hole 0, template_hole 14)))))),
+    ("Frequency_Moment_0.exp_Q",
+     "[| ?\<epsilon> : {0<..<1}; ?\<delta> : {0<..<1}; set ?as <= {..<?n};
+         0 <= ?a; ?a <= int (??.Frequency_Moment_0.p ?n) |]
+      ==> LINT \<omega>
+             |poly_hash_family.M
+               (Field.mod_ring (??.Frequency_Moment_0.p ?n)) 2.
+             real (??.Frequency_Moment_0.Q ?n ?as ?a \<omega>) =
+          real (??.Frequency_Moment_0.m ?as) * real_of_int ?a /
+          real (??.Frequency_Moment_0.p ?n)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 23, template_var 4),
+              template_app
+               (template_app (template_hole 22, template_hole 21),
+                template_hole 20))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 23, template_var 3),
+              template_app
+               (template_app (template_hole 22, template_hole 21),
+                template_hole 20))
+            ),
+        template_inequation
+         (less_equals, template_app (template_hole 18, template_var 2),
+          template_app (template_hole 17, template_var 1)),
+        template_inequation (less_equals, template_hole 15, template_var 0),
+        template_inequation
+         (less_equals, template_var 0,
+          template_app
+           (template_hole 14,
+            template_app (template_hole 13, template_var 1)))],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 11,
+             template_app
+              (template_app
+                (template_hole 10,
+                 template_app
+                  (template_hole 9,
+                   template_app (template_hole 13, template_var 1))),
+               template_app
+                (template_hole 8,
+                 template_app (template_hole 7, template_hole 6)))),
+           t_empty),
+         template_app
+          (template_app
+            (template_hole 3,
+             template_app
+              (template_app
+                (template_hole 2,
+                 template_app
+                  (template_hole 5,
+                   template_app (template_hole 1, template_var 2))),
+               template_app (template_hole 0, template_var 0))),
+           template_app
+            (template_hole 5,
+             template_app (template_hole 13, template_var 1)))))),
+    ("Frequency_Moment_0.f0_alg_sketch",
+     "[| ?\<epsilon> : {0<..<1}; ?\<delta> : {0<..<1}; set ?as <= {..<?n} |]
+      ==> fold (%a state. state >>= f0_update a) ?as
+           (f0_init ?\<delta> ?\<epsilon> ?n) =
+          map_pmf
+           (%x. (??.Frequency_Moment_0.s ?\<epsilon>,
+                 ??.Frequency_Moment_0.t ?\<delta>,
+                 ??.Frequency_Moment_0.p ?n,
+                 ??.Frequency_Moment_0.r ?\<delta>, x,
+                 \<lambda>i\<in>{..<??.Frequency_Moment_0.s ?\<epsilon>}.
+                    ??.Frequency_Moment_0.sketch_rv ?\<delta> ?n ?as (x i)))
+           (??.Frequency_Moment_0.\<Omega>\<^sub>0 ?\<epsilon> ?n)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 24, template_var 3),
+              template_app
+               (template_app (template_hole 23, template_hole 22),
+                template_hole 21))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 24, template_var 2),
+              template_app
+               (template_app (template_hole 23, template_hole 22),
+                template_hole 21))
+            ),
+        template_inequation
+         (less_equals, template_app (template_hole 19, template_var 1),
+          template_app (template_hole 18, template_var 0))],
+       template_equation
+        (template_app
+          (template_app
+            (template_app (template_hole 16, t_empty), template_var 1),
+           template_app
+            (template_app
+              (template_app (template_hole 13, template_var 2),
+               template_var 3),
+             template_var 0)),
+         template_app
+          (template_app (template_hole 12, t_empty),
+           template_app
+            (template_app (template_hole 0, template_var 3),
+             template_var 0))))),
+    ("Frequency_Moment_0.median_bounds",
+     "[| ?\<epsilon> : {0<..<1}; ?\<delta> : {0<..<1}; set ?as <= {..<?n} |]
+      ==> 1 - real_of_rat ?\<epsilon>
+          <= measure_pmf.prob
+              (??.Frequency_Moment_0.\<Omega>\<^sub>0 ?\<epsilon> ?n)
+              {\<omega>
+               : space
+                  (measure_pmf
+                    (??.Frequency_Moment_0.\<Omega>\<^sub>0 ?\<epsilon>
+                      ?n)).
+               \<bar>median (??.Frequency_Moment_0.s ?\<epsilon>)
+                      (%i. ??.Frequency_Moment_0.estimate ?\<delta> ?n
+                            (??.Frequency_Moment_0.sketch_rv ?\<delta> ?n
+                              ?as (\<omega> i))) -
+                     F 0 ?as\<bar>
+               <= ?\<delta> * F 0 ?as}",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 27, template_var 3),
+              template_app
+               (template_app (template_hole 26, template_hole 25),
+                template_hole 24))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 27, template_var 2),
+              template_app
+               (template_app (template_hole 26, template_hole 25),
+                template_hole 24))
+            ),
+        template_inequation
+         (less_equals, template_app (template_hole 22, template_var 1),
+          template_app (template_hole 21, template_var 0))],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_app (template_hole 19, template_hole 18),
+           template_app (template_hole 17, template_var 3)),
+         template_app
+          (template_app
+            (template_hole 16,
+             template_app
+              (template_hole 15,
+               template_app
+                (template_app (template_hole 14, template_var 3),
+                 template_var 0))),
+           template_app (template_hole 13, t_empty))))),
+    ("Frequency_Moment_0.f0_alg_correct",
+     "[| ?\<epsilon> : {0<..<1}; ?\<delta> : {0<..<1}; set ?as <= {..<?n} |]
+      ==> 1 - real_of_rat ?\<epsilon>
+          <= measure_pmf.prob
+              (fold (%a state. state >>= f0_update a) ?as
+                (f0_init ?\<delta> ?\<epsilon> ?n) >>=
+               f0_result)
+              {\<omega>
+               : space
+                  (measure_pmf
+                    (fold (%a state. state >>= f0_update a) ?as
+                      (f0_init ?\<delta> ?\<epsilon> ?n) >>=
+                     f0_result)).
+               \<bar>\<omega> - F 0 ?as\<bar> <= ?\<delta> * F 0 ?as}",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 27, template_var 3),
+              template_app
+               (template_app (template_hole 26, template_hole 25),
+                template_hole 24))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 27, template_var 2),
+              template_app
+               (template_app (template_hole 26, template_hole 25),
+                template_hole 24))
+            ),
+        template_inequation
+         (less_equals, template_app (template_hole 22, template_var 1),
+          template_app (template_hole 21, template_var 0))],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_app (template_hole 19, template_hole 18),
+           template_app (template_hole 17, template_var 3)),
+         template_app
+          (template_app
+            (template_hole 16,
+             template_app
+              (template_hole 15,
+               template_app
+                (template_app
+                  (template_hole 14,
+                   template_app
+                    (template_app
+                      (template_app (template_hole 13, t_empty),
+                       template_var 1),
+                     template_app
+                      (template_app
+                        (template_app (template_hole 10, template_var 2),
+                         template_var 3),
+                       template_var 0))),
+                 template_hole 9))),
+           template_app (template_hole 8, t_empty))))),
+    ("Frequency_Moment_0.var_Q",
+     "[| ?\<epsilon> : {0<..<1}; ?\<delta> : {0<..<1}; set ?as <= {..<?n};
+         0 <= ?a; ?a <= int (??.Frequency_Moment_0.p ?n) |]
+      ==> LINT x|poly_hash_family.M
+                  (Field.mod_ring (??.Frequency_Moment_0.p ?n)) 2.
+             (real (??.Frequency_Moment_0.Q ?n ?as ?a x) -
+              (LINT \<omega>
+                  |poly_hash_family.M
+                    (Field.mod_ring (??.Frequency_Moment_0.p ?n)) 2.
+                  real
+                   (??.Frequency_Moment_0.Q ?n ?as ?a \<omega>)))\<^sup>2
+          <= real (??.Frequency_Moment_0.m ?as) * real_of_int ?a /
+             real (??.Frequency_Moment_0.p ?n)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 25, template_var 4),
+              template_app
+               (template_app (template_hole 24, template_hole 23),
+                template_hole 22))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 25, template_var 3),
+              template_app
+               (template_app (template_hole 24, template_hole 23),
+                template_hole 22))
+            ),
+        template_inequation
+         (less_equals, template_app (template_hole 20, template_var 2),
+          template_app (template_hole 19, template_var 1)),
+        template_inequation (less_equals, template_hole 17, template_var 0),
+        template_inequation
+         (less_equals, template_var 0,
+          template_app
+           (template_hole 16,
+            template_app (template_hole 15, template_var 1)))],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_app
+            (template_hole 13,
+             template_app
+              (template_app
+                (template_hole 12,
+                 template_app
+                  (template_hole 11,
+                   template_app (template_hole 15, template_var 1))),
+               template_app
+                (template_hole 10,
+                 template_app (template_hole 9, template_hole 8)))),
+           t_empty),
+         template_app
+          (template_app
+            (template_hole 3,
+             template_app
+              (template_app
+                (template_hole 2,
+                 template_app
+                  (template_hole 5,
+                   template_app (template_hole 1, template_var 2))),
+               template_app (template_hole 0, template_var 0))),
+           template_app
+            (template_hole 5,
+             template_app (template_hole 15, template_var 1)))))),
+    ("Frequency_Moment_0.collision_prob",
+     "[| ?\<epsilon> : {0<..<1}; ?\<delta> : {0<..<1}; set ?as <= {..<?n};
+         1 <= ?c |]
+      ==> Sigma_Algebra.measure
+           (poly_hash_family.M (Field.mod_ring (??.Frequency_Moment_0.p ?n))
+             2)
+           {\<omega>.
+            EX x:set ?as.
+               EX y:set ?as.
+                  x ~= y &
+                  ??.Frequency_Moment_0.tr_hash ?\<delta> ?n x \<omega>
+                  <= ?c &
+                  ??.Frequency_Moment_0.tr_hash ?\<delta> ?n x \<omega> =
+                  ??.Frequency_Moment_0.tr_hash ?\<delta> ?n y \<omega>}
+          <= 5 / 2 * (real (card (set ?as)))\<^sup>2 * ?c\<^sup>2 *
+             2 powr - real (??.Frequency_Moment_0.r ?\<delta>) /
+             (real (??.Frequency_Moment_0.p ?n))\<^sup>2 +
+             1 / real (??.Frequency_Moment_0.p ?n)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 33, template_var 4),
+              template_app
+               (template_app (template_hole 32, template_hole 31),
+                template_hole 30))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 33, template_var 3),
+              template_app
+               (template_app (template_hole 32, template_hole 31),
+                template_hole 30))
+            ),
+        template_inequation
+         (less_equals, template_app (template_hole 28, template_var 2),
+          template_app (template_hole 27, template_var 1)),
+        template_inequation
+         (less_equals, template_hole 25, template_var 0)],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_app
+            (template_hole 24,
+             template_app
+              (template_app
+                (template_hole 23,
+                 template_app
+                  (template_hole 22,
+                   template_app (template_hole 21, template_var 1))),
+               template_app
+                (template_hole 20,
+                 template_app (template_hole 19, template_hole 18)))),
+           template_app (template_hole 17, t_empty)),
+         template_app
+          (template_app
+            (template_hole 10,
+             template_app
+              (template_app
+                (template_hole 9,
+                 template_app
+                  (template_app
+                    (template_hole 8,
+                     template_app
+                      (template_app
+                        (template_hole 8,
+                         template_app
+                          (template_app
+                            (template_hole 8,
+                             template_app
+                              (template_app
+                                (template_hole 9,
+                                 template_app
+                                  (template_hole 7,
+                                   template_app
+                                    (template_hole 6,
+                                     template_app
+(template_hole 19, template_hole 18)))),
+                               template_app
+                                (template_hole 7,
+                                 template_app
+                                  (template_hole 19, template_hole 18)))),
+                           template_app
+                            (template_app
+                              (template_hole 5,
+                               template_app
+                                (template_hole 4,
+                                 template_app
+                                  (template_hole 3,
+                                   template_app
+                                    (template_hole 28, template_var 2)))),
+                             template_app
+                              (template_hole 20,
+                               template_app
+                                (template_hole 19, template_hole 18))))),
+                       template_app
+                        (template_app (template_hole 5, template_var 0),
+                         template_app
+                          (template_hole 20,
+                           template_app
+                            (template_hole 19, template_hole 18))))),
+                   template_app
+                    (template_app
+                      (template_hole 2,
+                       template_app
+                        (template_hole 7,
+                         template_app
+                          (template_hole 19, template_hole 18))),
+                     template_app
+                      (template_hole 1,
+                       template_app
+                        (template_hole 4,
+                         template_app
+                          (template_hole 0, template_var 3)))))),
+               template_app
+                (template_app
+                  (template_hole 5,
+                   template_app
+                    (template_hole 4,
+                     template_app (template_hole 21, template_var 1))),
+                 template_app
+                  (template_hole 20,
+                   template_app (template_hole 19, template_hole 18))))),
+           template_app
+            (template_app (template_hole 9, template_hole 25),
+             template_app
+              (template_hole 4,
+               template_app (template_hole 21, template_var 1)))))))]:
+   (string * thm * template) list
+### theory "Draft.Frequency_Moment_0Templates"
+### 1.560s elapsed time, 1.927s cpu time, 0.269s GC time
+val it = (): unit

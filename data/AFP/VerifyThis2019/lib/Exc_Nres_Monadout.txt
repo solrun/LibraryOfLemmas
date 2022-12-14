@@ -1,0 +1,2481 @@
+Loading theory "HOL-Library.Function_Algebras" (required by "Draft.Exc_Nres_MonadTemplates" via "Draft.ExtrEqs" via "HOL-Library.BigO")
+Loading theory "HOL-Library.Stream" (required by "Draft.Exc_Nres_MonadTemplates" via "Draft.ExtrEqs")
+Loading theory "HOL-Library.Set_Algebras" (required by "Draft.Exc_Nres_MonadTemplates" via "Draft.ExtrEqs" via "HOL-Library.BigO")
+Loading theory "HOL-Library.Tree" (required by "Draft.Exc_Nres_MonadTemplates" via "Draft.ExtrEqs" via "Draft.Templates")
+instantiation
+  fun :: (type, plus) plus
+  plus_fun == plus :: ('a => 'b) => ('a => 'b) => 'a => 'b
+instantiation
+  set :: (plus) plus
+  plus_set == plus :: 'a set => 'a set => 'a set
+instantiation
+  set :: (times) times
+  times_set == times :: 'a set => 'a set => 'a set
+instantiation
+  fun :: (type, zero) zero
+  zero_fun == zero_class.zero :: 'a => 'b
+instantiation
+  fun :: (type, times) times
+  times_fun == times :: ('a => 'b) => ('a => 'b) => 'a => 'b
+instantiation
+  set :: (zero) zero
+  zero_set == zero_class.zero :: 'a set
+instantiation
+  set :: (one) one
+  one_set == one_class.one :: 'a set
+instantiation
+  fun :: (type, one) one
+  one_fun == one_class.one :: 'a => 'b
+### theory "HOL-Library.Function_Algebras"
+### 0.153s elapsed time, 0.612s cpu time, 0.055s GC time
+Loading theory "Draft.Exc_Nres_Monad" (required by "Draft.Exc_Nres_MonadTemplates")
+### theory "HOL-Library.Set_Algebras"
+### 0.258s elapsed time, 1.029s cpu time, 0.055s GC time
+Loading theory "HOL-Library.BigO" (required by "Draft.Exc_Nres_MonadTemplates" via "Draft.ExtrEqs")
+consts
+  shift :: "'a list => 'a stream => 'a stream"
+Proofs for coinductive predicate(s) "streamsp"
+  Proving monotonicity ...
+consts
+  snth :: "'a stream => nat => 'a"
+consts
+  stake :: "nat => 'a stream => 'a list"
+consts
+  sdrop :: "nat => 'a stream => 'a stream"
+consts
+  left :: "'a tree => 'a tree"
+consts
+  right :: "'a tree => 'a tree"
+consts
+  sfilter :: "('a => bool) => 'a stream => 'a stream"
+Found termination order: "size <*mlex*> {}"
+consts
+  cycle :: "'a list => 'a stream"
+consts
+  siterate :: "('a => 'a) => 'a => 'a stream"
+Found termination order: "size <*mlex*> {}"
+consts
+  flat :: "'a list stream => 'a stream"
+Found termination order: "size <*mlex*> {}"
+consts
+  sinterleave :: "'a stream => 'a stream => 'a stream"
+class height = type +
+  fixes height :: "'a => nat"
+instantiation
+  tree :: (type) height
+  height_tree == height :: 'a tree => nat
+consts
+  szip :: "'a stream => 'b stream => ('a * 'b) stream"
+consts
+  smap2 :: "('a => 'b => 'c) => 'a stream => 'b stream => 'c stream"
+Found termination order: "size <*mlex*> {}"
+### theory "HOL-Library.Stream"
+### 0.883s elapsed time, 3.433s cpu time, 0.333s GC time
+(?\<Phi> ==> ?mi <= \<Down>\<^sub>E ?E ?R ?m) ==>
+?mi <= \<Down>\<^sub>E ?E ?R (ebind (EASSERT ?\<Phi>) (%_. ?m))
+(?\<Phi> ==> ?mi <= \<Down>\<^sub>E ?E ?R ?m) ==>
+ebind (EASSUME ?\<Phi>) (%_. ?mi) <= \<Down>\<^sub>E ?E ?R ?m
+[| ?\<Phi>; ?mi <= \<Down>\<^sub>E ?E ?R ?m |]
+==> ?mi <= \<Down>\<^sub>E ?E ?R (ebind (EASSUME ?\<Phi>) (%_. ?m))
+[| ?\<Phi>; ?mi <= \<Down>\<^sub>E ?E ?R ?m |]
+==> ebind (EASSERT ?\<Phi>) (%_. ?mi) <= \<Down>\<^sub>E ?E ?R ?m
+[| ?mi <= \<Down>\<^sub>E ?E ?R' ?m;
+   !!xi x. (xi, x) : ?R' ==> ?fi xi <= \<Down>\<^sub>E ?E ?R (?f x) |]
+==> ebind ?mi ?fi <= \<Down>\<^sub>E ?E ?R (ebind ?m ?f)
+(?xi, ?x) : ?R ==> ERETURN ?xi <= \<Down>\<^sub>E ?E ?R (ERETURN ?x)
+[| (?li, ?l) : \<langle>?S\<rangle>list_rel; (?si, ?s) : ?R;
+   !!si s. (si, s) : ?R ==> ?ci si <= \<Down> bool_rel (?c s);
+   !!xi x si s.
+      [| (xi, x) : ?S; x : set ?l; (si, s) : ?R; inres (?c s) True |]
+      ==> ?fi xi si <= \<Down> ?R (?f x s) |]
+==> monadic_nfoldli ?li ?ci ?fi ?si
+    <= \<Down> ?R (monadic_nfoldli ?l ?c ?f ?s)
+[| (?s', ?s) : ?R; !!s' s. (s', s) : ?R ==> ?b' s' <= SPEC (%r. r = ?b s);
+   !!s' s. [| (s', s) : ?R; ?b s |] ==> ?f' s' <= \<Down> ?R (?f s) |]
+==> monadic_WHILEIT (%_. True) ?b' ?f' ?s'
+    <= \<Down> ?R (WHILE\<^sub>T ?b ?f ?s)
+[| (?s', ?s) : ?R; !!s' s. [| (s', s) : ?R; ?I s |] ==> ?I' s';
+   !!s' s.
+      [| (s', s) : ?R; ?I s; ?I' s' |] ==> ?b' s' <= SPEC (%r. r = ?b s);
+   !!s' s.
+      [| (s', s) : ?R; ?I s; ?I' s'; ?b s |]
+      ==> ?f' s' <= \<Down> ?R (?f s) |]
+==> monadic_WHILEIT ?I' ?b' ?f' ?s'
+    <= \<Down> ?R (WHILE\<^sub>T\<^bsup>?I\<^esup> ?b ?f ?s)
+[| (?s', ?s) : ?R; !!s' s. [| (s', s) : ?R; ?I s |] ==> ?I' s';
+   !!s' s.
+      [| (s', s) : ?R; ?I s; ?I' s' |]
+      ==> ?b' s' <= \<Down> bool_rel (?b s);
+   !!s' s.
+      [| (s', s) : ?R; ?I s; ?I' s'; nofail (?b s); inres (?b s) True |]
+      ==> ?f' s' <= \<Down> ?R (?f s) |]
+==> monadic_WHILEIT ?I' ?b' ?f' ?s'
+    <= \<Down> ?R (monadic_WHILEIT ?I ?b ?f ?s)
+[| ?I' ?x' ==> (?x, ?x') : ?R; !!x x'. [| (x, x') : ?R; ?I' x' |] ==> ?I x;
+   !!x x'. [| (x, x') : ?R; ?I x; ?I' x' |] ==> ?b x = ?b' x';
+   !!x x'.
+      [| (x, x') : ?R; ?b x; ?b' x'; ?I x; ?I' x' |]
+      ==> ?f x <= \<Down> ?R (?f' x') |]
+==> WHILE\<^sub>T\<^bsup>?I\<^esup> ?b ?f ?x
+    <= \<Down> ?R (WHILE\<^sub>T\<^bsup>?I'\<^esup> ?b' ?f' ?x')
+Found termination order: "size <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+### theory "HOL-Library.BigO"
+### 0.989s elapsed time, 3.549s cpu time, 0.895s GC time
+Found termination order: "size <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+### theory "Draft.Exc_Nres_Monad"
+### 1.260s elapsed time, 4.318s cpu time, 0.895s GC time
+Found termination order: "size <*mlex*> {}"
+Found termination order: "(%p. size (fst p)) <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+Found termination order: "(%p. size (snd p)) <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+### theory "HOL-Library.Tree"
+### 2.034s elapsed time, 5.640s cpu time, 1.065s GC time
+Loading theory "Draft.Templates" (required by "Draft.Exc_Nres_MonadTemplates" via "Draft.ExtrEqs")
+datatype template_term
+=
+     t_empty
+   | template_app of template_term * template_term
+   | template_hole of int
+   | template_var of int
+datatype sign
+= equals | greater_equals | greater_than | less_equals | less_than
+datatype template
+=
+     template_bimplication of template * template
+   | template_dunno
+   | template_equation of template_term * template_term
+   | template_implication of template list * template
+   | template_inequation of sign * template_term * template_term
+   | template_negation of template
+   | template_predicate of template_term
+constructor t_empty: template_term
+constructor template_app: template_term * template_term -> template_term
+constructor template_hole: int -> template_term
+constructor template_var: int -> template_term
+constructor equals: sign
+constructor greater_equals: sign
+constructor greater_than: sign
+constructor less_equals: sign
+constructor less_than: sign
+constructor template_bimplication: template * template -> template
+constructor template_dunno: template
+constructor template_equation: template_term * template_term -> template
+constructor template_implication: template list * template -> template
+constructor template_inequation:
+   sign * template_term * template_term -> template
+constructor template_negation: template -> template
+constructor template_predicate: template_term -> template
+val vfs = fn: term -> (indexname * typ) list * (string * typ) list
+val indexOf = fn: ''a list -> ''a -> int -> int
+val has_eq = fn: term -> bool
+val term2template = fn:
+   (indexname * typ) list -> (string * typ) list -> term -> template_term
+val lemma2predicate = fn: term -> term -> template
+val makeTemplatewithContext = fn: term -> term -> template
+val lemma2template = fn: term -> template
+val thm2template = fn: thm -> template
+val tterm2string = fn: template_term -> string
+val template2string = fn: template -> string
+val t = "height ?t <= size ?t": thm
+val th =
+   Const ("HOL.Trueprop", "bool => prop") $
+     (Const ("Orderings.ord_class.less_eq", "nat => nat => bool") $
+       (Const ("Tree.height_class.height", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree")) $
+       (Const ("Nat.size_class.size", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree"))):
+   term
+### theory "Draft.Templates"
+### 0.055s elapsed time, 0.081s cpu time, 0.000s GC time
+Loading theory "Draft.ExtrEqs" (required by "Draft.Exc_Nres_MonadTemplates")
+val eqpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Var (("_dummy_", 2), "?'a"))
+       ):
+   term Find_Theorems.criterion
+val badeqpattern = Pattern (Const ("Pure.eq", "?'a => ?'a => prop")):
+   term Find_Theorems.criterion
+val undefpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Const ("HOL.undefined", "?'a"))
+       ):
+   term Find_Theorems.criterion
+val thmpattern =
+   Pattern
+    (Const ("HOL.Trueprop", "bool => prop") $ Var (("_dummy_", 1), "bool")):
+   term Find_Theorems.criterion
+val badnames =
+   ["*nitpick*", "*Nitpick*", "*full_exhaustive*", "*_def*", "Enum.finite*",
+    "*Quickcheck*", "ATP*", "*Nunchaku*", "*Code*", "*BNF*", "*SMT*",
+    "*.*.*"]:
+   string list
+val unwanted_names =
+   [(false, Name "*nitpick*"), (false, Name "*Nitpick*"),
+    (false, Name "*full_exhaustive*"), (false, Name "*_def*"),
+    (false, Name "Enum.finite*"), (false, Name "*Quickcheck*"),
+    (false, Name "ATP*"), (false, Name "*Nunchaku*"),
+    (false, Name "*Code*"), (false, Name "*BNF*"), (false, Name "*SMT*"),
+    (false, Name "*.*.*")]:
+   (bool * term Find_Theorems.criterion) list
+val has_vars = fn: term -> bool
+val get_all_eqs = fn: string -> Proof.context -> (string * thm) list
+val get_all_thms = fn: string -> Proof.context -> (string * thm) list
+val get_noneq_thms = fn: string -> Proof.context -> (string * thm) list
+val template_eqs = fn:
+   string -> Proof.context -> (string * thm * template) list
+val template_thms = fn:
+   string -> Proof.context -> (string * thm * template) list
+### theory "Draft.ExtrEqs"
+### 0.496s elapsed time, 0.561s cpu time, 0.086s GC time
+Loading theory "Draft.Exc_Nres_MonadTemplates"
+val templateLemmas =
+   [("Exc_Nres_Monad.pw_ERETURN", "nofail (ERETURN ?x)",
+     template_predicate
+      (
+         template_app
+          (template_hole 1, template_app (template_hole 0, template_var 0))
+         )),
+    ("Exc_Nres_Monad.pw_THROW", "nofail (THROW ?e)",
+     template_predicate
+      (
+         template_app
+          (template_hole 1, template_app (template_hole 0, template_var 0))
+         )),
+    ("Exc_Nres_Monad.pw_EASSUME", "nofail (EASSUME ?\<Phi>)",
+     template_predicate
+      (
+         template_app
+          (template_hole 1, template_app (template_hole 0, template_var 0))
+         )),
+    ("Exc_Nres_Monad.pw_ESPEC", "nofail (ESPEC ?\<Phi> ?\<Psi>)",
+     template_predicate
+      (
+         template_app
+          (template_hole 1,
+           template_app
+            (template_app (template_hole 0, template_var 1),
+             template_var 0))
+         )),
+    ("Exc_Nres_Monad.pw_CHECK", "nofail (CHECK ?\<Phi> ?e)",
+     template_predicate
+      (
+         template_app
+          (template_hole 1,
+           template_app
+            (template_app (template_hole 0, template_var 1),
+             template_var 0))
+         )),
+    ("Exc_Nres_Monad.pw_EASSERT", "nofail (EASSERT ?\<Phi>) = ?\<Phi>",
+     template_equation
+      (template_app
+        (template_hole 1, template_app (template_hole 0, template_var 0)),
+       template_var 0)),
+    ("Exc_Nres_Monad.enres_breakdown", "?M >>= RETURN = ?M",
+     template_equation
+      (template_app
+        (template_app (template_hole 1, template_var 0), template_hole 0),
+       template_var 0)),
+    ("Exc_Nres_Monad.enres_monad_laws", "ebind ?m ERETURN = ?m",
+     template_equation
+      (template_app
+        (template_app (template_hole 1, template_var 0), template_hole 0),
+       template_var 0)),
+    ("Exc_Nres_Monad.enres_additional_laws", "CATCH ?m THROW = ?m",
+     template_equation
+      (template_app
+        (template_app (template_hole 1, template_var 0), template_hole 0),
+       template_var 0)),
+    ("Exc_Nres_Monad.pw_EASSERT", "inres (EASSERT ?\<Phi>) (Inr ?u)",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_hole 2,
+             template_app (template_hole 1, template_var 1)),
+           template_app (template_hole 0, template_var 0))
+         )),
+    ("Exc_Nres_Monad.pw_THROW", "~ inres (THROW ?e) (Inr ?x)",
+     template_negation
+      (
+         template_predicate
+          (
+             template_app
+              (template_app
+                (template_hole 2,
+                 template_app (template_hole 1, template_var 1)),
+               template_app (template_hole 0, template_var 0))
+             )
+         )),
+    ("Exc_Nres_Monad.pw_EASSUME", "~ inres (EASSUME ?\<Phi>) (Inl ?e)",
+     template_negation
+      (
+         template_predicate
+          (
+             template_app
+              (template_app
+                (template_hole 2,
+                 template_app (template_hole 1, template_var 1)),
+               template_app (template_hole 0, template_var 0))
+             )
+         )),
+    ("Exc_Nres_Monad.pw_ERETURN", "~ inres (ERETURN ?x) (Inl ?e)",
+     template_negation
+      (
+         template_predicate
+          (
+             template_app
+              (template_app
+                (template_hole 2,
+                 template_app (template_hole 1, template_var 1)),
+               template_app (template_hole 0, template_var 0))
+             )
+         )),
+    ("Exc_Nres_Monad.enres_breakdown",
+     "ERETURN ?x = enres_lift (RETURN ?x)",
+     template_equation
+      (template_app (template_hole 2, template_var 0),
+       template_app
+        (template_hole 1, template_app (template_hole 0, template_var 0)))),
+    ("Exc_Nres_Monad.CHECK_simps", "CHECK False ?e = THROW ?e",
+     template_equation
+      (template_app
+        (template_app (template_hole 2, template_hole 1), template_var 0),
+       template_app (template_hole 0, template_var 0))),
+    ("Exc_Nres_Monad.CHECK_simps", "CHECK True ?e = ERETURN ()",
+     template_equation
+      (template_app
+        (template_app (template_hole 3, template_hole 2), template_var 0),
+       template_app (template_hole 1, template_hole 0))),
+    ("Exc_Nres_Monad.enres_breakdown",
+     "EASSERT ?\<Phi> = enres_lift (ASSERT ?\<Phi>)",
+     template_equation
+      (template_app (template_hole 2, template_var 0),
+       template_app
+        (template_hole 1, template_app (template_hole 0, template_var 0)))),
+    ("Exc_Nres_Monad.CHECK_monadic_pw",
+     "nofail (CHECK_monadic ?c ?e) = nofail ?c",
+     template_equation
+      (template_app
+        (template_hole 2,
+         template_app
+          (template_app (template_hole 1, template_var 1), template_var 0)),
+       template_app (template_hole 0, template_var 1))),
+    ("Exc_Nres_Monad.pw_EASSUME",
+     "inres (EASSUME ?\<Phi>) (Inr ?u) = ?\<Phi>",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 2, template_app (template_hole 1, template_var 1)),
+         template_app (template_hole 0, template_var 0)),
+       template_var 1)),
+    ("Exc_Nres_Monad.enres_breakdown", "RETURN ?x >>= ?f = ?f ?x",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 1, template_app (template_hole 0, template_var 1)),
+         template_var 0),
+       template_app (template_var 0, template_var 1))),
+    ("Exc_Nres_Monad.enres_breakdown",
+     "CATCH (enres_lift ?m) ?h = enres_lift ?m",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 2, template_app (template_hole 1, template_var 1)),
+         template_var 0),
+       template_app (template_hole 0, template_var 1))),
+    ("Exc_Nres_Monad.enres_monad_laws", "ebind (ERETURN ?x) ?f = ?f ?x",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 1, template_app (template_hole 0, template_var 1)),
+         template_var 0),
+       template_app (template_var 0, template_var 1))),
+    ("Exc_Nres_Monad.enres_additional_laws",
+     "ebind (THROW ?e) ?f = THROW ?e",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 2, template_app (template_hole 1, template_var 1)),
+         template_var 0),
+       template_app (template_hole 0, template_var 1))),
+    ("Exc_Nres_Monad.enres_additional_laws",
+     "CATCH (ERETURN ?x) ?h = ERETURN ?x",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 2, template_app (template_hole 1, template_var 1)),
+         template_var 0),
+       template_app (template_hole 0, template_var 1))),
+    ("Exc_Nres_Monad.enres_additional_laws", "CATCH (THROW ?e) ?h = ?h ?e",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 1, template_app (template_hole 0, template_var 1)),
+         template_var 0),
+       template_app (template_var 0, template_var 1))),
+    ("Exc_Nres_Monad.pw_EASSERT",
+     "inres (EASSERT ?\<Phi>) (Inl ?e) = (~ ?\<Phi>)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 3, template_app (template_hole 2, template_var 1)),
+         template_app (template_hole 1, template_var 0)),
+       template_app (template_hole 0, template_var 1))),
+    ("Exc_Nres_Monad.pw_econc_iff",
+     "nofail (\<Down>\<^sub>E ?E ?R ?m) = nofail ?m",
+     template_equation
+      (template_app
+        (template_hole 2,
+         template_app
+          (template_app
+            (template_app (template_hole 1, template_var 2),
+             template_var 1),
+           template_var 0)),
+       template_app (template_hole 0, template_var 0))),
+    ("Exc_Nres_Monad.pw_CHECK",
+     "inres (CHECK ?\<Phi> ?e) (Inr ?u) = ?\<Phi>",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 2,
+           template_app
+            (template_app (template_hole 1, template_var 2),
+             template_var 1)),
+         template_app (template_hole 0, template_var 0)),
+       template_var 2)),
+    ("Exc_Nres_Monad.enfoldli_simps", "enfoldli [] ?c ?f ?s = ERETURN ?s",
+     template_equation
+      (template_app
+        (template_app
+          (template_app
+            (template_app (template_hole 2, template_hole 1),
+             template_var 2),
+           template_var 1),
+         template_var 0),
+       template_app (template_hole 0, template_var 0))),
+    ("Exc_Nres_Monad.pw_THROW", "inres (THROW ?e) (Inl ?f) = (?f = ?e)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 3,
+                template_app (template_hole 2, template_var 1)),
+              template_app (template_hole 1, template_var 0))
+            )],
+       template_equation (template_var 0, template_var 1))),
+    ("Exc_Nres_Monad.pw_ERETURN", "inres (ERETURN ?x) (Inr ?y) = (?x = ?y)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 3,
+                template_app (template_hole 2, template_var 1)),
+              template_app (template_hole 1, template_var 0))
+            )],
+       template_equation (template_var 1, template_var 0))),
+    ("Exc_Nres_Monad.ERETURN_rule_iff",
+     "(ERETURN ?x <= ESPEC ?\<Phi> ?\<Psi>) = ?\<Psi> ?x",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 2, template_app (template_hole 1, template_var 2)),
+         template_app
+          (template_app (template_hole 0, template_var 1), template_var 0)),
+       template_app (template_var 0, template_var 2))),
+    ("Exc_Nres_Monad.THROW_rule_iff",
+     "(THROW ?e <= ESPEC ?\<Phi> ?\<Psi>) = ?\<Phi> ?e",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 2, template_app (template_hole 1, template_var 2)),
+         template_app
+          (template_app (template_hole 0, template_var 1), template_var 0)),
+       template_app (template_var 1, template_var 2))),
+    ("Exc_Nres_Monad.pw_ESPEC",
+     "inres (ESPEC ?\<Phi> ?\<Psi>) (Inl ?e) = ?\<Phi> ?e",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 2,
+           template_app
+            (template_app (template_hole 1, template_var 2),
+             template_var 1)),
+         template_app (template_hole 0, template_var 0)),
+       template_app (template_var 2, template_var 0))),
+    ("Exc_Nres_Monad.pw_ESPEC",
+     "inres (ESPEC ?\<Phi> ?\<Psi>) (Inr ?x) = ?\<Psi> ?x",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 2,
+           template_app
+            (template_app (template_hole 1, template_var 2),
+             template_var 1)),
+         template_app (template_hole 0, template_var 0)),
+       template_app (template_var 1, template_var 0))),
+    ("Exc_Nres_Monad.THROW_rule",
+     "?\<Phi> ?e ==> THROW ?e <= ESPEC ?\<Phi> ?\<Psi>",
+     template_implication
+      ([template_predicate (template_app (template_var 2, template_var 1))],
+       template_inequation
+        (less_equals, template_app (template_hole 1, template_var 1),
+         template_app
+          (template_app (template_hole 0, template_var 2),
+           template_var 0)))),
+    ("Exc_Nres_Monad.ERETURN_rule",
+     "?\<Psi> ?x ==> ERETURN ?x <= ESPEC ?\<Phi> ?\<Psi>",
+     template_implication
+      ([template_predicate (template_app (template_var 2, template_var 1))],
+       template_inequation
+        (less_equals, template_app (template_hole 1, template_var 1),
+         template_app
+          (template_app (template_hole 0, template_var 0),
+           template_var 2)))),
+    ("Exc_Nres_Monad.CHECK_monadic_pw",
+     "inres (CHECK_monadic ?c ?e) (Inr ?x) = inres ?c (Inr True)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 5,
+           template_app
+            (template_app (template_hole 4, template_var 2),
+             template_var 1)),
+         template_app (template_hole 3, template_var 0)),
+       template_app
+        (template_app (template_hole 2, template_var 2),
+         template_app (template_hole 1, template_hole 0)))),
+    ("Exc_Nres_Monad.CHECK_monadic_endb",
+     "CHECK_monadic (enres_lift ?c) ?e = ?c >>= (%b. CHECK b ?e)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 3, template_app (template_hole 2, template_var 1)),
+         template_var 0),
+       template_app
+        (template_app (template_hole 1, template_var 1), t_empty))),
+    ("Exc_Nres_Monad.enres_breakdown",
+     "ebind (CHECK ?\<Phi> ?e) (%_. ?m) =
+      (if ?\<Phi> then ?m else THROW ?e)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 3,
+           template_app
+            (template_app (template_hole 2, template_var 2),
+             template_var 1)),
+         t_empty),
+       template_app
+        (template_app
+          (template_app (template_hole 1, template_var 2), template_var 0),
+         template_app (template_hole 0, template_var 1)))),
+    ("Exc_Nres_Monad.econc_fun_univ_id",
+     "\<Down>\<^sub>E UNIV Id (ESPEC ?\<Phi> ?\<Psi>) =
+      ESPEC (%_. Ex ?\<Phi>) ?\<Psi>",
+     template_equation
+      (template_app
+        (template_app
+          (template_app (template_hole 5, template_hole 4),
+           template_hole 3),
+         template_app
+          (template_app (template_hole 2, template_var 1), template_var 0)),
+       template_app
+        (template_app (template_hole 1, t_empty), template_var 0))),
+    ("Exc_Nres_Monad.enres_breakdown",
+     "(if ?b then enres_lift ?m else enres_lift ?n) =
+      enres_lift (if ?b then ?m else ?n)",
+     template_equation
+      (template_app
+        (template_app
+          (template_app (template_hole 2, template_var 2),
+           template_app (template_hole 1, template_var 1)),
+         template_app (template_hole 1, template_var 0)),
+       template_app
+        (template_hole 1,
+         template_app
+          (template_app
+            (template_app (template_hole 0, template_var 2),
+             template_var 1),
+           template_var 0)))),
+    ("Exc_Nres_Monad.enres_breakdown",
+     "ebind (enres_lift ?m) ?ef = ?m >>= ?ef",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 2, template_app (template_hole 1, template_var 1)),
+         t_empty),
+       template_app
+        (template_app (template_hole 0, template_var 1), t_empty))),
+    ("Exc_Nres_Monad.pw_CHECK",
+     "inres (CHECK ?\<Phi> ?e) (Inl ?f) = (~ ?\<Phi> & ?f = ?e)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 5,
+                template_app
+                 (template_app (template_hole 4, template_var 2),
+                  template_var 1)),
+              template_app (template_hole 3, template_var 0))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 2,
+               template_app (template_hole 1, template_var 2)),
+             template_app
+              (template_app (template_hole 0, template_var 0),
+               template_var 1))
+           ))),
+    ("Exc_Nres_Monad.enres_breakdown",
+     "?M >>= ?f >>= ?g = ?M >>= (%x. ?f x >>= ?g)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 2,
+           template_app
+            (template_app (template_hole 1, template_var 2),
+             template_var 1)),
+         template_var 0),
+       template_app
+        (template_app (template_hole 0, template_var 2), t_empty))),
+    ("Exc_Nres_Monad.enres_breakdown",
+     "?m >>= (%x. enres_lift (?f x)) = enres_lift (?m >>= ?f)",
+     template_equation
+      (template_app
+        (template_app (template_hole 2, template_var 1), t_empty),
+       template_app
+        (template_hole 1,
+         template_app
+          (template_app (template_hole 0, template_var 1), t_empty)))),
+    ("Exc_Nres_Monad.enres_breakdown",
+     "EWHILET ?c (%s. enres_lift (?f s)) ?s =
+      enres_lift (WHILE\<^sub>T ?c ?f ?s)",
+     template_equation
+      (template_app
+        (template_app
+          (template_app (template_hole 2, template_var 2), t_empty),
+         template_var 0),
+       template_app
+        (template_hole 1,
+         template_app
+          (template_app
+            (template_app (template_hole 0, template_var 2),
+             template_var 1),
+           template_var 0)))),
+    ("Exc_Nres_Monad.enres_monad_laws",
+     "ebind (ebind ?m ?f) ?g = ebind ?m (%x. ebind (?f x) ?g)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 2,
+           template_app
+            (template_app (template_hole 1, template_var 2),
+             template_var 1)),
+         template_var 0),
+       template_app
+        (template_app (template_hole 0, template_var 2), t_empty))),
+    ("Exc_Nres_Monad.enres_breakdown",
+     "(let x = ?v in enres_lift (?f x)) = enres_lift (Let ?v ?f)",
+     template_equation
+      (template_app
+        (template_app (template_hole 2, template_var 1), t_empty),
+       template_app
+        (template_hole 1,
+         template_app
+          (template_app (template_hole 0, template_var 1), t_empty)))),
+    ("Exc_Nres_Monad.enres_lift_rule",
+     "?m <= SPEC ?\<Phi> ==> enres_lift ?m <= ESPEC ?E ?\<Phi>",
+     template_implication
+      ([template_inequation
+         (less_equals, template_var 2,
+          template_app
+           (template_hole 4,
+            template_app (template_hole 3, template_var 1)))],
+       template_inequation
+        (less_equals, template_app (template_hole 1, template_var 2),
+         template_app
+          (template_app (template_hole 0, template_var 0),
+           template_var 1)))),
+    ("Exc_Nres_Monad.EASSUME_rule",
+     "(?\<Phi> ==> ?\<Psi> ()) ==> EASSUME ?\<Phi> <= ESPEC ?E ?\<Psi>",
+     template_implication
+      ([template_implication
+         ([template_predicate (template_var 2)],
+          template_predicate
+           (template_app (template_var 1, template_hole 3)))],
+       template_inequation
+        (less_equals, template_app (template_hole 1, template_var 2),
+         template_app
+          (template_app (template_hole 0, template_var 0),
+           template_var 1)))),
+    ("Exc_Nres_Monad.option_case_enbd",
+     "case_option (enres_lift ?fn) (%v. enres_lift (?fs v)) =
+      (%x. enres_lift (case x of None => ?fn | Some x => ?fs x))",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 2, template_app (template_hole 1, template_var 1)),
+         t_empty),
+       t_empty)),
+    ("Exc_Nres_Monad.sum_rel_conv",
+     "(ALL l. ?s ~= Inl l) = (EX r. ?s = Inr r)",
+     template_equation
+      (template_app (template_hole 5, t_empty),
+       template_app (template_hole 1, t_empty))),
+    ("Exc_Nres_Monad.sum_rel_conv",
+     "(ALL r. ?s ~= Inr r) = (EX l. ?s = Inl l)",
+     template_equation
+      (template_app (template_hole 5, t_empty),
+       template_app (template_hole 1, t_empty))),
+    ("Exc_Nres_Monad.econc_mono3",
+     "?m <= ?m' ==> \<Down>\<^sub>E ?E ?R ?m <= \<Down>\<^sub>E ?E ?R ?m'",
+     template_implication
+      ([template_inequation (less_equals, template_var 3, template_var 2)],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_app
+            (template_app (template_hole 0, template_var 1),
+             template_var 0),
+           template_var 3),
+         template_app
+          (template_app
+            (template_app (template_hole 0, template_var 1),
+             template_var 0),
+           template_var 2)))),
+    ("Exc_Nres_Monad.econc_fun_ERETURN",
+     "\<Down>\<^sub>E ?E ?R (ERETURN ?x) =
+      ESPEC (%_. False) (%xi. (xi, ?x) : ?R)",
+     template_equation
+      (template_app
+        (template_app
+          (template_app (template_hole 5, template_var 2), template_var 1),
+         template_app (template_hole 4, template_var 0)),
+       template_app (template_app (template_hole 3, t_empty), t_empty))),
+    ("Exc_Nres_Monad.enres_breakdown",
+     "EWHILEIT ?I ?c (%s. enres_lift (?f s)) ?s =
+      enres_lift (WHILE\<^sub>T\<^bsup>?I\<^esup> ?c ?f ?s)",
+     template_equation
+      (template_app
+        (template_app
+          (template_app
+            (template_app (template_hole 2, template_var 3),
+             template_var 2),
+           t_empty),
+         template_var 0),
+       template_app
+        (template_hole 1,
+         template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 0, template_var 3),
+               template_var 2),
+             template_var 1),
+           template_var 0)))),
+    ("Exc_Nres_Monad.THROW_refine",
+     "(?ei, ?e) : ?E ==> THROW ?ei <= \<Down>\<^sub>E ?E ?R (THROW ?e)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 5,
+                template_app
+                 (template_app (template_hole 4, template_var 3),
+                  template_var 2)),
+              template_var 1)
+            )],
+       template_inequation
+        (less_equals, template_app (template_hole 2, template_var 3),
+         template_app
+          (template_app
+            (template_app (template_hole 1, template_var 1),
+             template_var 0),
+           template_app (template_hole 0, template_var 2))))),
+    ("Exc_Nres_Monad.ERETURN_refine",
+     "(?xi, ?x) : ?R ==> ERETURN ?xi <= \<Down>\<^sub>E ?E ?R (ERETURN ?x)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 5,
+                template_app
+                 (template_app (template_hole 4, template_var 3),
+                  template_var 2)),
+              template_var 1)
+            )],
+       template_inequation
+        (less_equals, template_app (template_hole 2, template_var 3),
+         template_app
+          (template_app
+            (template_app (template_hole 1, template_var 0),
+             template_var 1),
+           template_app (template_hole 0, template_var 2))))),
+    ("Exc_Nres_Monad.EASSERT_rule",
+     "[| ?\<Phi>; ?\<Phi> ==> ?\<Psi> () |]
+      ==> EASSERT ?\<Phi> <= ESPEC ?E ?\<Psi>",
+     template_implication
+      ([template_predicate (template_var 2),
+        template_implication
+         ([template_predicate (template_var 2)],
+          template_predicate
+           (template_app (template_var 1, template_hole 3)))],
+       template_inequation
+        (less_equals, template_app (template_hole 1, template_var 2),
+         template_app
+          (template_app (template_hole 0, template_var 0),
+           template_var 1)))),
+    ("Exc_Nres_Monad.erefine_same_sup_Id",
+     "[| Id <= ?E; Id <= ?R |] ==> ?m <= \<Down>\<^sub>E ?E ?R ?m",
+     template_implication
+      ([template_inequation (less_equals, template_hole 4, template_var 2),
+        template_inequation (less_equals, template_hole 2, template_var 1)],
+       template_inequation
+        (less_equals, template_var 0,
+         template_app
+          (template_app
+            (template_app (template_hole 0, template_var 2),
+             template_var 1),
+           template_var 0)))),
+    ("Exc_Nres_Monad.enres_breakdown",
+     "(%(a, b). enres_lift (?f a b)) =
+      (%x. enres_lift (case x of (a, b) => ?f a b))",
+     template_equation (template_app (template_hole 2, t_empty), t_empty)),
+    ("Exc_Nres_Monad.enres_breakdown",
+     "enfoldli ?l ?c (%x s. enres_lift (?f x s)) ?s =
+      enres_lift (nfoldli ?l ?c ?f ?s)",
+     template_equation
+      (template_app
+        (template_app
+          (template_app
+            (template_app (template_hole 2, template_var 3),
+             template_var 2),
+           t_empty),
+         template_var 0),
+       template_app
+        (template_hole 1,
+         template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 0, template_var 3),
+               template_var 2),
+             template_var 1),
+           template_var 0)))),
+    ("Exc_Nres_Monad.eLet_rule",
+     "?f ?v <= ESPEC ?\<Phi> ?\<Psi> ==>
+      Let ?v ?f <= ESPEC ?\<Phi> ?\<Psi>",
+     template_implication
+      ([template_inequation
+         (less_equals, template_app (template_var 3, template_var 2),
+          template_app
+           (template_app (template_hole 1, template_var 1),
+            template_var 0))],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_app (template_hole 0, template_var 2), t_empty),
+         template_app
+          (template_app (template_hole 1, template_var 1),
+           template_var 0)))),
+    ("Exc_Nres_Monad.remove_eLet_refine",
+     "?M <= \<Down>\<^sub>E ?E ?R (?f ?x) ==>
+      ?M <= \<Down>\<^sub>E ?E ?R (Let ?x ?f)",
+     template_implication
+      ([template_inequation
+         (less_equals, template_var 4,
+          template_app
+           (template_app
+             (template_app (template_hole 1, template_var 3),
+              template_var 2),
+            template_app (template_var 1, template_var 0)))],
+       template_inequation
+        (less_equals, template_var 4,
+         template_app
+          (template_app
+            (template_app (template_hole 1, template_var 3),
+             template_var 2),
+           template_app
+            (template_app (template_hole 0, template_var 0),
+             template_var 1))))),
+    ("Exc_Nres_Monad.intro_eLet_refine",
+     "?f ?x <= \<Down>\<^sub>E ?E ?R ?M' ==>
+      Let ?x ?f <= \<Down>\<^sub>E ?E ?R ?M'",
+     template_implication
+      ([template_inequation
+         (less_equals, template_app (template_var 4, template_var 3),
+          template_app
+           (template_app
+             (template_app (template_hole 1, template_var 2),
+              template_var 1),
+            template_var 0))],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_app (template_hole 0, template_var 3), template_var 4),
+         template_app
+          (template_app
+            (template_app (template_hole 1, template_var 2),
+             template_var 1),
+           template_var 0)))),
+    ("Exc_Nres_Monad.ESPEC_trans",
+     "[| ?x <= ?y; ?y <= ESPEC ?Error_Postcond ?Normal_Postcond |]
+      ==> ?x <= ESPEC ?Error_Postcond ?Normal_Postcond",
+     template_implication
+      ([template_inequation (less_equals, template_var 3, template_var 2),
+        template_inequation
+         (less_equals, template_var 2,
+          template_app
+           (template_app (template_hole 0, template_var 1),
+            template_var 0))],
+       template_inequation
+        (less_equals, template_var 3,
+         template_app
+          (template_app (template_hole 0, template_var 1),
+           template_var 0)))),
+    ("Exc_Nres_Monad.pw_CATCH",
+     "nofail (CATCH ?m ?h) =
+      (nofail ?m & (ALL x. inres ?m (Inl x) --> nofail (?h x)))",
+     template_equation
+      (template_app
+        (template_hole 7,
+         template_app
+          (template_app (template_hole 6, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 5, template_app (template_hole 4, template_var 1)),
+         template_app (template_hole 3, t_empty)))),
+    ("Exc_Nres_Monad.pw_ebind",
+     "nofail (ebind ?m ?f) =
+      (nofail ?m & (ALL x. inres ?m (Inr x) --> nofail (?f x)))",
+     template_equation
+      (template_app
+        (template_hole 7,
+         template_app
+          (template_app (template_hole 6, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 5, template_app (template_hole 4, template_var 1)),
+         template_app (template_hole 3, t_empty)))),
+    ("Exc_Nres_Monad.CHECK_rule_iff",
+     "(CHECK ?c ?e <= ESPEC ?\<Phi> ?\<Psi>) =
+      ((?c --> ?\<Psi> ()) & (~ ?c --> ?\<Phi> ?e))",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 6,
+           template_app
+            (template_app (template_hole 5, template_var 3),
+             template_var 2)),
+         template_app
+          (template_app (template_hole 4, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 3,
+           template_app
+            (template_app (template_hole 2, template_var 3),
+             template_app (template_var 0, template_hole 1))),
+         template_app
+          (template_app
+            (template_hole 2,
+             template_app (template_hole 0, template_var 3)),
+           template_app (template_var 1, template_var 2))))),
+    ("Exc_Nres_Monad.RELATES_pat_erefine",
+     "[| RELATES ?R; ?mi <= \<Down>\<^sub>E ?E ?R ?m |]
+      ==> ?mi <= \<Down>\<^sub>E ?E ?R ?m",
+     template_implication
+      ([template_predicate (template_app (template_hole 2, template_var 3)),
+        template_inequation
+         (less_equals, template_var 2,
+          template_app
+           (template_app
+             (template_app (template_hole 0, template_var 1),
+              template_var 3),
+            template_var 0))],
+       template_inequation
+        (less_equals, template_var 2,
+         template_app
+          (template_app
+            (template_app (template_hole 0, template_var 1),
+             template_var 3),
+           template_var 0)))),
+    ("Exc_Nres_Monad.CATCH_rule_iff",
+     "(CATCH ?m ?h <= ESPEC ?\<Phi> ?\<Psi>) =
+      (?m <= ESPEC (%e. ?h e <= ESPEC ?\<Phi> ?\<Psi>) ?\<Psi>)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 4,
+           template_app
+            (template_app (template_hole 3, template_var 3),
+             template_var 2)),
+         template_app
+          (template_app (template_hole 2, template_var 1), template_var 0)),
+       template_app
+        (template_app (template_hole 1, template_var 3),
+         template_app
+          (template_app (template_hole 0, t_empty), template_var 0)))),
+    ("Exc_Nres_Monad.enres_breakdown",
+     "Let ?v ?f >>= ?g = (let y = ?v in ?f y >>= ?g)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 2,
+           template_app
+            (template_app (template_hole 1, template_var 2), t_empty)),
+         t_empty),
+       template_app
+        (template_app (template_hole 0, template_var 2), t_empty))),
+    ("Exc_Nres_Monad.econc_x_trans",
+     "[| ?x <= \<Down>\<^sub>E ?E ?R ?y; ?y <= ?z |]
+      ==> ?x <= \<Down>\<^sub>E ?E ?R ?z",
+     template_implication
+      ([template_inequation
+         (less_equals, template_var 4,
+          template_app
+           (template_app
+             (template_app (template_hole 1, template_var 3),
+              template_var 2),
+            template_var 1)),
+        template_inequation (less_equals, template_var 1, template_var 0)],
+       template_inequation
+        (less_equals, template_var 4,
+         template_app
+          (template_app
+            (template_app (template_hole 1, template_var 3),
+             template_var 2),
+           template_var 0)))),
+    ("Exc_Nres_Monad.CHECK_monadic_pw",
+     "inres (CHECK_monadic ?c ?e) (Inl ?ee) =
+      (inres ?c (Inl ?ee) | inres ?c (Inr False) & ?ee = ?e)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 9,
+                template_app
+                 (template_app (template_hole 8, template_var 2),
+                  template_var 1)),
+              template_app (template_hole 7, template_var 0))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 6,
+               template_app
+                (template_app (template_hole 5, template_var 2),
+                 template_app (template_hole 4, template_var 0))),
+             template_app
+              (template_app
+                (template_hole 3,
+                 template_app
+                  (template_app (template_hole 5, template_var 2),
+                   template_app (template_hole 2, template_hole 1))),
+               template_app
+                (template_app (template_hole 0, template_var 0),
+                 template_var 1)))
+           ))),
+    ("Exc_Nres_Monad.Let_unfold_refine",
+     "?f ?x <= \<Down>\<^sub>E ?E ?R (?f' ?x') ==>
+      Let ?x ?f <= \<Down>\<^sub>E ?E ?R (Let ?x' ?f')",
+     template_implication
+      ([template_inequation
+         (less_equals, template_app (template_var 5, template_var 4),
+          template_app
+           (template_app
+             (template_app (template_hole 2, template_var 3),
+              template_var 2),
+            template_app (template_var 1, template_var 0)))],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_app (template_hole 1, template_var 4), template_var 5),
+         template_app
+          (template_app
+            (template_app (template_hole 2, template_var 3),
+             template_var 2),
+           template_app
+            (template_app (template_hole 0, template_var 0),
+             template_var 1))))),
+    ("Exc_Nres_Monad.CATCH_rule",
+     "?m <= ESPEC (%e. ?h e <= ESPEC ?\<Phi> ?\<Psi>) ?\<Psi> ==>
+      CATCH ?m ?h <= ESPEC ?\<Phi> ?\<Psi>",
+     template_implication
+      ([template_inequation
+         (less_equals, template_var 3,
+          template_app
+           (template_app (template_hole 3, t_empty), template_var 0))],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_app (template_hole 0, template_var 3), template_var 2),
+         template_app
+          (template_app (template_hole 1, template_var 1),
+           template_var 0)))),
+    ("Exc_Nres_Monad.ebind_rule_iff",
+     "(ebind ?m ?f <= ESPEC ?\<Phi> ?\<Psi>) =
+      (?m <= ESPEC ?\<Phi> (%x. ?f x <= ESPEC ?\<Phi> ?\<Psi>))",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 4,
+           template_app
+            (template_app (template_hole 3, template_var 3), t_empty)),
+         template_app
+          (template_app (template_hole 2, template_var 1), template_var 0)),
+       template_app
+        (template_app (template_hole 1, template_var 3),
+         template_app
+          (template_app (template_hole 0, template_var 1), t_empty)))),
+    ("Exc_Nres_Monad.EWHILEIT_weaken",
+     "(!!x. ?I x ==> ?I' x) ==>
+      EWHILEIT ?I' ?b ?f ?x <= EWHILEIT ?I ?b ?f ?x",
+     template_implication
+      ([template_predicate (template_app (template_hole 3, t_empty))],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 0, template_var 3),
+               template_var 2),
+             template_var 1),
+           template_var 0),
+         template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 0, template_var 4),
+               template_var 2),
+             template_var 1),
+           template_var 0)))),
+    ("Exc_Nres_Monad.EASSERT_bind_refine_right",
+     "(?\<Phi> ==> ?mi <= \<Down>\<^sub>E ?E ?R ?m) ==>
+      ?mi <= \<Down>\<^sub>E ?E ?R (ebind (EASSERT ?\<Phi>) (%_. ?m))",
+     template_implication
+      ([template_implication
+         ([template_predicate (template_var 4)],
+          template_inequation
+           (less_equals, template_var 3,
+            template_app
+             (template_app
+               (template_app (template_hole 2, template_var 2),
+                template_var 1),
+              template_var 0)))],
+       template_inequation
+        (less_equals, template_var 3,
+         template_app
+          (template_app
+            (template_app (template_hole 2, template_var 2),
+             template_var 1),
+           template_app
+            (template_app
+              (template_hole 1,
+               template_app (template_hole 0, template_var 4)),
+             t_empty))))),
+    ("Exc_Nres_Monad.EASSUME_bind_refine_left",
+     "(?\<Phi> ==> ?mi <= \<Down>\<^sub>E ?E ?R ?m) ==>
+      ebind (EASSUME ?\<Phi>) (%_. ?mi) <= \<Down>\<^sub>E ?E ?R ?m",
+     template_implication
+      ([template_implication
+         ([template_predicate (template_var 4)],
+          template_inequation
+           (less_equals, template_var 3,
+            template_app
+             (template_app
+               (template_app (template_hole 2, template_var 2),
+                template_var 1),
+              template_var 0)))],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_app
+            (template_hole 1,
+             template_app (template_hole 0, template_var 4)),
+           t_empty),
+         template_app
+          (template_app
+            (template_app (template_hole 2, template_var 2),
+             template_var 1),
+           template_var 0)))),
+    ("Exc_Nres_Monad.EASSUME_bind_refine_right",
+     "[| ?\<Phi>; ?mi <= \<Down>\<^sub>E ?E ?R ?m |]
+      ==> ?mi <= \<Down>\<^sub>E ?E ?R (ebind (EASSUME ?\<Phi>) (%_. ?m))",
+     template_implication
+      ([template_predicate (template_var 4),
+        template_inequation
+         (less_equals, template_var 3,
+          template_app
+           (template_app
+             (template_app (template_hole 2, template_var 2),
+              template_var 1),
+            template_var 0))],
+       template_inequation
+        (less_equals, template_var 3,
+         template_app
+          (template_app
+            (template_app (template_hole 2, template_var 2),
+             template_var 1),
+           template_app
+            (template_app
+              (template_hole 1,
+               template_app (template_hole 0, template_var 4)),
+             t_empty))))),
+    ("Exc_Nres_Monad.EASSERT_bind_refine_left",
+     "[| ?\<Phi>; ?mi <= \<Down>\<^sub>E ?E ?R ?m |]
+      ==> ebind (EASSERT ?\<Phi>) (%_. ?mi) <= \<Down>\<^sub>E ?E ?R ?m",
+     template_implication
+      ([template_predicate (template_var 4),
+        template_inequation
+         (less_equals, template_var 3,
+          template_app
+           (template_app
+             (template_app (template_hole 2, template_var 2),
+              template_var 1),
+            template_var 0))],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_app
+            (template_hole 1,
+             template_app (template_hole 0, template_var 4)),
+           t_empty),
+         template_app
+          (template_app
+            (template_app (template_hole 2, template_var 2),
+             template_var 1),
+           template_var 0)))),
+    ("Exc_Nres_Monad.pw_CATCH",
+     "inres (CATCH ?m ?h) (Inl ?e) =
+      (nofail ?m --> (EX e'. inres ?m (Inl e') & inres (?h e') (Inl ?e)))",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 8,
+           template_app
+            (template_app (template_hole 7, template_var 2),
+             template_var 1)),
+         template_app (template_hole 6, template_var 0)),
+       template_app
+        (template_app
+          (template_hole 5, template_app (template_hole 4, template_var 2)),
+         template_app (template_hole 3, t_empty)))),
+    ("Exc_Nres_Monad.pw_ebind",
+     "inres (ebind ?m ?f) (Inr ?x) =
+      (nofail ?m --> (EX y. inres ?m (Inr y) & inres (?f y) (Inr ?x)))",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 8,
+           template_app
+            (template_app (template_hole 7, template_var 2),
+             template_var 1)),
+         template_app (template_hole 6, template_var 0)),
+       template_app
+        (template_app
+          (template_hole 5, template_app (template_hole 4, template_var 2)),
+         template_app (template_hole 3, t_empty)))),
+    ("Exc_Nres_Monad.ebind_rule",
+     "?m <= ESPEC ?\<Phi> (%x. ?f x <= ESPEC ?\<Phi> ?\<Psi>) ==>
+      ebind ?m ?f <= ESPEC ?\<Phi> ?\<Psi>",
+     template_implication
+      ([template_inequation
+         (less_equals, template_var 3,
+          template_app
+           (template_app (template_hole 3, template_var 2), t_empty))],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_app (template_hole 0, template_var 3), t_empty),
+         template_app
+          (template_app (template_hole 1, template_var 2),
+           template_var 0)))),
+    ("Exc_Nres_Monad.CHECK_rule",
+     "[| ?c ==> ?\<Psi> (); ~ ?c ==> ?\<Phi> ?e |]
+      ==> CHECK ?c ?e <= ESPEC ?\<Phi> ?\<Psi>",
+     template_implication
+      ([template_implication
+         ([template_predicate (template_var 3)],
+          template_predicate
+           (template_app (template_var 2, template_hole 4))),
+        template_implication
+         ([template_negation (template_predicate (template_var 3))],
+          template_predicate
+           (template_app (template_var 1, template_var 0)))],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_app (template_hole 1, template_var 3), template_var 0),
+         template_app
+          (template_app (template_hole 0, template_var 1),
+           template_var 2)))),
+    ("Exc_Nres_Monad.ESPEC_rule_iff",
+     "(ESPEC ?\<Phi> ?\<Psi> <= ESPEC ?\<Phi>' ?\<Psi>') =
+      ((ALL e. ?\<Phi> e --> ?\<Phi>' e) &
+       (ALL x. ?\<Psi> x --> ?\<Psi>' x))",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 5,
+           template_app
+            (template_app (template_hole 4, template_var 3),
+             template_var 2)),
+         template_app
+          (template_app (template_hole 4, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 3, template_app (template_hole 2, t_empty)),
+         template_app (template_hole 0, t_empty)))),
+    ("Exc_Nres_Monad.CHECK_monadic_rule_iff",
+     "(CHECK_monadic ?c ?e <= ESPEC ?E ?P) =
+      (?c <= ESPEC ?E (%r. (r --> ?P ()) & (~ r --> ?E ?e)))",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 8,
+           template_app
+            (template_app (template_hole 7, template_var 3),
+             template_var 2)),
+         template_app
+          (template_app (template_hole 6, template_var 1), template_var 0)),
+       template_app
+        (template_app (template_hole 5, template_var 3),
+         template_app
+          (template_app (template_hole 4, template_var 1), t_empty)))),
+    ("Exc_Nres_Monad.pw_econc_iff",
+     "inres (\<Down>\<^sub>E ?E ?R ?m) (Inl ?ei) =
+      (nofail ?m --> (EX e. inres ?m (Inl e) & (?ei, e) : ?E))",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 10,
+           template_app
+            (template_app
+              (template_app (template_hole 9, template_var 3),
+               template_var 2),
+             template_var 1)),
+         template_app (template_hole 8, template_var 0)),
+       template_app
+        (template_app
+          (template_hole 7, template_app (template_hole 6, template_var 1)),
+         template_app (template_hole 5, t_empty)))),
+    ("Exc_Nres_Monad.pw_econc_iff",
+     "inres (\<Down>\<^sub>E ?E ?R ?m) (Inr ?xi) =
+      (nofail ?m --> (EX x. inres ?m (Inr x) & (?xi, x) : ?R))",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 10,
+           template_app
+            (template_app
+              (template_app (template_hole 9, template_var 3),
+               template_var 2),
+             template_var 1)),
+         template_app (template_hole 8, template_var 0)),
+       template_app
+        (template_app
+          (template_hole 7, template_app (template_hole 6, template_var 1)),
+         template_app (template_hole 5, t_empty)))),
+    ("Exc_Nres_Monad.sum_rel_conv",
+     "((?s, Inl ?l') : \<langle>?L, ?R\<rangle>sum_rel) =
+      (EX l. ?s = Inl l & (l, ?l') : ?L)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 11,
+           template_app
+            (template_app (template_hole 10, template_var 3),
+             template_app (template_hole 9, template_var 2))),
+         template_app
+          (template_app
+            (template_hole 8,
+             template_app
+              (template_app (template_hole 7, template_hole 6),
+               template_var 1)),
+           template_var 0)),
+       template_app (template_hole 5, t_empty))),
+    ("Exc_Nres_Monad.sum_rel_conv",
+     "((?s, Inr ?r') : \<langle>?L, ?R\<rangle>sum_rel) =
+      (EX r. ?s = Inr r & (r, ?r') : ?R)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 11,
+           template_app
+            (template_app (template_hole 10, template_var 3),
+             template_app (template_hole 9, template_var 2))),
+         template_app
+          (template_app
+            (template_hole 8,
+             template_app
+              (template_app (template_hole 7, template_hole 6),
+               template_var 1)),
+           template_var 0)),
+       template_app (template_hole 5, t_empty))),
+    ("Exc_Nres_Monad.sum_rel_conv",
+     "((Inl ?l, ?s') : \<langle>?L, ?R\<rangle>sum_rel) =
+      (EX l'. ?s' = Inl l' & (?l, l') : ?L)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 11,
+           template_app
+            (template_app
+              (template_hole 10,
+               template_app (template_hole 9, template_var 3)),
+             template_var 2)),
+         template_app
+          (template_app
+            (template_hole 8,
+             template_app
+              (template_app (template_hole 7, template_hole 6),
+               template_var 1)),
+           template_var 0)),
+       template_app (template_hole 5, t_empty))),
+    ("Exc_Nres_Monad.sum_rel_conv",
+     "((Inr ?r, ?s') : \<langle>?L, ?R\<rangle>sum_rel) =
+      (EX r'. ?s' = Inr r' & (?r, r') : ?R)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 11,
+           template_app
+            (template_app
+              (template_hole 10,
+               template_app (template_hole 9, template_var 3)),
+             template_var 2)),
+         template_app
+          (template_app
+            (template_hole 8,
+             template_app
+              (template_app (template_hole 7, template_hole 6),
+               template_var 1)),
+           template_var 0)),
+       template_app (template_hole 5, t_empty))),
+    ("Exc_Nres_Monad.enfoldli_simps",
+     "enfoldli (?x # ?ls) ?c ?f ?s =
+      (if ?c ?s then ebind (?f ?x ?s) (enfoldli ?ls ?c ?f)
+       else ERETURN ?s)",
+     template_equation
+      (template_app
+        (template_app
+          (template_app
+            (template_app
+              (template_hole 4,
+               template_app
+                (template_app (template_hole 3, template_var 4),
+                 template_var 3)),
+             template_var 2),
+           template_var 1),
+         template_var 0),
+       template_app
+        (template_app
+          (template_app
+            (template_hole 2,
+             template_app (template_var 2, template_var 0)),
+           template_app
+            (template_app
+              (template_hole 1,
+               template_app
+                (template_app (template_var 1, template_var 4),
+                 template_var 0)),
+             t_empty)),
+         template_app (template_hole 0, template_var 0)))),
+    ("Exc_Nres_Monad.pw_CATCH",
+     "inres (CATCH ?m ?h) (Inr ?x) =
+      (inres ?m (Inr ?x) |
+       (EX e. inres ?m (Inl e) & inres (?h e) (Inr ?x)))",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 8,
+           template_app
+            (template_app (template_hole 7, template_var 2),
+             template_var 1)),
+         template_app (template_hole 6, template_var 0)),
+       template_app
+        (template_app
+          (template_hole 5,
+           template_app
+            (template_app (template_hole 4, template_var 2),
+             template_app (template_hole 3, template_var 0))),
+         template_app (template_hole 2, t_empty)))),
+    ("Exc_Nres_Monad.pw_ebind",
+     "inres (ebind ?m ?f) (Inl ?e) =
+      (inres ?m (Inl ?e) |
+       (EX x. inres ?m (Inr x) & inres (?f x) (Inl ?e)))",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 8,
+           template_app
+            (template_app (template_hole 7, template_var 2),
+             template_var 1)),
+         template_app (template_hole 6, template_var 0)),
+       template_app
+        (template_app
+          (template_hole 5,
+           template_app
+            (template_app (template_hole 4, template_var 2),
+             template_app (template_hole 3, template_var 0))),
+         template_app (template_hole 2, t_empty)))),
+    ("Exc_Nres_Monad.eLet_rule'",
+     "(!!x. x = ?v ==> ?f x <= ESPEC ?\<Phi> ?\<Psi>) ==>
+      Let ?v ?f <= ESPEC ?\<Phi> ?\<Psi>",
+     template_implication
+      ([template_predicate (template_app (template_hole 5, t_empty))],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_app (template_hole 0, template_var 3), t_empty),
+         template_app
+          (template_app (template_hole 1, template_var 1),
+           template_var 0)))),
+    ("Exc_Nres_Monad.ESPEC_rule",
+     "(ALL e. ?\<Phi> e --> ?\<Phi>' e) &
+      (ALL x. ?\<Psi> x --> ?\<Psi>' x) ==>
+      ESPEC ?\<Phi> ?\<Psi> <= ESPEC ?\<Phi>' ?\<Psi>'",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 5, template_app (template_hole 4, t_empty)),
+              template_app (template_hole 2, t_empty))
+            )],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_app (template_hole 0, template_var 3), template_var 1),
+         template_app
+          (template_app (template_hole 0, template_var 2),
+           template_var 0)))),
+    ("Exc_Nres_Monad.CHECK_monadic_rule",
+     "?c <= ESPEC ?E (%r. (r --> ?P ()) & (~ r --> ?E ?e)) ==>
+      CHECK_monadic ?c ?e <= ESPEC ?E ?P",
+     template_implication
+      ([template_inequation
+         (less_equals, template_var 3,
+          template_app
+           (template_app (template_hole 7, template_var 2), t_empty))],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_app (template_hole 1, template_var 3), template_var 0),
+         template_app
+          (template_app (template_hole 0, template_var 2),
+           template_var 1)))),
+    ("Exc_Nres_Monad.ERETURN_as_SPEC_refine",
+     "[| RELATES ?R; ?M <= ESPEC (%_. False) (%c. (c, ?a) : ?R) |]
+      ==> ?M <= \<Down>\<^sub>E ?E ?R (ERETURN ?a)",
+     template_implication
+      ([template_predicate (template_app (template_hole 7, template_var 3)),
+        template_inequation
+         (less_equals, template_var 2,
+          template_app (template_app (template_hole 5, t_empty), t_empty))],
+       template_inequation
+        (less_equals, template_var 2,
+         template_app
+          (template_app
+            (template_app (template_hole 1, template_var 0),
+             template_var 3),
+           template_app (template_hole 0, template_var 1))))),
+    ("Exc_Nres_Monad.CHECK_monadic_refine",
+     "[| ?ci <= \<Down>\<^sub>E ?ER bool_rel ?c; (?ei, ?e) : ?ER |]
+      ==> CHECK_monadic ?ci ?ei
+          <= \<Down>\<^sub>E ?ER unit_rel (CHECK_monadic ?c ?e)",
+     template_implication
+      ([template_inequation
+         (less_equals, template_var 4,
+          template_app
+           (template_app
+             (template_app (template_hole 8, template_var 3),
+              template_hole 7),
+            template_var 2)),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 6,
+                template_app
+                 (template_app (template_hole 5, template_var 1),
+                  template_var 0)),
+              template_var 3)
+            )],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_app (template_hole 3, template_var 4), template_var 1),
+         template_app
+          (template_app
+            (template_app (template_hole 2, template_var 3),
+             template_hole 1),
+           template_app
+            (template_app (template_hole 0, template_var 2),
+             template_var 0))))),
+    ("Exc_Nres_Monad.CHECK_refine",
+     "[| ?\<Phi>i = ?\<Phi>; ~ ?\<Phi> ==> (?msgi, ?msg) : ?E |]
+      ==> CHECK ?\<Phi>i ?msgi
+          <= \<Down>\<^sub>E ?E unit_rel (CHECK ?\<Phi> ?msg)",
+     template_implication
+      ([template_equation (template_var 4, template_var 3),
+        template_implication
+         ([template_negation (template_predicate (template_var 3))],
+          template_predicate
+           (
+              template_app
+               (template_app
+                 (template_hole 6,
+                  template_app
+                   (template_app (template_hole 5, template_var 2),
+                    template_var 1)),
+                template_var 0)
+              ))],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_app (template_hole 3, template_var 4), template_var 2),
+         template_app
+          (template_app
+            (template_app (template_hole 2, template_var 0),
+             template_hole 1),
+           template_app
+            (template_app (template_hole 0, template_var 3),
+             template_var 1))))),
+    ("Exc_Nres_Monad.econc_econc_trans",
+     "[| ?x <= \<Down>\<^sub>E ?E1.0 ?R1.0 ?y;
+         ?y <= \<Down>\<^sub>E ?E2.0 ?R2.0 ?z |]
+      ==> ?x <= \<Down>\<^sub>E (?E1.0 O ?E2.0) (?R1.0 O ?R2.0) ?z",
+     template_implication
+      ([template_inequation
+         (less_equals, template_var 6,
+          template_app
+           (template_app
+             (template_app (template_hole 5, template_var 5),
+              template_var 4),
+            template_var 3)),
+        template_inequation
+         (less_equals, template_var 3,
+          template_app
+           (template_app
+             (template_app (template_hole 3, template_var 2),
+              template_var 1),
+            template_var 0))],
+       template_inequation
+        (less_equals, template_var 6,
+         template_app
+          (template_app
+            (template_app
+              (template_hole 2,
+               template_app
+                (template_app (template_hole 1, template_var 5),
+                 template_var 2)),
+             template_app
+              (template_app (template_hole 0, template_var 4),
+               template_var 1)),
+           template_var 0)))),
+    ("Exc_Nres_Monad.eif_rule",
+     "[| ?b ==> ?S1.0 <= ESPEC ?\<Phi> ?\<Psi>;
+         ~ ?b ==> ?S2.0 <= ESPEC ?\<Phi> ?\<Psi> |]
+      ==> (if ?b then ?S1.0 else ?S2.0) <= ESPEC ?\<Phi> ?\<Psi>",
+     template_implication
+      ([template_implication
+         ([template_predicate (template_var 4)],
+          template_inequation
+           (less_equals, template_var 3,
+            template_app
+             (template_app (template_hole 2, template_var 2),
+              template_var 1))),
+        template_implication
+         ([template_negation (template_predicate (template_var 4))],
+          template_inequation
+           (less_equals, template_var 0,
+            template_app
+             (template_app (template_hole 2, template_var 2),
+              template_var 1)))],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_app
+            (template_app (template_hole 0, template_var 4),
+             template_var 3),
+           template_var 0),
+         template_app
+          (template_app (template_hole 2, template_var 2),
+           template_var 1)))),
+    ("Exc_Nres_Monad.econc_fun_ESPEC",
+     "\<Down>\<^sub>E ?E ?R (ESPEC ?\<Phi> ?\<Psi>) =
+      ESPEC (%ei. EX e. (ei, e) : ?E & ?\<Phi> e)
+       (%ri. EX r. (ri, r) : ?R & ?\<Psi> r)",
+     template_equation
+      (template_app
+        (template_app
+          (template_app (template_hole 9, template_var 3), template_var 2),
+         template_app
+          (template_app (template_hole 8, template_var 1), template_var 0)),
+       template_app (template_app (template_hole 7, t_empty), t_empty))),
+    ("Exc_Nres_Monad.eprod_rule",
+     "(!!a b. ?p = (a, b) ==> ?S a b <= ESPEC ?\<Phi> ?\<Psi>) ==>
+      (case ?p of (a, b) => ?S a b) <= ESPEC ?\<Phi> ?\<Psi>",
+     template_implication
+      ([template_predicate (template_app (template_hole 7, t_empty))],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_app (template_hole 0, t_empty), template_var 3),
+         template_app
+          (template_app (template_hole 1, template_var 1),
+           template_var 0)))),
+    ("Exc_Nres_Monad.ESPEC_cons",
+     "[| ?m <= ESPEC ?E ?Q; !!e. ?E e ==> ?E' e; !!x. ?Q x ==> ?Q' x |]
+      ==> ?m <= ESPEC ?E' ?Q'",
+     template_implication
+      ([template_inequation
+         (less_equals, template_var 4,
+          template_app
+           (template_app (template_hole 2, template_var 3),
+            template_var 2)),
+        template_predicate (template_app (template_hole 1, t_empty)),
+        template_predicate (template_app (template_hole 0, t_empty))],
+       template_inequation
+        (less_equals, template_var 4,
+         template_app
+          (template_app (template_hole 2, template_var 1),
+           template_var 0)))),
+    ("Exc_Nres_Monad.pw_eeq_iff",
+     "(?m = ?n) =
+      (nofail ?m = nofail ?n &
+       (ALL e. inres ?m (Inl e) = inres ?n (Inl e)) &
+       (ALL x. inres ?m (Inr x) = inres ?n (Inr x)))",
+     template_bimplication
+      (template_equation (template_var 1, template_var 0),
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 6,
+               template_app
+                (template_app
+                  (template_hole 8,
+                   template_app (template_hole 5, template_var 1)),
+                 template_app (template_hole 5, template_var 0))),
+             template_app
+              (template_app
+                (template_hole 6, template_app (template_hole 4, t_empty)),
+               template_app (template_hole 1, t_empty)))
+           ))),
+    ("Exc_Nres_Monad.pw_ele_iff",
+     "(?m <= ?n) =
+      (nofail ?n -->
+       nofail ?m &
+       (ALL e. inres ?m (Inl e) --> inres ?n (Inl e)) &
+       (ALL x. inres ?m (Inr x) --> inres ?n (Inr x)))",
+     template_equation
+      (template_app
+        (template_app (template_hole 8, template_var 1), template_var 0),
+       template_app
+        (template_app
+          (template_hole 7, template_app (template_hole 6, template_var 0)),
+         template_app
+          (template_app
+            (template_hole 5,
+             template_app (template_hole 6, template_var 1)),
+           template_app
+            (template_app
+              (template_hole 5, template_app (template_hole 4, t_empty)),
+             template_app (template_hole 1, t_empty)))))),
+    ("Exc_Nres_Monad.CHECK_monadic_CHECK_refine",
+     "[| ?ci <= ESPEC (%e'. (e', ?e) : ?ER & ~ ?c) (%r. r = ?c);
+         (?ei, ?e) : ?ER |]
+      ==> CHECK_monadic ?ci ?ei
+          <= \<Down>\<^sub>E ?ER unit_rel (CHECK ?c ?e)",
+     template_implication
+      ([template_inequation
+         (less_equals, template_var 4,
+          template_app (template_app (template_hole 10, t_empty), t_empty)),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 8,
+                template_app
+                 (template_app (template_hole 7, template_var 0),
+                  template_var 3)),
+              template_var 2)
+            )],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_app (template_hole 3, template_var 4), template_var 0),
+         template_app
+          (template_app
+            (template_app (template_hole 2, template_var 2),
+             template_hole 1),
+           template_app
+            (template_app (template_hole 0, template_var 1),
+             template_var 3))))),
+    ("Exc_Nres_Monad.eoption_rule",
+     "[| ?v = None ==> ?S1.0 <= ESPEC ?\<Phi> ?\<Psi>;
+         !!x. ?v = Some x ==> ?f2.0 x <= ESPEC ?\<Phi> ?\<Psi> |]
+      ==> (case ?v of None => ?S1.0 | Some x => ?f2.0 x)
+          <= ESPEC ?\<Phi> ?\<Psi>",
+     template_implication
+      ([template_implication
+         ([template_equation (template_var 4, template_hole 5)],
+          template_inequation
+           (less_equals, template_var 3,
+            template_app
+             (template_app (template_hole 3, template_var 2),
+              template_var 1))),
+        template_predicate (template_app (template_hole 2, t_empty))],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_app
+            (template_app (template_hole 0, template_var 3),
+             template_var 0),
+           template_var 4),
+         template_app
+          (template_app (template_hole 3, template_var 2),
+           template_var 1)))),
+    ("Exc_Nres_Monad.CATCH_refine",
+     "[| ?mi <= \<Down>\<^sub>E ?E' ?R ?m;
+         !!ei e. (ei, e) : ?E' ==> ?hi ei <= \<Down>\<^sub>E ?E ?R (?h e) |]
+      ==> CATCH ?mi ?hi <= \<Down>\<^sub>E ?E ?R (CATCH ?m ?h)",
+     template_implication
+      ([template_inequation
+         (less_equals, template_var 6,
+          template_app
+           (template_app
+             (template_app (template_hole 8, template_var 5),
+              template_var 4),
+            template_var 3)),
+        template_predicate (template_app (template_hole 7, t_empty))],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_app (template_hole 1, template_var 6), template_var 2),
+         template_app
+          (template_app
+            (template_app (template_hole 2, template_var 1),
+             template_var 4),
+           template_app
+            (template_app (template_hole 0, template_var 3),
+             template_var 0))))),
+    ("Exc_Nres_Monad.ebind2let_refine",
+     "[| ERETURN ?x <= \<Down>\<^sub>E ?E ?R' ?M';
+         !!x'. (?x, x') : ?R' ==> ?f ?x <= \<Down>\<^sub>E ?E ?R (?f' x') |]
+      ==> Let ?x ?f <= \<Down>\<^sub>E ?E ?R (ebind ?M' ?f')",
+     template_implication
+      ([template_inequation
+         (less_equals, template_app (template_hole 8, template_var 6),
+          template_app
+           (template_app
+             (template_app (template_hole 7, template_var 5),
+              template_var 4),
+            template_var 3)),
+        template_predicate (template_app (template_hole 6, t_empty))],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_app (template_hole 1, template_var 6), template_var 2),
+         template_app
+          (template_app
+            (template_app (template_hole 2, template_var 5),
+             template_var 1),
+           template_app
+            (template_app (template_hole 0, template_var 3), t_empty))))),
+    ("Exc_Nres_Monad.Let_refine",
+     "[| (?m, ?m') : ?R';
+         !!x x'. (x, x') : ?R' ==> ?f x <= \<Down>\<^sub>E ?E ?R (?f' x') |]
+      ==> Let ?m ?f <= \<Down>\<^sub>E ?E ?R (Let ?m' ?f')",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 7,
+                template_app
+                 (template_app (template_hole 6, template_var 6),
+                  template_var 5)),
+              template_var 4)
+            ),
+        template_predicate (template_app (template_hole 5, t_empty))],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_app (template_hole 1, template_var 6), t_empty),
+         template_app
+          (template_app
+            (template_app (template_hole 2, template_var 2),
+             template_var 1),
+           template_app
+            (template_app (template_hole 0, template_var 5), t_empty))))),
+    ("Exc_Nres_Monad.ebind2letRETURN_refine",
+     "[| ERETURN ?x <= \<Down>\<^sub>E ?E ?R' ?M';
+         !!x'. (?x, x') : ?R' ==>
+               ERETURN (?f ?x) <= \<Down>\<^sub>E ?E ?R (?f' x') |]
+      ==> ERETURN (Let ?x ?f) <= \<Down>\<^sub>E ?E ?R (ebind ?M' ?f')",
+     template_implication
+      ([template_inequation
+         (less_equals, template_app (template_hole 9, template_var 6),
+          template_app
+           (template_app
+             (template_app (template_hole 8, template_var 5),
+              template_var 4),
+            template_var 3)),
+        template_predicate (template_app (template_hole 7, t_empty))],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_hole 3,
+           template_app
+            (template_app (template_hole 1, template_var 6),
+             template_var 2)),
+         template_app
+          (template_app
+            (template_app (template_hole 2, template_var 5),
+             template_var 1),
+           template_app
+            (template_app (template_hole 0, template_var 3), t_empty))))),
+    ("Exc_Nres_Monad.ebind_refine",
+     "[| ?mi <= \<Down>\<^sub>E ?E ?R' ?m;
+         !!xi x. (xi, x) : ?R' ==> ?fi xi <= \<Down>\<^sub>E ?E ?R (?f x) |]
+      ==> ebind ?mi ?fi <= \<Down>\<^sub>E ?E ?R (ebind ?m ?f)",
+     template_implication
+      ([template_inequation
+         (less_equals, template_var 6,
+          template_app
+           (template_app
+             (template_app (template_hole 8, template_var 5),
+              template_var 4),
+            template_var 3)),
+        template_predicate (template_app (template_hole 7, t_empty))],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_app (template_hole 1, template_var 6), t_empty),
+         template_app
+          (template_app
+            (template_app (template_hole 2, template_var 5),
+             template_var 1),
+           template_app
+            (template_app (template_hole 0, template_var 3), t_empty))))),
+    ("Exc_Nres_Monad.CHECK_bind_refine",
+     "[| ?\<Phi>i = ?\<Phi>; ~ ?\<Phi> ==> (?msgi, ?msg) : ?E;
+         ?\<Phi> ==> ?mi <= \<Down>\<^sub>E ?E ?R ?m |]
+      ==> ebind (CHECK ?\<Phi>i ?msgi) (%_. ?mi)
+          <= \<Down>\<^sub>E ?E ?R (ebind (CHECK ?\<Phi> ?msg) (%_. ?m))",
+     template_implication
+      ([template_equation (template_var 7, template_var 6),
+        template_implication
+         ([template_negation (template_predicate (template_var 6))],
+          template_predicate
+           (
+              template_app
+               (template_app
+                 (template_hole 7,
+                  template_app
+                   (template_app (template_hole 6, template_var 5),
+                    template_var 4)),
+                template_var 3)
+              )),
+        template_implication
+         ([template_predicate (template_var 6)],
+          template_inequation
+           (less_equals, template_var 2,
+            template_app
+             (template_app
+               (template_app (template_hole 4, template_var 3),
+                template_var 1),
+              template_var 0)))],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_app
+            (template_hole 3,
+             template_app
+              (template_app (template_hole 2, template_var 7),
+               template_var 5)),
+           t_empty),
+         template_app
+          (template_app
+            (template_app (template_hole 4, template_var 3),
+             template_var 1),
+           template_app
+            (template_app
+              (template_hole 1,
+               template_app
+                (template_app (template_hole 0, template_var 6),
+                 template_var 4)),
+             t_empty))))),
+    ("Exc_Nres_Monad.ebind_Let_refine2",
+     "[| ?m' <= \<Down>\<^sub>E ?E ?R' (ERETURN ?x);
+         !!x'. [| inres ?m' (Inr x'); (x', ?x) : ?R' |]
+               ==> ?f' x' <= \<Down>\<^sub>E ?E ?R (?f ?x) |]
+      ==> ebind ?m' ?f' <= \<Down>\<^sub>E ?E ?R (Let ?x ?f)",
+     template_implication
+      ([template_inequation
+         (less_equals, template_var 6,
+          template_app
+           (template_app
+             (template_app (template_hole 10, template_var 5),
+              template_var 4),
+            template_app (template_hole 9, template_var 3))),
+        template_predicate (template_app (template_hole 8, t_empty))],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_app (template_hole 1, template_var 6), t_empty),
+         template_app
+          (template_app
+            (template_app (template_hole 2, template_var 5),
+             template_var 1),
+           template_app
+            (template_app (template_hole 0, template_var 3), t_empty))))),
+    ("Exc_Nres_Monad.eif_refine",
+     "[| (?b, ?b') : bool_rel;
+         [| ?b; ?b' |] ==> ?S1.0 <= \<Down>\<^sub>E ?E ?R ?S1';
+         [| ~ ?b; ~ ?b' |] ==> ?S2.0 <= \<Down>\<^sub>E ?E ?R ?S2' |]
+      ==> (if ?b then ?S1.0 else ?S2.0)
+          <= \<Down>\<^sub>E ?E ?R (if ?b' then ?S1' else ?S2')",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 7,
+                template_app
+                 (template_app (template_hole 6, template_var 7),
+                  template_var 6)),
+              template_hole 5)
+            ),
+        template_implication
+         ([template_predicate (template_var 7)],
+          template_implication
+           ([template_predicate (template_var 6)],
+            template_inequation
+             (less_equals, template_var 5,
+              template_app
+               (template_app
+                 (template_app (template_hole 3, template_var 4),
+                  template_var 3),
+                template_var 2)))),
+        template_implication
+         ([template_negation (template_predicate (template_var 7))],
+          template_implication
+           ([template_negation (template_predicate (template_var 6))],
+            template_inequation
+             (less_equals, template_var 1,
+              template_app
+               (template_app
+                 (template_app (template_hole 3, template_var 4),
+                  template_var 3),
+                template_var 0))))],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_app
+            (template_app (template_hole 1, template_var 7),
+             template_var 5),
+           template_var 1),
+         template_app
+          (template_app
+            (template_app (template_hole 3, template_var 4),
+             template_var 3),
+           template_app
+            (template_app
+              (template_app (template_hole 0, template_var 6),
+               template_var 2),
+             template_var 0))))),
+    ("Exc_Nres_Monad.eprod2_rule",
+     "(!!a b c d.
+          [| ?ab = (a, b); ?cd = (c, d) |]
+          ==> ?f a b c d <= ESPEC ?\<Phi> ?\<Psi>) ==>
+      (case ?ab of (a, b) => %(c, d). ?f a b c d) ?cd
+      <= ESPEC ?\<Phi> ?\<Psi>",
+     template_implication
+      ([template_predicate (template_app (template_hole 12, t_empty))],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_app
+            (template_app (template_hole 1, t_empty), template_var 4),
+           template_var 3),
+         template_app
+          (template_app (template_hole 2, template_var 1),
+           template_var 0)))),
+    ("Exc_Nres_Monad.if_ERETURN_refine",
+     "[| ?b = ?b';
+         [| ?b; ?b' |] ==> ERETURN ?S1.0 <= \<Down>\<^sub>E ?E ?R ?S1';
+         [| ~ ?b; ~ ?b' |]
+         ==> ERETURN ?S2.0 <= \<Down>\<^sub>E ?E ?R ?S2' |]
+      ==> ERETURN (if ?b then ?S1.0 else ?S2.0)
+          <= \<Down>\<^sub>E ?E ?R (if ?b' then ?S1' else ?S2')",
+     template_implication
+      ([template_equation (template_var 7, template_var 6),
+        template_implication
+         ([template_predicate (template_var 7)],
+          template_implication
+           ([template_predicate (template_var 6)],
+            template_inequation
+             (less_equals, template_app (template_hole 4, template_var 5),
+              template_app
+               (template_app
+                 (template_app (template_hole 3, template_var 4),
+                  template_var 3),
+                template_var 2)))),
+        template_implication
+         ([template_negation (template_predicate (template_var 7))],
+          template_implication
+           ([template_negation (template_predicate (template_var 6))],
+            template_inequation
+             (less_equals, template_app (template_hole 4, template_var 1),
+              template_app
+               (template_app
+                 (template_app (template_hole 3, template_var 4),
+                  template_var 3),
+                template_var 0))))],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_hole 4,
+           template_app
+            (template_app
+              (template_app (template_hole 1, template_var 7),
+               template_var 5),
+             template_var 1)),
+         template_app
+          (template_app
+            (template_app (template_hole 3, template_var 4),
+             template_var 3),
+           template_app
+            (template_app
+              (template_app (template_hole 0, template_var 6),
+               template_var 2),
+             template_var 0))))),
+    ("Exc_Nres_Monad.CATCH_refine'",
+     "[| ?mi <= \<Down>\<^sub>E ?E' ?R ?m;
+         !!ei e.
+            [| (ei, e) : ?E'; inres ?mi (Inl ei); inres ?m (Inl e);
+               nofail ?mi; nofail ?m |]
+            ==> ?hi ei <= \<Down>\<^sub>E ?E ?R (?h e) |]
+      ==> CATCH ?mi ?hi <= \<Down>\<^sub>E ?E ?R (CATCH ?m ?h)",
+     template_implication
+      ([template_inequation
+         (less_equals, template_var 6,
+          template_app
+           (template_app
+             (template_app (template_hole 14, template_var 5),
+              template_var 4),
+            template_var 3)),
+        template_predicate (template_app (template_hole 13, t_empty))],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_app (template_hole 1, template_var 6), template_var 2),
+         template_app
+          (template_app
+            (template_app (template_hole 2, template_var 1),
+             template_var 4),
+           template_app
+            (template_app (template_hole 0, template_var 3),
+             template_var 0))))),
+    ("Exc_Nres_Monad.ebind_refine'",
+     "[| ?mi <= \<Down>\<^sub>E ?E ?R' ?m;
+         !!xi x.
+            [| (xi, x) : ?R'; inres ?mi (Inr xi); inres ?m (Inr x);
+               nofail ?mi; nofail ?m |]
+            ==> ?fi xi <= \<Down>\<^sub>E ?E ?R (?f x) |]
+      ==> ebind ?mi ?fi <= \<Down>\<^sub>E ?E ?R (ebind ?m ?f)",
+     template_implication
+      ([template_inequation
+         (less_equals, template_var 6,
+          template_app
+           (template_app
+             (template_app (template_hole 14, template_var 5),
+              template_var 4),
+            template_var 3)),
+        template_predicate (template_app (template_hole 13, t_empty))],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_app (template_hole 1, template_var 6), t_empty),
+         template_app
+          (template_app
+            (template_app (template_hole 2, template_var 5),
+             template_var 1),
+           template_app
+            (template_app (template_hole 0, template_var 3), t_empty))))),
+    ("Exc_Nres_Monad.EWHILET_refine",
+     "[| (?x, ?x') : ?R; !!x x'. (x, x') : ?R ==> ?b x = ?b' x';
+         !!x x'.
+            [| (x, x') : ?R; ?b x; ?b' x' |]
+            ==> ?f x <= \<Down>\<^sub>E ?E ?R (?f' x') |]
+      ==> EWHILET ?b ?f ?x <= \<Down>\<^sub>E ?E ?R (EWHILET ?b' ?f' ?x')",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 8,
+                template_app
+                 (template_app (template_hole 7, template_var 7),
+                  template_var 6)),
+              template_var 5)
+            ),
+        template_predicate (template_app (template_hole 6, t_empty)),
+        template_predicate (template_app (template_hole 6, t_empty))],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_app
+            (template_app (template_hole 1, template_var 4),
+             template_var 2),
+           template_var 7),
+         template_app
+          (template_app
+            (template_app (template_hole 2, template_var 1),
+             template_var 5),
+           template_app
+            (template_app
+              (template_app (template_hole 0, template_var 3),
+               template_var 0),
+             template_var 6))))),
+    ("Exc_Nres_Monad.EWHILET_rule",
+     "[| wf ?R; ?I ?s\<^sub>0;
+         !!s. [| ?I s; ?b s; (s, ?s\<^sub>0) : ?R^* |]
+              ==> ?f s <= ESPEC ?E (%s'. ?I s' & (s', s) : ?R);
+         !!s. [| ?I s; ~ ?b s; (s, ?s\<^sub>0) : ?R^* |] ==> ?\<Phi> s |]
+      ==> EWHILET ?b ?f ?s\<^sub>0 <= ESPEC ?E ?\<Phi>",
+     template_implication
+      ([template_predicate (template_app (template_hole 9, template_var 6)),
+        template_predicate (template_app (template_var 5, template_var 4)),
+        template_predicate (template_app (template_hole 8, t_empty)),
+        template_predicate (template_app (template_hole 8, t_empty))],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_app
+            (template_app (template_hole 0, template_var 3),
+             template_var 2),
+           template_var 4),
+         template_app
+          (template_app (template_hole 3, template_var 1),
+           template_var 0)))),
+    ("Exc_Nres_Monad.EWHILEIT_rule",
+     "[| wf ?R; ?I ?s\<^sub>0;
+         !!s. [| ?I s; ?b s; (s, ?s\<^sub>0) : ?R^* |]
+              ==> ?f s <= ESPEC ?E (%s'. ?I s' & (s', s) : ?R);
+         !!s. [| ?I s; ~ ?b s; (s, ?s\<^sub>0) : ?R^* |] ==> ?\<Phi> s |]
+      ==> EWHILEIT ?I ?b ?f ?s\<^sub>0 <= ESPEC ?E ?\<Phi>",
+     template_implication
+      ([template_predicate (template_app (template_hole 9, template_var 6)),
+        template_predicate (template_app (template_var 5, template_var 4)),
+        template_predicate (template_app (template_hole 8, t_empty)),
+        template_predicate (template_app (template_hole 8, t_empty))],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 0, template_var 5),
+               template_var 3),
+             template_var 2),
+           template_var 4),
+         template_app
+          (template_app (template_hole 3, template_var 1),
+           template_var 0)))),
+    ("Exc_Nres_Monad.enfoldli_refine",
+     "[| (?li, ?l) : \<langle>?S\<rangle>list_rel; (?si, ?s) : ?R;
+         (?ci, ?c) : ?R \<rightarrow> bool_rel;
+         !!xi x si s.
+            [| (xi, x) : ?S; (si, s) : ?R; ?c s |]
+            ==> ?fi xi si <= \<Down>\<^sub>E ?E ?R (?f x s) |]
+      ==> enfoldli ?li ?ci ?fi ?si
+          <= \<Down>\<^sub>E ?E ?R (enfoldli ?l ?c ?f ?s)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 21,
+                template_app
+                 (template_app (template_hole 20, template_var 10),
+                  template_var 9)),
+              template_app
+               (template_app (template_hole 19, template_hole 18),
+                template_var 8))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 17,
+                template_app
+                 (template_app (template_hole 16, template_var 7),
+                  template_var 6)),
+              template_var 5)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 15,
+                template_app
+                 (template_app (template_hole 14, template_var 4),
+                  template_var 3)),
+              template_app
+               (template_app
+                 (template_hole 13,
+                  template_app
+                   (template_app (template_hole 12, template_hole 11),
+                    template_var 5)),
+                template_hole 10))
+            ),
+        template_predicate (template_app (template_hole 9, t_empty))],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 1, template_var 10),
+               template_var 4),
+             template_var 2),
+           template_var 7),
+         template_app
+          (template_app
+            (template_app (template_hole 2, template_var 1),
+             template_var 5),
+           template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 0, template_var 9),
+                 template_var 3),
+               template_var 0),
+             template_var 6))))),
+    ("Exc_Nres_Monad.EWHILEIT_expinv_rule",
+     "[| wf ?R; ?I ?s\<^sub>0;
+         !!s. [| ?I s; ?b s; (s, ?s\<^sub>0) : ?R^* |]
+              ==> ?f s <= ESPEC ?E (%s'. ?I s' & (s', s) : ?R);
+         !!s. [| ?I s; ~ ?b s; (s, ?s\<^sub>0) : ?R^* |] ==> ?\<Phi> s;
+         !!s. ?I s ==> ?I' s |]
+      ==> EWHILEIT ?I' ?b ?f ?s\<^sub>0 <= ESPEC ?E ?\<Phi>",
+     template_implication
+      ([template_predicate (template_app (template_hole 9, template_var 7)),
+        template_predicate (template_app (template_var 6, template_var 5)),
+        template_predicate (template_app (template_hole 8, t_empty)),
+        template_predicate (template_app (template_hole 8, t_empty)),
+        template_predicate (template_app (template_hole 8, t_empty))],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 0, template_var 0),
+               template_var 4),
+             template_var 3),
+           template_var 5),
+         template_app
+          (template_app (template_hole 3, template_var 2),
+           template_var 1)))),
+    ("Exc_Nres_Monad.enfoldli_rule",
+     "[| ?I [] ?l0.0 ?\<sigma>0.0;
+         !!x l1 l2 \<sigma>.
+            [| ?l0.0 = l1 @ x # l2; ?I l1 (x # l2) \<sigma>; ?c \<sigma> |]
+            ==> ?f x \<sigma> <= ESPEC ?E (?I (l1 @ [x]) l2);
+         !!l1 l2 \<sigma>.
+            [| ?l0.0 = l1 @ l2; ?I l1 l2 \<sigma>; ~ ?c \<sigma> |]
+            ==> ?P \<sigma>;
+         !!\<sigma>.
+            [| ?I ?l0.0 [] \<sigma>; ?c \<sigma> |] ==> ?P \<sigma> |]
+      ==> enfoldli ?l0.0 ?c ?f ?\<sigma>0.0 <= ESPEC ?E ?P",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_var 6, template_hole 10),
+                template_var 5),
+              template_var 4)
+            ),
+        template_predicate (template_app (template_hole 9, t_empty)),
+        template_predicate (template_app (template_hole 8, t_empty)),
+        template_predicate (template_app (template_hole 7, t_empty))],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 0, template_var 5),
+               template_var 3),
+             template_var 2),
+           template_var 4),
+         template_app
+          (template_app (template_hole 2, template_var 1),
+           template_var 0)))),
+    ("Exc_Nres_Monad.EWHILEIT_refine",
+     "[| ?I' ?x' ==> (?x, ?x') : ?R;
+         !!x x'. [| (x, x') : ?R; ?I' x' |] ==> ?I x;
+         !!x x'. [| (x, x') : ?R; ?I x; ?I' x' |] ==> ?b x = ?b' x';
+         !!x x'.
+            [| (x, x') : ?R; ?b x; ?b' x'; ?I x; ?I' x' |]
+            ==> ?f x <= \<Down>\<^sub>E ?E ?R (?f' x') |]
+      ==> EWHILEIT ?I ?b ?f ?x
+          <= \<Down>\<^sub>E ?E ?R (EWHILEIT ?I' ?b' ?f' ?x')",
+     template_implication
+      ([template_implication
+         ([template_predicate
+            (template_app (template_var 9, template_var 8))],
+          template_predicate
+           (
+              template_app
+               (template_app
+                 (template_hole 8,
+                  template_app
+                   (template_app (template_hole 7, template_var 7),
+                    template_var 8)),
+                template_var 6)
+              )),
+        template_predicate (template_app (template_hole 6, t_empty)),
+        template_predicate (template_app (template_hole 6, t_empty)),
+        template_predicate (template_app (template_hole 6, t_empty))],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 1, template_var 5),
+               template_var 4),
+             template_var 2),
+           template_var 7),
+         template_app
+          (template_app
+            (template_app (template_hole 2, template_var 1),
+             template_var 6),
+           template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 0, template_var 9),
+                 template_var 3),
+               template_var 0),
+             template_var 8)))))]:
+   (string * thm * template) list
+### theory "Draft.Exc_Nres_MonadTemplates"
+### 1.017s elapsed time, 1.277s cpu time, 0.159s GC time
+val it = (): unit

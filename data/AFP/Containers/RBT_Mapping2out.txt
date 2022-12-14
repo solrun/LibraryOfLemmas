@@ -1,0 +1,1117 @@
+Loading theory "Draft.Extend_Partial_Order" (required by "Draft.RBT_Mapping2Templates" via "Draft.RBT_Mapping2" via "Draft.Collection_Order" via "Draft.Set_Linorder")
+Loading theory "Draft.List_Fusion" (required by "Draft.RBT_Mapping2Templates" via "Draft.RBT_Mapping2" via "Draft.Collection_Order" via "Draft.Set_Linorder" via "Draft.Lexicographic_Order")
+Loading theory "Draft.Containers_Auxiliary" (required by "Draft.RBT_Mapping2Templates" via "Draft.RBT_Mapping2" via "Draft.Collection_Order" via "Draft.Set_Linorder")
+Loading theory "Draft.Templates" (required by "Draft.RBT_Mapping2Templates" via "Draft.ExtrEqs")
+Proofs for inductive predicate(s) "terminates_onp"
+  Proving monotonicity ...
+datatype template_term
+=
+     t_empty
+   | template_app of template_term * template_term
+   | template_hole of int
+   | template_var of int
+datatype sign
+= equals | greater_equals | greater_than | less_equals | less_than
+datatype template
+=
+     template_bimplication of template * template
+   | template_dunno
+   | template_equation of template_term * template_term
+   | template_implication of template list * template
+   | template_inequation of sign * template_term * template_term
+   | template_negation of template
+   | template_predicate of template_term
+constructor t_empty: template_term
+constructor template_app: template_term * template_term -> template_term
+constructor template_hole: int -> template_term
+constructor template_var: int -> template_term
+constructor equals: sign
+constructor greater_equals: sign
+constructor greater_than: sign
+constructor less_equals: sign
+constructor less_than: sign
+constructor template_bimplication: template * template -> template
+constructor template_dunno: template
+constructor template_equation: template_term * template_term -> template
+constructor template_implication: template list * template -> template
+constructor template_inequation:
+   sign * template_term * template_term -> template
+constructor template_negation: template -> template
+constructor template_predicate: template_term -> template
+val vfs = fn: term -> (indexname * typ) list * (string * typ) list
+val indexOf = fn: ''a list -> ''a -> int -> int
+val has_eq = fn: term -> bool
+val term2template = fn:
+   (indexname * typ) list -> (string * typ) list -> term -> template_term
+val lemma2predicate = fn: term -> term -> template
+val makeTemplatewithContext = fn: term -> term -> template
+val lemma2template = fn: term -> template
+val thm2template = fn: thm -> template
+val tterm2string = fn: template_term -> string
+val template2string = fn: template -> string
+val t = "height ?t <= size ?t": thm
+val th =
+   Const ("HOL.Trueprop", "bool => prop") $
+     (Const ("Orderings.ord_class.less_eq", "nat => nat => bool") $
+       (Const ("Tree.height_class.height", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree")) $
+       (Const ("Nat.size_class.size", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree"))):
+   term
+### theory "Draft.Templates"
+### 0.076s elapsed time, 0.337s cpu time, 0.000s GC time
+Loading theory "Draft.ExtrEqs" (required by "Draft.RBT_Mapping2Templates")
+class linorder = order +
+  assumes "linear": "!!x y. x <= y | y <= x"
+### theory "Draft.Extend_Partial_Order"
+### 0.140s elapsed time, 0.548s cpu time, 0.043s GC time
+### Dropping global mixfix syntax: "less_eq_prod" (infix \<open>\<sqsubseteq>\<close> 50)
+### Dropping global mixfix syntax: "less_prod" (infix \<open>\<sqsubset>\<close> 50)
+### Dropping global mixfix syntax: "less_eq_prod'" (infix \<open>\<sqsubseteq>\<close> 50)
+### Dropping global mixfix syntax: "less_prod'" (infix \<open>\<sqsubset>\<close> 50)
+### theory "Draft.Containers_Auxiliary"
+### 0.218s elapsed time, 0.786s cpu time, 0.043s GC time
+Loading theory "Draft.Containers_Generator" (required by "Draft.RBT_Mapping2Templates" via "Draft.RBT_Mapping2" via "Draft.Collection_Order")
+locale list
+  fixes g :: "('a, 's) generator"
+consts
+  list_has_next :: "'a list => bool"
+### No equation for constructor "[]"
+consts
+  list_next :: "'a list => 'a * 'a list"
+Found termination order: "{}"
+Found termination order: "case_sum (%x. Suc 0) (%x. 0) <*mlex*> {}"
+signature CONTAINERS_GENERATOR =
+  sig
+    val HOLogic_list_conj: term list -> term
+    val all_tys: term -> typ list -> term -> term
+    val derive_is_c_dots_lemma:
+       typ -> string -> thm list -> string -> theory -> theory
+    val derive_none:
+       string -> sort -> (typ -> term) -> string -> theory -> theory
+    val derive_set_map_impl:
+       string ->
+         sort ->
+           (string * term) list -> string -> string -> theory -> theory
+    val is_class_instance: theory -> string -> sort -> bool
+    val mk_Some: term -> term
+    val mk_is_c_dots: typ -> string -> term
+    val register_is_c_dots_lemma:
+       string -> string -> thm -> theory -> theory
+  end
+structure Containers_Generator: CONTAINERS_GENERATOR
+### theory "Draft.Containers_Generator"
+### 0.343s elapsed time, 1.036s cpu time, 0.154s GC time
+val eqpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Var (("_dummy_", 2), "?'a"))
+       ):
+   term Find_Theorems.criterion
+val badeqpattern = Pattern (Const ("Pure.eq", "?'a => ?'a => prop")):
+   term Find_Theorems.criterion
+val undefpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Const ("HOL.undefined", "?'a"))
+       ):
+   term Find_Theorems.criterion
+val thmpattern =
+   Pattern
+    (Const ("HOL.Trueprop", "bool => prop") $ Var (("_dummy_", 1), "bool")):
+   term Find_Theorems.criterion
+val badnames =
+   ["*nitpick*", "*Nitpick*", "*full_exhaustive*", "*_def*", "Enum.finite*",
+    "*Quickcheck*", "ATP*", "*Nunchaku*", "*Code*", "*BNF*", "*SMT*",
+    "*.*.*"]:
+   string list
+val unwanted_names =
+   [(false, Name "*nitpick*"), (false, Name "*Nitpick*"),
+    (false, Name "*full_exhaustive*"), (false, Name "*_def*"),
+    (false, Name "Enum.finite*"), (false, Name "*Quickcheck*"),
+    (false, Name "ATP*"), (false, Name "*Nunchaku*"),
+    (false, Name "*Code*"), (false, Name "*BNF*"), (false, Name "*SMT*"),
+    (false, Name "*.*.*")]:
+   (bool * term Find_Theorems.criterion) list
+val has_vars = fn: term -> bool
+val get_all_eqs = fn: string -> Proof.context -> (string * thm) list
+val get_all_thms = fn: string -> Proof.context -> (string * thm) list
+val get_noneq_thms = fn: string -> Proof.context -> (string * thm) list
+val template_eqs = fn:
+   string -> Proof.context -> (string * thm * template) list
+val template_thms = fn:
+   string -> Proof.context -> (string * thm * template) list
+### theory "Draft.ExtrEqs"
+### 0.552s elapsed time, 1.618s cpu time, 0.154s GC time
+Proofs for inductive predicate(s) "filter_has_next"
+  Proving monotonicity ...
+### theory "Draft.List_Fusion"
+### 0.783s elapsed time, 2.108s cpu time, 0.197s GC time
+Loading theory "Draft.Lexicographic_Order" (required by "Draft.RBT_Mapping2Templates" via "Draft.RBT_Mapping2" via "Draft.Collection_Order" via "Draft.Set_Linorder")
+Loading theory "Draft.RBT_ext" (required by "Draft.RBT_Mapping2Templates" via "Draft.RBT_Mapping2")
+class linorder = order +
+  assumes "linear": "!!x y. x <= y | y <= x"
+class ord = type +
+  fixes less_eq :: "'a => 'a => bool"
+    and less :: "'a => 'a => bool"
+### theory "Draft.Lexicographic_Order"
+### 0.216s elapsed time, 0.451s cpu time, 0.056s GC time
+Loading theory "Draft.Set_Linorder" (required by "Draft.RBT_Mapping2Templates" via "Draft.RBT_Mapping2" via "Draft.Collection_Order")
+class linorder = order +
+  assumes "linear": "!!x y. x <= y | y <= x"
+specification
+  finite_complement_partition: finite ?A ==> ?A : infinite_complement_partition
+  complement_partition: infinite UNIV ==>
+(?A : infinite_complement_partition) =
+(- ?A ~: infinite_complement_partition)
+class ord = type +
+  fixes less_eq :: "'a => 'a => bool"
+    and less :: "'a => 'a => bool"
+### Dropping global mixfix syntax: "less_eq_prod'" (infix \<open>\<sqsubseteq>\<close> 50)
+### Dropping global mixfix syntax: "less_prod'" (infix \<open>\<sqsubset>\<close> 50)
+consts
+  RBT_Impl_diag :: "('a, 'b) rbt => ('a * 'a, 'b) rbt"
+class order = preorder +
+  assumes "order_antisym": "!!x y. [| x <= y; y <= x |] ==> x = y"
+class linorder = order +
+  assumes "linear": "!!x y. x <= y | y <= x"
+class ord = type +
+  fixes less_eq :: "'a => 'a => bool"
+    and less :: "'a => 'a => bool"
+class linorder = order +
+  assumes "linear": "!!x y. x <= y | y <= x"
+class ord = type +
+  fixes less_eq :: "'a => 'a => bool"
+    and less :: "'a => 'a => bool"
+Found termination order: "{}"
+### Missing patterns in function definition:
+### rbt_keys_next ([], rbt.Empty) = undefined
+class linorder = order +
+  assumes "linear": "!!x y. x <= y | y <= x"
+Found termination order: "(%p. size (snd p)) <*mlex*> {}"
+class ord = type +
+  fixes less_eq :: "'a => 'a => bool"
+    and less :: "'a => 'a => bool"
+### Missing patterns in function definition:
+### rbt_entries_next ([], rbt.Empty) = undefined
+class linorder = order +
+  assumes "linear": "!!x y. x <= y | y <= x"
+Found termination order: "(%p. size (snd p)) <*mlex*> {}"
+### theory "Draft.RBT_ext"
+### 1.428s elapsed time, 3.082s cpu time, 0.640s GC time
+class proper_intrvl = ord +
+  fixes proper_interval :: "'a option => 'a option => bool"
+class proper_interval = proper_intrvl +
+  assumes
+    "proper_interval_simps": "proper_interval None None = True"
+      "!!y. proper_interval None (Some y) = (EX z. z < y)"
+      "!!x. proper_interval (Some x) None = (EX z. x < z)"
+      "!!x y. proper_interval (Some x) (Some y) = (EX z>x. z < y)"
+class proper_intrvl = ord +
+  fixes proper_interval :: "'a option => 'a option => bool"
+Found termination order:
+  "(%p. length (snd (snd p))) <*mlex*>
+   (%p. length (fst (snd p))) <*mlex*> {}"
+Found termination order:
+  "(%p. length (snd (snd p))) <*mlex*>
+   (%p. length (fst (snd p))) <*mlex*> {}"
+class proper_intrvl = ord +
+  fixes proper_interval :: "'a option => 'a option => bool"
+Found termination order: "(%p. length (snd p)) <*mlex*> {}"
+Found termination order: "{}"
+Found termination order: "(%p. length (snd p)) <*mlex*> {}"
+Found termination order:
+  "(%p. length (snd (snd (snd p)))) <*mlex*>
+   (%p. length (fst (snd (snd p)))) <*mlex*> {}"
+Found termination order:
+  "(%p. length (snd (snd p))) <*mlex*>
+   (%p. length (fst (snd p))) <*mlex*> {}"
+instantiation
+  unit :: proper_interval
+  proper_interval_unit == proper_interval ::
+    unit option => unit option => bool
+Found termination order: "{}"
+instantiation
+  bool :: proper_interval
+  proper_interval_bool == proper_interval ::
+    bool option => bool option => bool
+Found termination order: "{}"
+instantiation
+  nat :: proper_interval
+  proper_interval_nat == proper_interval :: nat option => nat option => bool
+Found termination order: "{}"
+instantiation
+  int :: proper_interval
+  proper_interval_int == proper_interval :: int option => int option => bool
+Found termination order: "{}"
+instantiation
+  integer :: proper_interval
+  proper_interval_integer == proper_interval ::
+    integer option => integer option => bool
+instantiation
+  natural :: proper_interval
+  proper_interval_natural == proper_interval ::
+    natural option => natural option => bool
+instantiation
+  char :: proper_interval
+  proper_interval_char == proper_interval ::
+    char option => char option => bool
+Found termination order: "{}"
+instantiation
+  Enum.finite_1 :: proper_interval
+  proper_interval_finite_1 == proper_interval ::
+    Enum.finite_1 option => Enum.finite_1 option => bool
+instantiation
+  Enum.finite_2 :: proper_interval
+  proper_interval_finite_2 == proper_interval ::
+    Enum.finite_2 option => Enum.finite_2 option => bool
+Found termination order: "{}"
+instantiation
+  Enum.finite_3 :: proper_interval
+  proper_interval_finite_3 == proper_interval ::
+    Enum.finite_3 option => Enum.finite_3 option => bool
+Found termination order: "{}"
+class proper_intrvl = ord +
+  fixes proper_interval :: "'a option => 'a option => bool"
+class ord = type +
+  fixes less_eq :: "'a => 'a => bool"
+    and less :: "'a => 'a => bool"
+### theory "Draft.Set_Linorder"
+### 5.308s elapsed time, 7.016s cpu time, 0.992s GC time
+Loading theory "Draft.Collection_Order" (required by "Draft.RBT_Mapping2Templates" via "Draft.RBT_Mapping2")
+class ccompare = type +
+  fixes ccompare :: "('a => 'a => order) option"
+  assumes "ccompare": "!!comp. ccompare = Some comp ==> comparator comp"
+class ccompare = type +
+  fixes ccompare :: "('a => 'a => order) option"
+  assumes "ccompare": "!!comp. ccompare = Some comp ==> comparator comp"
+signature CCOMPARE_GENERATOR =
+  sig
+    val ccompare_instance_via_comparator: string -> theory -> theory
+    val ccompare_instance_via_compare: string -> theory -> theory
+    val derive_no_ccompare: string -> theory -> theory
+  end
+structure CCompare_Generator: CCOMPARE_GENERATOR
+deriving "compare_order" instance for type "Enum.finite_1"
+deriving "compare" instance for type "Enum.finite_1"
+deriving "compare_order" instance for type "Enum.finite_2"
+deriving "compare" instance for type "Enum.finite_2"
+deriving "compare_order" instance for type "Enum.finite_3"
+deriving "compare" instance for type "Enum.finite_3"
+deriving "compare_order" instance for type "Code_Numeral.natural"
+deriving "compare" instance for type "Code_Numeral.natural"
+deriving "compare_order" instance for type "String.literal"
+deriving "compare" instance for type "String.literal"
+deriving "ccompare_order" instance for type "Product_Type.unit" via compare_order
+derived is_ccompare_unit-lemma
+deriving "ccompare_order" instance for type "HOL.bool" via compare_order
+derived is_ccompare_bool-lemma
+deriving "ccompare_order" instance for type "Nat.nat" via compare_order
+derived is_ccompare_nat-lemma
+deriving "ccompare_order" instance for type "Int.int" via compare_order
+derived is_ccompare_int-lemma
+deriving "ccompare_order" instance for type "Enum.finite_1" via compare_order
+derived is_ccompare_finite_1-lemma
+deriving "ccompare_order" instance for type "Enum.finite_2" via compare_order
+derived is_ccompare_finite_2-lemma
+deriving "ccompare_order" instance for type "Enum.finite_3" via compare_order
+derived is_ccompare_finite_3-lemma
+deriving "ccompare_order" instance for type "Code_Numeral.integer" via compare_order
+derived is_ccompare_integer-lemma
+deriving "ccompare_order" instance for type "Code_Numeral.natural" via compare_order
+derived is_ccompare_natural-lemma
+deriving "ccompare_order" instance for type "String.char" via compare_order
+derived is_ccompare_char-lemma
+deriving "ccompare_order" instance for type "String.literal" via compare_order
+derived is_ccompare_literal-lemma
+use None as trivial implementation of ccompare for type finite_4
+registered finite_4 in class ccompare
+use None as trivial implementation of ccompare for type finite_5
+registered finite_5 in class ccompare
+deriving "ccompare" instance for type "Sum_Type.sum"
+derived is_ccompare_sum-lemma
+deriving "ccompare" instance for type "List.list"
+derived is_ccompare_list-lemma
+deriving "ccompare" instance for type "Option.option"
+derived is_ccompare_option-lemma
+deriving "ccompare" instance for type "Product_Type.prod"
+derived is_ccompare_prod-lemma
+use None as trivial implementation of ccompare for type fun
+registered fun in class ccompare
+instantiation
+  set :: (ccompare) ccompare
+  ccompare_set == ccompare :: ('a set => 'a set => order) option
+use None as trivial implementation of ccompare for type pred
+registered pred in class ccompare
+class cproper_interval = ccompare +
+  fixes cproper_interval :: "'a option => 'a option => bool"
+  assumes
+    "cproper_interval":
+      "[| ID ccompare ~= None; finite UNIV |]
+       ==> class.proper_interval cless cproper_interval"
+instantiation
+  unit :: cproper_interval
+  cproper_interval_unit == cproper_interval ::
+    unit option => unit option => bool
+instantiation
+  bool :: cproper_interval
+  cproper_interval_bool == cproper_interval ::
+    bool option => bool option => bool
+instantiation
+  nat :: cproper_interval
+  cproper_interval_nat == cproper_interval ::
+    nat option => nat option => bool
+instantiation
+  int :: cproper_interval
+  cproper_interval_int == cproper_interval ::
+    int option => int option => bool
+instantiation
+  integer :: cproper_interval
+  cproper_interval_integer == cproper_interval ::
+    integer option => integer option => bool
+instantiation
+  natural :: cproper_interval
+  cproper_interval_natural == cproper_interval ::
+    natural option => natural option => bool
+instantiation
+  char :: cproper_interval
+  cproper_interval_char == cproper_interval ::
+    char option => char option => bool
+instantiation
+  Enum.finite_1 :: cproper_interval
+  cproper_interval_finite_1 == cproper_interval ::
+    Enum.finite_1 option => Enum.finite_1 option => bool
+instantiation
+  Enum.finite_2 :: cproper_interval
+  cproper_interval_finite_2 == cproper_interval ::
+    Enum.finite_2 option => Enum.finite_2 option => bool
+instantiation
+  Enum.finite_3 :: cproper_interval
+  cproper_interval_finite_3 == cproper_interval ::
+    Enum.finite_3 option => Enum.finite_3 option => bool
+instantiation
+  Enum.finite_4 :: cproper_interval
+  cproper_interval_finite_4 == cproper_interval ::
+    Enum.finite_4 option => Enum.finite_4 option => bool
+instantiation
+  Enum.finite_5 :: cproper_interval
+  cproper_interval_finite_5 == cproper_interval ::
+    Enum.finite_5 option => Enum.finite_5 option => bool
+instantiation
+  sum :: (cproper_interval, cproper_interval) cproper_interval
+  cproper_interval_sum == cproper_interval ::
+    ('a + 'b) option => ('a + 'b) option => bool
+Found termination order: "{}"
+instantiation
+  prod :: (cproper_interval, cproper_interval) cproper_interval
+  cproper_interval_prod == cproper_interval ::
+    ('a * 'b) option => ('a * 'b) option => bool
+Found termination order: "{}"
+instantiation
+  list :: (ccompare) cproper_interval
+  cproper_interval_list == cproper_interval ::
+    'a list option => 'a list option => bool
+instantiation
+  String.literal :: cproper_interval
+  cproper_interval_literal == cproper_interval ::
+    String.literal option => String.literal option => bool
+instantiation
+  option :: (cproper_interval) cproper_interval
+  cproper_interval_option == cproper_interval ::
+    'a option option => 'a option option => bool
+Found termination order: "{}"
+instantiation
+  set :: (cproper_interval) cproper_interval
+  cproper_interval_set == cproper_interval ::
+    'a set option => 'a set option => bool
+### Not an equation, in theorem:
+### cproper_interval_set_dom (None, None) ==> cproper_interval None None == True
+### Not an equation, in theorem:
+### cproper_interval_set_dom (None, Some ?B) ==>
+### cproper_interval None (Some ?B) == ?B ~= {}
+### Not an equation, in theorem:
+### cproper_interval_set_dom (Some ?A, None) ==>
+### cproper_interval (Some ?A) None == ?A ~= UNIV
+### Not an equation, in theorem:
+### cproper_interval_set_dom (Some ?A, Some ?B) ==>
+### cproper_interval (Some ?A) (Some ?B) ==
+### finite UNIV & (EX C. cless ?A C & cless C ?B)
+Found termination order: "{}"
+instantiation
+  fun :: (type, type) cproper_interval
+  cproper_interval_fun == cproper_interval ::
+    ('a => 'b) option => ('a => 'b) option => bool
+### theory "Draft.Collection_Order"
+### 1.149s elapsed time, 1.365s cpu time, 0.098s GC time
+Loading theory "Draft.RBT_Mapping2" (required by "Draft.RBT_Mapping2Templates")
+### Ambiguous input (line 247 of "$AFP/Containers/RBT_Mapping2.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" lookup)
+###       ("_applC" ("_position" meet)
+###         ("_cargs" ("_position" f)
+###           ("_cargs"
+###             ("_constrain" ("_position" t1)
+###               ("_tappl" ("_position_sort" 'a) ("_position_sort" 'b)
+###                 ("_type_name" mapping_rbt)))
+###             ("_position" t2)))))
+###     ("_lambda" ("_position" k)
+###       ("_case_syntax"
+###         ("_applC" ("_position" lookup)
+###           ("_cargs" ("_position" t1) ("_position" k)))
+###         ("_case2" ("_case1" ("_position" None) ("_position" None))
+###           ("_case1" ("_applC" ("_position" Some) ("_position" v1))
+###             ("_case_syntax"
+###               ("_applC" ("_position" lookup)
+###                 ("_cargs" ("_position" t2) ("_position" k)))
+###               ("_case2" ("_case1" ("_position" None) ("_position" None))
+###                 ("_case1" ("_applC" ("_position" Some) ("_position" v2))
+###                   ("_applC" ("_position" Some)
+###                     ("_applC" ("_position" f)
+###                       ("_cargs" ("_position" k)
+###                         ("_cargs" ("_position" v1)
+###                           ("_position" v2))))))))))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" lookup)
+###       ("_applC" ("_position" meet)
+###         ("_cargs" ("_position" f)
+###           ("_cargs"
+###             ("_constrain" ("_position" t1)
+###               ("_tappl" ("_position_sort" 'a) ("_position_sort" 'b)
+###                 ("_type_name" mapping_rbt)))
+###             ("_position" t2)))))
+###     ("_lambda" ("_position" k)
+###       ("_case_syntax"
+###         ("_applC" ("_position" lookup)
+###           ("_cargs" ("_position" t1) ("_position" k)))
+###         ("_case2" ("_case1" ("_position" None) ("_position" None))
+###           ("_case2"
+###             ("_case1" ("_applC" ("_position" Some) ("_position" v1))
+###               ("_case_syntax"
+###                 ("_applC" ("_position" lookup)
+###                   ("_cargs" ("_position" t2) ("_position" k)))
+###                 ("_case1" ("_position" None) ("_position" None))))
+###             ("_case1" ("_applC" ("_position" Some) ("_position" v2))
+###               ("_applC" ("_position" Some)
+###                 ("_applC" ("_position" f)
+###                   ("_cargs" ("_position" k)
+###                     ("_cargs" ("_position" v1) ("_position" v2))))))))))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### theory "Draft.RBT_Mapping2"
+### 1.091s elapsed time, 1.713s cpu time, 0.868s GC time
+Loading theory "Draft.RBT_Mapping2Templates"
+val templateLemmas =
+   [("RBT_Mapping2.impl_of_inverse",
+     "Mapping_RBT (mapping_rbt.impl_of ?t) = ?t",
+     template_equation
+      (template_app
+        (template_hole 1, template_app (template_hole 0, template_var 0)),
+       template_var 0)),
+    ("RBT_Mapping2.is_empty_empty",
+     "is_empty ?t = (?t = RBT_Mapping2.empty)",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 2, template_var 0))],
+       template_equation (template_var 0, template_hole 0))),
+    ("RBT_Mapping2.entries_impl_of",
+     "RBT_Impl.entries (mapping_rbt.impl_of ?t) = RBT_Mapping2.entries ?t",
+     template_equation
+      (template_app
+        (template_hole 2, template_app (template_hole 1, template_var 0)),
+       template_app (template_hole 0, template_var 0))),
+    ("RBT_Mapping2.keys_impl_of",
+     "set (RBT_Impl.keys (mapping_rbt.impl_of ?t)) = RBT_Mapping2.keys ?t",
+     template_equation
+      (template_app
+        (template_hole 3,
+         template_app
+          (template_hole 2,
+           template_app (template_hole 1, template_var 0))),
+       template_app (template_hole 0, template_var 0))),
+    ("RBT_Mapping2.unfoldr_rbt_entries_generator",
+     "list.unfoldr rbt_entries_generator (RBT_Mapping2.init ?t) =
+      RBT_Mapping2.entries ?t",
+     template_equation
+      (template_app
+        (template_app (template_hole 3, template_hole 2),
+         template_app (template_hole 1, template_var 0)),
+       template_app (template_hole 0, template_var 0))),
+    ("RBT_Mapping2.fold_conv_fold",
+     "RBT_Mapping2.fold ?f ?t =
+      fold (%(x, y). ?f x y) (RBT_Mapping2.entries ?t)",
+     template_equation
+      (template_app
+        (template_app (template_hole 3, template_var 1), template_var 0),
+       template_app
+        (template_app
+          (template_hole 2, template_app (template_hole 1, template_var 1)),
+         template_app (template_hole 0, template_var 0)))),
+    ("RBT_Mapping2.lookup_impl_of",
+     "rbt_comp_lookup ccomp (mapping_rbt.impl_of ?t) =
+      RBT_Mapping2.lookup ?t",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 5,
+           template_app
+            (template_hole 4,
+             template_app (template_hole 3, template_hole 2))),
+         template_app (template_hole 1, template_var 0)),
+       template_app (template_hole 0, template_var 0))),
+    ("RBT_Mapping2.rbt_eq_iff",
+     "(?t1.0 = ?t2.0) =
+      (mapping_rbt.impl_of ?t1.0 = mapping_rbt.impl_of ?t2.0)",
+     template_bimplication
+      (template_equation (template_var 1, template_var 0),
+       template_equation
+        (template_app (template_hole 0, template_var 1),
+         template_app (template_hole 0, template_var 0)))),
+    ("RBT_Mapping2.rbt_eqI",
+     "mapping_rbt.impl_of ?t1.0 = mapping_rbt.impl_of ?t2.0 ==>
+      ?t1.0 = ?t2.0",
+     template_implication
+      ([template_equation
+         (template_app (template_hole 1, template_var 1),
+          template_app (template_hole 1, template_var 0))],
+       template_equation (template_var 1, template_var 0))),
+    ("RBT_Mapping2.finite_dom_lookup",
+     "ID ccompare ~= None ==> finite (dom (RBT_Mapping2.lookup ?t))",
+     template_implication
+      ([template_negation
+         (
+            template_equation
+             (template_app (template_hole 5, template_hole 4),
+              template_hole 3)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_hole 2,
+             template_app
+              (template_hole 1,
+               template_app (template_hole 0, template_var 0)))
+           ))),
+    ("RBT_Mapping2.distinct_map_filterI",
+     "distinct (map ?f ?xs) ==> distinct (map ?f (filter ?P ?xs))",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_hole 2,
+              template_app
+               (template_app (template_hole 1, template_var 2),
+                template_var 1))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_hole 2,
+             template_app
+              (template_app (template_hole 1, template_var 2),
+               template_app
+                (template_app (template_hole 0, template_var 0),
+                 template_var 1)))
+           ))),
+    ("RBT_Mapping2.map_of_entries",
+     "ID ccompare ~= None ==>
+      map_of (RBT_Mapping2.entries ?t) = RBT_Mapping2.lookup ?t",
+     template_implication
+      ([template_negation
+         (
+            template_equation
+             (template_app (template_hole 6, template_hole 5),
+              template_hole 4)
+            )],
+       template_equation
+        (template_app
+          (template_hole 2, template_app (template_hole 1, template_var 0)),
+         template_app (template_hole 0, template_var 0)))),
+    ("RBT_Mapping2.lookup_bulkload",
+     "ID ccompare ~= None ==>
+      RBT_Mapping2.lookup (RBT_Mapping2.bulkload ?xs) = map_of ?xs",
+     template_implication
+      ([template_negation
+         (
+            template_equation
+             (template_app (template_hole 6, template_hole 5),
+              template_hole 4)
+            )],
+       template_equation
+        (template_app
+          (template_hole 2, template_app (template_hole 1, template_var 0)),
+         template_app (template_hole 0, template_var 0)))),
+    ("RBT_Mapping2.is_rbt_impl_of",
+     "ID ccompare ~= None ==> ord.is_rbt cless (mapping_rbt.impl_of ?t)",
+     template_implication
+      ([template_negation
+         (
+            template_equation
+             (template_app (template_hole 6, template_hole 5),
+              template_hole 4)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 3,
+               template_app
+                (template_hole 2,
+                 template_app
+                  (template_hole 1,
+                   template_app (template_hole 6, template_hole 5)))),
+             template_app (template_hole 0, template_var 0))
+           ))),
+    ("RBT_Mapping2.card_com_lookup",
+     "ID ccompare ~= None ==>
+      card (dom (RBT_Mapping2.lookup ?t)) =
+      length (RBT_Mapping2.entries ?t)",
+     template_implication
+      ([template_negation
+         (
+            template_equation
+             (template_app (template_hole 8, template_hole 7),
+              template_hole 6)
+            )],
+       template_equation
+        (template_app
+          (template_hole 4,
+           template_app
+            (template_hole 3,
+             template_app (template_hole 2, template_var 0))),
+         template_app
+          (template_hole 1,
+           template_app (template_hole 0, template_var 0))))),
+    ("RBT_Mapping2.lookup_empty_empty",
+     "ID ccompare ~= None ==>
+      (RBT_Mapping2.lookup ?t = Map.empty) = (?t = RBT_Mapping2.empty)",
+     template_implication
+      ([template_negation
+         (
+            template_equation
+             (template_app (template_hole 8, template_hole 7),
+              template_hole 6)
+            )],
+       template_bimplication
+        (template_equation
+          (template_app (template_hole 3, template_var 0), t_empty),
+         template_equation (template_var 0, template_hole 0)))),
+    ("RBT_Mapping2.lookup_delete",
+     "ID ccompare ~= None ==>
+      RBT_Mapping2.lookup (RBT_Mapping2.delete ?k ?t) =
+      (RBT_Mapping2.lookup ?t)(?k := None)",
+     template_implication
+      ([template_negation
+         (
+            template_equation
+             (template_app (template_hole 7, template_hole 6),
+              template_hole 5)
+            )],
+       template_equation
+        (template_app
+          (template_hole 3,
+           template_app
+            (template_app (template_hole 2, template_var 1),
+             template_var 0)),
+         template_app
+          (template_app
+            (template_app
+              (template_hole 1,
+               template_app (template_hole 3, template_var 0)),
+             template_var 1),
+           template_hole 0)))),
+    ("RBT_Mapping2.lookup_RBT",
+     "ord.is_rbt cless ?t ==>
+      RBT_Mapping2.lookup (Mapping_RBT ?t) = rbt_comp_lookup ccomp ?t",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 8,
+                template_app
+                 (template_hole 7,
+                  template_app
+                   (template_hole 6,
+                    template_app (template_hole 5, template_hole 4)))),
+              template_var 0)
+            )],
+       template_equation
+        (template_app
+          (template_hole 2, template_app (template_hole 1, template_var 0)),
+         template_app
+          (template_app
+            (template_hole 0,
+             template_app
+              (template_hole 6,
+               template_app (template_hole 5, template_hole 4))),
+           template_var 0)))),
+    ("RBT_Mapping2.entries_lookup",
+     "ID ccompare ~= None ==>
+      (RBT_Mapping2.entries ?t1.0 = RBT_Mapping2.entries ?t2.0) =
+      (RBT_Mapping2.lookup ?t1.0 = RBT_Mapping2.lookup ?t2.0)",
+     template_implication
+      ([template_negation
+         (
+            template_equation
+             (template_app (template_hole 7, template_hole 6),
+              template_hole 5)
+            )],
+       template_bimplication
+        (template_equation
+          (template_app (template_hole 2, template_var 1),
+           template_app (template_hole 2, template_var 0)),
+         template_equation
+          (template_app (template_hole 0, template_var 1),
+           template_app (template_hole 0, template_var 0))))),
+    ("RBT_Mapping2.lookup_insert",
+     "ID ccompare ~= None ==>
+      RBT_Mapping2.lookup (RBT_Mapping2.insert ?k ?v ?t) =
+      RBT_Mapping2.lookup ?t(?k |-> ?v)",
+     template_implication
+      ([template_negation
+         (
+            template_equation
+             (template_app (template_hole 7, template_hole 6),
+              template_hole 5)
+            )],
+       template_equation
+        (template_app
+          (template_hole 3,
+           template_app
+            (template_app
+              (template_app (template_hole 2, template_var 2),
+               template_var 1),
+             template_var 0)),
+         template_app
+          (template_app
+            (template_app
+              (template_hole 1,
+               template_app (template_hole 3, template_var 0)),
+             template_var 2),
+           template_app (template_hole 0, template_var 1))))),
+    ("RBT_Mapping2.lookup_map",
+     "ID ccompare ~= None ==>
+      RBT_Mapping2.lookup (RBT_Mapping2.map ?f ?t) ?k =
+      map_option (?f ?k) (RBT_Mapping2.lookup ?t ?k)",
+     template_implication
+      ([template_negation
+         (
+            template_equation
+             (template_app (template_hole 7, template_hole 6),
+              template_hole 5)
+            )],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 3,
+             template_app
+              (template_app (template_hole 2, template_var 2),
+               template_var 1)),
+           template_var 0),
+         template_app
+          (template_app
+            (template_hole 1,
+             template_app (template_var 2, template_var 0)),
+           template_app
+            (template_app (template_hole 0, template_var 1),
+             template_var 0))))),
+    ("RBT_Mapping2.RBT_lookup_empty",
+     "ID ccompare ~= None ==>
+      (ord.rbt_lookup cless ?t = Map.empty) = (?t = rbt.Empty)",
+     template_implication
+      ([template_negation
+         (
+            template_equation
+             (template_app (template_hole 10, template_hole 9),
+              template_hole 8)
+            )],
+       template_bimplication
+        (template_equation
+          (template_app
+            (template_app
+              (template_hole 5,
+               template_app
+                (template_hole 4,
+                 template_app
+                  (template_hole 3,
+                   template_app (template_hole 10, template_hole 9)))),
+             template_var 0),
+           t_empty),
+         template_equation (template_var 0, template_hole 0)))),
+    ("RBT_Mapping2.lookup_map_entry",
+     "ID ccompare ~= None ==>
+      RBT_Mapping2.lookup (RBT_Mapping2.map_entry ?k ?f ?t) =
+      (RBT_Mapping2.lookup ?t)
+      (?k := map_option ?f (RBT_Mapping2.lookup ?t ?k))",
+     template_implication
+      ([template_negation
+         (
+            template_equation
+             (template_app (template_hole 7, template_hole 6),
+              template_hole 5)
+            )],
+       template_equation
+        (template_app
+          (template_hole 3,
+           template_app
+            (template_app
+              (template_app (template_hole 2, template_var 2),
+               template_var 1),
+             template_var 0)),
+         template_app
+          (template_app
+            (template_app
+              (template_hole 1,
+               template_app (template_hole 3, template_var 0)),
+             template_var 2),
+           template_app
+            (template_app (template_hole 0, template_var 1),
+             template_app
+              (template_app (template_hole 3, template_var 0),
+               template_var 2)))))),
+    ("RBT_Mapping2.diag_lookup",
+     "ID ccompare ~= None ==>
+      RBT_Mapping2.lookup (RBT_Mapping2.diag ?t) =
+      (%(k, k'). if k = k' then RBT_Mapping2.lookup ?t k else None)",
+     template_implication
+      ([template_negation
+         (
+            template_equation
+             (template_app (template_hole 10, template_hole 9),
+              template_hole 8)
+            )],
+       template_equation
+        (template_app
+          (template_hole 6, template_app (template_hole 5, template_var 0)),
+         template_app (template_hole 4, t_empty)))),
+    ("RBT_Mapping2.Mapping_RBT_inverse",
+     "?y : {t. ord.is_rbt cless t | ID ccompare = None} ==>
+      mapping_rbt.impl_of (Mapping_RBT ?y) = ?y",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 12, template_var 0),
+              template_app (template_hole 11, t_empty))
+            )],
+       template_equation
+        (template_app
+          (template_hole 1, template_app (template_hole 0, template_var 0)),
+         template_var 0))),
+    ("RBT_Mapping2.all_conv_all_lookup",
+     "ID ccompare ~= None ==>
+      RBT_Mapping2.all ?P ?t =
+      (ALL k v. RBT_Mapping2.lookup ?t k = Some v --> ?P k v)",
+     template_implication
+      ([template_negation
+         (
+            template_equation
+             (template_app (template_hole 10, template_hole 9),
+              template_hole 8)
+            )],
+       template_equation
+        (template_app
+          (template_app (template_hole 6, template_var 1), template_var 0),
+         template_app (template_hole 5, t_empty)))),
+    ("RBT_Mapping2.ex_conv_ex_lookup",
+     "ID ccompare ~= None ==>
+      RBT_Mapping2.ex ?P ?t =
+      (EX k v. RBT_Mapping2.lookup ?t k = Some v & ?P k v)",
+     template_implication
+      ([template_negation
+         (
+            template_equation
+             (template_app (template_hole 10, template_hole 9),
+              template_hole 8)
+            )],
+       template_equation
+        (template_app
+          (template_app (template_hole 6, template_var 1), template_var 0),
+         template_app (template_hole 5, t_empty)))),
+    ("RBT_Mapping2.map_of_filter_apply",
+     "distinct (map fst ?xs) ==>
+      map_of (filter ?P ?xs) ?k =
+      (case map_of ?xs ?k of None => None
+       | Some v => if ?P (?k, v) then Some v else None)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_hole 10,
+              template_app
+               (template_app (template_hole 9, template_hole 8),
+                template_var 2))
+            )],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 6,
+             template_app
+              (template_app (template_hole 5, template_var 1),
+               template_var 2)),
+           template_var 0),
+         template_app
+          (template_app
+            (template_app (template_hole 4, template_hole 3), t_empty),
+           template_app
+            (template_app (template_hole 6, template_var 2),
+             template_var 0))))),
+    ("RBT_Mapping2.Mapping_RBT_induct",
+     "(!!y. y : {t. ord.is_rbt cless t | ID ccompare = None} ==>
+            ?P (Mapping_RBT y)) ==>
+      ?P ?x",
+     template_implication
+      ([template_predicate (template_app (template_hole 12, t_empty))],
+       template_predicate (template_app (template_var 1, template_var 0)))),
+    ("RBT_Mapping2.lookup_filter",
+     "ID ccompare ~= None ==>
+      RBT_Mapping2.lookup (RBT_Mapping2.filter ?P ?t) ?k =
+      (case RBT_Mapping2.lookup ?t ?k of None => None
+       | Some v => if ?P (?k, v) then Some v else None)",
+     template_implication
+      ([template_negation
+         (
+            template_equation
+             (template_app (template_hole 10, template_hole 9),
+              template_hole 8)
+            )],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 6,
+             template_app
+              (template_app (template_hole 5, template_var 2),
+               template_var 1)),
+           template_var 0),
+         template_app
+          (template_app
+            (template_app (template_hole 4, template_hole 3), t_empty),
+           template_app
+            (template_app (template_hole 6, template_var 1),
+             template_var 0))))),
+    ("RBT_Mapping2.Mapping_RBT_cases",
+     "(!!y. [| ?x = Mapping_RBT y;
+               y : {t. ord.is_rbt cless t | ID ccompare = None} |]
+            ==> ?P) ==>
+      ?P",
+     template_implication
+      ([template_predicate (template_app (template_hole 13, t_empty))],
+       template_predicate (template_var 0))),
+    ("RBT_Mapping2.lookup_meet",
+     "ID ccompare ~= None ==>
+      RBT_Mapping2.lookup (RBT_Mapping2.meet ?f ?t1.0 ?t2.0) =
+      (%k. case RBT_Mapping2.lookup ?t1.0 k of None => None
+           | Some v1 =>
+               case RBT_Mapping2.lookup ?t2.0 k of None => None
+               | Some v2 => Some (?f k v1 v2))",
+     template_implication
+      ([template_negation
+         (
+            template_equation
+             (template_app (template_hole 8, template_hole 7),
+              template_hole 6)
+            )],
+       template_equation
+        (template_app
+          (template_hole 4,
+           template_app
+            (template_app
+              (template_app (template_hole 3, template_var 2),
+               template_var 1),
+             template_var 0)),
+         t_empty))),
+    ("RBT_Mapping2.lookup_join",
+     "ID ccompare ~= None ==>
+      RBT_Mapping2.lookup (RBT_Mapping2.join ?f ?t1.0 ?t2.0) =
+      (%k. case RBT_Mapping2.lookup ?t1.0 k of
+           None => RBT_Mapping2.lookup ?t2.0 k
+           | Some v1 =>
+               Some
+                (case RBT_Mapping2.lookup ?t2.0 k of None => v1
+                 | Some v2 => ?f k v1 v2))",
+     template_implication
+      ([template_negation
+         (
+            template_equation
+             (template_app (template_hole 8, template_hole 7),
+              template_hole 6)
+            )],
+       template_equation
+        (template_app
+          (template_hole 4,
+           template_app
+            (template_app
+              (template_app (template_hole 3, template_var 2),
+               template_var 1),
+             template_var 0)),
+         t_empty))),
+    ("RBT_Mapping2.lookup_product",
+     "[| ID ccompare ~= None; ID ccompare ~= None |]
+      ==> RBT_Mapping2.lookup (RBT_Mapping2.product ?f ?rbt1.0 ?rbt2.0)
+           (?a, ?b) =
+          (case RBT_Mapping2.lookup ?rbt1.0 ?a of None => None
+           | Some c =>
+               map_option (?f ?a c ?b) (RBT_Mapping2.lookup ?rbt2.0 ?b))",
+     template_implication
+      ([template_negation
+         (
+            template_equation
+             (template_app (template_hole 15, template_hole 14),
+              template_hole 13)
+            ),
+        template_negation
+         (
+            template_equation
+             (template_app (template_hole 11, template_hole 10),
+              template_hole 9)
+            )],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 7,
+             template_app
+              (template_app
+                (template_app (template_hole 6, template_var 4),
+                 template_var 3),
+               template_var 2)),
+           template_app
+            (template_app (template_hole 5, template_var 1),
+             template_var 0)),
+         template_app
+          (template_app
+            (template_app (template_hole 4, template_hole 3), t_empty),
+           template_app
+            (template_app (template_hole 0, template_var 3),
+             template_var 1))))),
+    ("RBT_Mapping2.Mapping_RBT_inject",
+     "[| ?x : {t. ord.is_rbt cless t | ID ccompare = None};
+         ?y : {t. ord.is_rbt cless t | ID ccompare = None} |]
+      ==> (Mapping_RBT ?x = Mapping_RBT ?y) = (?x = ?y)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 13, template_var 1),
+              template_app (template_hole 12, t_empty))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 13, template_var 0),
+              template_app (template_hole 12, t_empty))
+            )],
+       template_bimplication
+        (template_equation
+          (template_app (template_hole 1, template_var 1),
+           template_app (template_hole 1, template_var 0)),
+         template_equation (template_var 1, template_var 0))))]:
+   (string * thm * template) list
+### theory "Draft.RBT_Mapping2Templates"
+### 0.513s elapsed time, 0.708s cpu time, 0.082s GC time
+val it = (): unit

@@ -1,0 +1,1631 @@
+Loading theory "Automatic_Refinement.Foldi" (required by "Draft.Refine_AutomationMoreTemplates" via "Draft.Refine_Automation" via "Draft.Refine_Basic" via "Draft.Refine_Misc" via "Automatic_Refinement.Automatic_Refinement" via "Automatic_Refinement.Autoref_Tool" via "Automatic_Refinement.Autoref_Translate" via "Automatic_Refinement.Autoref_Fix_Rel" via "Automatic_Refinement.Autoref_Id_Ops" via "Automatic_Refinement.Refine_Lib")
+Loading theory "HOL-Eisbach.Eisbach" (required by "Draft.Refine_AutomationMoreTemplates" via "Draft.Refine_Automation" via "Draft.Refine_Basic" via "Draft.Refine_Misc" via "Automatic_Refinement.Automatic_Refinement" via "Automatic_Refinement.Autoref_Tool" via "Automatic_Refinement.Autoref_Translate" via "Automatic_Refinement.Autoref_Fix_Rel" via "Automatic_Refinement.Autoref_Id_Ops" via "Automatic_Refinement.Refine_Lib" via "Automatic_Refinement.Misc")
+Loading theory "Automatic_Refinement.Prio_List" (required by "Draft.Refine_AutomationMoreTemplates" via "Draft.Refine_Automation" via "Draft.Refine_Basic" via "Draft.Refine_Misc" via "Automatic_Refinement.Automatic_Refinement" via "Automatic_Refinement.Autoref_Tool" via "Automatic_Refinement.Autoref_Translate" via "Automatic_Refinement.Autoref_Fix_Rel" via "Automatic_Refinement.Autoref_Id_Ops" via "Automatic_Refinement.Refine_Lib")
+Loading theory "Automatic_Refinement.Refine_Util_Bootstrap1" (required by "Draft.Refine_AutomationMoreTemplates" via "Draft.Refine_Automation" via "Draft.Refine_Basic" via "Draft.Refine_Misc" via "Automatic_Refinement.Automatic_Refinement" via "Automatic_Refinement.Autoref_Tool" via "Automatic_Refinement.Autoref_Translate" via "Automatic_Refinement.Autoref_Fix_Rel" via "Automatic_Refinement.Autoref_Id_Ops" via "Automatic_Refinement.Refine_Lib" via "Automatic_Refinement.Refine_Util")
+signature PARSE_TOOLS =
+  sig
+    val is_real_val: ('a, 'b) parse_val -> bool
+    val name_term: (term, string) parse_val parser
+    val parse_term_val: 'a parser -> (term, 'a) parse_val parser
+    val parse_thm_val: 'a parser -> (thm, 'a) parse_val parser
+    datatype ('a, 'b) parse_val
+    = Parse_Val of 'b * ('a -> unit) | Real_Val of 'a
+    val parse_val_cases:
+       ('a -> 'b) -> ('b, 'a) parse_val -> 'b * ('b -> unit)
+    val the_parse_fun: ('a, 'b) parse_val -> 'a -> unit
+    val the_parse_val: ('a, 'b) parse_val -> 'b
+    val the_real_val: ('a, 'b) parse_val -> 'a
+  end
+structure Parse_Tools: PARSE_TOOLS
+infix 1 ##
+signature BASIC_REFINE_UTIL =
+  sig
+    val ## : ('a -> 'b) * ('c -> 'd) -> 'a * 'c -> 'b * 'd
+    val map_fold: ('a -> 'b -> 'c * 'b) -> 'a list -> 'b -> 'c list * 'b
+    val map_option: ('a -> 'b) -> 'a option -> 'b option
+    val seq_is_empty: 'a Seq.seq -> bool * 'a Seq.seq
+    val split: ('a -> bool) -> 'a list -> 'a list * 'a list
+    val split_matching:
+       ('a -> 'b -> bool) ->
+         'a list -> 'b list -> ('b list * 'b list) option
+    val yield_singleton2:
+       ('a list -> 'b -> ('c * 'd list) * 'e) -> 'a -> 'b -> ('c * 'd) * 'e
+  end
+structure Basic_Refine_Util: BASIC_REFINE_UTIL
+val map_option = fn: ('a -> 'b) -> 'a option -> 'b option
+val split = fn: ('a -> bool) -> 'a list -> 'a list * 'a list
+val map_fold = fn: ('a -> 'b -> 'c * 'b) -> 'a list -> 'b -> 'c list * 'b
+val split_matching = fn:
+   ('a -> 'b -> bool) -> 'a list -> 'b list -> ('b list * 'b list) option
+val seq_is_empty = fn: 'a Seq.seq -> bool * 'a Seq.seq
+val ## = fn: ('a -> 'b) * ('c -> 'd) -> 'a * 'c -> 'b * 'd
+val yield_singleton2 = fn:
+   ('a list -> 'b -> ('c * 'd list) * 'e) -> 'a -> 'b -> ('c * 'd) * 'e
+signature PRIO_LIST =
+  sig
+    type T
+    val add_after: T -> item -> item -> T
+    val add_before: T -> item -> item -> T
+    val add_first: T -> item -> T
+    val add_last: T -> item -> T
+    val contains: T -> item -> bool
+    val delete: item -> T -> T
+    val dest: T -> item list
+    val empty: T
+    type item
+    val merge: T * T -> T
+    val merge': T * T -> item list * T
+    val prio_of: (item -> bool) -> (item * item -> bool) -> T -> int
+  end
+functor Prio_List (sig val eq: item * item -> bool type item end): PRIO_LIST
+### theory "Automatic_Refinement.Refine_Util_Bootstrap1"
+### 0.035s elapsed time, 0.139s cpu time, 0.000s GC time
+Loading theory "Automatic_Refinement.Mk_Term_Antiquot" (required by "Draft.Refine_AutomationMoreTemplates" via "Draft.Refine_Automation" via "Draft.Refine_Basic" via "Draft.Refine_Misc" via "Automatic_Refinement.Automatic_Refinement" via "Automatic_Refinement.Autoref_Tool" via "Automatic_Refinement.Autoref_Translate" via "Automatic_Refinement.Autoref_Fix_Rel" via "Automatic_Refinement.Autoref_Id_Ops" via "Automatic_Refinement.Refine_Lib" via "Automatic_Refinement.Refine_Util")
+consts
+  foldli :: "'b list => ('a => bool) => ('b => 'a => 'a) => 'a => 'a"
+### theory "Automatic_Refinement.Prio_List"
+### 0.037s elapsed time, 0.146s cpu time, 0.000s GC time
+Loading theory "Automatic_Refinement.Mpat_Antiquot" (required by "Draft.Refine_AutomationMoreTemplates" via "Draft.Refine_Automation" via "Draft.Refine_Basic" via "Draft.Refine_Misc" via "Automatic_Refinement.Automatic_Refinement" via "Automatic_Refinement.Autoref_Tool" via "Automatic_Refinement.Autoref_Translate" via "Automatic_Refinement.Autoref_Fix_Rel" via "Automatic_Refinement.Autoref_Id_Ops" via "Automatic_Refinement.Refine_Lib" via "Automatic_Refinement.Refine_Util")
+signature METHOD_CLOSURE =
+  sig
+    val apply_method:
+       Proof.context ->
+         string ->
+           term list ->
+             thm list list ->
+               (Proof.context -> Method.method) list ->
+                 Proof.context -> thm list -> context_tactic
+    val method:
+       binding ->
+         (binding * typ option * mixfix) list ->
+           binding list ->
+             binding list ->
+               binding list ->
+                 Token.src -> local_theory -> string * local_theory
+    val method_cmd:
+       binding ->
+         (binding * string option * mixfix) list ->
+           binding list ->
+             binding list ->
+               binding list ->
+                 Token.src -> local_theory -> string * local_theory
+  end
+structure Method_Closure: METHOD_CLOSURE
+val mpat_antiquot = fn:
+   Context.generic * Token.T list ->
+     string * (Context.generic * Token.T list)
+### theory "Automatic_Refinement.Mpat_Antiquot"
+### 0.105s elapsed time, 0.408s cpu time, 0.023s GC time
+Loading theory "HOL-Library.Adhoc_Overloading" (required by "Draft.Refine_AutomationMoreTemplates" via "Draft.Refine_Automation" via "Draft.Refine_Basic" via "HOL-Library.Monad_Syntax")
+val mk_term_antiquot = fn:
+   Context.generic * Token.T list ->
+     string * (Context.generic * Token.T list)
+structure Eisbach_Rule_Insts: sig end
+### theory "Automatic_Refinement.Mk_Term_Antiquot"
+### 0.118s elapsed time, 0.458s cpu time, 0.023s GC time
+Loading theory "Automatic_Refinement.Refine_Util" (required by "Draft.Refine_AutomationMoreTemplates" via "Draft.Refine_Automation" via "Draft.Refine_Basic" via "Draft.Refine_Misc" via "Automatic_Refinement.Automatic_Refinement" via "Automatic_Refinement.Autoref_Tool" via "Automatic_Refinement.Autoref_Translate" via "Automatic_Refinement.Autoref_Fix_Rel" via "Automatic_Refinement.Autoref_Id_Ops" via "Automatic_Refinement.Refine_Lib")
+### theory "Automatic_Refinement.Foldi"
+### 0.156s elapsed time, 0.611s cpu time, 0.023s GC time
+Loading theory "HOL-Library.Cancellation" (required by "Draft.Refine_AutomationMoreTemplates" via "Draft.Refine_Automation" via "Draft.Refine_Basic" via "Draft.Refine_Misc" via "Automatic_Refinement.Automatic_Refinement" via "Automatic_Refinement.Autoref_Tool" via "Automatic_Refinement.Autoref_Translate" via "Automatic_Refinement.Autoref_Fix_Rel" via "Automatic_Refinement.Autoref_Id_Ops" via "Automatic_Refinement.Refine_Lib" via "Automatic_Refinement.Misc" via "HOL-Library.Multiset")
+signature ADHOC_OVERLOADING =
+  sig
+    val generic_add_overloaded: string -> Context.generic -> Context.generic
+    val generic_add_variant:
+       string -> term -> Context.generic -> Context.generic
+    val generic_remove_overloaded:
+       string -> Context.generic -> Context.generic
+    val generic_remove_variant:
+       string -> term -> Context.generic -> Context.generic
+    val is_overloaded: Proof.context -> string -> bool
+    val show_variants: bool Config.T
+  end
+structure Adhoc_Overloading: ADHOC_OVERLOADING
+### theory "HOL-Library.Adhoc_Overloading"
+### 0.088s elapsed time, 0.348s cpu time, 0.000s GC time
+Loading theory "HOL-Library.Monad_Syntax" (required by "Draft.Refine_AutomationMoreTemplates" via "Draft.Refine_Automation" via "Draft.Refine_Basic")
+### theory "HOL-Library.Monad_Syntax"
+### 0.039s elapsed time, 0.147s cpu time, 0.023s GC time
+Loading theory "HOL-Library.Function_Algebras" (required by "Draft.Refine_AutomationMoreTemplates" via "Draft.ExtrEqs" via "HOL-Library.BigO")
+instantiation
+  fun :: (type, plus) plus
+  plus_fun == plus :: ('a => 'b) => ('a => 'b) => 'a => 'b
+instantiation
+  fun :: (type, zero) zero
+  zero_fun == zero_class.zero :: 'a => 'b
+instantiation
+  fun :: (type, times) times
+  times_fun == times :: ('a => 'b) => ('a => 'b) => 'a => 'b
+instantiation
+  fun :: (type, one) one
+  one_fun == one_class.one :: 'a => 'b
+### ML warning (line 170 of "~~/src/HOL/Eisbach/match_method.ML"):
+### Pattern is not exhaustive.
+### ML warning (line 187 of "~~/src/HOL/Eisbach/match_method.ML"):
+### Pattern is not exhaustive.
+### ML warning (line 309 of "~~/src/HOL/Eisbach/match_method.ML"):
+### Pattern is not exhaustive.
+signature MATCH_METHOD =
+  sig
+    val focus_params: Proof.context -> term list
+    val focus_schematics: Proof.context -> Envir.tenv
+  end
+structure Match_Method: MATCH_METHOD
+val method_evaluate = fn: Method.text -> Proof.context -> thm list -> tactic
+### theory "HOL-Library.Function_Algebras"
+### 0.095s elapsed time, 0.382s cpu time, 0.000s GC time
+Loading theory "HOL-Library.Infinite_Set" (required by "Draft.Refine_AutomationMoreTemplates" via "Draft.Refine_Automation" via "Draft.Refine_Basic" via "Draft.Refine_Misc" via "Automatic_Refinement.Automatic_Refinement" via "Automatic_Refinement.Autoref_Tool" via "Automatic_Refinement.Autoref_Translate" via "Automatic_Refinement.Autoref_Fix_Rel" via "Automatic_Refinement.Autoref_Id_Ops" via "Automatic_Refinement.Refine_Lib" via "Automatic_Refinement.Misc")
+### theory "HOL-Eisbach.Eisbach"
+### 0.409s elapsed time, 1.598s cpu time, 0.096s GC time
+Loading theory "HOL-Library.Nat_Bijection" (required by "Draft.Refine_AutomationMoreTemplates" via "Draft.ExtrEqs" via "HOL-Library.Stream")
+### ML warning (line 563 of "$AFP/Automatic_Refinement/Lib/Refine_Util.thy"):
+### Handler catches all exceptions.
+infix 0 THEN_ELSE'
+infix 0 THEN_ELSE_COMB'
+infix 1 THEN_ALL_NEW_FWD
+infix 1 THEN_INTERVAL
+infix 2 ORELSE_INTERVAL
+infix 3 ->>
+type itactic = int -> int -> tactic
+type tactic' = int -> tactic
+signature BASIC_REFINE_UTIL =
+  sig
+    val ## : ('a -> 'b) * ('c -> 'd) -> 'a * 'c -> 'b * 'd
+    val ->> :
+       'a context_parser * ('a * Context.generic -> 'b * Context.generic) ->
+         'b context_parser
+    val ALL_GOALS_FWD: tactic' -> tactic
+    val ALL_GOALS_FWD': tactic' -> tactic'
+    val APPEND_LIST': tactic' list -> tactic'
+    val CAN': tactic' -> tactic'
+    val CASES': (tactic' * tactic) list -> tactic'
+    val CONCL_COND': (term -> bool) -> tactic'
+    val COND': (term -> bool) -> tactic'
+    val IF_EXGOAL: (int -> tactic) -> tactic'
+    val INTERVAL_FWD: tactic' -> int -> int -> tactic
+    val NTIMES': tactic' -> int -> tactic'
+    val ORELSE_INTERVAL: itactic * itactic -> itactic
+    val REPEAT': tactic' -> tactic'
+    val REPEAT_ALL_NEW_FWD: tactic' -> tactic'
+    val REPEAT_DETERM': tactic' -> tactic'
+    val RSm: Proof.context -> thm -> thm -> thm
+    val SINGLE_INTERVAL: itactic -> tactic'
+    val THEN_ALL_NEW_FWD: tactic' * tactic' -> tactic'
+    val THEN_ELSE': tactic' * (tactic' * tactic') -> tactic'
+    val THEN_ELSE_COMB':
+       tactic' * ((tactic' * tactic' -> tactic') * tactic' * tactic') ->
+         tactic'
+    val THEN_INTERVAL: itactic * itactic -> itactic
+    val TRADE: (Proof.context -> tactic') -> Proof.context -> tactic'
+    val TRY_SOLVED': tactic' -> tactic'
+    val WITH_concl: (term -> tactic') -> tactic'
+    val WITH_subgoal: (term -> tactic') -> tactic'
+    val elim_all_tac: Proof.context -> thm list -> tactic
+    val eqsubst_inst_meth: (Proof.context -> Proof.method) context_parser
+    val eqsubst_inst_tac:
+       Proof.context ->
+         bool ->
+           int list ->
+             ((indexname * Position.T) * string) list ->
+               thm -> int -> tactic
+    val fo_resolve_tac: thm list -> Proof.context -> tactic'
+    val fo_rtac: thm -> Proof.context -> tactic'
+    val has_Var: term -> bool
+    val insert_subgoal_tac: cterm -> tactic'
+    val insert_subgoals_tac: cterm list -> tactic'
+    val is_Abs: term -> bool
+    val is_Comb: term -> bool
+    val is_TFree: typ -> bool
+    val is_def_thm: thm -> bool
+    type itactic = int -> int -> tactic
+    val map_fold: ('a -> 'b -> 'c * 'b) -> 'a list -> 'b -> 'c list * 'b
+    val map_option: ('a -> 'b) -> 'a option -> 'b option
+    val prefer_tac: int -> tactic
+    val rprem_tac: int -> Proof.context -> tactic'
+    val rprems_tac: Proof.context -> tactic'
+    val seq_is_empty: 'a Seq.seq -> bool * 'a Seq.seq
+    val split: ('a -> bool) -> 'a list -> 'a list * 'a list
+    val split_matching:
+       ('a -> 'b -> bool) ->
+         'a list -> 'b list -> ('b list * 'b list) option
+    type tactic' = int -> tactic
+    val yield_singleton2:
+       ('a list -> 'b -> ('c * 'd list) * 'e) -> 'a -> 'b -> ('c * 'd) * 'e
+  end
+signature REFINE_UTIL =
+  sig
+    val ## : ('a -> 'b) * ('c -> 'd) -> 'a * 'c -> 'b * 'd
+    val ->> :
+       'a context_parser * ('a * Context.generic -> 'b * Context.generic) ->
+         'b context_parser
+    val ALL_GOALS_FWD: tactic' -> tactic
+    val ALL_GOALS_FWD': tactic' -> tactic'
+    val APPEND_LIST': tactic' list -> tactic'
+    val CAN': tactic' -> tactic'
+    val CASES': (tactic' * tactic) list -> tactic'
+    val CONCL_COND': (term -> bool) -> tactic'
+    val COND': (term -> bool) -> tactic'
+    val HOL_concl_conv: (Proof.context -> conv) -> Proof.context -> conv
+    val IF_EXGOAL: (int -> tactic) -> tactic'
+    val INTERVAL_FWD: tactic' -> int -> int -> tactic
+    val NTIMES': tactic' -> int -> tactic'
+    val OF_fst: thm list -> thm list -> thm
+    val ORELSE_INTERVAL: itactic * itactic -> itactic
+    val REPEAT': tactic' -> tactic'
+    val REPEAT_ALL_NEW_FWD: tactic' -> tactic'
+    val REPEAT_DETERM': tactic' -> tactic'
+    val RS_fst: thm -> thm list -> thm
+    val RSm: Proof.context -> thm -> thm -> thm
+    val SINGLE_INTERVAL: itactic -> tactic'
+    val THEN_ALL_NEW_FWD: tactic' * tactic' -> tactic'
+    val THEN_ELSE': tactic' * (tactic' * tactic') -> tactic'
+    val THEN_ELSE_COMB':
+       tactic' * ((tactic' * tactic' -> tactic') * tactic' * tactic') ->
+         tactic'
+    val THEN_INTERVAL: itactic * itactic -> itactic
+    val TRADE: (Proof.context -> tactic') -> Proof.context -> tactic'
+    val TRY_SOLVED': tactic' -> tactic'
+    val WITH_concl: (term -> tactic') -> tactic'
+    val WITH_subgoal: (term -> tactic') -> tactic'
+    val abs_def: Proof.context -> thm -> thm
+    val anorm_term: term -> term
+    val anorm_typ: typ -> typ
+    val apply_configs:
+       ('a Config.T * 'a) list -> Proof.context -> Proof.context
+    val build_res_net: thm list -> (int * thm) Net.net
+    val cfg_trace_f_tac_conv: bool Config.T
+    val changed_rule: (thm -> thm) -> thm -> thm
+    val dest_itselfT: typ -> typ
+    val dummify_tvars: term -> term
+    val elim_all_tac: Proof.context -> thm list -> tactic
+    val eqsubst_inst_meth: (Proof.context -> Proof.method) context_parser
+    val eqsubst_inst_tac:
+       Proof.context ->
+         bool ->
+           int list ->
+             ((indexname * Position.T) * string) list ->
+               thm -> int -> tactic
+    val f_tac_conv:
+       Proof.context -> (term -> term) -> (Proof.context -> tactic) -> conv
+    val fcomb_conv: conv -> conv
+    val fix_conv: Proof.context -> conv -> conv
+    val fix_left_tuple_from_Ts:
+       string -> typ list -> Proof.context -> term * Proof.context
+    val fixup_vars: cterm -> thm -> thm
+    val fixup_vars_conv: conv -> conv
+    val fixup_vars_conv': (Proof.context -> conv) -> Proof.context -> conv
+    val fo_matches: theory -> cterm -> term -> bool
+    val fo_matchp: theory -> cterm -> term -> term list option
+    val fo_resolve_tac: thm list -> Proof.context -> tactic'
+    val fo_rtac: thm -> Proof.context -> tactic'
+    val fold_binop_left:
+       ('a -> 'b * 'a) ->
+         ('c -> 'a -> 'b * 'a) ->
+           ('b * 'b -> 'b) -> 'c list -> 'a -> 'b * 'a
+    val fsub_conv: (Proof.context -> conv) -> Proof.context -> conv
+    val ftop_conv: (Proof.context -> conv) -> Proof.context -> conv
+    val has_Var: term -> bool
+    val import_conv: (Proof.context -> conv) -> Proof.context -> conv
+    val import_cterms:
+       bool -> cterm list -> Proof.context -> cterm list * Proof.context
+    val insert_subgoal_tac: cterm -> tactic'
+    val insert_subgoals_tac: cterm list -> tactic'
+    val instantiate_tuples:
+       Proof.context -> (indexname * typ) list -> thm -> thm
+    val instantiate_tuples_from_term_tac: Proof.context -> term -> tactic
+    val instantiate_tuples_subgoal_tac: Proof.context -> tactic'
+    val is_Abs: term -> bool
+    val is_Comb: term -> bool
+    val is_TFree: typ -> bool
+    val is_def_thm: thm -> bool
+    type itactic = int -> int -> tactic
+    val ite_conv: conv -> conv -> conv -> conv
+    val lambda_tuple: term list -> term -> term
+    val list_binop_left: 'a -> ('a * 'a -> 'a) -> 'a list -> 'a
+    val list_prodT_left: typ list -> typ
+    val map_fold: ('a -> 'b -> 'c * 'b) -> 'a list -> 'b -> 'c list * 'b
+    val map_option: ('a -> 'b) -> 'a option -> 'b option
+    val mk_compN: int -> term -> term -> term
+    val mk_compN1: typ list -> int -> term -> term -> term
+    val mk_ltuple: term list -> term
+    val monitor_conv: string -> conv -> conv
+    val monitor_conv':
+       string -> (Proof.context -> conv) -> Proof.context -> conv
+    val order_by: ('a * 'a -> order) -> ('b -> 'a) -> 'b list -> 'b list
+    val parse_bool_config: string -> bool Config.T -> bool context_parser
+    val parse_bool_config':
+       string ->
+         bool Config.T ->
+           Token.T list -> (bool Config.T * bool) * Token.T list
+    val parse_paren_list: 'a context_parser -> 'a list context_parser
+    val parse_paren_list':
+       'a parser -> Token.T list -> 'a list * Token.T list
+    val parse_paren_lists: 'a context_parser -> 'a list list context_parser
+    val pat_conv: cterm -> (Proof.context -> conv) -> Proof.context -> conv
+    val pat_conv':
+       cterm -> (string -> Proof.context -> conv) -> Proof.context -> conv
+    val prefer_tac: int -> tactic
+    val repeat_rule: (thm -> thm) -> thm -> thm
+    val rprem_tac: int -> Proof.context -> tactic'
+    val rprems_tac: Proof.context -> tactic'
+    val seq_is_empty: 'a Seq.seq -> bool * 'a Seq.seq
+    val shift_lambda_left: thm -> thm
+    val shift_lambda_leftN: int -> thm -> thm
+    val split: ('a -> bool) -> 'a list -> 'a list * 'a list
+    val split_matching:
+       ('a -> 'b -> bool) ->
+         'a list -> 'b list -> ('b list * 'b list) option
+    val strip_prodT_left: typ -> typ list
+    val subsume_sort: ('a -> term) -> theory -> 'a list -> 'a list
+    val subsume_sort_gen:
+       ('a -> term) -> Context.generic -> 'a list -> 'a list
+    type tactic' = int -> tactic
+    val trace_conv: conv
+    val trade_rule:
+       (Proof.context -> thm -> thm) -> Proof.context -> thm -> thm
+    val try_rule: (thm -> thm) -> thm -> thm
+    val yield_singleton2:
+       ('a list -> 'b -> ('c * 'd list) * 'e) -> 'a -> 'b -> ('c * 'd) * 'e
+  end
+structure Refine_Util: REFINE_UTIL
+structure Basic_Refine_Util: BASIC_REFINE_UTIL
+val map_option = fn: ('a -> 'b) -> 'a option -> 'b option
+val split = fn: ('a -> bool) -> 'a list -> 'a list * 'a list
+val REPEAT_DETERM' = fn: tactic' -> tactic'
+val RSm = fn: Proof.context -> thm -> thm -> thm
+val NTIMES' = fn: tactic' -> int -> tactic'
+val fo_resolve_tac = fn: thm list -> Proof.context -> tactic'
+val SINGLE_INTERVAL = fn: itactic -> tactic'
+val insert_subgoals_tac = fn: cterm list -> tactic'
+val insert_subgoal_tac = fn: cterm -> tactic'
+val THEN_ALL_NEW_FWD = fn: tactic' * tactic' -> tactic'
+val TRY_SOLVED' = fn: tactic' -> tactic'
+val INTERVAL_FWD = fn: tactic' -> int -> int -> tactic
+val IF_EXGOAL = fn: (int -> tactic) -> tactic'
+val eqsubst_inst_tac = fn:
+   Proof.context ->
+     bool ->
+       int list ->
+         ((indexname * Position.T) * string) list -> thm -> int -> tactic
+val fo_rtac = fn: thm -> Proof.context -> tactic'
+val TRADE = fn: (Proof.context -> tactic') -> Proof.context -> tactic'
+val is_TFree = fn: typ -> bool
+val ALL_GOALS_FWD = fn: tactic' -> tactic
+val yield_singleton2 = fn:
+   ('a list -> 'b -> ('c * 'd list) * 'e) -> 'a -> 'b -> ('c * 'd) * 'e
+val ## = fn: ('a -> 'b) * ('c -> 'd) -> 'a * 'c -> 'b * 'd
+val CAN' = fn: tactic' -> tactic'
+val WITH_concl = fn: (term -> tactic') -> tactic'
+val is_Abs = fn: term -> bool
+val COND' = fn: (term -> bool) -> tactic'
+val split_matching = fn:
+   ('a -> 'b -> bool) -> 'a list -> 'b list -> ('b list * 'b list) option
+val REPEAT_ALL_NEW_FWD = fn: tactic' -> tactic'
+val CASES' = fn: (tactic' * tactic) list -> tactic'
+val APPEND_LIST' = fn: tactic' list -> tactic'
+val map_fold = fn: ('a -> 'b -> 'c * 'b) -> 'a list -> 'b -> 'c list * 'b
+val is_def_thm = fn: thm -> bool
+val THEN_INTERVAL = fn: itactic * itactic -> itactic
+val rprems_tac = fn: Proof.context -> tactic'
+val WITH_subgoal = fn: (term -> tactic') -> tactic'
+val is_Comb = fn: term -> bool
+val THEN_ELSE_COMB' = fn:
+   tactic' * ((tactic' * tactic' -> tactic') * tactic' * tactic') -> tactic'
+val eqsubst_inst_meth = fn: (Proof.context -> Proof.method) context_parser
+val elim_all_tac = fn: Proof.context -> thm list -> tactic
+val ->> = fn:
+   'a context_parser * ('a * Context.generic -> 'b * Context.generic) ->
+     'b context_parser
+val ALL_GOALS_FWD' = fn: tactic' -> tactic'
+val prefer_tac = fn: int -> tactic
+val rprem_tac = fn: int -> Proof.context -> tactic'
+val has_Var = fn: term -> bool
+val REPEAT' = fn: tactic' -> tactic'
+val THEN_ELSE' = fn: tactic' * (tactic' * tactic') -> tactic'
+val CONCL_COND' = fn: (term -> bool) -> tactic'
+val ORELSE_INTERVAL = fn: itactic * itactic -> itactic
+val seq_is_empty = fn: 'a Seq.seq -> bool * 'a Seq.seq
+### theory "Automatic_Refinement.Refine_Util"
+### 0.301s elapsed time, 1.217s cpu time, 0.073s GC time
+Loading theory "Automatic_Refinement.Anti_Unification" (required by "Draft.Refine_AutomationMoreTemplates" via "Draft.Refine_Automation" via "Draft.Refine_Basic" via "Draft.Refine_Misc" via "Automatic_Refinement.Automatic_Refinement" via "Automatic_Refinement.Autoref_Tool" via "Automatic_Refinement.Autoref_Translate" via "Automatic_Refinement.Autoref_Fix_Rel" via "Automatic_Refinement.Autoref_Id_Ops" via "Automatic_Refinement.Refine_Lib")
+signature CANCEL = sig val proc: Proof.context -> cterm -> thm option end
+functor Cancel_Fun (Data: CANCEL_NUMERALS_DATA): CANCEL
+Found termination order: "(%p. size (snd p)) <*mlex*> {}"
+signature CANCEL_DATA =
+  sig
+    val dest_coeff: term -> int * term
+    val dest_sum: term -> term list
+    val find_first_coeff: term -> term list -> int * term list
+    val mk_coeff: int * term -> term
+    val mk_sum: typ -> term list -> term
+    val norm_ss1: simpset
+    val norm_ss2: simpset
+    val norm_tac: Proof.context -> tactic
+    val numeral_simp_tac: Proof.context -> tactic
+    val prove_conv:
+       tactic list -> Proof.context -> thm list -> term * term -> thm option
+    val simplify_meta_eq: Proof.context -> thm -> thm
+    val trans_tac: Proof.context -> thm option -> tactic
+  end
+structure Cancel_Data: CANCEL_DATA
+consts
+  enumerate :: "'a set => nat => 'a"
+signature ANTI_UNIFICATION =
+  sig
+    val anti_unify: term * term -> term
+    val anti_unifyT: typ * typ -> typ_env -> typ * typ_env
+    val anti_unify_env: term * term -> env -> term * env
+    val anti_unify_list: term list -> term
+    val empty: env
+    val empty_term: term_env
+    val empty_typ: typ_env
+    type env = typ_env * term_env
+    val specialize_net_tac: Proof.context -> (int * thm) Net.net -> tactic'
+    val specialize_tac: Proof.context -> thm list -> tactic'
+    type term_env
+    type typ_env
+  end
+structure Anti_Unification: ANTI_UNIFICATION
+### theory "Automatic_Refinement.Anti_Unification"
+### 0.102s elapsed time, 0.404s cpu time, 0.059s GC time
+Loading theory "Automatic_Refinement.Attr_Comb" (required by "Draft.Refine_AutomationMoreTemplates" via "Draft.Refine_Automation" via "Draft.Refine_Basic" via "Draft.Refine_Misc" via "Automatic_Refinement.Automatic_Refinement" via "Automatic_Refinement.Autoref_Tool" via "Automatic_Refinement.Autoref_Translate" via "Automatic_Refinement.Autoref_Fix_Rel" via "Automatic_Refinement.Autoref_Id_Ops" via "Automatic_Refinement.Refine_Lib")
+signature CANCEL_SIMPROCS =
+  sig
+    val diff_cancel: Proof.context -> cterm -> thm option
+    val eq_cancel: Proof.context -> cterm -> thm option
+    val less_cancel: Proof.context -> cterm -> thm option
+    val less_eq_cancel: Proof.context -> cterm -> thm option
+  end
+structure Cancel_Simprocs: CANCEL_SIMPROCS
+### theory "HOL-Library.Cancellation"
+### 0.445s elapsed time, 1.781s cpu time, 0.132s GC time
+Loading theory "Automatic_Refinement.Autoref_Data" (required by "Draft.Refine_AutomationMoreTemplates" via "Draft.Refine_Automation" via "Draft.Refine_Basic" via "Draft.Refine_Misc" via "Automatic_Refinement.Automatic_Refinement" via "Automatic_Refinement.Autoref_Tool" via "Automatic_Refinement.Autoref_Translate" via "Automatic_Refinement.Autoref_Fix_Rel" via "Automatic_Refinement.Autoref_Id_Ops")
+Found termination order: "size_list size <*mlex*> {}"
+infixr 5 THEN_ATTR
+infixr 4 ELSE_ATTR
+signature ATTR_COMB =
+  sig
+    exception ATTR_EXC of string
+    val CHECK_PREPARE:
+       (Context.generic * thm -> bool) -> attribute -> attribute
+    val COND_attr: (Context.generic * thm -> bool) -> attribute
+    val EFF_ATTR: (Context.generic * thm -> 'a) -> attribute
+    val ELSE_ATTR: attribute * attribute -> attribute
+    val ID_ATTR: attribute
+    val IGNORE_THM: attribute -> attribute
+    val ITE_ATTR: attribute -> attribute -> attribute -> attribute
+    val ITE_ATTR': attribute -> attribute -> (exn -> attribute) -> attribute
+    val NO_ATTR: attribute
+    val RPT1_ATTR: attribute -> attribute
+    val RPT_ATTR: attribute -> attribute
+    val RS_attr: thm -> attribute
+    val RSm_attr: thm -> attribute
+    val THEN_ATTR: attribute * attribute -> attribute
+    val TRACE_ATTR: string -> attribute -> attribute
+    val TRY_ATTR: attribute -> attribute
+    val WARN_ATTR: Context.generic -> string -> attribute
+  end
+structure Attr_Comb: ATTR_COMB
+### theory "Automatic_Refinement.Attr_Comb"
+### 0.052s elapsed time, 0.208s cpu time, 0.000s GC time
+Loading theory "Automatic_Refinement.Named_Sorted_Thms" (required by "Draft.Refine_AutomationMoreTemplates" via "Draft.Refine_Automation" via "Draft.Refine_Basic" via "Draft.Refine_Misc" via "Automatic_Refinement.Automatic_Refinement" via "Automatic_Refinement.Autoref_Tool" via "Automatic_Refinement.Autoref_Translate" via "Automatic_Refinement.Autoref_Fix_Rel" via "Automatic_Refinement.Autoref_Id_Ops" via "Automatic_Refinement.Refine_Lib")
+signature AUTOREF_DATA =
+  sig
+    type T
+    exception exCIRCULAR
+    exception exNULL
+    val get: Proof.context -> T
+    val init: Proof.context -> Proof.context
+  end
+functor Autoref_Data (
+  sig
+    type T
+    val compute: Proof.context -> T
+    val prereq: (Proof.context -> Proof.context) list
+  end
+  ): 
+  AUTOREF_DATA
+### theory "Automatic_Refinement.Autoref_Data"
+### 0.028s elapsed time, 0.109s cpu time, 0.000s GC time
+Loading theory "Automatic_Refinement.Indep_Vars" (required by "Draft.Refine_AutomationMoreTemplates" via "Draft.Refine_Automation" via "Draft.Refine_Basic" via "Draft.Refine_Misc" via "Automatic_Refinement.Automatic_Refinement" via "Automatic_Refinement.Autoref_Tool" via "Automatic_Refinement.Autoref_Translate" via "Automatic_Refinement.Autoref_Fix_Rel" via "Automatic_Refinement.Autoref_Id_Ops" via "Automatic_Refinement.Refine_Lib")
+signature NAMED_SORTED_THMS =
+  sig
+    val add: attribute
+    val add_thm: thm -> Context.generic -> Context.generic
+    val del: attribute
+    val del_thm: thm -> Context.generic -> Context.generic
+    val get: Proof.context -> thm list
+    val member: Proof.context -> thm -> bool
+    val setup: theory -> theory
+  end
+functor Named_Sorted_Thms (
+  sig
+    val description: string
+    val name: binding
+    val sort: Context.generic -> thm list -> thm list
+    val transform: Context.generic -> thm -> thm list
+  end
+  ): 
+  NAMED_SORTED_THMS
+### theory "Automatic_Refinement.Named_Sorted_Thms"
+### 0.029s elapsed time, 0.112s cpu time, 0.000s GC time
+Loading theory "Automatic_Refinement.Mk_Record_Simp" (required by "Draft.Refine_AutomationMoreTemplates" via "Draft.Refine_Automation" via "Draft.Refine_Basic" via "Draft.Refine_Misc" via "Automatic_Refinement.Automatic_Refinement" via "Automatic_Refinement.Autoref_Tool" via "Automatic_Refinement.Autoref_Translate" via "Automatic_Refinement.Autoref_Fix_Rel" via "Automatic_Refinement.Autoref_Id_Ops" via "Automatic_Refinement.Refine_Lib")
+### theory "HOL-Library.Infinite_Set"
+### 0.287s elapsed time, 1.156s cpu time, 0.109s GC time
+Loading theory "Automatic_Refinement.Tagged_Solver" (required by "Draft.Refine_AutomationMoreTemplates" via "Draft.Refine_Automation" via "Draft.Refine_Basic" via "Draft.Refine_Misc" via "Automatic_Refinement.Automatic_Refinement" via "Automatic_Refinement.Autoref_Tool" via "Automatic_Refinement.Autoref_Translate" via "Automatic_Refinement.Autoref_Fix_Rel" via "Automatic_Refinement.Autoref_Id_Ops" via "Automatic_Refinement.Refine_Lib")
+signature INDEP_VARS = sig val indep_tac: Proof.context -> tactic' end
+structure Indep_Vars: INDEP_VARS
+### theory "Automatic_Refinement.Indep_Vars"
+### 0.041s elapsed time, 0.171s cpu time, 0.000s GC time
+Loading theory "Automatic_Refinement.Select_Solve" (required by "Draft.Refine_AutomationMoreTemplates" via "Draft.Refine_Automation" via "Draft.Refine_Basic" via "Draft.Refine_Misc" via "Automatic_Refinement.Automatic_Refinement" via "Automatic_Refinement.Autoref_Tool" via "Automatic_Refinement.Autoref_Translate" via "Automatic_Refinement.Autoref_Fix_Rel" via "Automatic_Refinement.Autoref_Id_Ops" via "Automatic_Refinement.Refine_Lib")
+val mk_record_simp = fn: Context.generic -> thm -> thm
+### theory "Automatic_Refinement.Mk_Record_Simp"
+### 0.037s elapsed time, 0.145s cpu time, 0.000s GC time
+Loading theory "HOL-Library.Multiset" (required by "Draft.Refine_AutomationMoreTemplates" via "Draft.Refine_Automation" via "Draft.Refine_Basic" via "Draft.Refine_Misc" via "Automatic_Refinement.Automatic_Refinement" via "Automatic_Refinement.Autoref_Tool" via "Automatic_Refinement.Autoref_Translate" via "Automatic_Refinement.Autoref_Fix_Rel" via "Automatic_Refinement.Autoref_Id_Ops" via "Automatic_Refinement.Refine_Lib" via "Automatic_Refinement.Misc")
+### theory "HOL-Library.Nat_Bijection"
+### 0.328s elapsed time, 1.321s cpu time, 0.116s GC time
+Loading theory "HOL-Library.Stream" (required by "Draft.Refine_AutomationMoreTemplates" via "Draft.ExtrEqs")
+signature SELECT_SOLVE =
+  sig
+    val AS_FIRSTGOAL: tactic -> tactic'
+    val IF_SUBGOAL_SOLVED: tactic -> tactic -> tactic -> tactic
+    val PREFER_SOLVED: tactic -> tactic
+    val REPEAT_SOLVE_FWD_SELECT: Proof.context -> int -> tactic' -> tactic'
+    val SELECT_FIRST: Proof.context -> tactic -> tactic
+    val TRY_SOLVE_FWD: int -> tactic -> tactic
+  end
+structure Select_Solve: SELECT_SOLVE
+### theory "Automatic_Refinement.Select_Solve"
+### 0.077s elapsed time, 0.287s cpu time, 0.057s GC time
+Loading theory "HOL-Library.Option_ord" (required by "Draft.Refine_AutomationMoreTemplates" via "Draft.Refine_Automation" via "Draft.Refine_Basic" via "Draft.Refine_Misc" via "Automatic_Refinement.Automatic_Refinement" via "Automatic_Refinement.Autoref_Tool" via "Automatic_Refinement.Autoref_Translate" via "Automatic_Refinement.Autoref_Fix_Rel" via "Automatic_Refinement.Autoref_Id_Ops" via "Automatic_Refinement.Refine_Lib" via "Automatic_Refinement.Misc")
+signature TAGGED_SOLVER =
+  sig
+    val add_triggers:
+       string -> thm list -> morphism -> Context.generic -> Context.generic
+    val cfg_full: bool Config.T
+    val cfg_keep: bool Config.T
+    val cfg_step: bool Config.T
+    val cfg_trace: bool Config.T
+    val declare_solver:
+       thm list ->
+         binding ->
+           string ->
+             (Proof.context -> tactic') ->
+               morphism -> Context.generic -> Context.generic
+    val delete_solver:
+       string -> morphism -> Context.generic -> Context.generic
+    val get_potential_solvers: Proof.context -> int -> thm -> solver list
+    val get_potential_tacs: Proof.context -> int -> thm -> tactic' list
+    val get_solvers: Proof.context -> solver list
+    val lookup_solver: string -> Context.generic -> solver option
+    val pretty_solvers: Proof.context -> Pretty.T
+    val solve_full_keep_tac: Proof.context -> tactic'
+    val solve_full_step_tac: Proof.context -> tactic'
+    val solve_full_tac: Proof.context -> tactic'
+    val solve_greedy_keep_tac: Proof.context -> tactic'
+    val solve_greedy_step_tac: Proof.context -> tactic'
+    val solve_greedy_tac: Proof.context -> tactic'
+    val solve_tac: Proof.context -> tactic'
+    type solver = thm list * string * string * (Proof.context -> tactic')
+    val tac_of_solver: Proof.context -> solver -> tactic'
+  end
+structure Tagged_Solver: TAGGED_SOLVER
+### theory "Automatic_Refinement.Tagged_Solver"
+### 0.109s elapsed time, 0.419s cpu time, 0.057s GC time
+Loading theory "HOL-Library.Set_Algebras" (required by "Draft.Refine_AutomationMoreTemplates" via "Draft.ExtrEqs" via "HOL-Library.BigO")
+instantiation
+  option :: (preorder) preorder
+  less_eq_option == less_eq :: 'a option => 'a option => bool
+  less_option == less :: 'a option => 'a option => bool
+instantiation
+  set :: (plus) plus
+  plus_set == plus :: 'a set => 'a set => 'a set
+instantiation
+  set :: (times) times
+  times_set == times :: 'a set => 'a set => 'a set
+instantiation
+  option :: (order) order_bot
+  bot_option == bot :: 'a option
+instantiation
+  set :: (zero) zero
+  zero_set == zero_class.zero :: 'a set
+instantiation
+  option :: (order_top) order_top
+  top_option == top :: 'a option
+instantiation
+  set :: (one) one
+  one_set == one_class.one :: 'a set
+instantiation
+  option :: (inf) inf
+  inf_option == inf :: 'a option => 'a option => 'a option
+instantiation
+  option :: (sup) sup
+  sup_option == sup :: 'a option => 'a option => 'a option
+instantiation
+  multiset :: (type) cancel_comm_monoid_add
+  zero_multiset == zero_class.zero :: 'a multiset
+  minus_multiset == minus :: 'a multiset => 'a multiset => 'a multiset
+  plus_multiset == plus :: 'a multiset => 'a multiset => 'a multiset
+instantiation
+  option :: (complete_lattice) complete_lattice
+  Inf_option == Inf :: 'a option set => 'a option
+  Sup_option == Sup :: 'a option set => 'a option
+### theory "HOL-Library.Set_Algebras"
+### 0.382s elapsed time, 1.363s cpu time, 0.499s GC time
+Loading theory "HOL-Library.Tree" (required by "Draft.Refine_AutomationMoreTemplates" via "Draft.ExtrEqs" via "Draft.Templates")
+### theory "HOL-Library.Option_ord"
+### 0.482s elapsed time, 1.765s cpu time, 0.499s GC time
+Loading theory "HOL-Library.While_Combinator" (required by "Draft.Refine_AutomationMoreTemplates" via "Draft.Refine_Automation" via "Draft.Refine_Transfer" via "Draft.Refine_While" via "Draft.RefineG_While")
+consts
+  shift :: "'a list => 'a stream => 'a stream"
+Proofs for coinductive predicate(s) "streamsp"
+  Proving monotonicity ...
+consts
+  snth :: "'a stream => nat => 'a"
+Found termination order: "{}"
+consts
+  stake :: "nat => 'a stream => 'a list"
+consts
+  sdrop :: "nat => 'a stream => 'a stream"
+consts
+  sfilter :: "('a => bool) => 'a stream => 'a stream"
+Found termination order: "{}"
+consts
+  cycle :: "'a list => 'a stream"
+### Partially applied constant "Multiset.inter_mset" on left hand side of equation, in theorem:
+### semilattice_inf.Inf_fin (\<inter>#) (set (?x # ?xs)) ==
+### fold (\<inter>#) ?xs ?x
+consts
+  siterate :: "('a => 'a) => 'a => 'a stream"
+Found termination order: "{}"
+consts
+  flat :: "'a list stream => 'a stream"
+### Partially applied constant "Multiset.union_mset" on left hand side of equation, in theorem:
+### semilattice_sup.Sup_fin (\<union>#) (set (?x # ?xs)) ==
+### fold (\<union>#) ?xs ?x
+### theory "HOL-Library.While_Combinator"
+### 0.463s elapsed time, 1.820s cpu time, 0.226s GC time
+Loading theory "HOL-Library.BigO" (required by "Draft.Refine_AutomationMoreTemplates" via "Draft.ExtrEqs")
+consts
+  sinterleave :: "'a stream => 'a stream => 'a stream"
+consts
+  left :: "'a tree => 'a tree"
+consts
+  szip :: "'a stream => 'b stream => ('a * 'b) stream"
+consts
+  right :: "'a tree => 'a tree"
+consts
+  smap2 :: "('a => 'b => 'c) => 'a stream => 'b stream => 'c stream"
+Found termination order: "size <*mlex*> {}"
+### theory "HOL-Library.Stream"
+### 1.120s elapsed time, 4.274s cpu time, 0.797s GC time
+val dest_pair_singleton = fn: term -> term
+val dest_nat_pair_singleton = fn: term -> term * term
+val dest_pair_singleton_T = fn: term -> (term * typ) * (term * typ)
+val dest_pair_lambda = fn: term -> string * typ * string * typ * term * term
+val foo = fn: term -> term * term * int * term * term
+val mk_2elem_list = fn: term -> term -> term
+val mk_compr = fn: term -> term -> term
+val test1 = "[1, 2]": cterm
+val test2 = "{x: {1, 2, 3}. 2 < x}": cterm
+val test3 =
+   Const ("Groups.plus_class.plus", "nat => nat => nat") $ Bound 0 $
+     Bound 0:
+   term
+"True"
+  :: "bool"
+\<Sqinter> (Sup ` ?A) = \<Squnion> (Inf ` {f ` ?A |f. ALL Y:?A. f Y : Y})
+Found termination order: "size <*mlex*> {}"
+signature MULTISET_SIMPROCS =
+  sig
+    val subset_cancel_msets: Proof.context -> cterm -> thm option
+    val subseteq_cancel_msets: Proof.context -> cterm -> thm option
+  end
+structure Multiset_Simprocs: MULTISET_SIMPROCS
+instantiation
+  multiset :: (type) Inf
+  Inf_multiset == Inf :: 'a multiset set => 'a multiset
+Found termination order: "size <*mlex*> {}"
+instantiation
+  multiset :: (type) Sup
+  Sup_multiset == Sup :: 'a multiset set => 'a multiset
+class height = type +
+  fixes height :: "'a => nat"
+instantiation
+  tree :: (type) height
+  height_tree == height :: 'a tree => nat
+Found termination order: "size <*mlex*> {}"
+instantiation
+  multiset :: (type) size
+  size_multiset == size :: 'a multiset => nat
+Found termination order: "size <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+locale comp_fun_commute
+  fixes f :: "'a => 'b => 'b"
+  assumes "comp_fun_commute f"
+Found termination order: "size <*mlex*> {}"
+consts
+  mset :: "'a list => 'a multiset"
+Found termination order: "size <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+class linorder = order +
+  assumes "linear": "!!x y. x <= y | y <= x"
+### theory "HOL-Library.BigO"
+### 1.078s elapsed time, 3.528s cpu time, 1.108s GC time
+Found termination order: "(%p. size (fst p)) <*mlex*> {}"
+locale comm_monoid_mset
+  fixes f :: "'a => 'a => 'a"  (infixl \<open>\<^bold>*\<close> 70)
+    and z :: "'a"  (\<open>\<^bold>1\<close>)
+  assumes "comm_monoid_mset (\<^bold>*) \<^bold>1"
+Found termination order: "size <*mlex*> {}"
+class comm_monoid_add = ab_semigroup_add + monoid_add +
+  assumes "add_0": "!!a. (0::'a) + a = a"
+Found termination order: "(%p. size (snd p)) <*mlex*> {}"
+class comm_monoid_add = ab_semigroup_add + monoid_add +
+  assumes "add_0": "!!a. (0::'a) + a = a"
+class canonically_ordered_monoid_add = ordered_comm_monoid_add +
+  assumes "le_iff_add": "!!a b. (a <= b) = (EX c. b = a + c)"
+Found termination order: "size <*mlex*> {}"
+class comm_monoid_mult = ab_semigroup_mult + monoid_mult + dvd +
+  assumes "mult_1": "!!a. (1::'a) * a = a"
+### theory "HOL-Library.Tree"
+### 2.205s elapsed time, 6.923s cpu time, 1.472s GC time
+Loading theory "Draft.Templates" (required by "Draft.Refine_AutomationMoreTemplates" via "Draft.ExtrEqs")
+datatype template_term
+=
+     t_empty
+   | template_app of template_term * template_term
+   | template_hole of int
+   | template_var of int
+datatype sign
+= equals | greater_equals | greater_than | less_equals | less_than
+datatype template
+=
+     template_bimplication of template * template
+   | template_dunno
+   | template_equation of template_term * template_term
+   | template_implication of template list * template
+   | template_inequation of sign * template_term * template_term
+   | template_negation of template
+   | template_predicate of template_term
+constructor t_empty: template_term
+constructor template_app: template_term * template_term -> template_term
+constructor template_hole: int -> template_term
+constructor template_var: int -> template_term
+constructor equals: sign
+constructor greater_equals: sign
+constructor greater_than: sign
+constructor less_equals: sign
+constructor less_than: sign
+constructor template_bimplication: template * template -> template
+constructor template_dunno: template
+constructor template_equation: template_term * template_term -> template
+constructor template_implication: template list * template -> template
+constructor template_inequation:
+   sign * template_term * template_term -> template
+constructor template_negation: template -> template
+constructor template_predicate: template_term -> template
+val vfs = fn: term -> (indexname * typ) list * (string * typ) list
+val indexOf = fn: ''a list -> ''a -> int -> int
+val has_eq = fn: term -> bool
+val term2template = fn:
+   (indexname * typ) list -> (string * typ) list -> term -> template_term
+val lemma2predicate = fn: term -> term -> template
+val makeTemplatewithContext = fn: term -> term -> template
+val lemma2template = fn: term -> template
+val thm2template = fn: thm -> template
+val tterm2string = fn: template_term -> string
+val template2string = fn: template -> string
+val t = "height ?t <= size ?t": thm
+val th =
+   Const ("HOL.Trueprop", "bool => prop") $
+     (Const ("Orderings.ord_class.less_eq", "nat => nat => bool") $
+       (Const ("Tree.height_class.height", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree")) $
+       (Const ("Nat.size_class.size", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree"))):
+   term
+### theory "Draft.Templates"
+### 0.053s elapsed time, 0.105s cpu time, 0.000s GC time
+Loading theory "Draft.ExtrEqs" (required by "Draft.Refine_AutomationMoreTemplates")
+class linorder = order +
+  assumes "linear": "!!x y. x <= y | y <= x"
+instantiation
+  multiset :: (preorder) order
+  less_eq_multiset == less_eq :: 'a multiset => 'a multiset => bool
+  less_multiset == less :: 'a multiset => 'a multiset => bool
+val eqpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Var (("_dummy_", 2), "?'a"))
+       ):
+   term Find_Theorems.criterion
+val badeqpattern = Pattern (Const ("Pure.eq", "?'a => ?'a => prop")):
+   term Find_Theorems.criterion
+val undefpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Const ("HOL.undefined", "?'a"))
+       ):
+   term Find_Theorems.criterion
+val thmpattern =
+   Pattern
+    (Const ("HOL.Trueprop", "bool => prop") $ Var (("_dummy_", 1), "bool")):
+   term Find_Theorems.criterion
+val badnames =
+   ["*nitpick*", "*Nitpick*", "*full_exhaustive*", "*_def*", "Enum.finite*",
+    "*Quickcheck*", "ATP*", "*Nunchaku*", "*Code*", "*BNF*", "*SMT*",
+    "*.*.*"]:
+   string list
+val unwanted_names =
+   [(false, Name "*nitpick*"), (false, Name "*Nitpick*"),
+    (false, Name "*full_exhaustive*"), (false, Name "*_def*"),
+    (false, Name "Enum.finite*"), (false, Name "*Quickcheck*"),
+    (false, Name "ATP*"), (false, Name "*Nunchaku*"),
+    (false, Name "*Code*"), (false, Name "*BNF*"), (false, Name "*SMT*"),
+    (false, Name "*.*.*")]:
+   (bool * term Find_Theorems.criterion) list
+val has_vars = fn: term -> bool
+val get_all_eqs = fn: string -> Proof.context -> (string * thm) list
+val get_all_thms = fn: string -> Proof.context -> (string * thm) list
+val get_noneq_thms = fn: string -> Proof.context -> (string * thm) list
+val template_eqs = fn:
+   string -> Proof.context -> (string * thm * template) list
+val template_thms = fn:
+   string -> Proof.context -> (string * thm * template) list
+### theory "Draft.ExtrEqs"
+### 0.533s elapsed time, 1.106s cpu time, 0.100s GC time
+instantiation
+  multiset :: (preorder) ordered_ab_semigroup_add
+Proofs for inductive predicate(s) "pw_leq"
+  Proving monotonicity ...
+Found termination order: "(%p. length (fst p)) <*mlex*> {}"
+instantiation
+  multiset :: (equal) equal
+  equal_multiset == equal_class.equal :: 'a multiset => 'a multiset => bool
+instantiation
+  multiset :: (random) random
+  random_multiset == random_class.random ::
+    natural
+    => natural * natural
+       => ('a multiset * (unit => term)) * natural * natural
+instantiation
+  multiset :: (full_exhaustive) full_exhaustive
+  full_exhaustive_multiset == full_exhaustive_class.full_exhaustive ::
+    ('a multiset * (unit => term) => (bool * term list) option)
+    => natural => (bool * term list) option
+Proofs for inductive predicate(s) "pred_mset"
+  Proving monotonicity ...
+Proofs for inductive predicate(s) "rel_mset'"
+  Proving monotonicity ...
+### theory "HOL-Library.Multiset"
+### 3.611s elapsed time, 10.098s cpu time, 2.141s GC time
+Loading theory "HOL-ex.Quicksort" (required by "Draft.Refine_AutomationMoreTemplates" via "Draft.Refine_Automation" via "Draft.Refine_Basic" via "Draft.Refine_Misc" via "Automatic_Refinement.Automatic_Refinement" via "Automatic_Refinement.Autoref_Tool" via "Automatic_Refinement.Autoref_Translate" via "Automatic_Refinement.Autoref_Fix_Rel" via "Automatic_Refinement.Autoref_Id_Ops" via "Automatic_Refinement.Refine_Lib" via "Automatic_Refinement.Misc")
+class linorder = order +
+  assumes "linear": "!!x y. x <= y | y <= x"
+Found termination order: "length <*mlex*> {}"
+### theory "HOL-ex.Quicksort"
+### 0.608s elapsed time, 1.361s cpu time, 0.973s GC time
+Loading theory "Automatic_Refinement.Misc" (required by "Draft.Refine_AutomationMoreTemplates" via "Draft.Refine_Automation" via "Draft.Refine_Basic" via "Draft.Refine_Misc" via "Automatic_Refinement.Automatic_Refinement" via "Automatic_Refinement.Autoref_Tool" via "Automatic_Refinement.Autoref_Translate" via "Automatic_Refinement.Autoref_Fix_Rel" via "Automatic_Refinement.Autoref_Id_Ops" via "Automatic_Refinement.Refine_Lib")
+(0 < length ?xs) = (?xs ~= [])
+locale Assoc
+  fixes f :: "'a => 'a => 'a"
+  assumes "Assoc f"
+locale AC
+  fixes f :: "'a => 'a => 'a"
+  assumes "AC f"
+locale su_rel_fun
+  fixes F :: "('a * 'b) set"
+    and f :: "'a => 'b"
+  assumes "su_rel_fun F f"
+Found termination order: "(%p. length (fst p)) <*mlex*> {}"
+locale comp_fun_commute
+  fixes f :: "'a => 'b => 'b"
+  assumes "comp_fun_commute f"
+### Ignoring duplicate rewrite rule:
+### dom (%x. Some (?f1 x)) == UNIV
+consts
+  filter_rev_aux :: "'a list => ('a => bool) => 'a list => 'a list"
+### Missing patterns in function definition:
+### !!a v va. zipf a (v # va) [] = undefined
+### !!a v va. zipf a [] (v # va) = undefined
+Found termination order: "(%p. length (snd (snd p))) <*mlex*> {}"
+Found termination order: "(%p. length (snd (snd p))) <*mlex*> {}"
+Found termination order: "(%p. length (snd (snd p))) <*mlex*> {}"
+### Code generator: dropping subsumed code equation
+### quicksort (?x # ?xs) ==
+### quicksort (filter (%y. y < ?x) ?xs) @
+### [?x] @ quicksort (filter ((<=) ?x) ?xs)
+### Code generator: dropping subsumed code equation
+### quicksort [] == []
+Found termination order: "(%p. length (snd p)) <*mlex*> {}"
+Found termination order:
+  "(%p. length (snd (snd p))) <*mlex*>
+   (%p. length (fst (snd p))) <*mlex*> {}"
+"merge"
+  :: "'a"
+Found termination order:
+  "(%p. length (snd p)) <*mlex*> (%p. length (fst p)) <*mlex*> {}"
+Found termination order: "{}"
+consts
+  the_default :: "'a => 'a option => 'a"
+class ccpo = Sup + order +
+  assumes
+    "ccpo_Sup_upper":
+      "!!A x.
+          [| Complete_Partial_Order.chain (<=) A; x : A |] ==> x <= Sup A"
+  assumes
+    "ccpo_Sup_least":
+      "!!A z.
+          [| Complete_Partial_Order.chain (<=) A; !!x. x : A ==> x <= z |]
+          ==> Sup A <= z"
+### theory "Automatic_Refinement.Misc"
+### 3.142s elapsed time, 4.443s cpu time, 1.766s GC time
+Loading theory "Automatic_Refinement.Refine_Lib" (required by "Draft.Refine_AutomationMoreTemplates" via "Draft.Refine_Automation" via "Draft.Refine_Basic" via "Draft.Refine_Misc" via "Automatic_Refinement.Automatic_Refinement" via "Automatic_Refinement.Autoref_Tool" via "Automatic_Refinement.Autoref_Translate" via "Automatic_Refinement.Autoref_Fix_Rel" via "Automatic_Refinement.Autoref_Id_Ops")
+signature COND_REWR_CONV =
+  sig
+    val cond_rewr_conv:
+       (Proof.context -> tactic) -> thm -> Proof.context -> conv
+    val cond_rewrs_conv:
+       (Proof.context -> tactic) -> thm list -> Proof.context -> conv
+  end
+structure Cond_Rewr_Conv: COND_REWR_CONV
+signature REVERT_ABBREV =
+  sig
+    val revert_abbrev: string -> theory -> theory
+    val revert_abbrev_matching: (string -> bool) -> theory -> theory
+  end
+structure Revert_Abbrev: REVERT_ABBREV
+### theory "Automatic_Refinement.Refine_Lib"
+### 0.702s elapsed time, 0.810s cpu time, 0.128s GC time
+Loading theory "Automatic_Refinement.Autoref_Phases" (required by "Draft.Refine_AutomationMoreTemplates" via "Draft.Refine_Automation" via "Draft.Refine_Basic" via "Draft.Refine_Misc" via "Automatic_Refinement.Automatic_Refinement" via "Automatic_Refinement.Autoref_Tool" via "Automatic_Refinement.Autoref_Translate" via "Automatic_Refinement.Autoref_Fix_Rel" via "Automatic_Refinement.Autoref_Id_Ops")
+Loading theory "Automatic_Refinement.Autoref_Tagging" (required by "Draft.Refine_AutomationMoreTemplates" via "Draft.Refine_Automation" via "Draft.Refine_Basic" via "Draft.Refine_Misc" via "Automatic_Refinement.Automatic_Refinement" via "Automatic_Refinement.Autoref_Tool" via "Automatic_Refinement.Autoref_Translate" via "Automatic_Refinement.Autoref_Fix_Rel" via "Automatic_Refinement.Autoref_Id_Ops")
+Loading theory "Automatic_Refinement.Relators" (required by "Draft.Refine_AutomationMoreTemplates" via "Draft.Refine_Automation" via "Draft.Refine_Basic" via "Draft.Refine_Misc" via "Automatic_Refinement.Automatic_Refinement" via "Automatic_Refinement.Autoref_Tool" via "Automatic_Refinement.Autoref_Translate" via "Automatic_Refinement.Autoref_Fix_Rel" via "Automatic_Refinement.Autoref_Id_Ops" via "Automatic_Refinement.Parametricity" via "Automatic_Refinement.Param_Tool")
+Loading theory "Draft.Refine_Mono_Prover" (required by "Draft.Refine_AutomationMoreTemplates" via "Draft.Refine_Automation" via "Draft.Refine_Basic" via "Draft.Refine_Misc")
+structure Refine_Relators_Thms:
+  sig structure rel_comb_def_rules: NAMED_THMS end
+structure Autoref_Tag_Defs: NAMED_THMS
+signature REFINE_MONO_PROVER =
+  sig
+    val add_mono_thm: thm -> Context.generic -> Context.generic
+    val decl_setup: morphism -> Context.generic -> Context.generic
+    val declare_mono_triggers:
+       thm list -> morphism -> Context.generic -> Context.generic
+    val del_mono_thm: thm -> Context.generic -> Context.generic
+    val gen_split_cases_tac: pat_extractor -> Proof.context -> tactic'
+    val get_mono_thms: Proof.context -> thm list
+    val mono_tac: Proof.context -> tactic'
+    type pat_extractor =
+       term ->
+         (term * ((Proof.context -> conv) -> Proof.context -> conv)) option
+    val setup: theory -> theory
+    val split_cases_tac: Proof.context -> tactic'
+    val untriggered_mono_tac: Proof.context -> tactic'
+  end
+structure Refine_Mono_Prover: REFINE_MONO_PROVER
+locale mono_setup_loc
+  fixes le :: "'a => 'a => bool"
+  assumes "mono_setup_loc le"
+### theory "Draft.Refine_Mono_Prover"
+### 0.106s elapsed time, 0.418s cpu time, 0.095s GC time
+signature AUTOREF_PHASES =
+  sig
+    val all_phases_tac: Proof.context -> tactic'
+    val cfg_debug: bool Config.T
+    val cfg_keep_goal: bool Config.T
+    val cfg_trace: bool Config.T
+    val declare_solver:
+       thm list ->
+         binding ->
+           string ->
+             (Proof.context -> tactic') ->
+               morphism -> Context.generic -> Context.generic
+    val delete_phase:
+       string -> morphism -> Context.generic -> Context.generic
+    val get_phase: string -> Proof.context -> (string * int * phase) option
+    val get_phases: Proof.context -> (string * int * phase) list
+    val init_data: Proof.context -> Proof.context
+    val init_phase: string * int * phase -> Proof.context -> Proof.context
+    val init_phases:
+       (string * int * phase) list -> Proof.context -> Proof.context
+    type phase =
+       {analyze: Proof.context -> int -> int -> thm -> bool,
+        init: Proof.context -> Proof.context,
+        pretty_failure: Proof.context -> int -> int -> thm -> Pretty.T,
+        tac: Proof.context -> int -> int -> tactic}
+    val phase_tac: string * int * phase -> Proof.context -> tactic'
+    val phase_tacN: string -> Proof.context -> tactic'
+    val phases_tac: (string * int * phase) list -> Proof.context -> tactic'
+    val phases_tacN: string list -> Proof.context -> tactic'
+    val register_phase:
+       string ->
+         int -> phase -> morphism -> Context.generic -> Context.generic
+  end
+structure Autoref_Phases: AUTOREF_PHASES
+### theory "Automatic_Refinement.Autoref_Phases"
+### 0.130s elapsed time, 0.489s cpu time, 0.095s GC time
+signature AUTOREF_TAGGING =
+  sig
+    val ABS_beta_conv: Proof.context -> conv
+    val is_valid_tagged: term -> bool
+    val lambda': string * typ -> term -> term
+    val list_APP: term * term list -> term
+    val mk_ABS_conv: Proof.context -> conv
+    val mk_ANNOT_conv: cterm -> conv
+    val mk_APP: term -> term -> term
+    val mk_APP_conv: conv
+    val mk_OP: term -> term
+    val mk_OP_conv: conv
+    val mk_rel_ANNOT_conv: Proof.context -> cterm -> conv
+    val rhs_conv: (Proof.context -> conv) -> Proof.context -> conv
+    val strip_app: term -> term * term list
+    val term_of_tagged: term -> term
+    val untag_conv: Proof.context -> conv
+  end
+structure Autoref_Tagging: AUTOREF_TAGGING
+### theory "Automatic_Refinement.Autoref_Tagging"
+### 0.144s elapsed time, 0.519s cpu time, 0.095s GC time
+val it = "foo == foo ::: bar": thm
+val it = "foo == ANNOT foo bar": thm
+"set_rel"
+  :: "('a * 'b) set => ('a set * 'b set) set"
+structure relator_props: NAMED_THMS
+structure solve_relator_props: NAMED_THMS
+### ML warning (line 560 of "$AFP/Automatic_Refinement/Parametricity/Relators.thy"):
+### Handler catches all exceptions.
+signature RELATORS =
+  sig
+    val declare_natural_relator:
+       string * string -> Context.generic -> Context.generic
+    val dest_prodrel: term -> term * term
+    val dest_relT: typ -> typ * typ
+    val is_prodrel: term -> bool
+    val list_prodrel_left: term list -> term
+    val list_rel: term list -> term -> term
+    val list_relAPP: term list -> term -> term
+    val mk_fun_rel: term -> term -> term
+    val mk_natural_relator:
+       Proof.context -> term list -> string -> term option
+    val mk_prodrel: term * term -> term
+    val mk_relAPP: term -> term -> term
+    val mk_relT: typ * typ -> typ
+    val natural_relator_of: Proof.context -> string -> string option
+    val rel_absT: term -> typ
+    val rel_concT: term -> typ
+    val remove_natural_relator: string -> Context.generic -> Context.generic
+    val setup: theory -> theory
+    val strip_prodrel_left: term -> term list
+    val strip_relAPP: term -> term list * term
+  end
+structure Relators: RELATORS
+val it = "Ra \<times>\<^sub>r \<langle>Rb\<rangle>option_rel": cterm
+val it =
+   "\<langle>Id\<rangle>option_rel \<rightarrow>
+    \<langle>Id\<rangle>list_rel":
+   cterm
+### theory "Automatic_Refinement.Relators"
+### 0.626s elapsed time, 1.063s cpu time, 0.177s GC time
+Loading theory "Automatic_Refinement.Param_Tool" (required by "Draft.Refine_AutomationMoreTemplates" via "Draft.Refine_Automation" via "Draft.Refine_Basic" via "Draft.Refine_Misc" via "Automatic_Refinement.Automatic_Refinement" via "Automatic_Refinement.Autoref_Tool" via "Automatic_Refinement.Autoref_Translate" via "Automatic_Refinement.Autoref_Fix_Rel" via "Automatic_Refinement.Autoref_Id_Ops" via "Automatic_Refinement.Parametricity")
+signature PARAMETRICITY =
+  sig
+    val add_dflt: thm -> Context.generic -> Context.generic
+    val add_dflt_attr: attribute
+    val adjust_arity: int -> thm -> thm
+    val adjust_arity_tac: int -> Proof.context -> tactic'
+    val asm_param_tac: Proof.context -> tactic'
+    val cfg_single_step: bool Config.T
+    val cfg_use_asm: bool Config.T
+    val del_dflt: thm -> Context.generic -> Context.generic
+    val del_dflt_attr: attribute
+    val dest_param_goal: int -> thm -> param_ruleT
+    val dest_param_rule: thm -> param_ruleT
+    val dest_param_term: term -> param_ruleT
+    val fo_rule: thm -> thm
+    val get_dflt: Proof.context -> param_net
+    val net_add: thm -> param_net -> param_net
+    val net_add_int: Context.generic -> thm -> param_net -> param_net
+    val net_del: thm -> param_net -> param_net
+    val net_del_int: Context.generic -> thm -> param_net -> param_net
+    val net_empty: param_net
+    val net_tac: param_net -> Proof.context -> tactic'
+    type param_net
+    type param_ruleT =
+       {R: term, arity: int, lhs: term, rhs: term, rhs_head: term}
+    val param_rule_tac: Proof.context -> thm -> tactic'
+    val param_rules_tac: Proof.context -> thm list -> tactic'
+    val prepare_tac: Proof.context -> tactic'
+    val safe_fun_relD_tac: Proof.context -> tactic'
+    val setup: theory -> theory
+    val unlambda_tac: Proof.context -> tactic'
+  end
+structure Parametricity: PARAMETRICITY
+val cnv_relAPP = fn: term -> term
+val to_relAPP_conv = fn: Proof.context -> conv
+val to_relAPP_attr = fn: attribute
+### theory "Automatic_Refinement.Param_Tool"
+### 0.098s elapsed time, 0.098s cpu time, 0.000s GC time
+Loading theory "Automatic_Refinement.Param_HOL" (required by "Draft.Refine_AutomationMoreTemplates" via "Draft.Refine_Automation" via "Draft.Refine_Basic" via "Draft.Refine_Misc" via "Automatic_Refinement.Automatic_Refinement" via "Automatic_Refinement.Autoref_Tool" via "Automatic_Refinement.Autoref_Translate" via "Automatic_Refinement.Autoref_Fix_Rel" via "Automatic_Refinement.Autoref_Id_Ops" via "Automatic_Refinement.Parametricity")
+locale partial_function_definitions
+  fixes leq :: "'a => 'a => bool"
+    and lub :: "'a set => 'a"
+  assumes "partial_function_definitions leq lub"
+consts
+  is_Inl :: "'a + 'b => bool"
+consts
+  is_Inr :: "'b + 'a => bool"
+consts
+  list_all2_alt :: "('a => 'b => bool) => 'a list => 'b list => bool"
+### Cannot skip proof of schematic goal statement
+### Cannot skip proof of schematic goal statement
+### Cannot skip proof of schematic goal statement
+Found termination order: "(%p. length (snd (snd p))) <*mlex*> {}"
+consts
+  list_all_rec :: "('a => bool) => 'a list => bool"
+consts
+  list_ex_rec :: "('a => bool) => 'a list => bool"
+"list_update"
+  :: "'a list => nat => 'a => 'a list"
+### theory "Automatic_Refinement.Param_HOL"
+### 0.581s elapsed time, 0.739s cpu time, 0.204s GC time
+Loading theory "Automatic_Refinement.Parametricity" (required by "Draft.Refine_AutomationMoreTemplates" via "Draft.Refine_Automation" via "Draft.Refine_Basic" via "Draft.Refine_Misc" via "Automatic_Refinement.Automatic_Refinement" via "Automatic_Refinement.Autoref_Tool" via "Automatic_Refinement.Autoref_Translate" via "Automatic_Refinement.Autoref_Fix_Rel" via "Automatic_Refinement.Autoref_Id_Ops")
+### theory "Automatic_Refinement.Parametricity"
+### 0.020s elapsed time, 0.023s cpu time, 0.000s GC time
+Loading theory "Automatic_Refinement.Autoref_Id_Ops" (required by "Draft.Refine_AutomationMoreTemplates" via "Draft.Refine_Automation" via "Draft.Refine_Basic" via "Draft.Refine_Misc" via "Automatic_Refinement.Automatic_Refinement" via "Automatic_Refinement.Autoref_Tool" via "Automatic_Refinement.Autoref_Translate" via "Automatic_Refinement.Autoref_Fix_Rel")
+val limit_depth = fn: int -> term -> term
+val depth_of = fn: term -> int
+val depth_of_lhs = fn: thm -> int
+val depth_of_rhs = fn: thm -> int
+val pretty_rewrite = fn: Proof.context -> thm -> thm -> Pretty.T
+val index_rewr_thms = fn: thm list -> thm Item_Net.T
+val net_rewr_tac = fn:
+   thm Item_Net.T -> (term -> term) -> (conv -> 'a -> conv) -> 'a -> tactic'
+val it = 4: int
+val it = "(1::'a) # \<dots> # \<dots>": cterm
+signature AUTOREF_ID_OPS =
+  sig
+    val cfg_ss_id_op: bool Config.T
+    val cfg_trace_failed_id: bool Config.T
+    val cfg_trace_id_tags: bool Config.T
+    val cfg_trace_intf_unif: bool Config.T
+    val cfg_trace_patterns: bool Config.T
+    val cfg_use_id_tags: bool Config.T
+    val decl_derived_typing:
+       bool -> term -> term -> Context.generic -> Context.generic
+    val dest_const_intf: term -> term * term
+    val dest_const_intf_thm: thm -> term * term
+    val has_typ_thms: Proof.context -> term -> bool
+    val id_phase: Autoref_Phases.phase
+    val id_tac: Proof.context -> tactic'
+    val mk_const_intf: term -> term -> term
+    val mk_const_intf_thm: Proof.context -> term -> term -> thm
+    val setup: theory -> theory
+    val typ_thms_of_seq: Proof.context -> term -> thm Seq.seq
+  end
+structure Autoref_Id_Ops: AUTOREF_ID_OPS
+signature AUTOREF_REL_INF =
+  sig
+    val cfg_sbias: int Config.T
+    val roi_phase: Autoref_Phases.phase
+    val roi_step_tac: Proof.context -> tactic'
+    val roi_tac: Proof.context -> tactic'
+    val setup: theory -> theory
+  end
+structure Autoref_Rel_Inf: AUTOREF_REL_INF
+### theory "Automatic_Refinement.Autoref_Id_Ops"
+### 0.508s elapsed time, 0.519s cpu time, 0.000s GC time
+Loading theory "Automatic_Refinement.Autoref_Fix_Rel" (required by "Draft.Refine_AutomationMoreTemplates" via "Draft.Refine_Automation" via "Draft.Refine_Basic" via "Draft.Refine_Misc" via "Automatic_Refinement.Automatic_Refinement" via "Automatic_Refinement.Autoref_Tool" via "Automatic_Refinement.Autoref_Translate")
+val it = [2, 3, 4, 5]: int list
+structure Autoref_Rules: NAMED_THMS
+### ML warning (line 350 of "$AFP/Automatic_Refinement/Tool/Autoref_Fix_Rel.thy"):
+### Value identifier (phi) has not been referenced.
+signature AUTOREF_FIX_REL =
+  sig
+    val add_hom_rule: thm -> Context.generic -> Context.generic
+    val add_tyrel_rule: thm -> Context.generic -> Context.generic
+    val analyze: Proof.context -> int -> int -> thm -> bool
+    val compute_hom_net: thm_pairs -> Proof.context -> hom_net
+    type constraint = (term * term) list * (term * term)
+    val constraint_of_thm: Proof.context -> thm -> constraint
+    val constraints_of_goal: int -> thm -> (term * term) list
+    val constraints_of_term: term -> (term * term) list
+    val declare_prio:
+       string -> term -> prio_relpos -> local_theory -> local_theory
+    val del_hom_rule: thm -> Context.generic -> Context.generic
+    val del_tyrel_rule: thm -> Context.generic -> Context.generic
+    val delete_prio: string -> local_theory -> local_theory
+    val get_hom_rules: Proof.context -> thm list
+    val get_tyrel_rules: Proof.context -> thm list
+    val guess_relators_tac: Proof.context -> itactic
+    type hom_net = (int * thm) Net.net
+    val insert_CONSTRAINTS_tac: Proof.context -> tactic'
+    val insert_tyrel_tac: Proof.context -> int -> int -> tactic'
+    val internal_hom_tac: Proof.context -> itactic
+    val internal_solve_tac: Proof.context -> itactic
+    val internal_spec_tac: Proof.context -> itactic
+    val mk_CONSTRAINT: term * term -> term
+    val mk_CONSTRAINT_rl: Proof.context -> constraint -> thm
+    val phase: Autoref_Phases.phase
+    val pretty_constraint: Proof.context -> constraint -> Pretty.T
+    val pretty_constraints: Proof.context -> constraint list -> Pretty.T
+    val pretty_failure: Proof.context -> int -> int -> thm -> Pretty.T
+    val pretty_thm_pair:
+       Proof.context -> constraint option * thm -> Pretty.T
+    val pretty_thm_pairs: Proof.context -> thm_pairs -> Pretty.T
+    val print_prios: Proof.context -> unit
+    datatype prio_relpos
+    = PR_AFTER of string | PR_BEFORE of string | PR_FIRST | PR_LAST
+    val setup: theory -> theory
+    val solve_step_tac: Proof.context -> tactic'
+    val solve_tyrel_tac: Proof.context -> tactic'
+    type thm_pairs = (constraint option * thm) list
+    val thm_pairsD_get: Proof.context -> thm_pairs
+    val thm_pairsD_init: Proof.context -> Proof.context
+    val try_solve_tac: Proof.context -> tactic'
+    val tyrel_tac: Proof.context -> itactic
+  end
+structure Autoref_Fix_Rel: AUTOREF_FIX_REL
+### theory "Automatic_Refinement.Autoref_Fix_Rel"
+### 0.258s elapsed time, 0.309s cpu time, 0.068s GC time
+Loading theory "Automatic_Refinement.Autoref_Translate" (required by "Draft.Refine_AutomationMoreTemplates" via "Draft.Refine_Automation" via "Draft.Refine_Basic" via "Draft.Refine_Misc" via "Automatic_Refinement.Automatic_Refinement" via "Automatic_Refinement.Autoref_Tool")
+Loading theory "Automatic_Refinement.Autoref_Relator_Interface" (required by "Draft.Refine_AutomationMoreTemplates" via "Draft.Refine_Automation" via "Draft.Refine_Basic" via "Draft.Refine_Misc" via "Automatic_Refinement.Automatic_Refinement" via "Automatic_Refinement.Autoref_Tool")
+signature AUTOREF_RELATOR_INTERFACE =
+  sig
+    val declare_rel_intf: thm -> Context.generic -> Context.generic
+    val delete_rel_intf: thm -> Context.generic -> Context.generic
+    val get_rel_intfs: Proof.context -> thm list
+    val intf_of_rel: Proof.context -> term -> term
+    val itype_of_rule: Proof.context -> thm -> (term * term) option
+    val list_invented_intf: term -> term list
+    val mk_intfAPP: term -> term -> term
+    val setup: theory -> theory
+    val warn_invented_intf: Proof.context -> term -> unit
+  end
+structure Autoref_Relator_Interface: AUTOREF_RELATOR_INTERFACE
+### theory "Automatic_Refinement.Autoref_Relator_Interface"
+### 0.048s elapsed time, 0.095s cpu time, 0.000s GC time
+signature AUTOREF_TACTICALS =
+  sig
+    val COND'': (int -> thm -> bool) -> tactic' -> tactic' -> tactic'
+    val IF_SOLVED: tactic' -> tactic' -> tactic' -> tactic'
+    val REPEAT_INTERVAL: tactic' -> itactic
+    val REPEAT_ON_SUBGOAL: tactic' -> tactic'
+    val is_defer_cond: int -> thm -> bool
+    val is_prefer_cond: int -> thm -> bool
+  end
+signature AUTOREF_TRANSLATE =
+  sig
+    val add_post_rule: thm -> Context.generic -> Context.generic
+    val compute_trans_net:
+       Autoref_Fix_Rel.thm_pairs -> Proof.context -> trans_net
+    val delete_post_rule: thm -> Context.generic -> Context.generic
+    val get_post_rules: Proof.context -> thm list
+    val setup: theory -> theory
+    val side_dbg_tac: Proof.context -> tactic'
+    val side_tac: Proof.context -> tactic'
+    val trans_analyze: Proof.context -> int -> int -> thm -> bool
+    val trans_dbg_step_tac: Proof.context -> tactic'
+    type trans_net = (int * thm) Net.net
+    val trans_phase: Autoref_Phases.phase
+    val trans_pretty_failure: Proof.context -> int -> int -> thm -> Pretty.T
+    val trans_step_only_tac: Proof.context -> tactic'
+    val trans_step_tac: Proof.context -> tactic'
+    val trans_tac: Proof.context -> itactic
+  end
+structure Autoref_Tacticals: AUTOREF_TACTICALS
+structure Autoref_Translate: AUTOREF_TRANSLATE
+### theory "Automatic_Refinement.Autoref_Translate"
+### 0.093s elapsed time, 0.141s cpu time, 0.000s GC time
+Loading theory "Automatic_Refinement.Autoref_Gen_Algo" (required by "Draft.Refine_AutomationMoreTemplates" via "Draft.Refine_Automation" via "Draft.Refine_Basic" via "Draft.Refine_Misc" via "Automatic_Refinement.Automatic_Refinement" via "Automatic_Refinement.Autoref_Tool")
+structure Autoref_Gen_Algo:
+  sig
+    val decl_setup: morphism -> Context.generic -> Context.generic
+    structure ga_side_thms: NAMED_SORTED_THMS
+    val setup: theory -> theory
+    val side_ga_op_tac: Proof.context -> int -> tactic
+    val side_ga_tac: Proof.context -> int -> tactic
+    val transform_ga_rule: Context.generic -> thm -> thm list
+  end
+### theory "Automatic_Refinement.Autoref_Gen_Algo"
+### 0.064s elapsed time, 0.105s cpu time, 0.057s GC time
+Loading theory "Automatic_Refinement.Autoref_Tool" (required by "Draft.Refine_AutomationMoreTemplates" via "Draft.Refine_Automation" via "Draft.Refine_Basic" via "Draft.Refine_Misc" via "Automatic_Refinement.Automatic_Refinement")
+structure Autoref_Debug:
+  sig
+    val print_thm_pairs: Proof.context -> unit
+    val print_thm_pairs_matching: Proof.context -> cterm -> unit
+  end
+locale autoref_syn
+### theory "Automatic_Refinement.Autoref_Tool"
+### 0.449s elapsed time, 0.500s cpu time, 0.071s GC time
+Loading theory "Automatic_Refinement.Autoref_Bindings_HOL" (required by "Draft.Refine_AutomationMoreTemplates" via "Draft.Refine_Automation" via "Draft.Refine_Basic" via "Draft.Refine_Misc" via "Automatic_Refinement.Automatic_Refinement")
+structure Autoref_Struct_Expand:
+  sig
+    structure autoref_struct_expand: NAMED_THMS
+    val decl_setup: morphism -> Context.generic -> Context.generic
+    val expand_tac: Proof.context -> int -> tactic
+    val setup: theory -> theory
+  end
+### Adding overloaded interface type to constant: ?x ::\<^sub>i i_bool
+### Adding overloaded interface type to constant: ?x ::\<^sub>i i_bool
+### Adding overloaded interface type to constant: ?x ::\<^sub>i i_bool
+### Adding overloaded interface type to constant: ?x ::\<^sub>i i_bool
+"(o)"
+  :: "('a => 'b) => ('c => 'a) => 'c => 'b"
+### Cannot skip proof of schematic goal statement
+### Cannot skip proof of schematic goal statement
+### Cannot skip proof of schematic goal statement
+Found termination order: "(%p. length (snd (snd p))) <*mlex*> {}"
+### Cannot skip proof of schematic goal statement
+### Cannot skip proof of schematic goal statement
+### Cannot skip proof of schematic goal statement
+### Adding overloaded interface type to constant: ?a ::\<^sub>i i_of_rel Id
+### Cannot skip proof of schematic goal statement
+### Cannot skip proof of schematic goal statement
+### Cannot skip proof of schematic goal statement
+### Cannot skip proof of schematic goal statement
+### Cannot skip proof of schematic goal statement
+### theory "Automatic_Refinement.Autoref_Bindings_HOL"
+### 1.710s elapsed time, 1.893s cpu time, 0.237s GC time
+Loading theory "Automatic_Refinement.Automatic_Refinement" (required by "Draft.Refine_AutomationMoreTemplates" via "Draft.Refine_Automation" via "Draft.Refine_Basic" via "Draft.Refine_Misc")
+### theory "Automatic_Refinement.Automatic_Refinement"
+### 0.029s elapsed time, 0.032s cpu time, 0.000s GC time
+Loading theory "Draft.Refine_Misc" (required by "Draft.Refine_AutomationMoreTemplates" via "Draft.Refine_Automation" via "Draft.Refine_Basic")
+locale galois_connection
+  fixes \<alpha> :: "'a => 'b"
+    and \<gamma> :: "'b => 'a"
+  assumes "galois_connection \<alpha> \<gamma>"
+### Ignoring duplicate rewrite rule:
+### map_to_set Map.empty == {}
+### theory "Draft.Refine_Misc"
+### 0.387s elapsed time, 0.387s cpu time, 0.000s GC time
+Loading theory "Draft.RefineG_Domain" (required by "Draft.Refine_AutomationMoreTemplates" via "Draft.Refine_Automation" via "Draft.Refine_Basic" via "Draft.RefineG_Recursion")
+Loading theory "Draft.RefineG_Transfer" (required by "Draft.Refine_AutomationMoreTemplates" via "Draft.Refine_Automation" via "Draft.Refine_Basic" via "Draft.RefineG_Recursion")
+structure RefineG_Transfer:
+  sig
+    structure Post_Processors: THEORY_DATA
+    structure Post_Simp: GENERIC_DATA
+    val add_post_processor:
+       Symtab.key -> (Proof.context -> tactic') -> theory -> theory
+    val add_post_simps: thm list -> Context.generic -> Context.generic
+    val align_tac: Proof.context -> tactic'
+    val del_post_simps: thm list -> Context.generic -> Context.generic
+    val delete_post_processor: Symtab.key -> theory -> theory
+    val get_post_processors:
+       theory -> (Symtab.key * (Proof.context -> tactic')) list
+    val get_post_simp_rules: Context.generic -> thm list
+    val get_post_ss: Proof.context -> Proof.context
+    val post_process_tac: Proof.context -> tactic'
+    val post_simps_op:
+       (Proof.context * 'a -> Proof.context) ->
+         'a -> Context.generic -> Context.generic
+    structure post_subst: NAMED_THMS
+    val post_subst_tac: Proof.context -> int -> tactic
+    val post_transfer_tac: thm list -> Proof.context -> int -> tactic
+    val setup: theory -> theory
+    structure transfer: NAMED_THMS
+    val transfer_tac: thm list -> Proof.context -> int -> thm -> thm Seq.seq
+  end
+locale transfer
+  fixes \<alpha> :: "'c => 'a"
+locale ordered_transfer
+  fixes \<alpha> :: "'c => 'a"
+locale dist_transfer
+  fixes \<alpha> :: "'c => 'a"
+  assumes "dist_transfer \<alpha>"
+locale ccpo_transfer
+  fixes \<alpha> :: "'c => 'a"
+locale dist_ccpo_transfer
+  fixes \<alpha> :: "'c => 'a"
+  assumes "dist_ccpo_transfer \<alpha>"
+### theory "Draft.RefineG_Transfer"
+### 0.158s elapsed time, 0.387s cpu time, 0.132s GC time
+Loading theory "Draft.RefineG_Assert" (required by "Draft.Refine_AutomationMoreTemplates" via "Draft.Refine_Automation" via "Draft.Refine_Basic")
+locale generic_Assert
+  fixes bind :: "'mu => (unit => 'ma) => 'ma"
+    and return :: "unit => 'mu"
+    and ASSERT :: "bool => 'mu"
+    and ASSUME :: "bool => 'mu"
+  assumes "generic_Assert bind return ASSERT ASSUME"
+locale transfer_generic_Assert
+  fixes cbind :: "'muc => (unit => 'mac) => 'mac"
+    and creturn :: "unit => 'muc"
+    and cASSERT :: "bool => 'muc"
+    and cASSUME :: "bool => 'muc"
+    and abind :: "'mua => (unit => 'maa) => 'maa"
+    and areturn :: "unit => 'mua"
+    and aASSERT :: "bool => 'mua"
+    and aASSUME :: "bool => 'mua"
+    and \<alpha> :: "'mac => 'maa"
+  assumes
+    "transfer_generic_Assert cbind creturn cASSERT cASSUME abind areturn
+      aASSERT aASSUME"
+locale transfer_generic_Assert_remove
+  fixes abind :: "'mua => (unit => 'maa) => 'maa"
+    and areturn :: "unit => 'mua"
+    and aASSERT :: "bool => 'mua"
+    and aASSUME :: "bool => 'mua"
+    and \<alpha> :: "'mac => 'maa"
+  assumes "transfer_generic_Assert_remove abind areturn aASSERT aASSUME"
+### theory "Draft.RefineG_Assert"
+### 0.093s elapsed time, 0.185s cpu time, 0.000s GC time
+### theory "Draft.RefineG_Domain"
+### 0.476s elapsed time, 0.888s cpu time, 0.254s GC time
+Loading theory "Draft.RefineG_Recursion" (required by "Draft.Refine_AutomationMoreTemplates" via "Draft.Refine_Automation" via "Draft.Refine_Basic")
+### Ignoring duplicate rewrite rule:
+### flat_ord ?b1 ?b1 ?x1 == True
+theorem flatf_fp_induct_pointwise:
+  fixes pre :: "'a => 'b => bool"
+    and post :: "'a => 'b => 'c => bool"
+    and b :: "'c"
+    and B :: "('b => 'c) => 'b => 'c"
+    and a :: "'a"
+    and x :: "'b"
+  assumes "!!a x. pre a x ==> post a x b"
+    and "flatf_mono b B"
+    and "pre a x"
+    and
+    "!!f a x.
+        [| !!a' x'. pre a' x' ==> post a' x' (f x'); pre a x;
+           flatf_ord b f (flatf_fp b B) |]
+        ==> post a x (B f x)"
+  shows "post a x (flatf_fp b B x)"
+### theory "Draft.RefineG_Recursion"
+### 0.261s elapsed time, 0.317s cpu time, 0.000s GC time
+Loading theory "Draft.RefineG_While" (required by "Draft.Refine_AutomationMoreTemplates" via "Draft.Refine_Automation" via "Draft.Refine_Transfer" via "Draft.Refine_While")
+Loading theory "Draft.Refine_Basic" (required by "Draft.Refine_AutomationMoreTemplates" via "Draft.Refine_Automation")
+locale generic_WHILE
+  fixes bind :: "'m => ('a => 'm) => 'm"
+    and return :: "'a => 'm"
+    and WHILEIT :: "('a => bool) => ('a => bool) => ('a => 'm) => 'a => 'm"
+    and WHILEI :: "('a => bool) => ('a => bool) => ('a => 'm) => 'a => 'm"
+    and WHILET :: "('a => bool) => ('a => 'm) => 'a => 'm"
+    and WHILE :: "('a => bool) => ('a => 'm) => 'a => 'm"
+  assumes "generic_WHILE bind return WHILEIT WHILEI WHILET WHILE"
+locale transfer_WHILE
+  fixes cbind :: "'mc => ('a => 'mc) => 'mc"
+    and creturn :: "'a => 'mc"
+    and
+    cWHILEIT :: "('a => bool) => ('a => bool) => ('a => 'mc) => 'a => 'mc"
+    and
+    cWHILEI :: "('a => bool) => ('a => bool) => ('a => 'mc) => 'a => 'mc"
+    and cWHILET :: "('a => bool) => ('a => 'mc) => 'a => 'mc"
+    and cWHILE :: "('a => bool) => ('a => 'mc) => 'a => 'mc"
+    and abind :: "'ma => ('a => 'ma) => 'ma"
+    and areturn :: "'a => 'ma"
+    and
+    aWHILEIT :: "('a => bool) => ('a => bool) => ('a => 'ma) => 'a => 'ma"
+    and
+    aWHILEI :: "('a => bool) => ('a => bool) => ('a => 'ma) => 'a => 'ma"
+    and aWHILET :: "('a => bool) => ('a => 'ma) => 'a => 'ma"
+    and aWHILE :: "('a => bool) => ('a => 'ma) => 'a => 'ma"
+    and \<alpha> :: "'mc => 'ma"
+  assumes
+    "transfer_WHILE cbind creturn cWHILEIT cWHILEI cWHILET cWHILE abind
+      areturn aWHILEIT aWHILEI aWHILET aWHILE \<alpha>"
+locale generic_WHILE_rules
+  fixes bind :: "'a => ('b => 'a) => 'a"
+    and return :: "'b => 'a"
+    and SPEC :: "('b => bool) => 'a"
+    and WHILEIT :: "('b => bool) => ('b => bool) => ('b => 'a) => 'b => 'a"
+    and WHILEI :: "('b => bool) => ('b => bool) => ('b => 'a) => 'b => 'a"
+    and WHILET :: "('b => bool) => ('b => 'a) => 'b => 'a"
+    and WHILE :: "('b => bool) => ('b => 'a) => 'b => 'a"
+  assumes "generic_WHILE_rules bind return SPEC WHILEIT WHILEI WHILET WHILE"
+### theory "Draft.RefineG_While"
+### 0.349s elapsed time, 0.787s cpu time, 0.181s GC time
+Loading theory "Draft.Refine_Det" (required by "Draft.Refine_AutomationMoreTemplates" via "Draft.Refine_Automation" via "Draft.Refine_Transfer")
+instantiation
+  nres :: (type) complete_lattice
+  Inf_nres == Inf :: 'a nres set => 'a nres
+  Sup_nres == Sup :: 'a nres set => 'a nres
+  bot_nres == bot :: 'a nres
+  sup_nres == sup :: 'a nres => 'a nres => 'a nres
+  top_nres == top :: 'a nres
+  inf_nres == inf :: 'a nres => 'a nres => 'a nres
+  less_eq_nres == less_eq :: 'a nres => 'a nres => bool
+  less_nres == less :: 'a nres => 'a nres => bool
+Found termination order: "{}"
+Found termination order: "{}"
+Found termination order: "{}"
+Found termination order: "{}"
+structure refine_pw_simps: NAMED_THMS
+### No equation for constructor "FAILi"
+consts
+  the_RES :: "'a nres => 'a set"
+instantiation
+  dres :: (type) complete_lattice
+  Inf_dres == Inf :: 'a dres set => 'a dres
+  Sup_dres == Sup :: 'a dres set => 'a dres
+  bot_dres == bot :: 'a dres
+  sup_dres == sup :: 'a dres => 'a dres => 'a dres
+  top_dres == top :: 'a dres
+  inf_dres == inf :: 'a dres => 'a dres => 'a dres
+  less_eq_dres == less_eq :: 'a dres => 'a dres => bool
+  less_dres == less :: 'a dres => 'a dres => bool
+structure Refine:
+  sig
+    val no_prod_split: bool Config.T
+    val post_tac: Proof.context -> tactic'
+    val rcg_tac: thm list -> Proof.context -> tactic'
+    structure refine: NAMED_THMS
+    structure refine0: NAMED_THMS
+    structure refine2: NAMED_THMS
+    structure vcg: NAMED_THMS
+    structure vcg_cons: NAMED_THMS
+  end
+Found termination order: "{}"
+Found termination order: "{}"
+Found termination order: "{}"
+### theory "Draft.Refine_Det"
+### 1.227s elapsed time, 2.680s cpu time, 0.418s GC time
+### theory "Draft.Refine_Basic"
+### 1.762s elapsed time, 3.753s cpu time, 0.739s GC time
+Loading theory "Draft.Refine_Leof" (required by "Draft.Refine_AutomationMoreTemplates" via "Draft.Refine_Automation" via "Draft.Refine_Transfer" via "Draft.Refine_While")
+### theory "Draft.Refine_Leof"
+### 0.091s elapsed time, 0.098s cpu time, 0.000s GC time
+Loading theory "Draft.Refine_While" (required by "Draft.Refine_AutomationMoreTemplates" via "Draft.Refine_Automation" via "Draft.Refine_Transfer")
+Proofs for inductive predicate(s) "rwof"
+  Proving monotonicity ...
+consts
+  bounded_WHILE' ::
+    "nat => ('a => bool) => ('a => 'a nres) => 'a nres => 'a nres"
+consts
+  bounded_WHILE ::
+    "nat => ('a => bool) => ('a => 'a nres) => 'a nres => 'a nres"
+### theory "Draft.Refine_While"
+### 0.737s elapsed time, 0.859s cpu time, 0.139s GC time
+Loading theory "Draft.Refine_Transfer" (required by "Draft.Refine_AutomationMoreTemplates" via "Draft.Refine_Automation")
+### Missing patterns in function definition:
+### the_res dSUCCEEDi = undefined
+### the_res dFAILi = undefined
+Found termination order: "{}"
+### theory "Draft.Refine_Transfer"
+### 0.266s elapsed time, 0.272s cpu time, 0.000s GC time
+Loading theory "Draft.Refine_Automation" (required by "Draft.Refine_AutomationMoreTemplates")
+signature REFINE_AUTOMATION =
+  sig
+    val add_cd_pattern: cterm -> Context.generic -> Context.generic
+    val add_extraction: string -> extraction -> theory -> theory
+    val add_vc_rec_thm: thm -> Context.generic -> Context.generic
+    val add_vc_solve_thm: thm -> Context.generic -> Context.generic
+    val define_concrete_fun:
+       extraction list option ->
+         binding ->
+           Token.src list ->
+             indexname list ->
+               thm ->
+                 cterm list -> local_theory -> (thm * thm) * local_theory
+    val del_cd_pattern: cterm -> Context.generic -> Context.generic
+    val del_vc_rec_thm: thm -> Context.generic -> Context.generic
+    val del_vc_solve_thm: thm -> Context.generic -> Context.generic
+    val extract_as_def:
+       (string * typ) list ->
+         string -> term -> local_theory -> (term * thm) * local_theory
+    val extract_recursion_eqs:
+       extraction list -> string -> thm -> local_theory -> local_theory
+    type extraction =
+       {gen_tac: local_theory -> tactic', gen_thm: thm, pattern: term}
+    val get_cd_patterns: Proof.context -> cterm list
+    val get_vc_rec_thms: Proof.context -> thm list
+    val get_vc_solve_thms: Proof.context -> thm list
+    val mk_qualified: string -> bstring -> binding
+    val prepare_cd_pattern: Proof.context -> cterm -> cterm
+    val prepare_code_thms_cmd:
+       string list -> thm -> local_theory -> local_theory
+    val setup: theory -> theory
+    val vc_solve_modifiers: Method.modifier parser list
+    val vc_solve_tac: Proof.context -> bool -> tactic'
+  end
+structure Refine_Automation: REFINE_AUTOMATION
+val it = (): unit
+val it = (): unit
+### theory "Draft.Refine_Automation"
+### 0.185s elapsed time, 0.310s cpu time, 0.169s GC time
+Loading theory "Draft.Refine_AutomationMoreTemplates"
+val templateLemmas = []: (string * thm * template) list
+### theory "Draft.Refine_AutomationMoreTemplates"
+### 0.453s elapsed time, 0.623s cpu time, 0.000s GC time
+val it = (): unit

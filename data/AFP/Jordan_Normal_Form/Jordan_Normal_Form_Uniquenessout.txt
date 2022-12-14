@@ -1,0 +1,566 @@
+Loading theory "Draft.Missing_Misc" (required by "Draft.Jordan_Normal_Form_UniquenessTemplates" via "Draft.Jordan_Normal_Form_Uniqueness" via "Draft.Jordan_Normal_Form" via "Draft.Matrix" via "Draft.Missing_Ring")
+Loading theory "Draft.Conjugate" (required by "Draft.Jordan_Normal_Form_UniquenessTemplates" via "Draft.Jordan_Normal_Form_Uniqueness" via "Draft.Jordan_Normal_Form" via "Draft.Matrix")
+Loading theory "Draft.Templates" (required by "Draft.Jordan_Normal_Form_UniquenessTemplates" via "Draft.ExtrEqs")
+datatype template_term
+=
+     t_empty
+   | template_app of template_term * template_term
+   | template_hole of int
+   | template_var of int
+datatype sign
+= equals | greater_equals | greater_than | less_equals | less_than
+datatype template
+=
+     template_bimplication of template * template
+   | template_dunno
+   | template_equation of template_term * template_term
+   | template_implication of template list * template
+   | template_inequation of sign * template_term * template_term
+   | template_negation of template
+   | template_predicate of template_term
+constructor t_empty: template_term
+constructor template_app: template_term * template_term -> template_term
+constructor template_hole: int -> template_term
+constructor template_var: int -> template_term
+constructor equals: sign
+constructor greater_equals: sign
+constructor greater_than: sign
+constructor less_equals: sign
+constructor less_than: sign
+constructor template_bimplication: template * template -> template
+constructor template_dunno: template
+constructor template_equation: template_term * template_term -> template
+constructor template_implication: template list * template -> template
+constructor template_inequation:
+   sign * template_term * template_term -> template
+constructor template_negation: template -> template
+constructor template_predicate: template_term -> template
+val vfs = fn: term -> (indexname * typ) list * (string * typ) list
+val indexOf = fn: ''a list -> ''a -> int -> int
+val has_eq = fn: term -> bool
+val term2template = fn:
+   (indexname * typ) list -> (string * typ) list -> term -> template_term
+val lemma2predicate = fn: term -> term -> template
+val makeTemplatewithContext = fn: term -> term -> template
+val lemma2template = fn: term -> template
+val thm2template = fn: thm -> template
+val tterm2string = fn: template_term -> string
+val template2string = fn: template -> string
+val t = "height ?t <= size ?t": thm
+val th =
+   Const ("HOL.Trueprop", "bool => prop") $
+     (Const ("Orderings.ord_class.less_eq", "nat => nat => bool") $
+       (Const ("Tree.height_class.height", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree")) $
+       (Const ("Nat.size_class.size", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree"))):
+   term
+### theory "Draft.Templates"
+### 0.066s elapsed time, 0.236s cpu time, 0.000s GC time
+Loading theory "Draft.ExtrEqs" (required by "Draft.Jordan_Normal_Form_UniquenessTemplates")
+class conjugate = type +
+  fixes conjugate :: "'a => 'a"
+  assumes "conjugate_id": "!!a. conjugate (conjugate a) = a"
+    and
+    "conjugate_cancel_iff": "!!a b. (conjugate a = conjugate b) = (a = b)"
+### theory "Draft.Missing_Misc"
+### 0.138s elapsed time, 0.402s cpu time, 0.048s GC time
+Loading theory "Draft.Missing_Ring" (required by "Draft.Jordan_Normal_Form_UniquenessTemplates" via "Draft.Jordan_Normal_Form_Uniqueness" via "Draft.Jordan_Normal_Form" via "Draft.Matrix")
+class conjugatable_ring = conjugate + ring +
+  assumes
+    "conjugate_dist_mul":
+      "!!a b. conjugate (a * b) = conjugate a * conjugate b"
+    and
+    "conjugate_dist_add":
+      "!!a b. conjugate (a + b) = conjugate a + conjugate b"
+    and "conjugate_neg": "!!a. conjugate (- a) = - conjugate a"
+    and "conjugate_zero": "conjugate (0::'a) = (0::'a)"
+val eqpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Var (("_dummy_", 2), "?'a"))
+       ):
+   term Find_Theorems.criterion
+val badeqpattern = Pattern (Const ("Pure.eq", "?'a => ?'a => prop")):
+   term Find_Theorems.criterion
+val undefpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Const ("HOL.undefined", "?'a"))
+       ):
+   term Find_Theorems.criterion
+val thmpattern =
+   Pattern
+    (Const ("HOL.Trueprop", "bool => prop") $ Var (("_dummy_", 1), "bool")):
+   term Find_Theorems.criterion
+val badnames =
+   ["*nitpick*", "*Nitpick*", "*full_exhaustive*", "*_def*", "Enum.finite*",
+    "*Quickcheck*", "ATP*", "*Nunchaku*", "*Code*", "*BNF*", "*SMT*",
+    "*.*.*"]:
+   string list
+val unwanted_names =
+   [(false, Name "*nitpick*"), (false, Name "*Nitpick*"),
+    (false, Name "*full_exhaustive*"), (false, Name "*_def*"),
+    (false, Name "Enum.finite*"), (false, Name "*Quickcheck*"),
+    (false, Name "ATP*"), (false, Name "*Nunchaku*"),
+    (false, Name "*Code*"), (false, Name "*BNF*"), (false, Name "*SMT*"),
+    (false, Name "*.*.*")]:
+   (bool * term Find_Theorems.criterion) list
+val has_vars = fn: term -> bool
+val get_all_eqs = fn: string -> Proof.context -> (string * thm) list
+val get_all_thms = fn: string -> Proof.context -> (string * thm) list
+val get_noneq_thms = fn: string -> Proof.context -> (string * thm) list
+val template_eqs = fn:
+   string -> Proof.context -> (string * thm * template) list
+val template_thms = fn:
+   string -> Proof.context -> (string * thm * template) list
+### theory "Draft.ExtrEqs"
+### 0.626s elapsed time, 1.776s cpu time, 0.187s GC time
+class ordered_semiring_strict = comm_monoid_add +
+  ordered_cancel_ab_semigroup_add + semiring +
+  assumes
+    "mult_strict_left_mono":
+      "!!a b c. [| a < b; (0::'a) < c |] ==> c * a < c * b"
+  assumes
+    "mult_strict_right_mono":
+      "!!a b c. [| a < b; (0::'a) < c |] ==> a * c < b * c"
+class conjugatable_ordered_ring = conjugatable_ring +
+  ordered_comm_monoid_add +
+  assumes "conjugate_square_positive": "!!a. (0::'a) <= a * conjugate a"
+class ordered_idom = ordered_semiring_strict + idom +
+  assumes "zero_less_one": "(0::'a) < (1::'a)"
+instantiation
+  complex :: conjugatable_ordered_field
+  conjugate_complex == conjugate :: complex => complex
+instantiation
+  real :: conjugatable_ordered_field
+  conjugate_real == conjugate :: real => real
+instantiation
+  rat :: conjugatable_ordered_field
+  conjugate_rat == conjugate :: rat => rat
+instantiation
+  int :: conjugatable_ordered_ring
+  conjugate_int == conjugate :: int => int
+### theory "Draft.Conjugate"
+### 2.638s elapsed time, 5.926s cpu time, 0.740s GC time
+locale Group.comm_monoid
+  fixes G :: "('a, 'b) monoid_scheme"  (structure)
+  assumes "Group.comm_monoid G"
+locale csemiring
+  fixes R :: "('a, 'b) ring_scheme"  (structure)
+  assumes "csemiring R"
+locale cring
+  fixes R :: "('a, 'b) ring_scheme"  (structure)
+  assumes "cring R"
+locale Group.comm_monoid
+  fixes G :: "('a, 'b) monoid_scheme"  (structure)
+  assumes "Group.comm_monoid G"
+locale cring
+  fixes R :: "('a, 'b) ring_scheme"  (structure)
+  assumes "cring R"
+### theory "Draft.Missing_Ring"
+### 3.193s elapsed time, 6.454s cpu time, 1.096s GC time
+Loading theory "Draft.Matrix" (required by "Draft.Jordan_Normal_Form_UniquenessTemplates" via "Draft.Jordan_Normal_Form_Uniqueness" via "Draft.Jordan_Normal_Form")
+Loading theory "Draft.Missing_VectorSpace" (required by "Draft.Jordan_Normal_Form_UniquenessTemplates" via "Draft.Jordan_Normal_Form_Uniqueness" via "Draft.Matrix_Kernel" via "Draft.VS_Connect")
+locale Missing_VectorSpace.comp_fun_commute_on
+  fixes f :: "'a => 'a => 'a"
+    and A :: "'a set"
+  assumes "Missing_VectorSpace.comp_fun_commute_on f A"
+locale Missing_VectorSpace.comp_fun_commute_on
+  fixes f :: "'a => 'a => 'a"
+    and A :: "'a set"
+  assumes "Missing_VectorSpace.comp_fun_commute_on f A"
+locale abelian_group
+  fixes G :: "('a, 'b) ring_scheme"  (structure)
+  assumes "abelian_group G"
+locale vectorspace
+  fixes K :: "('a, 'b) ring_scheme"
+    and V :: "('a, 'c, 'd) module_scheme"
+  assumes "vectorspace K V"
+locale module
+  fixes R :: "('a, 'b) ring_scheme"  (structure)
+    and M :: "('a, 'c, 'd) module_scheme"  (structure)
+  assumes "module R M"
+instantiation
+  vec :: (plus) plus
+  plus_vec == plus :: 'a vec => 'a vec => 'a vec
+instantiation
+  vec :: (minus) minus
+  minus_vec == minus :: 'a vec => 'a vec => 'a vec
+locale linear_map
+  fixes K :: "('a, 'b) ring_scheme"
+    and V :: "('a, 'c, 'd) module_scheme"
+    and W :: "('a, 'e, 'f) module_scheme"
+    and T :: "'c => 'e"
+  assumes "linear_map K V W T"
+Found termination order: "(%p. size (snd p)) <*mlex*> {}"
+Found termination order: "(%p. size (snd p)) <*mlex*> {}"
+instantiation
+  vec :: (uminus) uminus
+  uminus_vec == uminus :: 'a vec => 'a vec
+instantiation
+  vec :: (ord) ord
+  less_eq_vec == less_eq :: 'a vec => 'a vec => bool
+  less_vec == less :: 'a vec => 'a vec => bool
+instantiation
+  vec :: (preorder) preorder
+instantiation
+  vec :: (order) order
+Found termination order: "{}"
+locale abelian_monoid
+  fixes G :: "('a, 'b) ring_scheme"  (structure)
+  assumes "abelian_monoid G"
+instantiation
+  mat :: (ord) ord
+  less_eq_mat == less_eq :: 'a mat => 'a mat => bool
+  less_mat == less :: 'a mat => 'a mat => bool
+instantiation
+  mat :: (preorder) preorder
+instantiation
+  mat :: (order) order
+instantiation
+  mat :: (plus) plus
+  plus_mat == plus :: 'a mat => 'a mat => 'a mat
+instantiation
+  mat :: (uminus) uminus
+  uminus_mat == uminus :: 'a mat => 'a mat
+instantiation
+  mat :: (minus) minus
+  minus_mat == minus :: 'a mat => 'a mat => 'a mat
+instantiation
+  mat :: (semiring_0) times
+  times_mat == times :: 'a mat => 'a mat => 'a mat
+locale module
+  fixes R :: "('a, 'b) ring_scheme"  (structure)
+    and M :: "('a, 'c, 'd) module_scheme"  (structure)
+  assumes "module R M"
+### theory "Draft.Missing_VectorSpace"
+### 1.735s elapsed time, 3.522s cpu time, 0.448s GC time
+Found termination order: "(%p. size (snd p)) <*mlex*> {}"
+Found termination order: "length <*mlex*> {}"
+locale semiring_hom
+  fixes hom :: "'a => 'b"
+  assumes "semiring_hom hom"
+instantiation
+  vec :: (conjugate) conjugate
+  conjugate_vec == conjugate :: 'a vec => 'a vec
+### theory "Draft.Matrix"
+### 3.036s elapsed time, 5.312s cpu time, 1.214s GC time
+Loading theory "Draft.Gauss_Jordan_Elimination" (required by "Draft.Jordan_Normal_Form_UniquenessTemplates" via "Draft.Jordan_Normal_Form_Uniqueness" via "Draft.Jordan_Normal_Form" via "Draft.Char_Poly" via "Draft.Determinant" via "Draft.Column_Operations")
+Found termination order:
+  "(%p. size_list (%p. size (snd p)) (snd (snd p))) <*mlex*> {}"
+### theory "Draft.Gauss_Jordan_Elimination"
+### 0.884s elapsed time, 1.027s cpu time, 0.244s GC time
+Loading theory "Draft.Column_Operations" (required by "Draft.Jordan_Normal_Form_UniquenessTemplates" via "Draft.Jordan_Normal_Form_Uniqueness" via "Draft.Jordan_Normal_Form" via "Draft.Char_Poly" via "Draft.Determinant")
+Found termination order: "(%p. size (snd p)) <*mlex*> {}"
+Found termination order: "(%p. size (snd p)) <*mlex*> {}"
+### theory "Draft.Column_Operations"
+### 0.291s elapsed time, 0.294s cpu time, 0.000s GC time
+Loading theory "Draft.Determinant" (required by "Draft.Jordan_Normal_Form_UniquenessTemplates" via "Draft.Jordan_Normal_Form_Uniqueness" via "Draft.Jordan_Normal_Form" via "Draft.Char_Poly")
+### theory "Draft.Determinant"
+### 1.385s elapsed time, 2.179s cpu time, 1.122s GC time
+Loading theory "Draft.Char_Poly" (required by "Draft.Jordan_Normal_Form_UniquenessTemplates" via "Draft.Jordan_Normal_Form_Uniqueness" via "Draft.Jordan_Normal_Form")
+Loading theory "Draft.VS_Connect" (required by "Draft.Jordan_Normal_Form_UniquenessTemplates" via "Draft.Jordan_Normal_Form_Uniqueness" via "Draft.Matrix_Kernel")
+locale inj_comm_ring_hom
+  fixes hom :: "'a => 'b"
+  assumes "inj_comm_ring_hom hom"
+### Cannot skip proof of schematic goal statement
+### theory "Draft.Char_Poly"
+### 0.808s elapsed time, 1.688s cpu time, 0.246s GC time
+Loading theory "Draft.Jordan_Normal_Form" (required by "Draft.Jordan_Normal_Form_UniquenessTemplates" via "Draft.Jordan_Normal_Form_Uniqueness")
+### Cannot skip proof of schematic goal statement
+### theory "Draft.Jordan_Normal_Form"
+### 0.299s elapsed time, 0.641s cpu time, 0.192s GC time
+### Cannot skip proof of schematic goal statement
+### Cannot skip proof of schematic goal statement
+locale matrix_ring
+  fixes n :: "nat"
+    and field_type :: "'a itself"
+locale vec_module
+  fixes f_ty :: "'a itself"
+    and n :: "nat"
+### Cannot skip proof of schematic goal statement
+locale matrix_vs
+  fixes nr :: "nat"
+    and nc :: "nat"
+    and field_type :: "'a itself"
+### Cannot skip proof of schematic goal statement
+locale vec_space
+  fixes f_ty :: "'a itself"
+    and n :: "nat"
+### Cannot skip proof of schematic goal statement
+locale mat_space
+  fixes f_ty :: "'a itself"
+    and nc :: "nat"
+    and nr :: "nat"
+locale vec_space
+  fixes f_ty :: "'a itself"
+    and n :: "nat"
+locale vec_module
+  fixes f_ty :: "'a itself"
+    and n :: "nat"
+locale idom_vec
+  fixes n :: "nat"
+    and f_ty :: "'a itself"
+locale vec_space
+  fixes f_ty :: "'a itself"
+    and n :: "nat"
+locale vec_module
+  fixes f_ty :: "'a itself"
+    and n :: "nat"
+locale vec_space
+  fixes f_ty :: "'a itself"
+    and n :: "nat"
+### theory "Draft.VS_Connect"
+### 6.360s elapsed time, 8.096s cpu time, 1.351s GC time
+Loading theory "Draft.Matrix_Kernel" (required by "Draft.Jordan_Normal_Form_UniquenessTemplates" via "Draft.Jordan_Normal_Form_Uniqueness")
+locale kernel
+  fixes nr :: "nat"
+    and nc :: "nat"
+    and A :: "'a mat"
+  assumes "Matrix_Kernel.kernel nr nc A"
+### Cannot skip proof of schematic goal statement
+locale vardim
+  fixes f_ty :: "'a itself"
+### theory "Draft.Matrix_Kernel"
+### 1.662s elapsed time, 2.011s cpu time, 0.378s GC time
+Loading theory "Draft.Jordan_Normal_Form_Uniqueness" (required by "Draft.Jordan_Normal_Form_UniquenessTemplates")
+### theory "Draft.Jordan_Normal_Form_Uniqueness"
+### 0.311s elapsed time, 0.311s cpu time, 0.000s GC time
+Loading theory "Draft.Jordan_Normal_Form_UniquenessTemplates"
+val templateLemmas =
+   [("Jordan_Normal_Form_Uniqueness.dim_gen_eigenspace_similar",
+     "similar_mat ?A ?B ==> dim_gen_eigenspace ?A = dim_gen_eigenspace ?B",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 2, template_var 1),
+              template_var 0)
+            )],
+       template_equation
+        (template_app (template_hole 0, template_var 1),
+         template_app (template_hole 0, template_var 0)))),
+    ("Jordan_Normal_Form_Uniqueness.jordan_nf_unique",
+     "[| jordan_nf ?A ?n_as; jordan_nf ?A ?m_bs |]
+      ==> set ?n_as = set ?m_bs",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 2, template_var 2),
+              template_var 1)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 2, template_var 2),
+              template_var 0)
+            )],
+       template_equation
+        (template_app (template_hole 0, template_var 1),
+         template_app (template_hole 0, template_var 0)))),
+    ("Jordan_Normal_Form_Uniqueness.similar_mat_wit_char_matrix",
+     "similar_mat_wit ?A ?B ?P ?Q ==>
+      similar_mat_wit (char_matrix ?A ?ev) (char_matrix ?B ?ev) ?P ?Q",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 1, template_var 4),
+                  template_var 3),
+                template_var 2),
+              template_var 1)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_hole 1,
+                   template_app
+                    (template_app (template_hole 0, template_var 4),
+                     template_var 0)),
+                 template_app
+                  (template_app (template_hole 0, template_var 3),
+                   template_var 0)),
+               template_var 2),
+             template_var 1)
+           ))),
+    ("Jordan_Normal_Form_Uniqueness.compute_set_of_jordan_blocks",
+     "jordan_nf ?A ?n_as ==>
+      set (compute_set_of_jordan_blocks ?A ?ev) =
+      set ?n_as Int UNIV \<times> {?ev}",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 8, template_var 2),
+              template_var 1)
+            )],
+       template_equation
+        (template_app
+          (template_hole 6,
+           template_app
+            (template_app (template_hole 5, template_var 2),
+             template_var 0)),
+         template_app
+          (template_app
+            (template_hole 4,
+             template_app (template_hole 6, template_var 1)),
+           template_app
+            (template_app (template_hole 3, template_hole 2), t_empty))))),
+    ("Jordan_Normal_Form_Uniqueness.dim_gen_eigenspace_jordan_matrix",
+     "dim_gen_eigenspace (jordan_matrix ?n_as) ?ev ?k =
+      sum_list (map (min ?k) (map fst (filter (%(n, e). e = ?ev) ?n_as)))",
+     template_equation
+      (template_app
+        (template_app
+          (template_app
+            (template_hole 9,
+             template_app (template_hole 8, template_var 2)),
+           template_var 1),
+         template_var 0),
+       template_app
+        (template_hole 7,
+         template_app
+          (template_app (template_hole 6, t_empty),
+           template_app
+            (template_app (template_hole 4, template_hole 3),
+             template_app
+              (template_app
+                (template_hole 2, template_app (template_hole 1, t_empty)),
+               template_var 2)))))),
+    ("Jordan_Normal_Form_Uniqueness.compute_nr_of_jordan_blocks",
+     "[| jordan_nf ?A ?n_as; ?k ~= 0 |]
+      ==> compute_nr_of_jordan_blocks ?A ?ev ?k =
+          length (filter ((=) (?k, ?ev)) ?n_as)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 8, template_var 3),
+              template_var 2)
+            ),
+        template_negation
+         (template_equation (template_var 1, template_hole 5))],
+       template_implication
+        ([template_predicate
+           (
+              template_app
+               (template_app
+                 (template_app (template_hole 4, template_var 3),
+                  template_var 0),
+                template_var 1)
+              )],
+         template_predicate
+          (
+             template_app
+              (template_hole 3,
+               template_app
+                (template_app
+                  (template_hole 2,
+                   template_app
+                    (template_hole 1,
+                     template_app
+                      (template_app (template_hole 0, template_var 1),
+                       template_var 0))),
+                 template_var 2))
+             )))),
+    ("Jordan_Normal_Form_Uniqueness.dim_kernel_zero_jordan_block_pow",
+     "vectorspace.dim class_ring
+       (module_vec TYPE(?'a) ?n
+        (| carrier :=
+             mat_kernel (jordan_block ?n (0::?'a) ^\<^sub>m ?k) |)) =
+      min ?k ?n",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 16,
+           template_app
+            (template_app (template_hole 15, template_hole 14),
+             template_app
+              (template_app
+                (template_app (template_hole 13, template_hole 12),
+                 template_hole 11),
+               template_app
+                (template_app
+                  (template_app (template_hole 10, template_hole 9),
+                   template_hole 8),
+                 template_hole 7)))),
+         template_app
+          (template_app (template_hole 6, t_empty),
+           template_app
+            (template_app (template_hole 2, template_hole 1),
+             template_var 1))),
+       template_app
+        (template_app (template_hole 0, template_var 0), template_var 1))),
+    ("Jordan_Normal_Form_Uniqueness.dim_gen_eigenspace",
+     "jordan_nf ?A ?n_as ==>
+      dim_gen_eigenspace ?A ?ev ?k =
+      sum_list (map (min ?k) (map fst (filter (%(n, e). e = ?ev) ?n_as)))",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 10, template_var 3),
+              template_var 2)
+            )],
+       template_equation
+        (template_app
+          (template_app
+            (template_app (template_hole 8, template_var 3),
+             template_var 1),
+           template_var 0),
+         template_app
+          (template_hole 7,
+           template_app
+            (template_app (template_hole 6, t_empty),
+             template_app
+              (template_app (template_hole 4, template_hole 3),
+               template_app
+                (template_app
+                  (template_hole 2,
+                   template_app (template_hole 1, t_empty)),
+                 template_var 2))))))),
+    ("Jordan_Normal_Form_Uniqueness.dim_kernel_non_zero_jordan_block_pow",
+     "?a ~= (0::?'a) ==>
+      vectorspace.dim class_ring
+       (module_vec TYPE(?'a) ?n
+        (| carrier := mat_kernel (jordan_block ?n ?a ^\<^sub>m ?k) |)) =
+      0",
+     template_implication
+      ([template_negation
+         (template_equation (template_var 2, template_hole 17))],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 15,
+             template_app
+              (template_app (template_hole 14, template_hole 13),
+               template_app
+                (template_app
+                  (template_app (template_hole 12, template_hole 11),
+                   template_hole 10),
+                 template_app
+                  (template_app
+                    (template_app (template_hole 9, template_hole 17),
+                     template_hole 8),
+                   template_hole 7)))),
+           template_app
+            (template_app (template_hole 6, t_empty),
+             template_app
+              (template_app (template_hole 2, template_hole 1),
+               template_var 1))),
+         template_hole 0)))]:
+   (string * thm * template) list
+### theory "Draft.Jordan_Normal_Form_UniquenessTemplates"
+### 0.734s elapsed time, 1.024s cpu time, 0.244s GC time
+val it = (): unit

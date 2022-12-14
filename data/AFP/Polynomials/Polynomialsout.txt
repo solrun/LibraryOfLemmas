@@ -1,0 +1,1348 @@
+Loading theory "Draft.Polynomials" (required by "Draft.PolynomialsTemplates")
+Loading theory "Draft.Templates" (required by "Draft.PolynomialsTemplates" via "Draft.ExtrEqs")
+datatype template_term
+=
+     t_empty
+   | template_app of template_term * template_term
+   | template_hole of int
+   | template_var of int
+datatype sign
+= equals | greater_equals | greater_than | less_equals | less_than
+datatype template
+=
+     template_bimplication of template * template
+   | template_dunno
+   | template_equation of template_term * template_term
+   | template_implication of template list * template
+   | template_inequation of sign * template_term * template_term
+   | template_negation of template
+   | template_predicate of template_term
+constructor t_empty: template_term
+constructor template_app: template_term * template_term -> template_term
+constructor template_hole: int -> template_term
+constructor template_var: int -> template_term
+constructor equals: sign
+constructor greater_equals: sign
+constructor greater_than: sign
+constructor less_equals: sign
+constructor less_than: sign
+constructor template_bimplication: template * template -> template
+constructor template_dunno: template
+constructor template_equation: template_term * template_term -> template
+constructor template_implication: template list * template -> template
+constructor template_inequation:
+   sign * template_term * template_term -> template
+constructor template_negation: template -> template
+constructor template_predicate: template_term -> template
+val vfs = fn: term -> (indexname * typ) list * (string * typ) list
+val indexOf = fn: ''a list -> ''a -> int -> int
+val has_eq = fn: term -> bool
+val term2template = fn:
+   (indexname * typ) list -> (string * typ) list -> term -> template_term
+val lemma2predicate = fn: term -> term -> template
+val makeTemplatewithContext = fn: term -> term -> template
+val lemma2template = fn: term -> template
+val thm2template = fn: thm -> template
+val tterm2string = fn: template_term -> string
+val template2string = fn: template -> string
+val t = "height ?t <= size ?t": thm
+val th =
+   Const ("HOL.Trueprop", "bool => prop") $
+     (Const ("Orderings.ord_class.less_eq", "nat => nat => bool") $
+       (Const ("Tree.height_class.height", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree")) $
+       (Const ("Nat.size_class.size", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree"))):
+   term
+### theory "Draft.Templates"
+### 0.049s elapsed time, 0.129s cpu time, 0.000s GC time
+Loading theory "Draft.ExtrEqs" (required by "Draft.PolynomialsTemplates")
+val eqpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Var (("_dummy_", 2), "?'a"))
+       ):
+   term Find_Theorems.criterion
+val badeqpattern = Pattern (Const ("Pure.eq", "?'a => ?'a => prop")):
+   term Find_Theorems.criterion
+val undefpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Const ("HOL.undefined", "?'a"))
+       ):
+   term Find_Theorems.criterion
+val thmpattern =
+   Pattern
+    (Const ("HOL.Trueprop", "bool => prop") $ Var (("_dummy_", 1), "bool")):
+   term Find_Theorems.criterion
+val badnames =
+   ["*nitpick*", "*Nitpick*", "*full_exhaustive*", "*_def*", "Enum.finite*",
+    "*Quickcheck*", "ATP*", "*Nunchaku*", "*Code*", "*BNF*", "*SMT*",
+    "*.*.*"]:
+   string list
+val unwanted_names =
+   [(false, Name "*nitpick*"), (false, Name "*Nitpick*"),
+    (false, Name "*full_exhaustive*"), (false, Name "*_def*"),
+    (false, Name "Enum.finite*"), (false, Name "*Quickcheck*"),
+    (false, Name "ATP*"), (false, Name "*Nunchaku*"),
+    (false, Name "*Code*"), (false, Name "*BNF*"), (false, Name "*SMT*"),
+    (false, Name "*.*.*")]:
+   (bool * term Find_Theorems.criterion) list
+val has_vars = fn: term -> bool
+val get_all_eqs = fn: string -> Proof.context -> (string * thm) list
+val get_all_thms = fn: string -> Proof.context -> (string * thm) list
+val get_noneq_thms = fn: string -> Proof.context -> (string * thm) list
+val template_eqs = fn:
+   string -> Proof.context -> (string * thm * template) list
+val template_thms = fn:
+   string -> Proof.context -> (string * thm * template) list
+### theory "Draft.ExtrEqs"
+### 0.603s elapsed time, 1.322s cpu time, 0.355s GC time
+consts
+  eval_tpoly :: "('v => 'a) => ('v, 'a) tpoly => 'a"
+class linorder = order +
+  assumes "linear": "!!x y. x <= y | y <= x"
+Found termination order:
+  "(%p. size_list (%p. size (snd p)) (snd p)) <*mlex*> {}"
+Found termination order:
+  "(%p. size_list (%p. size (snd p)) (snd p)) <*mlex*>
+   (%p. size_list (%p. size (snd p)) (fst p)) <*mlex*> {}"
+instantiation
+  monom :: (linorder) comm_monoid_mult
+  one_monom == one_class.one :: 'a monom
+  times_monom == times :: 'a monom => 'a monom => 'a monom
+instantiation
+  monom :: ({equal,linorder}) equal
+  equal_monom == equal_class.equal :: 'a monom => 'a monom => bool
+consts
+  eval_poly :: "('v => 'a) => ('v monom * 'a) list => 'a"
+Found termination order: "(%p. size_list size (fst p)) <*mlex*> {}"
+Found termination order: "(%p. size_list size (snd p)) <*mlex*> {}"
+Found termination order: "(%p. size_list size (fst p)) <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+Found termination order: "(%p. size (snd p)) <*mlex*> {}"
+Found termination order:
+  "(%p. size_list (%p. size (snd p)) (snd p)) <*mlex*> {}"
+Found termination order: "(%p. size_list size (snd p)) <*mlex*> {}"
+locale poly_order_carrier
+  fixes default :: "'a"
+    and gt :: "'a => 'a => bool"  (infix \<open>\<succ>\<close> 50)
+    and power_mono :: "bool"
+    and discrete :: "bool"
+  assumes "poly_order_carrier default (\<succ>) power_mono discrete"
+locale poly_order_carrier
+  fixes default :: "'a"
+    and gt :: "'a => 'a => bool"  (infix \<open>\<succ>\<close> 50)
+    and power_mono :: "bool"
+    and discrete :: "bool"
+  assumes "poly_order_carrier default (\<succ>) power_mono discrete"
+Found termination order: "(%p. size_list size (fst p)) <*mlex*> {}"
+Found termination order: "(%p. size_list size (fst p)) <*mlex*> {}"
+locale poly_order_carrier
+  fixes default :: "'a"
+    and gt :: "'a => 'a => bool"  (infix \<open>\<succ>\<close> 50)
+    and power_mono :: "bool"
+    and discrete :: "bool"
+  assumes "poly_order_carrier default (\<succ>) power_mono discrete"
+Found termination order: "{}"
+locale poly_order_carrier
+  fixes default :: "'a"
+    and gt :: "'a => 'a => bool"  (infix \<open>\<succ>\<close> 50)
+    and power_mono :: "bool"
+    and discrete :: "bool"
+  assumes "poly_order_carrier default (\<succ>) power_mono discrete"
+### theory "Draft.Polynomials"
+### 3.358s elapsed time, 4.580s cpu time, 1.064s GC time
+Loading theory "Draft.PolynomialsTemplates"
+val templateLemmas =
+   [("Polynomials.eq_poly_refl", "?p =p ?p",
+     template_predicate
+      (
+         template_app
+          (template_app (template_hole 0, template_var 0), template_var 0)
+         )),
+    ("Polynomials.poly_ge_refl", "?p \<ge>p ?p",
+     template_predicate
+      (
+         template_app
+          (template_app (template_hole 0, template_var 0), template_var 0)
+         )),
+    ("Polynomials.poly_const_inv", "poly_inv (poly_const ?a)",
+     template_predicate
+      (
+         template_app
+          (template_hole 1, template_app (template_hole 0, template_var 0))
+         )),
+    ("Polynomials.poly_of_inv", "poly_inv (poly_of ?p)",
+     template_predicate
+      (
+         template_app
+          (template_hole 1, template_app (template_hole 0, template_var 0))
+         )),
+    ("Polynomials.poly_coeff_sum", "(0::?'a) <= poly_coeff_sum ?p",
+     template_inequation
+      (less_equals, template_hole 1,
+       template_app (template_hole 0, template_var 0))),
+    ("Polynomials.var_monom_1", "var_monom ?x ~= 1",
+     template_negation
+      (
+         template_equation
+          (template_app (template_hole 1, template_var 0), template_hole 0)
+         )),
+    ("Polynomials.eval_monom_1", "eval_monom ?\<alpha> 1 = (1::?'a)",
+     template_equation
+      (template_app
+        (template_app (template_hole 2, template_var 0), template_hole 1),
+       template_hole 0)),
+    ("Polynomials.poly_one", "eval_poly ?\<alpha> one_poly = (1::?'a)",
+     template_equation
+      (template_app
+        (template_app (template_hole 2, template_var 0), template_hole 1),
+       template_hole 0)),
+    ("Polynomials.one_monom_inv_sum_var_inv", "sum_var 1 ?x = 0",
+     template_equation
+      (template_app
+        (template_app (template_hole 2, template_hole 1), template_var 0),
+       template_hole 0)),
+    ("Polynomials.poly_zero_add", "poly_add zero_poly ?p = ?p",
+     template_equation
+      (template_app
+        (template_app (template_hole 1, template_hole 0), template_var 0),
+       template_var 0)),
+    ("Polynomials.poly_zero_mult", "poly_mult zero_poly ?p = zero_poly",
+     template_equation
+      (template_app
+        (template_app (template_hole 1, template_hole 0), template_var 0),
+       template_hole 0)),
+    ("Polynomials.poly_one_mult", "poly_mult one_poly ?p =p ?p",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_hole 2,
+             template_app
+              (template_app (template_hole 1, template_hole 0),
+               template_var 0)),
+           template_var 0)
+         )),
+    ("Polynomials.poly_const", "eval_poly ?\<alpha> (poly_const ?a) = ?a",
+     template_equation
+      (template_app
+        (template_app (template_hole 1, template_var 1),
+         template_app (template_hole 0, template_var 0)),
+       template_var 0)),
+    ("Polynomials.poly_vars_list", "set (poly_vars_list ?p) = poly_vars ?p",
+     template_equation
+      (template_app
+        (template_hole 2, template_app (template_hole 1, template_var 0)),
+       template_app (template_hole 0, template_var 0))),
+    ("Polynomials.check_poly_weak_mono_all",
+     "check_poly_weak_mono_all ?p ==> poly_weak_mono_all ?p",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 1, template_var 0))],
+       template_predicate
+        (template_app (template_hole 0, template_var 0)))),
+    ("Polynomials.eval_var_monom",
+     "eval_monom ?\<alpha> (var_monom ?x) = ?\<alpha> ?x",
+     template_equation
+      (template_app
+        (template_app (template_hole 1, template_var 1),
+         template_app (template_hole 0, template_var 0)),
+       template_app (template_var 1, template_var 0))),
+    ("Polynomials.monom_vars_list_var_monom",
+     "monom_vars_list (var_monom ?x) = [?x]",
+     template_equation
+      (template_app
+        (template_hole 3, template_app (template_hole 2, template_var 0)),
+       template_app
+        (template_app (template_hole 1, template_var 0), template_hole 0))),
+    ("Polynomials.poly_add_comm", "poly_add ?p ?q =p poly_add ?q ?p",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_hole 1,
+             template_app
+              (template_app (template_hole 0, template_var 1),
+               template_var 0)),
+           template_app
+            (template_app (template_hole 0, template_var 0),
+             template_var 1))
+         )),
+    ("Polynomials.poly_mult_comm", "poly_mult ?p ?q =p poly_mult ?q ?p",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_hole 1,
+             template_app
+              (template_app (template_hole 0, template_var 1),
+               template_var 0)),
+           template_app
+            (template_app (template_hole 0, template_var 0),
+             template_var 1))
+         )),
+    ("Polynomials.check_poly_weak_mono_all_pos",
+     "check_poly_weak_mono_all ?p ==> ?p \<ge>p zero_poly",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 2, template_var 0))],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 1, template_var 0),
+             template_hole 0)
+           ))),
+    ("Polynomials.poly_weak_mono_all",
+     "poly_weak_mono_all ?p ==> poly_weak_mono ?p ?v",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 1, template_var 1))],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 0, template_var 1), template_var 0)
+           ))),
+    ("Polynomials.poly_of",
+     "eval_poly ?\<alpha> (poly_of ?p) = eval_tpoly ?\<alpha> ?p",
+     template_equation
+      (template_app
+        (template_app (template_hole 2, template_var 1),
+         template_app (template_hole 1, template_var 0)),
+       template_app
+        (template_app (template_hole 0, template_var 1), template_var 0))),
+    ("Polynomials.poly_power_inv",
+     "poly_inv ?p ==> poly_inv (poly_power ?p ?n)",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 1, template_var 1))],
+       template_predicate
+        (
+           template_app
+            (template_hole 1,
+             template_app
+              (template_app (template_hole 0, template_var 1),
+               template_var 0))
+           ))),
+    ("Polynomials.check_poly_eq", "check_poly_eq ?p ?q ==> ?p =p ?q",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 1, template_var 1),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 0, template_var 1), template_var 0)
+           ))),
+    ("Polynomials.check_poly_ge", "check_poly_ge ?p ?q ==> ?p \<ge>p ?q",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 1, template_var 1),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 0, template_var 1), template_var 0)
+           ))),
+    ("Polynomials.check_poly_weak_anti_mono",
+     "check_poly_weak_anti_mono ?p ?v ==> poly_weak_anti_mono ?p ?v",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 1, template_var 1),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 0, template_var 1), template_var 0)
+           ))),
+    ("Polynomials.check_poly_weak_mono",
+     "check_poly_weak_mono ?p ?v ==> poly_weak_mono ?p ?v",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 1, template_var 1),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 0, template_var 1), template_var 0)
+           ))),
+    ("Polynomials.monom_degree",
+     "eval_monom (%_. ?x) ?m = ?x ^ monom_degree ?m",
+     template_equation
+      (template_app
+        (template_app (template_hole 2, t_empty), template_var 0),
+       template_app
+        (template_app (template_hole 1, template_var 1),
+         template_app (template_hole 0, template_var 0)))),
+    ("Polynomials.monom_list_degree",
+     "eval_monom_list (%_. ?x) ?m = ?x ^ monom_list_degree ?m",
+     template_equation
+      (template_app
+        (template_app (template_hole 2, t_empty), template_var 0),
+       template_app
+        (template_app (template_hole 1, template_var 1),
+         template_app (template_hole 0, template_var 0)))),
+    ("Polynomials.monom_list_var_monom",
+     "monom_list (var_monom ?x) = [(?x, 1)]",
+     template_equation
+      (template_app
+        (template_hole 5, template_app (template_hole 4, template_var 0)),
+       template_app
+        (template_app
+          (template_hole 3,
+           template_app
+            (template_app (template_hole 2, template_var 0),
+             template_hole 1)),
+         template_hole 0))),
+    ("Polynomials.pos_assign_monom",
+     "pos_assign ?\<alpha> ==> (0::?'a) <= eval_monom ?\<alpha> ?m",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 3, template_var 1))],
+       template_inequation
+        (less_equals, template_hole 1,
+         template_app
+          (template_app (template_hole 0, template_var 1),
+           template_var 0)))),
+    ("Polynomials.pos_assign_monom_list",
+     "pos_assign ?\<alpha> ==> (0::?'a) <= eval_monom_list ?\<alpha> ?m",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 3, template_var 1))],
+       template_inequation
+        (less_equals, template_hole 1,
+         template_app
+          (template_app (template_hole 0, template_var 1),
+           template_var 0)))),
+    ("Polynomials.monom_mult_poly_inv",
+     "poly_inv ?p ==> poly_inv (monom_mult_poly (?m, ?c) ?p)",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 2, template_var 2))],
+       template_predicate
+        (
+           template_app
+            (template_hole 2,
+             template_app
+              (template_app
+                (template_hole 1,
+                 template_app
+                  (template_app (template_hole 0, template_var 1),
+                   template_var 0)),
+               template_var 2))
+           ))),
+    ("Polynomials.poly_power",
+     "eval_poly ?\<alpha> (poly_power ?p ?n) = eval_poly ?\<alpha> ?p ^ ?n",
+     template_equation
+      (template_app
+        (template_app (template_hole 2, template_var 2),
+         template_app
+          (template_app (template_hole 1, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 0,
+           template_app
+            (template_app (template_hole 2, template_var 2),
+             template_var 1)),
+         template_var 0))),
+    ("Polynomials.sum_var_monom_var",
+     "sum_var (var_monom ?x) ?y = (if ?x = ?y then 1 else 0)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 5,
+                template_app (template_hole 4, template_var 1)),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_hole 3,
+                 template_app
+                  (template_app (template_hole 2, template_var 1),
+                   template_var 0)),
+               template_hole 1),
+             template_hole 0)
+           ))),
+    ("Polynomials.poly_add_assoc",
+     "poly_add ?p1.0 (poly_add ?p2.0 ?p3.0) =p
+      poly_add (poly_add ?p1.0 ?p2.0) ?p3.0",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_hole 1,
+             template_app
+              (template_app (template_hole 0, template_var 2),
+               template_app
+                (template_app (template_hole 0, template_var 1),
+                 template_var 0))),
+           template_app
+            (template_app
+              (template_hole 0,
+               template_app
+                (template_app (template_hole 0, template_var 2),
+                 template_var 1)),
+             template_var 0))
+         )),
+    ("Polynomials.poly_mult_assoc",
+     "poly_mult ?p1.0 (poly_mult ?p2.0 ?p3.0) =p
+      poly_mult (poly_mult ?p1.0 ?p2.0) ?p3.0",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_hole 1,
+             template_app
+              (template_app (template_hole 0, template_var 2),
+               template_app
+                (template_app (template_hole 0, template_var 1),
+                 template_var 0))),
+           template_app
+            (template_app
+              (template_hole 0,
+               template_app
+                (template_app (template_hole 0, template_var 2),
+                 template_var 1)),
+             template_var 0))
+         )),
+    ("Polynomials.monom_list_subst_inv",
+     "(!!x. poly_inv (?\<sigma> x)) ==>
+      poly_inv (monom_list_subst ?\<sigma> ?m)",
+     template_implication
+      ([template_predicate (template_app (template_hole 3, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_hole 1,
+             template_app
+              (template_app (template_hole 0, template_var 1),
+               template_var 0))
+           ))),
+    ("Polynomials.monom_subst_inv",
+     "(!!x. poly_inv (?\<sigma> x)) ==>
+      poly_inv (monom_subst ?\<sigma> ?m)",
+     template_implication
+      ([template_predicate (template_app (template_hole 3, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_hole 1,
+             template_app
+              (template_app (template_hole 0, template_var 1),
+               template_var 0))
+           ))),
+    ("Polynomials.univariate_power",
+     "univariate_power ?x ?m = Some ?n ==> 1 <= ?n",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app (template_hole 3, template_var 2), template_var 1),
+          template_app (template_hole 2, template_var 0))],
+       template_inequation (less_equals, template_hole 0, template_var 0))),
+    ("Polynomials.univariate_power_var_monom",
+     "univariate_power ?y (var_monom ?x) =
+      (if ?x = ?y then Some 1 else None)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 6, template_var 1),
+              template_app (template_hole 5, template_var 0))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_hole 4,
+                 template_app
+                  (template_app (template_hole 3, template_var 0),
+                   template_var 1)),
+               template_app (template_hole 2, template_hole 1)),
+             template_hole 0)
+           ))),
+    ("Polynomials.poly_add_ge_mono",
+     "?p1.0 \<ge>p ?p2.0 ==> poly_add ?p1.0 ?q \<ge>p poly_add ?p2.0 ?q",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 1, template_var 2),
+              template_var 1)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 1,
+               template_app
+                (template_app (template_hole 0, template_var 2),
+                 template_var 0)),
+             template_app
+              (template_app (template_hole 0, template_var 1),
+               template_var 0))
+           ))),
+    ("Polynomials.monom_mult_inj",
+     "?m * ?m1.0 = ?m * ?m2.0 ==> ?m1.0 = ?m2.0",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app (template_hole 0, template_var 2), template_var 1),
+          template_app
+           (template_app (template_hole 0, template_var 2),
+            template_var 0))],
+       template_equation (template_var 1, template_var 0))),
+    ("Polynomials.poly_add_inv",
+     "[| poly_inv ?p; poly_inv ?q |] ==> poly_inv (poly_add ?p ?q)",
+     template_implication
+      ([template_predicate (template_app (template_hole 1, template_var 1)),
+        template_predicate
+         (template_app (template_hole 1, template_var 0))],
+       template_predicate
+        (
+           template_app
+            (template_hole 1,
+             template_app
+              (template_app (template_hole 0, template_var 1),
+               template_var 0))
+           ))),
+    ("Polynomials.poly_minus_inv",
+     "[| poly_inv ?f; poly_inv ?g |] ==> poly_inv (poly_minus ?f ?g)",
+     template_implication
+      ([template_predicate (template_app (template_hole 1, template_var 1)),
+        template_predicate
+         (template_app (template_hole 1, template_var 0))],
+       template_predicate
+        (
+           template_app
+            (template_hole 1,
+             template_app
+              (template_app (template_hole 0, template_var 1),
+               template_var 0))
+           ))),
+    ("Polynomials.poly_mult_inv",
+     "[| poly_inv ?p; poly_inv ?q |] ==> poly_inv (poly_mult ?p ?q)",
+     template_implication
+      ([template_predicate (template_app (template_hole 1, template_var 1)),
+        template_predicate
+         (template_app (template_hole 1, template_var 0))],
+       template_predicate
+        (
+           template_app
+            (template_hole 1,
+             template_app
+              (template_app (template_hole 0, template_var 1),
+               template_var 0))
+           ))),
+    ("Polynomials.eval_monom_mult",
+     "eval_monom ?\<alpha> (?m * ?n) =
+      eval_monom ?\<alpha> ?m * eval_monom ?\<alpha> ?n",
+     template_equation
+      (template_app
+        (template_app (template_hole 2, template_var 2),
+         template_app
+          (template_app (template_hole 1, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 0,
+           template_app
+            (template_app (template_hole 2, template_var 2),
+             template_var 1)),
+         template_app
+          (template_app (template_hole 2, template_var 2),
+           template_var 0)))),
+    ("Polynomials.eval_poly_append",
+     "eval_poly ?\<alpha> (?mc1.0 @ ?mc2.0) =
+      eval_poly ?\<alpha> ?mc1.0 + eval_poly ?\<alpha> ?mc2.0",
+     template_equation
+      (template_app
+        (template_app (template_hole 2, template_var 2),
+         template_app
+          (template_app (template_hole 1, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 0,
+           template_app
+            (template_app (template_hole 2, template_var 2),
+             template_var 1)),
+         template_app
+          (template_app (template_hole 2, template_var 2),
+           template_var 0)))),
+    ("Polynomials.monom_subst",
+     "eval_poly ?\<alpha> (monom_subst ?\<sigma> ?m) =
+      eval_monom (%v. eval_poly ?\<alpha> (?\<sigma> v)) ?m",
+     template_equation
+      (template_app
+        (template_app (template_hole 2, template_var 2),
+         template_app
+          (template_app (template_hole 1, template_var 1), template_var 0)),
+       template_app
+        (template_app (template_hole 0, t_empty), template_var 0))),
+    ("Polynomials.poly_add",
+     "eval_poly ?\<alpha> (poly_add ?p ?q) =
+      eval_poly ?\<alpha> ?p + eval_poly ?\<alpha> ?q",
+     template_equation
+      (template_app
+        (template_app (template_hole 2, template_var 2),
+         template_app
+          (template_app (template_hole 1, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 0,
+           template_app
+            (template_app (template_hole 2, template_var 2),
+             template_var 1)),
+         template_app
+          (template_app (template_hole 2, template_var 2),
+           template_var 0)))),
+    ("Polynomials.poly_mult",
+     "eval_poly ?\<alpha> (poly_mult ?p ?q) =
+      eval_poly ?\<alpha> ?p * eval_poly ?\<alpha> ?q",
+     template_equation
+      (template_app
+        (template_app (template_hole 2, template_var 2),
+         template_app
+          (template_app (template_hole 1, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 0,
+           template_app
+            (template_app (template_hole 2, template_var 2),
+             template_var 1)),
+         template_app
+          (template_app (template_hole 2, template_var 2),
+           template_var 0)))),
+    ("Polynomials.poly_subst",
+     "eval_poly ?\<alpha> (poly_subst ?\<sigma> ?p) =
+      eval_poly (%v. eval_poly ?\<alpha> (?\<sigma> v)) ?p",
+     template_equation
+      (template_app
+        (template_app (template_hole 2, template_var 2),
+         template_app
+          (template_app (template_hole 1, template_var 1), template_var 0)),
+       template_app
+        (template_app (template_hole 0, t_empty), template_var 0))),
+    ("Polynomials.poly_minus",
+     "eval_poly ?\<alpha> (poly_minus ?f ?g) =
+      eval_poly ?\<alpha> ?f - eval_poly ?\<alpha> ?g",
+     template_equation
+      (template_app
+        (template_app (template_hole 2, template_var 2),
+         template_app
+          (template_app (template_hole 1, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 0,
+           template_app
+            (template_app (template_hole 2, template_var 2),
+             template_var 1)),
+         template_app
+          (template_app (template_hole 2, template_var 2),
+           template_var 0)))),
+    ("Polynomials.sum_var_monom_mult",
+     "sum_var (?m * ?n) ?x = sum_var ?m ?x + sum_var ?n ?x",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 2,
+           template_app
+            (template_app (template_hole 1, template_var 2),
+             template_var 1)),
+         template_var 0),
+       template_app
+        (template_app
+          (template_hole 0,
+           template_app
+            (template_app (template_hole 2, template_var 2),
+             template_var 0)),
+         template_app
+          (template_app (template_hole 2, template_var 1),
+           template_var 0)))),
+    ("Polynomials.eq_monom_sum_var",
+     "(?m = ?n) = (ALL x. sum_var ?m x = sum_var ?n x)",
+     template_equation
+      (template_app
+        (template_app (template_hole 3, template_var 1), template_var 0),
+       template_app (template_hole 2, t_empty))),
+    ("Polynomials.poly_distrib",
+     "poly_mult ?p (poly_add ?q1.0 ?q2.0) =p
+      poly_add (poly_mult ?p ?q1.0) (poly_mult ?p ?q2.0)",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_hole 2,
+             template_app
+              (template_app (template_hole 1, template_var 2),
+               template_app
+                (template_app (template_hole 0, template_var 1),
+                 template_var 0))),
+           template_app
+            (template_app
+              (template_hole 0,
+               template_app
+                (template_app (template_hole 1, template_var 2),
+                 template_var 1)),
+             template_app
+              (template_app (template_hole 1, template_var 2),
+               template_var 0)))
+         )),
+    ("Polynomials.eq_poly_trans",
+     "[| ?p1.0 =p ?p2.0; ?p2.0 =p ?p3.0 |] ==> ?p1.0 =p ?p3.0",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 0, template_var 2),
+              template_var 1)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 0, template_var 1),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 0, template_var 2), template_var 0)
+           ))),
+    ("Polynomials.poly_ge_trans",
+     "[| ?p1.0 \<ge>p ?p2.0; ?p2.0 \<ge>p ?p3.0 |] ==> ?p1.0 \<ge>p ?p3.0",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 0, template_var 2),
+              template_var 1)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 0, template_var 1),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 0, template_var 2), template_var 0)
+           ))),
+    ("Polynomials.pos_assign_poly",
+     "[| pos_assign ?\<alpha>; ?p \<ge>p zero_poly |]
+      ==> (0::?'b) <= eval_poly ?\<alpha> ?p",
+     template_implication
+      ([template_predicate (template_app (template_hole 5, template_var 1)),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 4, template_var 0),
+              template_hole 3)
+            )],
+       template_inequation
+        (less_equals, template_hole 1,
+         template_app
+          (template_app (template_hole 0, template_var 1),
+           template_var 0)))),
+    ("Polynomials.poly_weak_mono",
+     "(!!v. v : poly_vars ?p ==> poly_weak_mono ?p v) ==>
+      poly_weak_mono_all ?p",
+     template_implication
+      ([template_predicate (template_app (template_hole 5, t_empty))],
+       template_predicate
+        (template_app (template_hole 0, template_var 0)))),
+    ("Polynomials.univariate_power_list",
+     "[| monom_inv ?m; univariate_power_list ?x ?m = Some ?n |]
+      ==> 1 <= ?n",
+     template_implication
+      ([template_predicate (template_app (template_hole 5, template_var 2)),
+        template_equation
+         (template_app
+           (template_app (template_hole 3, template_var 1), template_var 2),
+          template_app (template_hole 2, template_var 0))],
+       template_inequation (less_equals, template_hole 0, template_var 0))),
+    ("Polynomials.poly_subst_inv",
+     "[| !!x. poly_inv (?\<sigma> x); poly_inv ?p |]
+      ==> poly_inv (poly_subst ?\<sigma> ?p)",
+     template_implication
+      ([template_predicate (template_app (template_hole 4, t_empty)),
+        template_predicate
+         (template_app (template_hole 1, template_var 0))],
+       template_predicate
+        (
+           template_app
+            (template_hole 2,
+             template_app
+              (template_app (template_hole 0, template_var 1),
+               template_var 0))
+           ))),
+    ("Polynomials.poly_weak_mono_all_pos",
+     "[| (0::?'a) <= eval_poly (%w. 0::?'a) ?p; poly_weak_mono_all ?p |]
+      ==> ?p \<ge>p zero_poly",
+     template_implication
+      ([template_inequation
+         (less_equals, template_hole 4,
+          template_app
+           (template_app (template_hole 3, t_empty), template_var 0)),
+        template_predicate
+         (template_app (template_hole 2, template_var 0))],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 1, template_var 0),
+             template_hole 0)
+           ))),
+    ("Polynomials.poly_add_monoms",
+     "poly_monoms (poly_add ?p1.0 ?p2.0)
+      <= poly_monoms ?p1.0 Un poly_monoms ?p2.0",
+     template_inequation
+      (less_equals,
+       template_app
+        (template_app (template_hole 4, template_hole 3),
+         template_app
+          (template_hole 2,
+           template_app
+            (template_app (template_hole 1, template_var 1),
+             template_var 0))),
+       template_app
+        (template_app
+          (template_hole 0,
+           template_app
+            (template_app (template_hole 4, template_hole 3),
+             template_app (template_hole 2, template_var 1))),
+         template_app
+          (template_app (template_hole 4, template_hole 3),
+           template_app (template_hole 2, template_var 0))))),
+    ("Polynomials.univariate_power",
+     "univariate_power ?x ?m = Some ?n ==>
+      eval_monom ?\<alpha> ?m = ?\<alpha> ?x ^ ?n",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app (template_hole 4, template_var 3), template_var 2),
+          template_app (template_hole 3, template_var 1))],
+       template_equation
+        (template_app
+          (template_app (template_hole 1, template_var 0), template_var 2),
+         template_app
+          (template_app
+            (template_hole 0,
+             template_app (template_var 0, template_var 3)),
+           template_var 1)))),
+    ("Polynomials.poly_split",
+     "poly_split ?m ?p = (?c, ?q) ==> ?p =p (?m, ?c) # ?q",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app (template_hole 4, template_var 3), template_var 2),
+          template_app
+           (template_app (template_hole 3, template_var 1),
+            template_var 0))],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 2, template_var 2),
+             template_app
+              (template_app
+                (template_hole 1,
+                 template_app
+                  (template_app (template_hole 0, template_var 3),
+                   template_var 1)),
+               template_var 0))
+           ))),
+    ("Polynomials.monom_mult_poly",
+     "eval_poly ?\<alpha> (monom_mult_poly ?mc ?p) =
+      eval_monomc ?\<alpha> ?mc * eval_poly ?\<alpha> ?p",
+     template_equation
+      (template_app
+        (template_app (template_hole 5, template_var 2),
+         template_app
+          (template_app (template_hole 4, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 3,
+           template_app
+            (template_app
+              (template_hole 3,
+               template_app
+                (template_app (template_hole 2, template_var 2),
+                 template_app (template_hole 1, template_var 1))),
+             template_app (template_hole 0, template_var 1))),
+         template_app
+          (template_app (template_hole 5, template_var 2),
+           template_var 0)))),
+    ("Polynomials.poly_degree",
+     "(1::?'a) <= ?x ==>
+      eval_poly (%_. ?x) ?p <= poly_coeff_sum ?p * ?x ^ poly_degree ?p",
+     template_implication
+      ([template_inequation (less_equals, template_hole 5, template_var 1)],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_app (template_hole 4, t_empty), template_var 0),
+         template_app
+          (template_app
+            (template_hole 3,
+             template_app (template_hole 2, template_var 0)),
+           template_app
+            (template_app (template_hole 1, template_var 1),
+             template_app (template_hole 0, template_var 0)))))),
+    ("Polynomials.poly_mult_ge_mono",
+     "[| ?p1.0 \<ge>p ?p2.0; ?q \<ge>p zero_poly |]
+      ==> poly_mult ?p1.0 ?q \<ge>p poly_mult ?p2.0 ?q",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 2, template_var 2),
+              template_var 1)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 2, template_var 0),
+              template_hole 1)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 2,
+               template_app
+                (template_app (template_hole 0, template_var 2),
+                 template_var 0)),
+             template_app
+              (template_app (template_hole 0, template_var 1),
+               template_var 0))
+           ))),
+    ("Polynomials.univariate_power",
+     "univariate_power ?x ?m = Some ?n ==>
+      sum_var ?m = (%y. if ?x = y then ?n else 0)",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app (template_hole 6, template_var 2), template_var 1),
+          template_app (template_hole 5, template_var 0))],
+       template_equation
+        (template_app (template_hole 3, template_var 1), t_empty))),
+    ("Polynomials.eval_poly_subst",
+     "(!!w. ?f w = eval_poly ?g (?q w)) ==>
+      eval_poly ?f ?p = eval_poly ?g (poly_subst ?q ?p)",
+     template_implication
+      ([template_predicate (template_app (template_hole 5, t_empty))],
+       template_equation
+        (template_app
+          (template_app (template_hole 1, template_var 3), template_var 0),
+         template_app
+          (template_app (template_hole 2, template_var 2),
+           template_app
+            (template_app (template_hole 0, template_var 1),
+             template_var 0))))),
+    ("Polynomials.univariate_power_list",
+     "[| monom_inv ?m; univariate_power_list ?x ?m = Some ?n |]
+      ==> eval_monom_list ?\<alpha> ?m = ?\<alpha> ?x ^ ?n",
+     template_implication
+      ([template_predicate (template_app (template_hole 6, template_var 3)),
+        template_equation
+         (template_app
+           (template_app (template_hole 4, template_var 2), template_var 3),
+          template_app (template_hole 3, template_var 1))],
+       template_equation
+        (template_app
+          (template_app (template_hole 1, template_var 0), template_var 3),
+         template_app
+          (template_app
+            (template_hole 0,
+             template_app (template_var 0, template_var 2)),
+           template_var 1)))),
+    ("Polynomials.poly_split_eval",
+     "poly_split ?m ?p = (?c, ?q) ==>
+      eval_poly ?\<alpha> ?p =
+      eval_monom ?\<alpha> ?m * ?c + eval_poly ?\<alpha> ?q",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app (template_hole 6, template_var 4), template_var 3),
+          template_app
+           (template_app (template_hole 5, template_var 2),
+            template_var 1))],
+       template_equation
+        (template_app
+          (template_app (template_hole 3, template_var 0), template_var 3),
+         template_app
+          (template_app
+            (template_hole 2,
+             template_app
+              (template_app
+                (template_hole 1,
+                 template_app
+                  (template_app (template_hole 0, template_var 0),
+                   template_var 4)),
+               template_var 2)),
+           template_app
+            (template_app (template_hole 3, template_var 0),
+             template_var 1))))),
+    ("Polynomials.monom_vars_eval_monom",
+     "(!!x. x : monom_vars ?m ==> ?f x = ?g x) ==>
+      eval_monom ?f ?m = eval_monom ?g ?m",
+     template_implication
+      ([template_predicate (template_app (template_hole 5, t_empty))],
+       template_equation
+        (template_app
+          (template_app (template_hole 0, template_var 1), template_var 2),
+         template_app
+          (template_app (template_hole 0, template_var 0),
+           template_var 2)))),
+    ("Polynomials.eval_poly_vars",
+     "(!!x. x : poly_vars ?p ==> ?\<alpha> x = ?\<beta> x) ==>
+      eval_poly ?\<alpha> ?p = eval_poly ?\<beta> ?p",
+     template_implication
+      ([template_predicate (template_app (template_hole 5, t_empty))],
+       template_equation
+        (template_app
+          (template_app (template_hole 0, template_var 1), template_var 2),
+         template_app
+          (template_app (template_hole 0, template_var 0),
+           template_var 2)))),
+    ("Polynomials.poly_vars",
+     "(!!w. w : poly_vars ?p ==> ?f w = ?g w) ==>
+      poly_subst ?f ?p = poly_subst ?g ?p",
+     template_implication
+      ([template_predicate (template_app (template_hole 5, t_empty))],
+       template_equation
+        (template_app
+          (template_app (template_hole 0, template_var 1), template_var 2),
+         template_app
+          (template_app (template_hole 0, template_var 0),
+           template_var 2)))),
+    ("Polynomials.univariate_power_list",
+     "[| monom_inv ?m; univariate_power_list ?x ?m = Some ?n |]
+      ==> sum_var_list ?m = (%y. if ?x = y then ?n else 0)",
+     template_implication
+      ([template_predicate (template_app (template_hole 8, template_var 2)),
+        template_equation
+         (template_app
+           (template_app (template_hole 6, template_var 1), template_var 2),
+          template_app (template_hole 5, template_var 0))],
+       template_equation
+        (template_app (template_hole 3, template_var 2), t_empty))),
+    ("Polynomials.eval_monom_mono",
+     "[| !!x. ?g x <= ?f x; !!x. (0::?'a) <= ?g x |]
+      ==> (0::?'a) <= eval_monom ?g ?m",
+     template_implication
+      ([template_predicate (template_app (template_hole 4, t_empty)),
+        template_predicate (template_app (template_hole 4, t_empty))],
+       template_inequation
+        (less_equals, template_hole 1,
+         template_app
+          (template_app (template_hole 0, template_var 2),
+           template_var 0)))),
+    ("Polynomials.eval_monom_list_mono",
+     "[| !!x. ?g x <= ?f x; !!x. (0::?'a) <= ?g x |]
+      ==> (0::?'a) <= eval_monom_list ?g ?m",
+     template_implication
+      ([template_predicate (template_app (template_hole 4, t_empty)),
+        template_predicate (template_app (template_hole 4, t_empty))],
+       template_inequation
+        (less_equals, template_hole 1,
+         template_app
+          (template_app (template_hole 0, template_var 2),
+           template_var 0)))),
+    ("Polynomials.monom_vars_list_subst",
+     "(!!w. w : set (monom_vars_list ?m) ==> ?f w = ?g w) ==>
+      monom_subst ?f ?m = monom_subst ?g ?m",
+     template_implication
+      ([template_predicate (template_app (template_hole 6, t_empty))],
+       template_equation
+        (template_app
+          (template_app (template_hole 0, template_var 1), template_var 2),
+         template_app
+          (template_app (template_hole 0, template_var 0),
+           template_var 2)))),
+    ("Polynomials.eval_monom_vars_list",
+     "(!!x. x : set (monom_vars_list ?xs) ==> ?\<alpha> x = ?\<beta> x) ==>
+      eval_monom ?\<alpha> ?xs = eval_monom ?\<beta> ?xs",
+     template_implication
+      ([template_predicate (template_app (template_hole 6, t_empty))],
+       template_equation
+        (template_app
+          (template_app (template_hole 0, template_var 1), template_var 2),
+         template_app
+          (template_app (template_hole 0, template_var 0),
+           template_var 2)))),
+    ("Polynomials.eval_monom_mono",
+     "[| !!x. ?g x <= ?f x; !!x. (0::?'a) <= ?g x |]
+      ==> eval_monom ?g ?m <= eval_monom ?f ?m",
+     template_implication
+      ([template_predicate (template_app (template_hole 4, t_empty)),
+        template_predicate (template_app (template_hole 4, t_empty))],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_app (template_hole 0, template_var 2), template_var 0),
+         template_app
+          (template_app (template_hole 0, template_var 1),
+           template_var 0)))),
+    ("Polynomials.eval_monom_list_mono",
+     "[| !!x. ?g x <= ?f x; !!x. (0::?'a) <= ?g x |]
+      ==> eval_monom_list ?g ?m <= eval_monom_list ?f ?m",
+     template_implication
+      ([template_predicate (template_app (template_hole 4, t_empty)),
+        template_predicate (template_app (template_hole 4, t_empty))],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_app (template_hole 0, template_var 2), template_var 0),
+         template_app
+          (template_app (template_hole 0, template_var 1),
+           template_var 0)))),
+    ("Polynomials.poly_weak_mono_all_E",
+     "[| poly_weak_mono_all ?p;
+         !!x. ?f x \<ge>p ?g x & ?g x \<ge>p zero_poly |]
+      ==> poly_subst ?f ?p \<ge>p poly_subst ?g ?p",
+     template_implication
+      ([template_predicate (template_app (template_hole 5, template_var 2)),
+        template_predicate (template_app (template_hole 4, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 2,
+               template_app
+                (template_app (template_hole 0, template_var 1),
+                 template_var 2)),
+             template_app
+              (template_app (template_hole 0, template_var 0),
+               template_var 2))
+           ))),
+    ("Polynomials.poly_degree_bound",
+     "[| (1::?'a) <= ?x; poly_coeff_sum ?p <= ?c; poly_degree ?p <= ?d |]
+      ==> eval_poly (%_. ?x) ?p <= ?c * ?x ^ ?d",
+     template_implication
+      ([template_inequation (less_equals, template_hole 6, template_var 3),
+        template_inequation
+         (less_equals, template_app (template_hole 5, template_var 2),
+          template_var 1),
+        template_inequation
+         (less_equals, template_app (template_hole 3, template_var 2),
+          template_var 0)],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_app (template_hole 2, t_empty), template_var 2),
+         template_app
+          (template_app (template_hole 1, template_var 1),
+           template_app
+            (template_app (template_hole 0, template_var 3),
+             template_var 0))))),
+    ("Polynomials.poly_var",
+     "[| ?v ~: poly_vars ?p; !!w. ?v ~= w ==> ?f w = ?g w |]
+      ==> poly_subst ?f ?p = poly_subst ?g ?p",
+     template_implication
+      ([template_negation
+         (
+            template_predicate
+             (
+                template_app
+                 (template_app (template_hole 5, template_var 3),
+                  template_app (template_hole 4, template_var 2))
+                )
+            ),
+        template_predicate (template_app (template_hole 3, t_empty))],
+       template_equation
+        (template_app
+          (template_app (template_hole 0, template_var 1), template_var 2),
+         template_app
+          (template_app (template_hole 0, template_var 0),
+           template_var 2)))),
+    ("Polynomials.poly_weak_anti_mono_E",
+     "[| poly_weak_anti_mono ?p ?v; !!w. ?v ~= w ==> ?f w = ?g w;
+         !!w. ?g w \<ge>p zero_poly; ?f ?v \<ge>p ?g ?v |]
+      ==> poly_subst ?g ?p \<ge>p poly_subst ?f ?p",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 7, template_var 3),
+              template_var 2)
+            ),
+        template_predicate (template_app (template_hole 6, t_empty)),
+        template_predicate (template_app (template_hole 6, t_empty)),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 2,
+                template_app (template_var 1, template_var 2)),
+              template_app (template_var 0, template_var 2))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 2,
+               template_app
+                (template_app (template_hole 0, template_var 0),
+                 template_var 3)),
+             template_app
+              (template_app (template_hole 0, template_var 1),
+               template_var 3))
+           ))),
+    ("Polynomials.poly_weak_mono_E",
+     "[| poly_weak_mono ?p ?v; !!w. ?v ~= w ==> ?f w = ?g w;
+         !!w. ?g w \<ge>p zero_poly; ?f ?v \<ge>p ?g ?v |]
+      ==> poly_subst ?f ?p \<ge>p poly_subst ?g ?p",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 7, template_var 3),
+              template_var 2)
+            ),
+        template_predicate (template_app (template_hole 6, t_empty)),
+        template_predicate (template_app (template_hole 6, t_empty)),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 2,
+                template_app (template_var 1, template_var 2)),
+              template_app (template_var 0, template_var 2))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 2,
+               template_app
+                (template_app (template_hole 0, template_var 1),
+                 template_var 3)),
+             template_app
+              (template_app (template_hole 0, template_var 0),
+               template_var 3))
+           )))]:
+   (string * thm * template) list
+### theory "Draft.PolynomialsTemplates"
+### 0.407s elapsed time, 0.629s cpu time, 0.062s GC time
+val it = (): unit

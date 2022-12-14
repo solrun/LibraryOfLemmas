@@ -1,0 +1,193 @@
+   [("DL_Deep_Model_Poly.polyfun_tensors_from_net",
+     "[| valid_net ?m; ?is \<lhd> input_sizes ?m; ?j < output_size ?m |]
+      ==> polyfun {..<count_weights ?s ?m}
+           (%f. Tensor.lookup
+                 (tensors_from_net (insert_weights ?s ?m f) $ ?j) ?is)",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 11, template_var 3)),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 10, template_var 2),
+              template_app (template_hole 9, template_var 3))
+            ),
+        template_inequation
+         (less_than, template_var 1,
+          template_app (template_hole 7, template_var 3))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 6,
+               template_app
+                (template_hole 5,
+                 template_app
+                  (template_app (template_hole 4, template_var 0),
+                   template_var 3))),
+             t_empty)
+           ))),
+    ("DL_Deep_Model_Poly.polyfun_extract_matrix",
+     "[| ?i < ?m; ?j < ?n |]
+      ==> polyfun {..<?a + (?m * ?n + ?c)}
+           (%f. extract_matrix (%i. f (i + ?a)) ?m ?n $$ (?i, ?j))",
+     template_implication
+      ([template_inequation (less_than, template_var 5, template_var 4),
+        template_inequation (less_than, template_var 3, template_var 2)],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 6,
+               template_app
+                (template_hole 5,
+                 template_app
+                  (template_app (template_hole 4, template_var 1),
+                   template_app
+                    (template_app
+                      (template_hole 4,
+                       template_app
+                        (template_app (template_hole 3, template_var 4),
+                         template_var 2)),
+                     template_var 0)))),
+             t_empty)
+           ))),
+    ("DL_Deep_Model_Poly.polyfun_evaluate_net",
+     "[| map dim_vec ?inputs = input_sizes ?m; valid_net ?m;
+         ?j < output_size ?m |]
+      ==> polyfun {..<count_weights ?s ?m}
+           (%f. evaluate_net (insert_weights ?s ?m f) ?inputs $ ?j)",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app (template_hole 11, template_hole 10),
+            template_var 3),
+          template_app (template_hole 9, template_var 2)),
+        template_predicate (template_app (template_hole 8, template_var 2)),
+        template_inequation
+         (less_than, template_var 1,
+          template_app (template_hole 6, template_var 2))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 5,
+               template_app
+                (template_hole 4,
+                 template_app
+                  (template_app (template_hole 3, template_var 0),
+                   template_var 2))),
+             t_empty)
+           ))),
+    ("DL_Deep_Model_Poly.polyfun_evaluate_net_plus_a",
+     "[| map dim_vec ?inputs = input_sizes ?m; valid_net ?m;
+         ?j < output_size ?m |]
+      ==> polyfun {..<?a + count_weights ?s ?m}
+           (%f. evaluate_net (insert_weights ?s ?m (%i. f (i + ?a)))
+                 ?inputs $
+                ?j)",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app (template_hole 12, template_hole 11),
+            template_var 4),
+          template_app (template_hole 10, template_var 3)),
+        template_predicate (template_app (template_hole 9, template_var 3)),
+        template_inequation
+         (less_than, template_var 2,
+          template_app (template_hole 7, template_var 3))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 6,
+               template_app
+                (template_hole 5,
+                 template_app
+                  (template_app (template_hole 4, template_var 1),
+                   template_app
+                    (template_app (template_hole 3, template_var 0),
+                     template_var 3)))),
+             t_empty)
+           ))),
+    ("DL_Deep_Model_Poly.polyfun_det",
+     "[| !!x. ?A x : carrier_mat ?n ?n;
+         !!x i j.
+            [| i < ?n; j < ?n |] ==> polyfun ?N (%x. ?A x $$ (i, j)) |]
+      ==> polyfun ?N (%x. det (?A x))",
+     template_implication
+      ([template_predicate (template_app (template_hole 10, t_empty)),
+        template_predicate (template_app (template_hole 6, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 3, template_var 0), t_empty)
+           ))),
+    ("DL_Deep_Model_Poly.polyfun_matricize",
+     "[| !!x. dims (?T x) = ?ds;
+         !!is. is \<lhd> ?ds ==> polyfun ?N (%x. Tensor.lookup (?T x) is);
+         !!x. dim_row (matricize ?I (?T x)) = ?nr;
+         !!x. dim_col (matricize ?I (?T x)) = ?nc; ?i < ?nr; ?j < ?nc |]
+      ==> polyfun ?N (%x. matricize ?I (?T x) $$ (?i, ?j))",
+     template_implication
+      ([template_predicate (template_app (template_hole 14, t_empty)),
+        template_predicate (template_app (template_hole 10, t_empty)),
+        template_predicate (template_app (template_hole 14, t_empty)),
+        template_predicate (template_app (template_hole 14, t_empty)),
+        template_inequation (less_than, template_var 1, template_var 3),
+        template_inequation (less_than, template_var 0, template_var 2)],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 8, template_var 5), t_empty)
+           ))),
+    ("DL_Deep_Model_Poly.polyfun_mult_mat_vec",
+     "[| !!x. ?v x : carrier_vec ?n;
+         !!j. j < ?n ==> polyfun ?N (%x. ?v x $ j);
+         !!x. ?A x : carrier_mat ?m ?n;
+         !!i j. [| i < ?m; j < ?n |] ==> polyfun ?N (%x. ?A x $$ (i, j));
+         ?j < ?m |]
+      ==> polyfun ?N (%x. (?A x *\<^sub>v ?v x) $ ?j)",
+     template_implication
+      ([template_predicate (template_app (template_hole 12, t_empty)),
+        template_predicate (template_app (template_hole 8, t_empty)),
+        template_predicate (template_app (template_hole 12, t_empty)),
+        template_predicate (template_app (template_hole 8, t_empty)),
+        template_inequation (less_than, template_var 0, template_var 1)],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 6, template_var 3), t_empty)
+           ))),
+    ("DL_Deep_Model_Poly.polyfun_submatrix",
+     "[| !!x. ?A x : carrier_mat ?m ?n;
+         !!x i j. [| i < ?m; j < ?n |] ==> polyfun ?N (%x. ?A x $$ (i, j));
+         ?i < card {i. i < ?m & i : ?I}; ?j < card {j. j < ?n & j : ?J};
+         infinite ?I; infinite ?J |]
+      ==> polyfun ?N (%x. submatrix (?A x) ?I ?J $$ (?i, ?j))",
+     template_implication
+      ([template_predicate (template_app (template_hole 16, t_empty)),
+        template_predicate (template_app (template_hole 12, t_empty)),
+        template_inequation
+         (less_than, template_var 3,
+          template_app
+           (template_hole 6, template_app (template_hole 5, t_empty))),
+        template_inequation
+         (less_than, template_var 1,
+          template_app
+           (template_hole 6, template_app (template_hole 5, t_empty))),
+        template_negation
+         (
+            template_predicate
+             (template_app (template_hole 1, template_var 2))
+            ),
+        template_negation
+         (
+            template_predicate
+             (template_app (template_hole 1, template_var 0))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 9, template_var 4), t_empty)
+           )))]

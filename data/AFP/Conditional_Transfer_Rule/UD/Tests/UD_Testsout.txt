@@ -1,0 +1,2655 @@
+Loading theory "SpecCheck.SpecCheck_Show" (required by "Draft.UD_TestsMoreTemplates" via "Draft.UD_Tests" via "Draft.IML_UT" via "SpecCheck.SpecCheck")
+Loading theory "SpecCheck.SpecCheck_Base" (required by "Draft.UD_TestsMoreTemplates" via "Draft.UD_Tests" via "Draft.IML_UT" via "SpecCheck.SpecCheck" via "SpecCheck.SpecCheck_Generators")
+Loading theory "Draft.CTR_Tools" (required by "Draft.UD_TestsMoreTemplates" via "Draft.UD_Tests" via "Draft.UD")
+Loading theory "HOL-Library.Function_Algebras" (required by "Draft.UD_TestsMoreTemplates" via "Draft.ExtrEqs" via "HOL-Library.BigO")
+signature SPECCHECK_UTIL = sig val spaces: string list -> string end
+structure SpecCheck_Util: SPECCHECK_UTIL
+signature SPECCHECK_SHOW_TYPES = sig type 'a show = 'a -> Pretty.T end
+structure SpecCheck_Show_Types: SPECCHECK_SHOW_TYPES
+signature SPECCHECK_SHOW_BASE =
+  sig
+    val bool: bool show
+    val char: char show
+    val int: int show
+    val list: 'a show -> 'a list show
+    val none: 'a show
+    val option: 'a show -> 'a option show
+    val real: real show
+    val record: (string * Pretty.T) list show
+    type 'a show = 'a -> Pretty.T
+    val string: string show
+    val zip: 'a show -> 'b show -> ('a * 'b) show
+    val zip3: 'a show -> 'b show -> 'c show -> ('a * 'b * 'c) show
+    val zip4:
+       'a show -> 'b show -> 'c show -> 'd show -> ('a * 'b * 'c * 'd) show
+  end
+structure SpecCheck_Show_Base: SPECCHECK_SHOW_BASE
+signature SPECCHECK_BASE =
+  sig
+    val add_timing: Timing.timing -> Timing.timing -> Timing.timing
+    val empty_stats: stats
+    val failure_data: 'a list -> 'a failure_data
+    type 'a failure_data =
+       {counterexamples: 'a list, the_exception: exn option}
+    val failure_data_exn: 'a list -> exn -> 'a failure_data
+    val num_shrinks: stats -> int
+    val num_tests: stats -> int
+    datatype 'a result
+    =
+         Failure of stats * 'a failure_data
+       | Gave_Up of stats
+       | Success of stats
+    datatype result_single = Discard | Exception of exn | Result of bool
+    type stats =
+       {num_discarded_tests: int,
+        num_failed_shrinks: int,
+        num_failed_tests: int,
+        num_recently_discarded_tests: int,
+        num_success_shrinks: int,
+        num_success_tests: int, timing: Timing.timing}
+    val stats_of_result: 'a result -> stats
+  end
+structure SpecCheck_Base: SPECCHECK_BASE
+### ML warning (line 36 of "$AFP/SpecCheck/property.ML"):
+### Handler catches all exceptions.
+### ML warning (line 51 of "$AFP/SpecCheck/property.ML"):
+### Handler catches all exceptions.
+signature SPECCHECK_PROPERTY =
+  sig
+    val ==> : 'a pred * 'a pred -> 'a prop
+    val expect_failure: exn -> ('a -> 'b) -> 'a prop
+    val implies: 'a pred -> 'a prop -> 'a prop
+    type 'a pred = 'a -> bool
+    val prop: 'a pred -> 'a prop
+    type 'a prop
+  end
+structure SpecCheck_Property: SPECCHECK_PROPERTY
+signature SPECCHECK_SHOW_TERM =
+  sig
+    val env: Proof.context -> Envir.env SpecCheck_Show_Types.show
+    val tenv: Proof.context -> Envir.tenv SpecCheck_Show_Types.show
+    val term: Proof.context -> term SpecCheck_Show_Types.show
+    val thm: Proof.context -> thm SpecCheck_Show_Types.show
+    val tyenv: Proof.context -> Type.tyenv SpecCheck_Show_Types.show
+    val typ: Proof.context -> typ SpecCheck_Show_Types.show
+  end
+structure SpecCheck_Show_Term: SPECCHECK_SHOW_TERM
+structure SpecCheck_Show:
+  sig
+    val bool: bool show
+    val char: char show
+    val env: Proof.context -> Envir.env show
+    val int: int show
+    val list: 'a show -> 'a list show
+    val none: 'a show
+    val option: 'a show -> 'a option show
+    val real: real show
+    val record: (string * Pretty.T) list show
+    type 'a show = 'a -> Pretty.T
+    val string: string show
+    val tenv: Proof.context -> Envir.tenv show
+    val term: Proof.context -> term show
+    val thm: Proof.context -> thm show
+    val tyenv: Proof.context -> Type.tyenv show
+    val typ: Proof.context -> typ show
+    val zip: 'a show -> 'b show -> ('a * 'b) show
+    val zip3: 'a show -> 'b show -> 'c show -> ('a * 'b * 'c) show
+    val zip4:
+       'a show -> 'b show -> 'c show -> 'd show -> ('a * 'b * 'c * 'd) show
+  end
+### theory "SpecCheck.SpecCheck_Show"
+### 0.033s elapsed time, 0.122s cpu time, 0.000s GC time
+Loading theory "HOL-Library.Nat_Bijection" (required by "Draft.UD_TestsMoreTemplates" via "Draft.ExtrEqs" via "HOL-Library.Stream")
+instantiation
+  fun :: (type, plus) plus
+  plus_fun == plus :: ('a => 'b) => ('a => 'b) => 'a => 'b
+signature SPECCHECK_CONFIGURATION =
+  sig
+    val max_discard_ratio: int Config.T
+    val max_shrinks: int Config.T
+    val max_success: int Config.T
+    val num_counterexamples: int Config.T
+    val show_stats: bool Config.T
+    val sort_counterexamples: bool Config.T
+  end
+structure SpecCheck_Configuration: SPECCHECK_CONFIGURATION
+instantiation
+  fun :: (type, zero) zero
+  zero_fun == zero_class.zero :: 'a => 'b
+signature SPECCHECK_RANDOM =
+  sig
+    val deterministic_seed: int -> rand
+    val new: unit -> rand
+    val next: rand -> rand
+    type rand
+    val real_unit: rand -> real * rand
+    val split: rand -> rand * rand
+  end
+structure SpecCheck_Random: SPECCHECK_RANDOM
+### theory "SpecCheck.SpecCheck_Base"
+### 0.052s elapsed time, 0.202s cpu time, 0.000s GC time
+Loading theory "SpecCheck.SpecCheck_Generators" (required by "Draft.UD_TestsMoreTemplates" via "Draft.UD_Tests" via "Draft.IML_UT" via "SpecCheck.SpecCheck")
+instantiation
+  fun :: (type, times) times
+  times_fun == times :: ('a => 'b) => ('a => 'b) => 'a => 'b
+type 'a ord = 'a * 'a -> order
+eqtype serial
+eqtype stamp
+signature LIBRARY =
+  sig
+    val ? : bool * ('a -> 'a) -> 'a -> 'a
+    structure Any: sig type T end
+    val I: 'a -> 'a
+    val K: 'a -> 'b -> 'a
+    val align_right: string -> int -> string -> string
+    val andf: ('a -> bool) * ('a -> bool) -> 'a -> bool
+    val apdupl: ('a -> 'b) -> 'a -> 'b * 'a
+    val apdupr: ('a -> 'b) -> 'a -> 'a * 'b
+    val apfst: ('a -> 'b) -> 'a * 'c -> 'b * 'c
+    val apply2: ('a -> 'b) -> 'a * 'a -> 'b * 'b
+    val apsnd: ('a -> 'b) -> 'c * 'a -> 'c * 'b
+    val bool_ord: bool ord
+    val build: ('a list -> 'a list) -> 'a list
+    val build_rev: ('a list -> 'a list) -> 'a list
+    val burrow: ('a list -> 'b list) -> 'a list list -> 'b list list
+    val burrow_fst: ('a list -> 'b list) -> ('a * 'c) list -> ('b * 'c) list
+    val burrow_options:
+       ('a list -> 'b list) -> 'a option list -> 'b option list
+    val cartouche: string -> string
+    val cat_lines: string list -> string
+    val chop: int -> 'a list -> 'a list * 'a list
+    val chop_common_prefix:
+       ('a * 'b -> bool) ->
+         'a list * 'b list -> 'a list * ('a list * 'b list)
+    val chop_groups: int -> 'a list -> 'a list list
+    val chop_prefix: ('a -> bool) -> 'a list -> 'a list * 'a list
+    val chop_suffix: ('a -> bool) -> 'a list -> 'a list * 'a list
+    val combine: ('a * 'a -> bool) -> 'a list -> 'a list -> 'a list
+    val commas: string list -> string
+    val commas_quote: string list -> string
+    val curry: ('a * 'b -> 'c) -> 'a -> 'b -> 'c
+    val decode_lines: string -> string
+    val dict_ord: ('a * 'b -> order) -> 'a list * 'b list -> order
+    val distinct: ('a * 'a -> bool) -> 'a list -> 'a list
+    val divide_and_conquer: ('a -> 'a list * ('b list -> 'b)) -> 'a -> 'b
+    val divide_and_conquer':
+       ('a -> 'b -> ('a list * ('c list * 'b -> 'c * 'b)) * 'b) ->
+         'a -> 'b -> 'c * 'b
+    val downto: int * int -> int list
+    val drop: int -> 'a list -> 'a list
+    val drop_prefix: ('a -> bool) -> 'a list -> 'a list
+    val drop_suffix: ('a -> bool) -> 'a list -> 'a list
+    val dup: 'a -> 'a * 'a
+    val duplicates: ('a * 'a -> bool) -> 'a list -> 'a list
+    val enclose: string -> string -> string -> string
+    val encode_lines: string -> string
+    val eq_fst: ('a * 'b -> bool) -> ('a * 'c) * ('b * 'd) -> bool
+    val eq_list: ('a * 'a -> bool) -> 'a list * 'a list -> bool
+    val eq_pair:
+       ('a * 'b -> bool) ->
+         ('c * 'd -> bool) -> ('a * 'c) * ('b * 'd) -> bool
+    val eq_set: ('a * 'a -> bool) -> 'a list * 'a list -> bool
+    val eq_snd: ('a * 'b -> bool) -> ('c * 'a) * ('d * 'b) -> bool
+    val equal: ''a -> ''a -> bool
+    val exists: ('a -> bool) -> 'a list -> bool
+    val exists_string: (string -> bool) -> string -> bool
+    val fast_string_ord: string ord
+    val filter: ('a -> bool) -> 'a list -> 'a list
+    val filter_out: ('a -> bool) -> 'a list -> 'a list
+    val find_first: ('a -> bool) -> 'a list -> 'a option
+    val find_index: ('a -> bool) -> 'a list -> int
+    val find_indices: ('a -> bool) -> 'a list -> int list
+    val first_field: string -> string -> (string * string) option
+    val flat: 'a list list -> 'a list
+    val fold2: ('a -> 'b -> 'c -> 'c) -> 'a list -> 'b list -> 'c -> 'c
+    val fold_burrow:
+       ('a list -> 'b -> 'c list * 'd) ->
+         'a list list -> 'b -> 'c list list * 'd
+    val fold_index: (int * 'a -> 'b -> 'b) -> 'a list -> 'b -> 'b
+    val fold_product:
+       ('a -> 'b -> 'c -> 'c) -> 'a list -> 'b list -> 'c -> 'c
+    val fold_range: (int -> 'a -> 'a) -> int -> 'a -> 'a
+    val fold_string: (string -> 'a -> 'a) -> string -> 'a -> 'a
+    val foldl: ('a * 'b -> 'a) -> 'a * 'b list -> 'a
+    val foldl1: ('a * 'a -> 'a) -> 'a list -> 'a
+    val foldr: ('a * 'b -> 'b) -> 'a list * 'b -> 'b
+    val foldr1: ('a * 'a -> 'a) -> 'a list -> 'a
+    val forall: ('a -> bool) -> 'a list -> bool
+    val forall_string: (string -> bool) -> string -> bool
+    val fst: 'a * 'b -> 'a
+    val funpow: int -> ('a -> 'a) -> 'a -> 'a
+    val funpow_yield: int -> ('a -> 'b * 'a) -> 'a -> 'b list * 'a
+    val get_first: ('a -> 'b option) -> 'a list -> 'b option
+    val get_index: ('a -> 'b option) -> 'a list -> (int * 'b) option
+    val getenv: string -> string
+    val getenv_strict: string -> string
+    val grouped:
+       int ->
+         (('a list -> 'b list) -> 'c list list -> 'd list list) ->
+           ('a -> 'b) -> 'c list -> 'd list
+    val has_duplicates: ('a * 'a -> bool) -> 'a list -> bool
+    val hex_digit: int -> string
+    val insert: ('a * 'a -> bool) -> 'a -> 'a list -> 'a list
+    val int_ord: int ord
+    val inter: ('a * 'b -> bool) -> 'b list -> 'a list -> 'a list
+    val is_equal: order -> bool
+    val is_greater: order -> bool
+    val is_greater_equal: order -> bool
+    val is_less: order -> bool
+    val is_less_equal: order -> bool
+    val is_prefix: ('a * 'a -> bool) -> 'a list -> 'a list -> bool
+    val kw_bc: string parser
+    val kw_bo: string parser
+    val kw_col: string parser
+    val length_ord: 'a list * 'b list -> order
+    val list_ord: ('a * 'b -> order) -> 'a list * 'b list -> order
+    val make_ord: ('a * 'a -> bool) -> 'a ord
+    val map2: ('a -> 'b -> 'c) -> 'a list -> 'b list -> 'c list
+    val map_filter: ('a -> 'b option) -> 'a list -> 'b list
+    val map_index: (int * 'a -> 'b) -> 'a list -> 'b list
+    val map_product: ('a -> 'b -> 'c) -> 'a list -> 'b list -> 'c list
+    val map_range: (int -> 'a) -> int -> 'a list
+    val map_slice_l:
+       ('a list -> 'b list) -> ('a * 'c) list -> ('b * 'c) list
+    val map_slice_r:
+       ('a list -> 'b list) -> ('c * 'a) list -> ('c * 'b) list
+    val map_slice_side_l:
+       ('a list -> 'b list * 'c) -> ('a * 'd) list -> ('b * 'd) list * 'c
+    val map_slice_side_r:
+       ('a list -> 'b list * 'c) -> ('d * 'a) list -> ('d * 'b) list * 'c
+    val map_split: ('a -> 'b * 'c) -> 'a list -> 'b list * 'c list
+    val map_transpose: ('a list -> 'b) -> 'a list list -> 'b list
+    val maps: ('a -> 'b list) -> 'a list -> 'b list
+    val match_string: string -> string -> bool
+    val member: ('a * 'b -> bool) -> 'b list -> 'a -> bool
+    val member_string: string -> string -> bool
+    val merge: ('a * 'a -> bool) -> 'a list * 'a list -> 'a list
+    val mk_opt_id: ('a -> 'b) -> ('a -> 'b option) -> 'a -> 'b
+    val normalize_lines: string -> string
+    val not_equal: ''a -> ''a -> bool
+    val nth: 'a list -> int -> 'a
+    val nth_drop: int -> 'a list -> 'a list
+    val nth_list: 'a list list -> int -> 'a list
+    val nth_map: int -> ('a -> 'a) -> 'a list -> 'a list
+    val nth_string: string -> int -> string
+    val oct_char: string -> string
+    val oo: ('a -> 'b) * ('c -> 'd -> 'a) -> 'c -> 'd -> 'b
+    val ooo: ('a -> 'b) * ('c -> 'd -> 'e -> 'a) -> 'c -> 'd -> 'e -> 'b
+    val oooo:
+       ('a -> 'b) * ('c -> 'd -> 'e -> 'f -> 'a) ->
+         'c -> 'd -> 'e -> 'f -> 'b
+    val option_ord: ('a * 'b -> order) -> 'a option * 'b option -> order
+    type 'a ord = 'a * 'a -> order
+    val order_list: (int * 'a) list -> 'a list
+    val orf: ('a -> bool) * ('a -> bool) -> 'a -> bool
+    val pair: 'a -> 'b -> 'a * 'b
+    val partition_eq: ('a * 'a -> bool) -> 'a list -> 'a list list
+    val partition_list:
+       (int -> 'a -> bool) -> int -> int -> 'a list -> 'a list list
+    val perhaps_apply: ('a -> 'a option) list -> 'a -> 'a option
+    val perhaps_loop: ('a -> 'a option) -> 'a -> 'a option
+    val plain_words: string -> string
+    val pointer_eq_ord: ('a * 'a -> order) -> 'a * 'a -> order
+    val prefix: string -> string -> string
+    val prefix_lines: string -> string -> string
+    val prefixes: 'a list -> 'a list list
+    val prefixes1: 'a list -> 'a list list
+    val prod_ord:
+       ('a * 'b -> order) ->
+         ('c * 'd -> order) -> ('a * 'c) * ('b * 'd) -> order
+    val quote: string -> string
+    val radixpand: int * int -> int list
+    val radixstring: int * string * int -> string
+    val read_int: string list -> int * string list
+    val read_radix_int: int -> string list -> int * string list
+    val remove: ('a * 'b -> bool) -> 'a -> 'b list -> 'b list
+    val remove1: ('a * 'b -> bool) -> 'a -> 'b list -> 'b list
+    val replicate: int -> 'a -> 'a list
+    val replicate_string: int -> string -> string
+    val reroute_ps_sp: ('a * 'b) * 'c -> 'a * ('b * 'c)
+    val reroute_ps_triple: ('a * 'b) * 'c -> 'a * 'b * 'c
+    val reroute_sp_ps: 'a * ('b * 'c) -> ('a * 'b) * 'c
+    val reroute_sp_triple: 'a * ('b * 'c) -> 'a * 'b * 'c
+    val reroute_triple_ps: 'a * 'b * 'c -> ('a * 'b) * 'c
+    val reroute_triple_sp: 'a * 'b * 'c -> 'a * ('b * 'c)
+    val rev_order: order -> order
+    val rpair: 'a -> 'b -> 'b * 'a
+    val separate: 'a -> 'a list -> 'a list
+    val serial: unit -> serial
+    eqtype serial
+    val serial_string: unit -> string
+    val signed_string_of_int: int -> string
+    val signed_string_of_real: real -> string
+    val single: 'a -> 'a list
+    val singleton: ('a list -> 'b list) -> 'a -> 'b
+    val size_ord: string ord
+    val snd: 'a * 'b -> 'b
+    val sort: 'a ord -> 'a list -> 'a list
+    val sort_by: ('a -> string) -> 'a list -> 'a list
+    val sort_distinct: 'a ord -> 'a list -> 'a list
+    val sort_strings: string list -> string list
+    val space_explode: string -> string -> string list
+    val space_implode: string -> string list -> string
+    val split_last: 'a list -> 'a list * 'a
+    val split_lines: string -> string list
+    val split_list: ('a * 'b) list -> 'a list * 'b list
+    val stamp: unit -> stamp
+    eqtype stamp
+    val string_of_indexname: string * int -> string
+    val string_of_int: int -> string
+    val string_of_real: real -> string
+    val string_ord: string ord
+    val submultiset: ('a * 'b -> bool) -> 'a list * 'b list -> bool
+    val subset: ('a * 'b -> bool) -> 'a list * 'b list -> bool
+    val subtract: ('a * 'b -> bool) -> 'a list -> 'b list -> 'b list
+    val suffix: string -> string -> string
+    val suffixes: 'a list -> 'a list list
+    val suffixes1: 'a list -> 'a list list
+    val surround: 'a -> 'a list -> 'a list
+    val swap: 'a * 'b -> 'b * 'a
+    val tabulate: string -> string
+    val tag_list: int -> 'a list -> (int * 'a) list
+    val take: int -> 'a list -> 'a list
+    val take_prefix: ('a -> bool) -> 'a list -> 'a list
+    val take_suffix: ('a -> bool) -> 'a list -> 'a list
+    val the_single: 'a list -> 'a
+    val translate_string: (string -> string) -> string -> string
+    val trim: ('a -> bool) -> 'a list -> 'a list
+    val trim_line: string -> string
+    val trim_split_lines: string -> string list
+    val uncurry: ('a -> 'b -> 'c) -> 'a * 'b -> 'c
+    val undefined: 'a -> 'b
+    val unenclose: string -> string
+    val unflat: 'a list list -> 'b list -> 'b list list
+    val union: ('a * 'a -> bool) -> 'a list -> 'a list -> 'a list
+    val unprefix: string -> string -> string
+    val unsuffix: string -> string -> string
+    val untag_list: (int * 'a) list -> 'a list
+    val update: ('a * 'a -> bool) -> 'a -> 'a list -> 'a list
+    val upto: int * int -> int list
+    val yield_singleton:
+       ('a list -> 'b -> 'c list * 'b) -> 'a -> 'b -> 'c * 'b
+    val zip_options: 'a list -> 'b option list -> ('a * 'b) list
+    val ||| : ('a -> order) * ('a -> order) -> 'a -> order
+    val ~~ : 'a list * 'b list -> ('a * 'b) list
+  end
+structure Library: LIBRARY
+structure Any: sig type T end
+val apfst = fn: ('a -> 'b) -> 'a * 'c -> 'b * 'c
+val equal = fn: ''a -> ''a -> bool
+val normalize_lines = fn: string -> string
+val build = fn: ('a list -> 'a list) -> 'a list
+val dup = fn: 'a -> 'a * 'a
+val order_list = fn: (int * 'a) list -> 'a list
+val funpow_yield = fn: int -> ('a -> 'b * 'a) -> 'a -> 'b list * 'a
+val trim_split_lines = fn: string -> string list
+val suffixes = fn: 'a list -> 'a list list
+val quote = fn: string -> string
+val eq_fst = fn: ('a * 'b -> bool) -> ('a * 'c) * ('b * 'd) -> bool
+val map_slice_side_r = fn:
+   ('a list -> 'b list * 'c) -> ('d * 'a) list -> ('d * 'b) list * 'c
+val commas = fn: string list -> string
+val snd = fn: 'a * 'b -> 'b
+val the_single = fn: 'a list -> 'a
+val find_indices = fn: ('a -> bool) -> 'a list -> int list
+val ||| = fn: ('a -> order) * ('a -> order) -> 'a -> order
+val is_less = fn: order -> bool
+val prefix = fn: string -> string -> string
+val partition_eq = fn: ('a * 'a -> bool) -> 'a list -> 'a list list
+val drop_prefix = fn: ('a -> bool) -> 'a list -> 'a list
+val inter = fn: ('a * 'b -> bool) -> 'b list -> 'a list -> 'a list
+val cat_lines = fn: string list -> string
+val map_index = fn: (int * 'a -> 'b) -> 'a list -> 'b list
+val take = fn: int -> 'a list -> 'a list
+val align_right = fn: string -> int -> string -> string
+val eq_snd = fn: ('a * 'b -> bool) -> ('c * 'a) * ('d * 'b) -> bool
+val ~~ = fn: 'a list * 'b list -> ('a * 'b) list
+val downto = fn: int * int -> int list
+val union = fn: ('a * 'a -> bool) -> 'a list -> 'a list -> 'a list
+val translate_string = fn: (string -> string) -> string -> string
+val update = fn: ('a * 'a -> bool) -> 'a -> 'a list -> 'a list
+val map_slice_side_l = fn:
+   ('a list -> 'b list * 'c) -> ('a * 'd) list -> ('b * 'd) list * 'c
+val apdupl = fn: ('a -> 'b) -> 'a -> 'b * 'a
+val build_rev = fn: ('a list -> 'a list) -> 'a list
+val match_string = fn: string -> string -> bool
+val radixstring = fn: int * string * int -> string
+val separate = fn: 'a -> 'a list -> 'a list
+val signed_string_of_int = fn: int -> string
+val ? = fn: bool * ('a -> 'a) -> 'a -> 'a
+val suffixes1 = fn: 'a list -> 'a list list
+val drop_suffix = fn: ('a -> bool) -> 'a list -> 'a list
+val map2 = fn: ('a -> 'b -> 'c) -> 'a list -> 'b list -> 'c list
+val subtract = fn: ('a * 'b -> bool) -> 'a list -> 'b list -> 'b list
+val is_less_equal = fn: order -> bool
+val nth_list = fn: 'a list list -> int -> 'a list
+val uncurry = fn: ('a -> 'b -> 'c) -> 'a * 'b -> 'c
+val fold_product = fn:
+   ('a -> 'b -> 'c -> 'c) -> 'a list -> 'b list -> 'c -> 'c
+val merge = fn: ('a * 'a -> bool) -> 'a list * 'a list -> 'a list
+val I = fn: 'a -> 'a
+val rev_order = fn: order -> order
+val K = fn: 'a -> 'b -> 'a
+val fold_index = fn: (int * 'a -> 'b -> 'b) -> 'a list -> 'b -> 'b
+val map_transpose = fn: ('a list -> 'b) -> 'a list list -> 'b list
+val nth_map = fn: int -> ('a -> 'a) -> 'a list -> 'a list
+val chop_common_prefix = fn:
+   ('a * 'b -> bool) -> 'a list * 'b list -> 'a list * ('a list * 'b list)
+val string_ord = fn: string ord
+val pointer_eq_ord = fn: ('a * 'a -> order) -> 'a * 'a -> order
+val has_duplicates = fn: ('a * 'a -> bool) -> 'a list -> bool
+val reroute_triple_sp = fn: 'a * 'b * 'c -> 'a * ('b * 'c)
+val replicate_string = fn: int -> string -> string
+val apdupr = fn: ('a -> 'b) -> 'a -> 'a * 'b
+val remove = fn: ('a * 'b -> bool) -> 'a -> 'b list -> 'b list
+val remove1 = fn: ('a * 'b -> bool) -> 'a -> 'b list -> 'b list
+val zip_options = fn: 'a list -> 'b option list -> ('a * 'b) list
+val suffix = fn: string -> string -> string
+val perhaps_apply = fn: ('a -> 'a option) list -> 'a -> 'a option
+val submultiset = fn: ('a * 'b -> bool) -> 'a list * 'b list -> bool
+val nth_string = fn: string -> int -> string
+val kw_bc = fn: string parser
+val kw_bo = fn: string parser
+val tabulate = fn: string -> string
+val andf = fn: ('a -> bool) * ('a -> bool) -> 'a -> bool
+val reroute_sp_triple = fn: 'a * ('b * 'c) -> 'a * 'b * 'c
+val string_of_indexname = fn: string * int -> string
+val reroute_sp_ps = fn: 'a * ('b * 'c) -> ('a * 'b) * 'c
+val unprefix = fn: string -> string -> string
+val read_int = fn: string list -> int * string list
+val undefined = fn: 'a -> 'b
+val not_equal = fn: ''a -> ''a -> bool
+val take_prefix = fn: ('a -> bool) -> 'a list -> 'a list
+val foldl1 = fn: ('a * 'a -> 'a) -> 'a list -> 'a
+val map_slice_l = fn:
+   ('a list -> 'b list) -> ('a * 'c) list -> ('b * 'c) list
+val prod_ord = fn:
+   ('a * 'b -> order) ->
+     ('c * 'd -> order) -> ('a * 'c) * ('b * 'd) -> order
+val curry = fn: ('a * 'b -> 'c) -> 'a -> 'b -> 'c
+val foldr1 = fn: ('a * 'a -> 'a) -> 'a list -> 'a
+val find_index = fn: ('a -> bool) -> 'a list -> int
+val reroute_ps_triple = fn: ('a * 'b) * 'c -> 'a * 'b * 'c
+val filter_out = fn: ('a -> bool) -> 'a list -> 'a list
+val map_filter = fn: ('a -> 'b option) -> 'a list -> 'b list
+val eq_pair = fn:
+   ('a * 'b -> bool) -> ('c * 'd -> bool) -> ('a * 'c) * ('b * 'd) -> bool
+val getenv = fn: string -> string
+val dict_ord = fn: ('a * 'b -> order) -> 'a list * 'b list -> order
+val make_ord = fn: ('a * 'a -> bool) -> 'a ord
+val orf = fn: ('a -> bool) * ('a -> bool) -> 'a -> bool
+val map_product = fn: ('a -> 'b -> 'c) -> 'a list -> 'b list -> 'c list
+val burrow = fn: ('a list -> 'b list) -> 'a list list -> 'b list list
+val space_explode = fn: string -> string -> string list
+val enclose = fn: string -> string -> string -> string
+val take_suffix = fn: ('a -> bool) -> 'a list -> 'a list
+val yield_singleton = fn:
+   ('a list -> 'b -> 'c list * 'b) -> 'a -> 'b -> 'c * 'b
+val map_range = fn: (int -> 'a) -> int -> 'a list
+val unflat = fn: 'a list list -> 'b list -> 'b list list
+val insert = fn: ('a * 'a -> bool) -> 'a -> 'a list -> 'a list
+val mk_opt_id = fn: ('a -> 'b) -> ('a -> 'b option) -> 'a -> 'b
+val divide_and_conquer' = fn:
+   ('a -> 'b -> ('a list * ('c list * 'b -> 'c * 'b)) * 'b) ->
+     'a -> 'b -> 'c * 'b
+val surround = fn: 'a -> 'a list -> 'a list
+val split_list = fn: ('a * 'b) list -> 'a list * 'b list
+val hex_digit = fn: int -> string
+val singleton = fn: ('a list -> 'b list) -> 'a -> 'b
+val fast_string_ord = fn: string ord
+val subset = fn: ('a * 'b -> bool) -> 'a list * 'b list -> bool
+val unsuffix = fn: string -> string -> string
+val find_first = fn: ('a -> bool) -> 'a list -> 'a option
+val is_prefix = fn: ('a * 'a -> bool) -> 'a list -> 'a list -> bool
+val sort_by = fn: ('a -> string) -> 'a list -> 'a list
+val decode_lines = fn: string -> string
+val upto = fn: int * int -> int list
+val is_greater = fn: order -> bool
+val rpair = fn: 'a -> 'b -> 'b * 'a
+val commas_quote = fn: string list -> string
+val sort = fn: 'a ord -> 'a list -> 'a list
+val cartouche = fn: string -> string
+val untag_list = fn: (int * 'a) list -> 'a list
+val apsnd = fn: ('a -> 'b) -> 'c * 'a -> 'c * 'b
+val signed_string_of_real = fn: real -> string
+val plain_words = fn: string -> string
+val member = fn: ('a * 'b -> bool) -> 'b list -> 'a -> bool
+val grouped = fn:
+   int ->
+     (('a list -> 'b list) -> 'c list list -> 'd list list) ->
+       ('a -> 'b) -> 'c list -> 'd list
+val fst = fn: 'a * 'b -> 'a
+val option_ord = fn: ('a * 'b -> order) -> 'a option * 'b option -> order
+val fold2 = fn: ('a -> 'b -> 'c -> 'c) -> 'a list -> 'b list -> 'c -> 'c
+val chop = fn: int -> 'a list -> 'a list * 'a list
+val apply2 = fn: ('a -> 'b) -> 'a * 'a -> 'b * 'b
+val tag_list = fn: int -> 'a list -> (int * 'a) list
+val exists = fn: ('a -> bool) -> 'a list -> bool
+val string_of_int = fn: int -> string
+val member_string = fn: string -> string -> bool
+val combine = fn: ('a * 'a -> bool) -> 'a list -> 'a list -> 'a list
+val is_equal = fn: order -> bool
+val getenv_strict = fn: string -> string
+val map_split = fn: ('a -> 'b * 'c) -> 'a list -> 'b list * 'c list
+val length_ord = fn: 'a list * 'b list -> order
+val eq_list = fn: ('a * 'a -> bool) -> 'a list * 'a list -> bool
+val serial = fn: unit -> serial
+val sort_strings = fn: string list -> string list
+val funpow = fn: int -> ('a -> 'a) -> 'a -> 'a
+val divide_and_conquer = fn: ('a -> 'a list * ('b list -> 'b)) -> 'a -> 'b
+val trim_line = fn: string -> string
+val oct_char = fn: string -> string
+val radixpand = fn: int * int -> int list
+val exists_string = fn: (string -> bool) -> string -> bool
+val chop_groups = fn: int -> 'a list -> 'a list list
+val pair = fn: 'a -> 'b -> 'a * 'b
+val fold_string = fn: (string -> 'a -> 'a) -> string -> 'a -> 'a
+val oooo = fn:
+   ('a -> 'b) * ('c -> 'd -> 'e -> 'f -> 'a) -> 'c -> 'd -> 'e -> 'f -> 'b
+val fold_range = fn: (int -> 'a -> 'a) -> int -> 'a -> 'a
+val encode_lines = fn: string -> string
+val read_radix_int = fn: int -> string list -> int * string list
+val trim = fn: ('a -> bool) -> 'a list -> 'a list
+val ooo = fn: ('a -> 'b) * ('c -> 'd -> 'e -> 'a) -> 'c -> 'd -> 'e -> 'b
+val oo = fn: ('a -> 'b) * ('c -> 'd -> 'a) -> 'c -> 'd -> 'b
+val split_lines = fn: string -> string list
+val kw_col = fn: string parser
+val distinct = fn: ('a * 'a -> bool) -> 'a list -> 'a list
+val partition_list = fn:
+   (int -> 'a -> bool) -> int -> int -> 'a list -> 'a list list
+val is_greater_equal = fn: order -> bool
+val space_implode = fn: string -> string list -> string
+val filter = fn: ('a -> bool) -> 'a list -> 'a list
+val get_index = fn: ('a -> 'b option) -> 'a list -> (int * 'b) option
+val nth = fn: 'a list -> int -> 'a
+val foldl = fn: ('a * 'b -> 'a) -> 'a * 'b list -> 'a
+val serial_string = fn: unit -> string
+val fold_burrow = fn:
+   ('a list -> 'b -> 'c list * 'd) ->
+     'a list list -> 'b -> 'c list list * 'd
+val get_first = fn: ('a -> 'b option) -> 'a list -> 'b option
+val prefixes = fn: 'a list -> 'a list list
+val foldr = fn: ('a * 'b -> 'b) -> 'a list * 'b -> 'b
+val drop = fn: int -> 'a list -> 'a list
+val bool_ord = fn: bool ord
+val swap = fn: 'a * 'b -> 'b * 'a
+val flat = fn: 'a list list -> 'a list
+val forall = fn: ('a -> bool) -> 'a list -> bool
+val maps = fn: ('a -> 'b list) -> 'a list -> 'b list
+val chop_prefix = fn: ('a -> bool) -> 'a list -> 'a list * 'a list
+val unenclose = fn: string -> string
+val sort_distinct = fn: 'a ord -> 'a list -> 'a list
+val burrow_options = fn:
+   ('a list -> 'b list) -> 'a option list -> 'b option list
+val map_slice_r = fn:
+   ('a list -> 'b list) -> ('c * 'a) list -> ('c * 'b) list
+val reroute_ps_sp = fn: ('a * 'b) * 'c -> 'a * ('b * 'c)
+val stamp = fn: unit -> stamp
+val first_field = fn: string -> string -> (string * string) option
+val burrow_fst = fn:
+   ('a list -> 'b list) -> ('a * 'c) list -> ('b * 'c) list
+val split_last = fn: 'a list -> 'a list * 'a
+val list_ord = fn: ('a * 'b -> order) -> 'a list * 'b list -> order
+val forall_string = fn: (string -> bool) -> string -> bool
+val single = fn: 'a -> 'a list
+val eq_set = fn: ('a * 'a -> bool) -> 'a list * 'a list -> bool
+val size_ord = fn: string ord
+val prefix_lines = fn: string -> string -> string
+val int_ord = fn: int ord
+val prefixes1 = fn: 'a list -> 'a list list
+val replicate = fn: int -> 'a -> 'a list
+val chop_suffix = fn: ('a -> bool) -> 'a list -> 'a list * 'a list
+val reroute_triple_ps = fn: 'a * 'b * 'c -> ('a * 'b) * 'c
+val nth_drop = fn: int -> 'a list -> 'a list
+val duplicates = fn: ('a * 'a -> bool) -> 'a list -> 'a list
+val perhaps_loop = fn: ('a -> 'a option) -> 'a -> 'a option
+val string_of_real = fn: real -> string
+signature SPECCHECK_GEN_TYPES =
+  sig
+    type ('a, 'b) cogen = ('a, 'b, SpecCheck_Random.rand) cogen_state
+    type ('a, 'b, 'c) cogen_state =
+       'a -> ('b, 'c) gen_state -> ('b, 'c) gen_state
+    type 'a gen = ('a, SpecCheck_Random.rand) gen_state
+    type ('a, 'b) gen_state = 'b -> 'a * 'b
+  end
+structure SpecCheck_Gen_Types: SPECCHECK_GEN_TYPES
+signature BINDING =
+  sig
+    val bad: binding -> string
+    eqtype binding
+    val check: binding -> unit
+    val concealed: binding -> binding
+    val conglomerate: binding list -> binding
+    val default_pos: binding -> binding
+    val default_pos_of: binding -> Position.T
+    val empty: binding
+    val empty_atts: binding * 'a list
+    val eq_name: binding * binding -> bool
+    val is_empty: binding -> bool
+    val is_empty_atts: binding * 'a list -> bool
+    val make: bstring * Position.T -> binding
+    val map_name: (bstring -> bstring) -> binding -> binding
+    val map_prefix:
+       ((string * bool) list -> (string * bool) list) -> binding -> binding
+    val name: bstring -> binding
+    val name_of: binding -> bstring
+    val name_spec:
+       scope list ->
+         (string * bool) list ->
+           binding ->
+             {concealed: bool,
+              restriction: bool option, spec: (string * bool) list}
+    val new_scope: unit -> scope
+    val path_of: binding -> (string * bool) list
+    val pos_of: binding -> Position.T
+    val prefix: bool -> string -> binding -> binding
+    val prefix_name: string -> binding -> binding
+    val prefix_of: binding -> (string * bool) list
+    val pretty: binding -> Pretty.T
+    val print: binding -> string
+    val qualified_name: string -> binding
+    val qualified_name_mandatory: string -> binding
+    val qualify: bool -> string -> binding -> binding
+    val qualify_name: bool -> binding -> string -> binding
+    val reset_pos: binding -> binding
+    val restricted: (bool * scope) option -> binding -> binding
+    eqtype scope
+    val set_pos: Position.T -> binding -> binding
+    val suffix_name: string -> binding -> binding
+  end
+structure Binding: BINDING
+### ML warning (line 32 of "$AFP/Conditional_Transfer_Rule/CTR_Tools/More_Type.ML"):
+### Matches are not exhaustive.
+### ML warning (line 44 of "$AFP/Conditional_Transfer_Rule/CTR_Tools/More_Type.ML"):
+### Matches are not exhaustive.
+signature TYPE =
+  sig
+    exception TUNIFY
+    exception TYPE_MATCH
+    val add_abbrev:
+       Context.generic -> binding * string list * typ -> tsig -> tsig
+    val add_arity: Context.generic -> arity -> tsig -> tsig
+    val add_class: Context.generic -> binding * class list -> tsig -> tsig
+    val add_classrel: Context.generic -> class * class -> tsig -> tsig
+    val add_nonterminal: Context.generic -> binding -> tsig -> tsig
+    val add_type: Context.generic -> binding * int -> tsig -> tsig
+    val appl_error: Proof.context -> term -> typ -> term -> typ -> string
+    val arity_number: tsig -> string -> int
+    val arity_sorts: Context.generic -> tsig -> string -> sort -> sort list
+    val cert_class: tsig -> class -> class
+    val cert_sort: tsig -> sort -> sort
+    val cert_typ: tsig -> typ -> typ
+    val cert_typ_mode: mode -> tsig -> typ -> typ
+    val change_base: bool -> tsig -> tsig
+    val change_ignore: tsig -> tsig
+    val check_decl:
+       Context.generic ->
+         tsig ->
+           xstring * Position.T -> (string * Position.report list) * decl
+    val class_space: tsig -> Name_Space.T
+    val constraint: typ -> term -> term
+    val constraint_type: Proof.context -> typ -> typ
+    val could_match: typ * typ -> bool
+    val could_matches: typ list * typ list -> bool
+    val could_unify: typ * typ -> bool
+    val could_unifys: typ list * typ list -> bool
+    datatype decl
+    =
+         Abbreviation of string list * typ * bool
+       | LogicalType of int
+       | Nonterminal
+    val defaultS: tsig -> sort
+    val default_sorts: theory -> typ -> typ
+    val default_sorts_of_empty_sorts: theory -> typ -> typ
+    val devar: tyenv -> typ -> typ
+    val empty_tsig: tsig
+    val eq_sort: tsig -> sort * sort -> bool
+    val eq_tsig: tsig * tsig -> bool
+    val get_mode: Proof.context -> mode
+    val hide_class: bool -> string -> tsig -> tsig
+    val hide_type: bool -> string -> tsig -> tsig
+    val inter_sort: tsig -> sort * sort -> sort
+    val legacy_freeze: term -> term
+    val legacy_freeze_thaw: term -> term * (term -> term)
+    val legacy_freeze_thaw_type: typ -> typ * (typ -> typ)
+    val legacy_freeze_type: typ -> typ
+    val logical_types: tsig -> string list
+    val lookup: tyenv -> indexname * sort -> typ option
+    val mark_polymorphic: typ -> typ
+    val merge_tsig: Context.generic -> tsig * tsig -> tsig
+    val minimize_sort: tsig -> sort -> sort
+    type mode
+    val mode_abbrev: mode
+    val mode_default: mode
+    val mode_syntax: mode
+    val no_tvars: typ -> typ
+    val of_sort: tsig -> typ * sort -> bool
+    val raw_instance: typ * typ -> bool
+    val raw_match: typ * typ -> tyenv -> tyenv
+    val raw_matches: typ list * typ list -> tyenv -> tyenv
+    val raw_unify: typ * typ -> tyenv -> tyenv
+    val raw_unifys: typ list * typ list -> tyenv -> tyenv
+    val rep_tsig:
+       tsig ->
+         {classes: Name_Space.T * Sorts.algebra,
+          default: sort,
+          log_types: string list, types: decl Name_Space.table}
+    val restore_mode: Proof.context -> Proof.context -> Proof.context
+    val set_defsort: sort -> tsig -> tsig
+    val set_mode: mode -> Proof.context -> Proof.context
+    val sort_of_atyp: typ -> sort
+    val strip_constraints: term -> term
+    val strip_sorts: typ -> typ
+    val strip_sorts_dummy: typ -> typ
+    val subsort: tsig -> sort * sort -> bool
+    val the_decl: tsig -> string * Position.T -> decl
+    type tsig
+    type tyenv = (sort * typ) Vartab.table
+    val typ_instance: tsig -> typ * typ -> bool
+    val typ_match: tsig -> typ * typ -> tyenv -> tyenv
+    val typ_matches: tsig -> typ list * typ list -> tyenv -> tyenv
+    val type_alias: Name_Space.naming -> binding -> string -> tsig -> tsig
+    val type_space: tsig -> Name_Space.T
+    val unified: tyenv -> typ * typ -> bool
+    val unify: tsig -> typ * typ -> tyenv * int -> tyenv * int
+    val varify_global:
+       TFrees.set -> term -> ((string * sort) * indexname) list * term
+    val witness_sorts:
+       tsig -> (typ * sort) list -> sort list -> (typ * sort) list
+  end
+structure Type: TYPE
+instantiation
+  fun :: (type, one) one
+  one_fun == one_class.one :: 'a => 'b
+signature SORTS =
+  sig
+    exception CLASS_ERROR of class_error
+    val add_arities:
+       Context.generic ->
+         string * (class * sort list) list -> algebra -> algebra
+    val add_class:
+       Context.generic -> class * class list -> algebra -> algebra
+    val add_classrel: Context.generic -> class * class -> algebra -> algebra
+    type algebra
+    val all_classes: algebra -> class list
+    val arities_of: algebra -> (class * sort list) list Symtab.table
+    val class_error: Context.generic -> class_error -> string
+    type class_error
+    val class_le: algebra -> class * class -> bool
+    val class_less: algebra -> class * class -> bool
+    val classes_of: algebra -> serial Graph.T
+    val classrel_derivation:
+       algebra -> ('a * class -> class -> 'a) -> 'a * class -> class -> 'a
+    val complete_sort: algebra -> sort -> sort
+    val dest_algebra:
+       algebra list ->
+         algebra ->
+           {arities: (string * sort list * class) list,
+            classrel: (class * class list) list}
+    val empty_algebra: algebra
+    val has_instance: algebra -> string -> sort -> bool
+    val insert_sort: sort -> sort list -> sort list
+    val insert_term: term -> sort list -> sort list
+    val insert_terms: term list -> sort list -> sort list
+    val insert_typ: typ -> sort list -> sort list
+    val insert_typs: typ list -> sort list -> sort list
+    val inter_sort: algebra -> sort * sort -> sort
+    val make: sort list -> sort list
+    val meet_sort:
+       algebra -> typ * sort -> sort Vartab.table -> sort Vartab.table
+    val meet_sort_typ: algebra -> typ * sort -> typ -> typ
+    val merge_algebra: Context.generic -> algebra * algebra -> algebra
+    val mg_domain: algebra -> string -> sort -> sort list
+    val minimize_sort: algebra -> sort -> sort
+    val of_sort: algebra -> typ * sort -> bool
+    val of_sort_derivation:
+       algebra ->
+         {class_relation: typ -> bool -> 'a * class -> class -> 'a,
+          type_constructor:
+          string * typ list -> ('a * class) list list -> class -> 'a,
+          type_variable: typ -> ('a * class) list}
+           -> typ * sort -> 'a list
+    val params_of_sort: theory -> class list -> (string * typ) list
+    val params_of_super_classes: theory -> class -> (string * typ) list
+    val remove_sort: sort -> sort list -> sort list
+    val sort_eq: algebra -> sort * sort -> bool
+    val sort_le: algebra -> sort * sort -> bool
+    val sorts_le: algebra -> sort list * sort list -> bool
+    val subalgebra:
+       Context.generic ->
+         (class -> bool) ->
+           (class * string -> sort list option) ->
+             algebra -> (sort -> sort) * algebra
+    val subset: sort list * sort list -> bool
+    val subtract: sort list -> sort list -> sort list
+    val super_classes: algebra -> class -> class list
+    val union: sort list -> sort list -> sort list
+    val witness_sorts:
+       algebra ->
+         string list -> (typ * sort) list -> sort list -> (typ * sort) list
+  end
+structure Sorts: SORTS
+signature TERM =
+  sig
+    val ---> : typ list * typ -> typ
+    val --> : typ * typ -> typ
+    exception TERM of string * term list
+    exception TYPE of string * typ list * term list
+    exception USED_FREE of string * term
+    val aT: sort -> typ
+    val a_itselfT: typ
+    val abs: string * typ -> term -> term
+    val absdummy: typ -> term -> term
+    val absfree: string * typ -> term -> term
+    val abstract_over: term * term -> term
+    val aconv: term * term -> bool
+    val aconv_untyped: term * term -> bool
+    val add_const_names: term -> string list -> string list
+    val add_consts: term -> (string * typ) list -> (string * typ) list
+    val add_free_names: term -> string list -> string list
+    val add_frees: term -> (string * typ) list -> (string * typ) list
+    val add_loose_bnos: term * int * int list -> int list
+    val add_tfree_names: term -> string list -> string list
+    val add_tfree_namesT: typ -> string list -> string list
+    val add_tfrees: term -> (string * sort) list -> (string * sort) list
+    val add_tfreesT: typ -> (string * sort) list -> (string * sort) list
+    val add_tvar_names: term -> indexname list -> indexname list
+    val add_tvar_namesT: typ -> indexname list -> indexname list
+    val add_tvars:
+       term -> (indexname * sort) list -> (indexname * sort) list
+    val add_tvarsT:
+       typ -> (indexname * sort) list -> (indexname * sort) list
+    val add_var_names: term -> indexname list -> indexname list
+    val add_vars: term -> (indexname * typ) list -> (indexname * typ) list
+    val args_of: term -> term list
+    val argument_type_of: term -> int -> typ
+    type arity = string * sort list * sort
+    val betapply: term * term -> term
+    val betapplys: term * term list -> term
+    val binder_types: typ -> typ list
+    val body_type: typ -> typ
+    val burrow_types: (typ list -> typ list) -> term list -> term list
+    eqtype class
+    val close_schematic_term: term -> term
+    val could_beta_contract: term -> bool
+    val could_beta_eta_contract: term -> bool
+    val could_eta_contract: term -> bool
+    val could_match_const: (''a * typ) * (''a * typ) -> bool
+    val could_unify: term * term -> bool
+    val declare_term_frees: term -> Name.context -> Name.context
+    val declare_term_names: term -> Name.context -> Name.context
+    val declare_typ_names: typ -> Name.context -> Name.context
+    val dependent_lambda_name: string * term -> term -> term
+    val dest_Const: term -> string * typ
+    val dest_Free: term -> string * typ
+    val dest_TFree: typ -> string * sort
+    val dest_TVar: typ -> indexname * sort
+    val dest_Type: typ -> string * typ list
+    val dest_Var: term -> indexname * typ
+    val dest_abs_fresh: string -> term -> (string * typ) * term
+    val dest_abs_global: term -> (string * typ) * term
+    val dest_comb: term -> term * term
+    val dest_funT: typ -> typ * typ
+    val domain_type: typ -> typ
+    val dummy: term
+    val dummyS: sort
+    val dummyT: typ
+    val dummy_pattern: typ -> term
+    val dummy_prop: term
+    val eq_ix: indexname * indexname -> bool
+    val eq_tvar: (indexname * sort) * (indexname * sort) -> bool
+    val eq_var: (indexname * typ) * (indexname * typ) -> bool
+    val exists_Const: (string * typ -> bool) -> term -> bool
+    val exists_subterm: (term -> bool) -> term -> bool
+    val exists_subtype: (typ -> bool) -> typ -> bool
+    val exists_type: (typ -> bool) -> term -> bool
+    val fastype_of: term -> typ
+    val fastype_of1: typ list * term -> typ
+    val fold_aterms: (term -> 'a -> 'a) -> term -> 'a -> 'a
+    val fold_atyps: (typ -> 'a -> 'a) -> typ -> 'a -> 'a
+    val fold_atyps_sorts: (typ * sort -> 'a -> 'a) -> typ -> 'a -> 'a
+    val fold_subtypes: (typ -> 'a -> 'a) -> typ -> 'a -> 'a
+    val fold_term_types: (term -> typ -> 'a -> 'a) -> term -> 'a -> 'a
+    val fold_types: (typ -> 'a -> 'a) -> term -> 'a -> 'a
+    val free_dummy_patterns: term -> Name.context -> term * Name.context
+    val has_tfreesT: typ -> bool
+    val head_of: term -> term
+    val hidden_polymorphism: term -> (indexname * sort) list
+    val incr_boundvars: int -> term -> term
+    val incr_bv: int * int * term -> term
+    type indexname = string * int
+    val is_Bound: term -> bool
+    val is_Const: term -> bool
+    val is_Free: term -> bool
+    val is_TFree: typ -> bool
+    val is_TVar: typ -> bool
+    val is_Type: typ -> bool
+    val is_Var: term -> bool
+    val is_comb: term -> bool
+    val is_dependent: term -> bool
+    val is_dummy_pattern: term -> bool
+    val is_first_order: string list -> term -> bool
+    val is_open: term -> bool
+    val itselfT: typ -> typ
+    val lambda: term -> term -> term
+    val lambda_name: string * term -> term -> term
+    val list_comb: term * term list -> term
+    val loose_bnos: term -> int list
+    val loose_bvar: term * int -> bool
+    val loose_bvar1: term * int -> bool
+    val map_abs_vars: (string -> string) -> term -> term
+    val map_aterms: (term -> term) -> term -> term
+    val map_atyps: (typ -> typ) -> typ -> typ
+    val map_const: (string * typ -> term) -> term -> term
+    val map_fv: (string * typ -> term) -> term -> term
+    val map_sv: (indexname * typ -> term) -> term -> term
+    val map_tfree: (string * sort -> typ) -> term -> term
+    val map_type_tfree: (string * sort -> typ) -> typ -> typ
+    val map_type_tvar: (indexname * sort -> typ) -> typ -> typ
+    val map_types: (typ -> typ) -> term -> term
+    val match_bvars:
+       term * term -> (string * string) list -> (string * string) list
+    val maxidx_of_term: term -> int
+    val maxidx_of_typ: typ -> int
+    val maxidx_of_typs: typ list -> int
+    val maxidx_term: term -> int -> int
+    val maxidx_typ: typ -> int -> int
+    val maxidx_typs: typ list -> int -> int
+    val no_dummyT: typ -> typ
+    val no_dummy_patterns: term -> term
+    val propT: typ
+    val range_type: typ -> typ
+    val rename_abs: term -> term -> term -> term option
+    val rename_wrt_term: term -> (string * 'a) list -> (string * 'a) list
+    val replace_dummy_patterns: term -> int -> term * int
+    val show_dummy_patterns: term -> term
+    val size_of_term: term -> int
+    val size_of_typ: typ -> int
+    type sort = class list
+    val string_of_vname: indexname -> string
+    val string_of_vname': indexname -> string
+    val strip_abs: term -> (string * typ) list * term
+    val strip_abs_body: term -> term
+    val strip_abs_eta: int -> term -> (string * typ) list * term
+    val strip_abs_vars: term -> (string * typ) list
+    val strip_all_body: term -> term
+    val strip_all_vars: term -> (string * typ) list
+    val strip_comb: term -> term * term list
+    val strip_qnt_body: string -> term -> term
+    val strip_qnt_vars: string -> term -> (string * typ) list
+    val strip_type: typ -> typ list * typ
+    val subst_TVars: (indexname * typ) list -> term -> term
+    val subst_Vars: (indexname * term) list -> term -> term
+    val subst_atomic: (term * term) list -> term -> term
+    val subst_atomic_types: (typ * typ) list -> term -> term
+    val subst_bound: term * term -> term
+    val subst_bounds: term list * term -> term
+    val subst_free: (term * term) list -> term -> term
+    val subst_vars:
+       (indexname * typ) list * (indexname * term) list -> term -> term
+    datatype term
+    =
+         $ of term * term
+       | Abs of string * typ * term
+       | Bound of int
+       | Const of string * typ
+       | Free of string * typ
+       | Var of indexname * typ
+    val term_name: term -> string
+    datatype typ
+    =
+         TFree of string * sort
+       | TVar of indexname * sort
+       | Type of string * typ list
+    val typ_subst_TVars: (indexname * typ) list -> typ -> typ
+    val typ_subst_atomic: (typ * typ) list -> typ -> typ
+    val type_of: term -> typ
+    val type_of1: typ list * term -> typ
+    val used_free: string -> term -> bool
+    val variant_frees: term -> (string * 'a) list -> (string * 'a) list
+  end
+structure Term: TERM
+signature VARIABLE =
+  sig
+    val add_fixed:
+       Proof.context -> term -> (string * typ) list -> (string * typ) list
+    val add_fixed_names: Proof.context -> term -> string list -> string list
+    val add_fixes:
+       string list -> Proof.context -> string list * Proof.context
+    val add_fixes_binding:
+       binding list -> Proof.context -> string list * Proof.context
+    val add_fixes_direct: string list -> Proof.context -> Proof.context
+    val add_fixes_implicit: term -> Proof.context -> Proof.context
+    val add_free_names: Proof.context -> term -> string list -> string list
+    val add_frees:
+       Proof.context -> term -> (string * typ) list -> (string * typ) list
+    val add_newly_fixed:
+       Proof.context ->
+         Proof.context -> term -> (string * typ) list -> (string * typ) list
+    val bind_term: indexname * term -> Proof.context -> Proof.context
+    val binds_of: Proof.context -> (typ * term) Vartab.table
+    val check_name: binding -> string
+    val constraints_of:
+       Proof.context -> typ Vartab.table * sort Vartab.table
+    val declare_const: string * string -> Proof.context -> Proof.context
+    val declare_constraints: term -> Proof.context -> Proof.context
+    val declare_internal: term -> Proof.context -> Proof.context
+    val declare_maxidx: int -> Proof.context -> Proof.context
+    val declare_names: term -> Proof.context -> Proof.context
+    val declare_prf: proof -> Proof.context -> Proof.context
+    val declare_term: term -> Proof.context -> Proof.context
+    val declare_thm: thm -> Proof.context -> Proof.context
+    val declare_typ: typ -> Proof.context -> Proof.context
+    val def_sort: Proof.context -> indexname -> sort option
+    val def_type: Proof.context -> bool -> indexname -> typ option
+    val default_type: Proof.context -> string -> typ option
+    val dest_abs:
+       term -> Proof.context -> ((string * typ) * term) * Proof.context
+    val dest_abs_cterm:
+       cterm -> Proof.context -> (cterm * cterm) * Proof.context
+    val dest_all:
+       term -> Proof.context -> ((string * typ) * term) * Proof.context
+    val dest_all_cterm:
+       cterm -> Proof.context -> (cterm * cterm) * Proof.context
+    val dest_fixes: Proof.context -> (string * string) list
+    val expand_binds: Proof.context -> term -> term
+    val export: Proof.context -> Proof.context -> thm list -> thm list
+    val exportT: Proof.context -> Proof.context -> thm list -> thm list
+    val exportT_terms:
+       Proof.context -> Proof.context -> term list -> term list
+    val export_morphism: Proof.context -> Proof.context -> morphism
+    val export_prf: Proof.context -> Proof.context -> proof -> proof
+    val export_terms:
+       Proof.context -> Proof.context -> term list -> term list
+    val fix_dummy_patterns: term -> Proof.context -> term * Proof.context
+    val fix_new_vars: Proof.context -> string list -> Proof.context
+    val fixed_ord: Proof.context -> string ord
+    val focus:
+       binding list option ->
+         term ->
+           Proof.context ->
+             ((string * (string * typ)) list * term) * Proof.context
+    val focus_cterm:
+       binding list option ->
+         cterm ->
+           Proof.context -> ((string * cterm) list * cterm) * Proof.context
+    val focus_params:
+       binding list option ->
+         term ->
+           Proof.context ->
+             (string list * (string * typ) list) * Proof.context
+    val focus_subgoal:
+       binding list option ->
+         int ->
+           thm ->
+             Proof.context ->
+               ((string * cterm) list * cterm) * Proof.context
+    val gen_all: Proof.context -> thm -> thm
+    val import:
+       bool ->
+         thm list ->
+           Proof.context ->
+             ((ctyp TVars.table * cterm Vars.table) * thm list) *
+             Proof.context
+    val importT:
+       thm list ->
+         Proof.context -> (ctyp TVars.table * thm list) * Proof.context
+    val importT_inst:
+       term list -> Proof.context -> typ TVars.table * Proof.context
+    val importT_terms:
+       term list -> Proof.context -> term list * Proof.context
+    val import_inst:
+       bool ->
+         term list ->
+           Proof.context ->
+             (typ TVars.table * term Vars.table) * Proof.context
+    val import_prf: bool -> proof -> Proof.context -> proof * Proof.context
+    val import_terms:
+       bool -> term list -> Proof.context -> term list * Proof.context
+    val import_vars: Proof.context -> thm -> thm
+    val improper_fixes: Proof.context -> Proof.context
+    val intern_fixed: Proof.context -> string -> string
+    val invent_types:
+       sort list -> Proof.context -> (string * sort) list * Proof.context
+    val is_body: Proof.context -> bool
+    val is_bound_focus: Proof.context -> bool
+    val is_const: Proof.context -> string -> bool
+    val is_declared: Proof.context -> string -> bool
+    val is_fixed: Proof.context -> string -> bool
+    val is_improper: Proof.context -> string -> bool
+    val is_newly_fixed: Proof.context -> Proof.context -> string -> bool
+    val lookup_const: Proof.context -> string -> string option
+    val lookup_fixed: Proof.context -> string -> string option
+    val markup: Proof.context -> string -> Markup.T
+    val markup_entity_def: Proof.context -> string -> Markup.T
+    val markup_fixed: Proof.context -> string -> Markup.T
+    val maxidx_of: Proof.context -> int
+    val maybe_bind_term:
+       indexname * term option -> Proof.context -> Proof.context
+    val names_of: Proof.context -> Name.context
+    val next_bound: string * typ -> Proof.context -> term * Proof.context
+    val polymorphic: Proof.context -> term list -> term list
+    val polymorphic_types:
+       Proof.context -> term list -> (indexname * sort) list * term list
+    val restore_body: Proof.context -> Proof.context -> Proof.context
+    val restore_bound_focus: Proof.context -> Proof.context -> Proof.context
+    val restore_proper_fixes:
+       Proof.context -> Proof.context -> Proof.context
+    val revert_bounds: Proof.context -> term -> term
+    val revert_fixed: Proof.context -> string -> string
+    val set_body: bool -> Proof.context -> Proof.context
+    val set_bound_focus: bool -> Proof.context -> Proof.context
+    val trade:
+       (Proof.context -> thm list -> thm list) ->
+         Proof.context -> thm list -> thm list
+    val tradeT:
+       (Proof.context -> thm list -> thm list) ->
+         Proof.context -> thm list -> thm list
+    val unbind_term: indexname -> Proof.context -> Proof.context
+    val variant_fixes:
+       string list -> Proof.context -> string list * Proof.context
+    val variant_frees:
+       Proof.context ->
+         term list -> (string * 'a) list -> (string * 'a) list
+    val variant_name_const: Proof.context -> string list -> string list
+    val warn_extra_tfrees: Proof.context -> Proof.context -> unit
+  end
+structure Variable: VARIABLE
+signature SPECCHECK_GEN_BASE =
+  sig
+    val bernoulli: real -> bool gen
+    val binom_dist: real -> int -> int gen
+    val cobool: (bool, 'a) cogen
+    type ('a, 'b) cogen = ('a, 'b, SpecCheck_Random.rand) cogen_state
+    type ('a, 'b, 'c) cogen_state =
+       'a -> ('b, 'c) gen_state -> ('b, 'c) gen_state
+    val colist: ('a, 'b) cogen -> ('a list, 'b) cogen
+    val cooption: ('a, 'b) cogen -> ('a option, 'b) cogen
+    val elements: 'a vector -> 'a gen
+    val elementsL: 'a list -> 'a gen
+    val elementsW: (int * 'a) vector -> 'a gen
+    val elementsWL: (int * 'a) list -> 'a gen
+    val filter: ('a -> bool) -> ('a, 'b) gen_state -> ('a, 'b) gen_state
+    val filter_bounded:
+       int -> ('a -> bool) -> ('a, 'b) gen_state -> ('a, 'b) gen_state
+    type 'a gen = ('a, SpecCheck_Random.rand) gen_state
+    type ('a, 'b) gen_state = 'b -> 'a * 'b
+    val join: (('a, 'b) gen_state, 'b) gen_state -> ('a, 'b) gen_state
+    val list:
+       (int, 'a) gen_state -> ('b, 'a) gen_state -> ('b list, 'a) gen_state
+    val map: ('a -> 'b) -> ('a, 'c) gen_state -> ('b, 'c) gen_state
+    val map2:
+       ('a -> 'b -> 'c) ->
+         ('a, 'd) gen_state -> ('b, 'd) gen_state -> ('c, 'd) gen_state
+    val map3:
+       ('a -> 'b -> 'c -> 'd) ->
+         ('a, 'e) gen_state ->
+           ('b, 'e) gen_state -> ('c, 'e) gen_state -> ('d, 'e) gen_state
+    val map4:
+       ('a -> 'b -> 'c -> 'd -> 'e) ->
+         ('a, 'f) gen_state ->
+           ('b, 'f) gen_state ->
+             ('c, 'f) gen_state -> ('d, 'f) gen_state -> ('e, 'f) gen_state
+    val of_seq: ('a option, 'a Seq.seq) gen_state
+    val one_of: 'a gen vector -> 'a gen
+    val one_ofL: 'a gen list -> 'a gen
+    val one_ofW: (int * 'a gen) vector -> 'a gen
+    val one_ofWL: (int * 'a gen) list -> 'a gen
+    val option:
+       (bool, 'a) gen_state ->
+         ('b, 'a) gen_state -> ('b option, 'a) gen_state
+    val range_int: int * int -> int gen
+    val ref_gen: ('a, 'b) gen_state -> ('a ref, 'b) gen_state
+    val return: 'a -> ('a, 'b) gen_state
+    val seq:
+       ('a option, 'b * SpecCheck_Random.rand) gen_state ->
+         'b -> 'a Seq.seq gen
+    val shuffle: 'a list -> 'a list gen
+    val unfold_while:
+       ('a -> (bool, 'b) gen_state) ->
+         ('a, 'b) gen_state -> ('a list, 'b) gen_state
+    val unit: (unit, 'a) gen_state
+    val variant: (int, 'a) cogen
+    val vector:
+       (int, 'a) gen_state ->
+         ('b, 'a) gen_state -> ('b vector, 'a) gen_state
+    val zip:
+       ('a, 'b) gen_state -> ('c, 'b) gen_state -> ('a * 'c, 'b) gen_state
+    val zip3:
+       ('a, 'b) gen_state ->
+         ('c, 'b) gen_state ->
+           ('d, 'b) gen_state -> ('a * 'c * 'd, 'b) gen_state
+    val zip4:
+       ('a, 'b) gen_state ->
+         ('c, 'b) gen_state ->
+           ('d, 'b) gen_state ->
+             ('e, 'b) gen_state -> ('a * 'c * 'd * 'e, 'b) gen_state
+  end
+structure SpecCheck_Gen_Base: SPECCHECK_GEN_BASE
+signature SPECCHECK_GEN_TEXT =
+  sig
+    val char: char SpecCheck_Gen_Types.gen
+    val char_of: string -> char SpecCheck_Gen_Types.gen
+    val cochar: (char, 'a) SpecCheck_Gen_Types.cogen
+    val costring: (string, 'a) SpecCheck_Gen_Types.cogen
+    val cosubstring: (substring, 'a) SpecCheck_Gen_Types.cogen
+    val digit: char SpecCheck_Gen_Types.gen
+    val letter: char SpecCheck_Gen_Types.gen
+    val lowercase_letter: char SpecCheck_Gen_Types.gen
+    val range_char: char * char -> char SpecCheck_Gen_Types.gen
+    val string:
+       int SpecCheck_Gen_Types.gen ->
+         char SpecCheck_Gen_Types.gen -> string SpecCheck_Gen_Types.gen
+    val substring:
+       string SpecCheck_Gen_Types.gen -> substring SpecCheck_Gen_Types.gen
+    val uppercase_letter: char SpecCheck_Gen_Types.gen
+  end
+structure SpecCheck_Gen_Text: SPECCHECK_GEN_TEXT
+signature SPECCHECK_GEN_INT =
+  sig
+    val coint: (int, 'a) SpecCheck_Gen_Types.cogen
+    val neg: int -> int SpecCheck_Gen_Types.gen
+    val nonneg: int -> int SpecCheck_Gen_Types.gen
+    val nonpos: int -> int SpecCheck_Gen_Types.gen
+    val pos: int -> int SpecCheck_Gen_Types.gen
+  end
+structure SpecCheck_Gen_Int: SPECCHECK_GEN_INT
+### theory "HOL-Library.Function_Algebras"
+### 0.145s elapsed time, 0.546s cpu time, 0.038s GC time
+Loading theory "SpecCheck.SpecCheck_Output_Style" (required by "Draft.UD_TestsMoreTemplates" via "Draft.UD_Tests" via "Draft.IML_UT" via "SpecCheck.SpecCheck")
+signature SPECCHECK_OUTPUT_STYLE_TYPES =
+  sig
+    type 'a output_style =
+       'a SpecCheck_Show_Base.show option ->
+         Proof.context ->
+           string -> Timing.timing -> 'a SpecCheck_Base.result -> unit
+  end
+signature SPECCHECK_OUTPUT_STYLE =
+  sig val style: 'a SpecCheck_Output_Style_Types.output_style end
+structure SpecCheck_Output_Style_Types: SPECCHECK_OUTPUT_STYLE_TYPES
+Found termination order: "(%p. size (snd p)) <*mlex*> {}"
+signature SPECCHECK_GEN_REAL =
+  sig
+    val range_real: real * real -> real SpecCheck_Gen_Types.gen
+    val real: real SpecCheck_Gen_Types.gen
+    val real_finite: real SpecCheck_Gen_Types.gen
+    val real_neg: real SpecCheck_Gen_Types.gen
+    val real_nonneg: real SpecCheck_Gen_Types.gen
+    val real_nonpos: real SpecCheck_Gen_Types.gen
+    val real_pos: real SpecCheck_Gen_Types.gen
+  end
+structure SpecCheck_Gen_Real: SPECCHECK_GEN_REAL
+signature LOGIC =
+  sig
+    val all: term -> term -> term
+    val all_const: typ -> term
+    val all_constraint:
+       (string -> typ option) -> string * string -> term -> term
+    val assum_pairs: int * term -> (term * term) list
+    val assum_problems: int * term -> (term -> term) * term list * term
+    val bad_fixed: string -> string
+    val bad_schematic: indexname -> string
+    val class_of_const: string -> class
+    val close_form: term -> term
+    val close_prop: (string * term) list -> term list -> term -> term
+    val close_prop_constraint:
+       (string -> typ option) ->
+         (string * string) list -> term list -> term -> term
+    val close_term: (string * term) list -> term -> term
+    val combound: term * int * int -> term
+    val concl_of_goal: term -> int -> term
+    val conjunction: term
+    val const_of_class: class -> string
+    val count_prems: term -> int
+    val dependent_all_constraint:
+       (string -> typ option) -> string * string -> term -> term
+    val dependent_all_name: string * term -> term -> term
+    val dest_all_global: term -> (string * typ) * term
+    val dest_arity: term -> string * sort list * class
+    val dest_classrel: term -> class * class
+    val dest_conjunction: term -> term * term
+    val dest_conjunction_balanced: int -> term -> term list
+    val dest_conjunction_list: term -> term list
+    val dest_conjunctions: term -> term list
+    val dest_equals: term -> term * term
+    val dest_implies: term -> term * term
+    val dest_of_class: term -> typ * class
+    val dest_term: term -> term
+    val dest_type: term -> typ
+    val dummy_tfree: sort -> typ
+    val flatten_params: int -> term -> term
+    val get_goal: term -> int -> term
+    val goal_params: term -> int -> term * term list
+    val has_meta_prems: term -> bool
+    val implies: term
+    val incr_indexes: string list * typ list * int -> term -> term
+    val incr_indexes_same:
+       string list * typ list * int -> term Same.operation
+    val incr_tvar: int -> typ -> typ
+    val incr_tvar_same: int -> typ Same.operation
+    val is_all: term -> bool
+    val is_equals: term -> bool
+    val lift_abs: int -> term -> term -> term
+    val lift_all: int -> term -> term -> term
+    val list_all: (string * typ) list * term -> term
+    val list_implies: term list * term -> term
+    val list_rename_params: string list -> term -> term
+    val mk_arities: arity -> term list
+    val mk_arity: string * sort list * class -> term
+    val mk_classrel: class * class -> term
+    val mk_conjunction: term * term -> term
+    val mk_conjunction_balanced: term list -> term
+    val mk_conjunction_list: term list -> term
+    val mk_equals: term * term -> term
+    val mk_implies: term * term -> term
+    val mk_of_class: typ * class -> term
+    val mk_of_sort: typ * sort -> term list
+    val mk_term: term -> term
+    val mk_type: typ -> term
+    val name_arities: arity -> string list
+    val name_arity: string * sort list * class -> string
+    val name_classrel: string * string -> string
+    val no_prems: term -> bool
+    val nth_prem: int * term -> term
+    val occs: term * term -> bool
+    val prems_of_goal: term -> int -> term list
+    val protect: term -> term
+    val protectC: term
+    val rlist_abs: (string * typ) list * term -> term
+    val strip_assums_concl: term -> term
+    val strip_assums_hyp: term -> term list
+    val strip_horn: term -> term list * term
+    val strip_imp_concl: term -> term
+    val strip_imp_prems: term -> term list
+    val strip_params: term -> (string * typ) list
+    val strip_prems: int * term list * term -> term list * term
+    val true_prop: term
+    val type_map: (term -> term) -> typ -> typ
+    val unconstrainT: sort list -> term -> unconstrain_context * term
+    type unconstrain_context =
+       {atyp_map: typ -> typ,
+        constraints: ((typ * class) * term) list,
+        constraints_map: (sort * typ) list,
+        map_atyps: typ -> typ,
+        outer_constraints: (typ * class) list,
+        present_map: (typ * typ) list}
+    val unoverload_types_term: theory -> term -> term
+    val unprotect: term -> term
+    val unvarifyT_global: typ -> typ
+    val unvarify_global: term -> term
+    val unvarify_local_term: Proof.context -> term -> term * Proof.context
+    val unvarify_types_global: term -> term
+    val unvarify_types_local_term:
+       Proof.context -> term -> term * Proof.context
+    val varifyT_global: typ -> typ
+    val varifyT_mixed_global: typ -> typ
+    val varify_global: term -> term
+    val varify_mixed_global: term -> term
+    val varify_types_global: term -> term
+  end
+structure Logic: LOGIC
+### ML warning (line 14 of "$AFP/SpecCheck/Output_Styles/output_style_perl.ML"):
+### Value identifier (timing) has not been referenced.
+structure SpecCheck_Output_Style_Perl: SPECCHECK_OUTPUT_STYLE
+signature SPECCHECK_GEN_FUNCTION =
+  sig
+    val function:
+       ('a, 'b) SpecCheck_Gen_Types.cogen ->
+         'b SpecCheck_Gen_Types.gen -> ('a -> 'b) SpecCheck_Gen_Types.gen
+    val function':
+       'a SpecCheck_Gen_Types.gen -> (''b -> 'a) SpecCheck_Gen_Types.gen
+  end
+structure SpecCheck_Gen_Function: SPECCHECK_GEN_FUNCTION
+signature SPECCHECK_OUTPUT_STYLE_CUSTOM =
+  sig
+    val style: 'a SpecCheck_Output_Style_Types.output_style
+    val style_custom:
+       (string -> unit) ->
+         (string -> unit) -> 'a SpecCheck_Output_Style_Types.output_style
+  end
+structure SpecCheck_Output_Style_Custom: SPECCHECK_OUTPUT_STYLE_CUSTOM
+signature SPECCHECK_DEFAULT_OUTPUT_STYLE =
+  sig
+    val default: 'a output_style
+    type 'a output_style =
+       'a SpecCheck_Show_Base.show option ->
+         Proof.context ->
+           string -> Timing.timing -> 'a SpecCheck_Base.result -> unit
+  end
+structure SpecCheck_Default_Output_Style: SPECCHECK_DEFAULT_OUTPUT_STYLE
+### theory "SpecCheck.SpecCheck_Output_Style"
+### 0.026s elapsed time, 0.108s cpu time, 0.000s GC time
+Loading theory "HOL-Library.Set_Algebras" (required by "Draft.UD_TestsMoreTemplates" via "Draft.ExtrEqs" via "HOL-Library.BigO")
+signature THM =
+  sig
+    exception CONTEXT of
+       string * ctyp list * cterm list * thm list * Context.generic option
+    exception CTERM of string * cterm list
+    val RS: thm * thm -> thm
+    val RSN: thm * (int * thm) -> thm
+    exception THM of string * int * thm list
+    val abstract_rule: string -> cterm -> thm -> thm
+    val aconvc: cterm * cterm -> bool
+    val add_arity: thm -> theory -> theory
+    val add_axiom:
+       Proof.context ->
+         Binding.binding * term -> theory -> (string * thm) * theory
+    val add_axiom_global:
+       Binding.binding * term -> theory -> (string * thm) * theory
+    val add_classrel: thm -> theory -> theory
+    val add_def:
+       Defs.context ->
+         bool ->
+           bool ->
+             Binding.binding * term -> theory -> (string * thm) * theory
+    val add_def_global:
+       bool ->
+         bool -> Binding.binding * term -> theory -> (string * thm) * theory
+    val add_oracle:
+       Binding.binding * ('a -> cterm) ->
+         theory -> (string * ('a -> thm)) * theory
+    val add_thm: thm -> thm list -> thm list
+    val add_tvars: thm -> ctyp TVars.table -> ctyp TVars.table
+    val add_vars: thm -> cterm Vars.table -> cterm Vars.table
+    val adjust_maxidx_cterm: int -> cterm -> cterm
+    val adjust_maxidx_thm: int -> thm -> thm
+    val all: Proof.context -> cterm -> cterm -> cterm
+    val all_axioms_of: theory -> (string * thm) list
+    val all_name: Proof.context -> string * cterm -> cterm -> cterm
+    val apply: cterm -> cterm -> cterm
+    val apply_attribute:
+       attribute -> thm -> Context.generic -> thm * Context.generic
+    val apply_attributes:
+       attribute list ->
+         thm list -> Context.generic -> thm list * Context.generic
+    val arity_proof: theory -> string * sort list * class -> proof
+    val assume: cterm -> thm
+    val assume_hyps: cterm -> Proof.context -> thm * Proof.context
+    val assumption: Proof.context option -> int -> thm -> thm Seq.seq
+    type attribute =
+       Context.generic * thm -> Context.generic option * thm option
+    val attribute_declaration:
+       attribute -> thm -> Context.generic -> Context.generic
+    val axiom: theory -> string -> thm
+    val beta_conversion: bool -> conv
+    val bicompose:
+       Proof.context option ->
+         {flatten: bool, incremented: bool, match: bool} ->
+           bool * thm * int -> int -> thm -> thm Seq.seq
+    type binding = Binding.binding * attribute list
+    val biresolution:
+       Proof.context option ->
+         bool -> (bool * thm) list -> int -> thm -> thm Seq.seq
+    val cconcl_of: thm -> cterm
+    val check_hyps: Context.generic -> thm -> thm
+    val check_oracle: Proof.context -> xstring * Position.T -> string
+    val check_shyps: Proof.context -> thm -> thm
+    val chyps_of: thm -> cterm list
+    val class_triv: theory -> class -> thm
+    val classrel_proof: theory -> class * class -> proof
+    val close_derivation: Position.T -> thm -> thm
+    val combination: thm -> thm -> thm
+    val concl_of: thm -> term
+    val consolidate: thm list -> unit
+    val consolidate_theory: theory -> unit
+    type conv = cterm -> thm
+    val cprem_of: thm -> int -> cterm
+    val cprems_of: thm -> cterm list
+    val cprop_of: thm -> cterm
+    type cterm
+    val cterm_of: Proof.context -> term -> cterm
+    type ctyp
+    val ctyp_of: Proof.context -> typ -> ctyp
+    val ctyp_of_cterm: cterm -> ctyp
+    val declaration_attribute:
+       (thm -> Context.generic -> Context.generic) -> attribute
+    val declare_hyps: cterm -> Proof.context -> Proof.context
+    val declare_term_sorts: term -> Proof.context -> Proof.context
+    val def_binding: Binding.binding -> Binding.binding
+    val def_binding_optional:
+       Binding.binding -> Binding.binding -> Binding.binding
+    val def_name: string -> string
+    val def_name_optional: string -> string -> string
+    val del_thm: thm -> thm list -> thm list
+    val derivation_closed: thm -> bool
+    val derivation_id: thm -> Proofterm.thm_id option
+    val derivation_name: thm -> string
+    val dest_abs_fresh: string -> cterm -> cterm * cterm
+    val dest_abs_global: cterm -> cterm * cterm
+    val dest_arg: cterm -> cterm
+    val dest_arg1: cterm -> cterm
+    val dest_binop: cterm -> cterm * cterm
+    val dest_comb: cterm -> cterm * cterm
+    val dest_ctyp: ctyp -> ctyp list
+    val dest_ctyp0: ctyp -> ctyp
+    val dest_ctyp1: ctyp -> ctyp
+    val dest_ctypN: int -> ctyp -> ctyp
+    val dest_equals: cterm -> cterm * cterm
+    val dest_equals_lhs: cterm -> cterm
+    val dest_equals_rhs: cterm -> cterm
+    val dest_fun: cterm -> cterm
+    val dest_fun2: cterm -> cterm
+    val dest_funT: ctyp -> ctyp * ctyp
+    val dest_implies: cterm -> cterm * cterm
+    val dest_state:
+       thm * int -> (term * term) list * term list * term * term
+    val elim_implies: thm -> thm -> thm
+    val eq_assumption: int -> thm -> thm
+    val eq_ctyp: ctyp * ctyp -> bool
+    val eq_thm: thm * thm -> bool
+    val eq_thm_prop: thm * thm -> bool
+    val eq_thm_strict: thm * thm -> bool
+    val equal_elim: thm -> thm -> thm
+    val equal_intr: thm -> thm -> thm
+    val equiv_thm: theory -> thm * thm -> bool
+    val eta_conversion: conv
+    val eta_long_conversion: conv
+    val expand_name: thm -> Proofterm.thm_header -> string option
+    val expose_proof: theory -> thm -> unit
+    val expose_proofs: theory -> thm list -> unit
+    val expose_theory: theory -> unit
+    val extern_oracles: bool -> Proof.context -> (Markup.T * xstring) list
+    val extra_shyps: thm -> sort list
+    val extra_shyps': Proof.context -> thm -> sort list
+    val fast_term_ord: cterm ord
+    val first_order_match:
+       cterm * cterm -> ctyp TVars.table * cterm Vars.table
+    val flexflex_rule: Proof.context option -> thm -> thm Seq.seq
+    val fold_atomic_cterms:
+       {hyps: bool} ->
+         (term -> bool) -> (cterm -> 'a -> 'a) -> thm -> 'a -> 'a
+    val fold_atomic_ctyps:
+       {hyps: bool} ->
+         (typ -> bool) -> (ctyp -> 'a -> 'a) -> thm -> 'a -> 'a
+    val fold_terms: {hyps: bool} -> (term -> 'a -> 'a) -> thm -> 'a -> 'a
+    val forall_elim: cterm -> thm -> thm
+    val forall_elim_var: int -> thm -> thm
+    val forall_elim_vars: int -> thm -> thm
+    val forall_intr: cterm -> thm -> thm
+    val forall_intr_frees: thm -> thm
+    val forall_intr_name: string * cterm -> thm -> thm
+    val forall_intr_var_order: Proof.context -> int list -> thm -> thm
+    val forall_intr_vars: thm -> thm
+    val full_prop_of: thm -> term
+    val future: thm future -> cterm -> thm
+    val generalize: Names.set * Names.set -> int -> thm -> thm
+    val generalize_cterm: Names.set * Names.set -> int -> cterm -> cterm
+    val generalize_ctyp: Names.set -> int -> ctyp -> ctyp
+    val get_name_hint: thm -> string
+    val get_tags: thm -> Properties.T
+    val global_cterm_of: theory -> term -> cterm
+    val global_ctyp_of: theory -> typ -> ctyp
+    val has_name_hint: thm -> bool
+    val hyps_of: thm -> term list
+    val implies_elim: thm -> thm -> thm
+    val implies_intr: cterm -> thm -> thm
+    val incr_indexes: int -> thm -> thm
+    val incr_indexes_cterm: int -> cterm -> cterm
+    val instantiate: ctyp TVars.table * cterm Vars.table -> thm -> thm
+    val instantiate': ctyp option list -> cterm option list -> thm -> thm
+    val instantiate_beta: ctyp TVars.table * cterm Vars.table -> thm -> thm
+    val instantiate_beta_cterm:
+       ctyp TVars.table * cterm Vars.table -> cterm -> cterm
+    val instantiate_cterm:
+       ctyp TVars.table * cterm Vars.table -> cterm -> cterm
+    val instantiate_ctyp: ctyp TVars.table -> ctyp -> ctyp
+    val instantiate_frees:
+       ctyp TFrees.table * cterm Frees.table -> thm -> thm
+    val is_dummy: thm -> bool
+    val is_free_dummy: thm -> bool
+    val is_reflexive: thm -> bool
+    val item_net: thm Item_Net.T
+    val item_net_elim: thm Item_Net.T
+    val item_net_intro: thm Item_Net.T
+    val join_transfer: theory -> thm -> thm
+    val join_transfer_context: Proof.context * thm -> Proof.context * thm
+    val kind: string -> attribute
+    val kind_rule: string -> thm -> thm
+    val lambda: cterm -> cterm -> cterm
+    val lambda_name: string * cterm -> cterm -> cterm
+    val legacy_freezeT: thm -> thm
+    val legacy_get_kind: thm -> string
+    val lhs_of: thm -> cterm
+    val lift_rule: cterm -> thm -> thm
+    val major_prem_of: thm -> term
+    val make_ctyp: ctyp -> ctyp list -> ctyp
+    val make_def_binding: bool -> Binding.binding -> Binding.binding
+    val map_tags: (Properties.T -> Properties.T) -> thm -> thm
+    val match: cterm * cterm -> ctyp TVars.table * cterm Vars.table
+    val maxidx_of: thm -> int
+    val maxidx_of_cterm: cterm -> int
+    val maxidx_thm: thm -> int -> int
+    val merge_thms: thm list * thm list -> thm list
+    val mixed_attribute:
+       (Context.generic * thm -> Context.generic * thm) -> attribute
+    val mk_binop: cterm -> cterm -> cterm -> cterm
+    val name_derivation: string * Position.T -> thm -> thm
+    val no_attributes: 'a -> 'a * 'b list
+    val no_prems: thm -> bool
+    val norm_proof: thm -> thm
+    val nprems_of: thm -> int
+    val of_class: ctyp * class -> thm
+    val of_sort: ctyp * sort -> thm list
+    val oracle_space: theory -> Name_Space.T
+    val permute_prems: int -> int -> thm -> thm
+    val plain_prop_of: thm -> term
+    val prems_of: thm -> term list
+    val pretty_oracle: Proof.context -> string -> Pretty.T
+    val pretty_thm: Proof.context -> thm -> Pretty.T
+    val pretty_thm_global: theory -> thm -> Pretty.T
+    val pretty_thm_item: Proof.context -> thm -> Pretty.T
+    val pretty_thm_raw:
+       Proof.context -> {quote: bool, show_hyps: bool} -> thm -> Pretty.T
+    val proof_attributes:
+       attribute list -> thm -> Proof.context -> thm * Proof.context
+    val proof_bodies_of: thm list -> proof_body list
+    val proof_body_of: thm -> proof_body
+    val proof_of: thm -> proof
+    val prop_of: thm -> term
+    val pure_unfold: Proof.context -> thm list -> thm -> thm
+    val put_name_hint: string -> thm -> thm
+    val raw_derivation_name: thm -> string
+    val reconstruct_proof_of: thm -> proof
+    val reflexive: cterm -> thm
+    val register_proofs: thm list lazy -> theory -> theory
+    val rename_boundvars: term -> term -> thm -> thm
+    val rename_params_rule: string list * int -> thm -> thm
+    val rename_tvar: indexname -> ctyp -> ctyp
+    val renamed_prop: term -> thm -> thm
+    val renamed_term: term -> cterm -> cterm
+    val restore_hyps: Proof.context -> Proof.context -> Proof.context
+    val rhs_of: thm -> cterm
+    val rotate_rule: int -> int -> thm -> thm
+    val rule_attribute:
+       thm list -> (Context.generic -> thm -> thm) -> attribute
+    val show_consts: bool Config.T
+    val show_hyps: bool Config.T
+    val show_tags: bool Config.T
+    val shyps_of: thm -> sort list
+    val simple_fact: 'a -> ('a * 'b list) list
+    val solve_constraints: thm -> thm
+    val string_of_thm: Proof.context -> thm -> string
+    val string_of_thm_global: theory -> thm -> string
+    val strip_shyps: thm -> thm
+    val strip_type: ctyp -> ctyp list * ctyp
+    val symmetric: thm -> thm
+    val tag: string * string -> attribute
+    val tag_free_dummy: thm -> thm
+    val tag_rule: string * string -> thm -> thm
+    val tags_rule: (string * string) list -> thm -> thm
+    val term_of: cterm -> term
+    val term_ord: cterm ord
+    val terms_of_tpairs: (term * term) list -> term list
+    val the_arity: theory -> string * sort list * class -> thm
+    val the_classrel: theory -> class * class -> thm
+    val theoremK: string
+    val theory_attributes: attribute list -> thm -> theory -> thm * theory
+    val theory_id: thm -> Context.theory_id
+    val theory_name: thm -> string
+    val theory_of_cterm: cterm -> theory
+    val theory_of_thm: thm -> theory
+    type thm
+    val thm_deps: thm -> Proofterm.thm list
+    val thm_ord: thm ord
+    val thynames_of_arity: theory -> string * class -> string list
+    val tpairs_of: thm -> (term * term) list
+    val transfer: theory -> thm -> thm
+    val transfer': Proof.context -> thm -> thm
+    val transfer'': Context.generic -> thm -> thm
+    val transfer_cterm: theory -> cterm -> cterm
+    val transfer_ctyp: theory -> ctyp -> ctyp
+    val transitive: thm -> thm -> thm
+    val trim_context: thm -> thm
+    val trim_context_cterm: cterm -> cterm
+    val trim_context_ctyp: ctyp -> ctyp
+    val trivial: cterm -> thm
+    val typ_of: ctyp -> typ
+    val typ_of_cterm: cterm -> typ
+    val unchecked_hyps: Proof.context -> Proof.context
+    val unconstrainT: thm -> thm
+    val undeclared_hyps: Context.generic -> thm -> term list
+    val untag: string -> attribute
+    val untag_rule: string -> thm -> thm
+    val unvarify_axiom: theory -> string -> thm
+    val unvarify_global: theory -> thm -> thm
+    val unvarify_local_fact:
+       Proof.context -> thm list -> thm list * Proof.context
+    val unvarify_local_thm: Proof.context -> thm -> thm * Proof.context
+    val unvarify_local_thms:
+       Proof.context -> thm list -> thm list * Proof.context
+    val var: indexname * ctyp -> cterm
+    val varifyT_global: thm -> thm
+    val varifyT_global':
+       TFrees.set -> thm -> ((string * sort) * indexname) list * thm
+    val weaken: cterm -> thm -> thm
+    val weaken_sorts: sort list -> cterm -> cterm
+    val weaken_sorts': Proof.context -> cterm -> cterm
+  end
+structure Thm: THM
+instantiation
+  set :: (plus) plus
+  plus_set == plus :: 'a set => 'a set => 'a set
+### ML warning (line 18 of "$AFP/Conditional_Transfer_Rule/CTR_Tools/More_Simplifier.ML"):
+### Pattern is not exhaustive.
+structure More_Simplifier:
+  sig
+    val asm_full_var_simplify: Proof.context -> thm -> thm
+    val rewrite_simp_opt: Proof.context -> thm list option -> thm -> thm
+    val var_simplified:
+       Context.generic * Token.T list ->
+         attribute * (Context.generic * Token.T list)
+    val var_simplify_only: Proof.context -> thm list -> thm -> thm
+  end
+instantiation
+  set :: (times) times
+  times_set == times :: 'a set => 'a set => 'a set
+signature HOLOGIC =
+  sig
+    val Collect_const: typ -> term
+    val Not: term
+    val Suc_zero: term
+    val Trueprop: term
+    val Trueprop_conv: conv -> conv
+    val add_numerals: term -> (term * typ) list -> (term * typ) list
+    val all_const: typ -> term
+    val bit0_const: term
+    val bit1_const: term
+    val boolN: string
+    val boolT: typ
+    val case_prod_const: typ * typ * typ -> term
+    val charT: typ
+    val choice_const: typ -> term
+    val class_equal: string
+    val class_size: string
+    val code_integerT: typ
+    val code_naturalT: typ
+    val conj: term
+    val conj_conv: conv -> conv -> conv
+    val conj_elim: Proof.context -> thm -> thm * thm
+    val conj_elims: Proof.context -> thm -> thm list
+    val conj_intr: Proof.context -> thm -> thm -> thm
+    val conjuncts: term -> term list
+    val cons_const: typ -> term
+    val dest_Suc: term -> term
+    val dest_Trueprop: term -> term
+    val dest_bin: string -> typ -> term -> term * term
+    val dest_binrelT: typ -> typ * typ
+    val dest_char: term -> int
+    val dest_conj: term -> term list
+    val dest_disj: term -> term list
+    val dest_eq: term -> term * term
+    val dest_imp: term -> term * term
+    val dest_list: term -> term list
+    val dest_literal: term -> string
+    val dest_mem: term -> term * term
+    val dest_nat: term -> int
+    val dest_not: term -> term
+    val dest_number: term -> typ * int
+    val dest_numeral: term -> int
+    val dest_prod: term -> term * term
+    val dest_prodT: typ -> typ * typ
+    val dest_set: term -> term list
+    val dest_setT: typ -> typ
+    val dest_string: term -> string
+    val disj: term
+    val disjuncts: term -> term list
+    val eq_const: typ -> term
+    val eq_conv: conv -> conv -> conv
+    val exists_const: typ -> term
+    val flat_tupleT_paths: typ -> int list list
+    val flat_tuple_paths: term -> int list list
+    val flatten_tupleT: typ -> typ list
+    val id_const: typ -> term
+    val imp: term
+    val intT: typ
+    val is_binrelT: typ -> bool
+    val is_conj: term -> bool
+    val is_unit: term -> bool
+    val is_unitT: typ -> bool
+    val is_zero: term -> bool
+    val listT: typ -> typ
+    val list_all: (string * typ) list * term -> term
+    val literalT: typ
+    val mk_Collect: string * typ * term -> term
+    val mk_ST:
+       ((term * typ) * (string * typ) option) list ->
+         term -> typ -> typ option * typ -> term
+    val mk_Suc: term -> term
+    val mk_Trueprop: term -> term
+    val mk_UNIV: typ -> term
+    val mk_all: string * typ * term -> term
+    val mk_binop: string -> term * term -> term
+    val mk_binrel: string -> term * term -> term
+    val mk_binrelT: typ * typ -> typ
+    val mk_case_prod: term -> term
+    val mk_char: int -> term
+    val mk_comp: term * term -> term
+    val mk_conj: term * term -> term
+    val mk_disj: term * term -> term
+    val mk_eq: term * term -> term
+    val mk_exists: string * typ * term -> term
+    val mk_fst: term -> term
+    val mk_imp: term * term -> term
+    val mk_induct_forall: typ -> term
+    val mk_list: typ -> term list -> term
+    val mk_literal: string -> term
+    val mk_mem: term * term -> term
+    val mk_nat: int -> term
+    val mk_not: term -> term
+    val mk_number: typ -> int -> term
+    val mk_numeral: int -> term
+    val mk_obj_eq: thm -> thm
+    val mk_prod: term * term -> term
+    val mk_prodT: typ * typ -> typ
+    val mk_ptuple: int list list -> typ -> term list -> term
+    val mk_ptupleT: int list list -> typ list -> typ
+    val mk_ptupleabs: int list list -> typ -> typ -> term -> term
+    val mk_random: typ -> term -> term
+    val mk_rel: string * (typ * typ) -> term
+    val mk_return: typ -> typ -> term -> term
+    val mk_set: typ -> term list -> term
+    val mk_setT: typ -> typ
+    val mk_snd: term -> term
+    val mk_string: string -> term
+    val mk_term_of: typ -> term -> term
+    val mk_tuple: term list -> term
+    val mk_tupleT: typ list -> typ
+    val mk_typerep: typ -> term
+    val mk_valtermify_app: string -> (string * typ) list -> typ -> term
+    val natT: typ
+    val nil_const: typ -> term
+    val numeral_const: typ -> term
+    val one_const: term
+    val pair_const: typ -> typ -> term
+    val realT: typ
+    val reflect_term: term -> term
+    val size_const: typ -> term
+    val stringT: typ
+    val strip_ptuple: int list list -> term -> term list
+    val strip_ptupleT: int list list -> typ -> typ list
+    val strip_ptupleabs: term -> term * typ list * int list list
+    val strip_tuple: term -> term list
+    val strip_tupleT: typ -> typ list
+    val termT: typ
+    val term_of_const: typ -> term
+    val tupled_lambda: term -> term -> term
+    val unit: term
+    val unitT: typ
+    val zero: term
+  end
+structure HOLogic: HOLOGIC
+signature TRANSFER =
+  sig
+    val eq_tac: Proof.context -> int -> tactic
+    val fold_relator_eqs_conv: Proof.context -> conv
+    val gen_frees_tac: (string * typ) list -> Proof.context -> int -> tactic
+    val get_relator_domain: Proof.context -> thm list
+    val get_relator_eq: Proof.context -> thm list
+    val get_relator_eq_raw: Proof.context -> thm list
+    val get_sym_relator_eq: Proof.context -> thm list
+    val get_transfer_raw: Proof.context -> thm list
+    val is_compound_lhs: Proof.context -> term -> bool
+    val is_compound_rhs: Proof.context -> term -> bool
+    val is_is_equality: term -> bool
+    val lookup_pred_data: Proof.context -> string -> pred_data option
+    val mk_pred_data: thm -> thm -> thm list -> pred_data
+    val morph_pred_data: morphism -> pred_data -> pred_data
+    type pred_data
+    val pred_def: pred_data -> thm
+    val pred_simps: pred_data -> thm list
+    val prep_conv: conv
+    val prep_transfer_domain_thm: Proof.context -> thm -> thm
+    val rel_eq_onp: pred_data -> thm
+    val retrieve_relator_eq: Proof.context -> term -> thm list
+    val transfer_add: attribute
+    val transfer_del: attribute
+    val transfer_domain_add: attribute
+    val transfer_domain_del: attribute
+    val transfer_end_tac: Proof.context -> int -> tactic
+    val transfer_prover_end_tac: Proof.context -> int -> tactic
+    val transfer_prover_start_tac: Proof.context -> int -> tactic
+    val transfer_prover_tac: Proof.context -> int -> tactic
+    val transfer_raw_add: thm -> Context.generic -> Context.generic
+    val transfer_raw_del: thm -> Context.generic -> Context.generic
+    val transfer_rule_of_lhs: Proof.context -> term -> thm
+    val transfer_rule_of_term: Proof.context -> bool -> term -> thm
+    val transfer_start_tac: bool -> Proof.context -> int -> tactic
+    val transfer_step_tac: Proof.context -> int -> tactic
+    val transfer_tac: bool -> Proof.context -> int -> tactic
+    val transferred_attribute: thm list -> attribute
+    val unfold_relator_eqs_conv: Proof.context -> conv
+    val untransferred_attribute: thm list -> attribute
+    val update_pred_data:
+       string -> pred_data -> Context.generic -> Context.generic
+    val update_pred_simps: thm list -> pred_data -> pred_data
+  end
+structure Transfer: TRANSFER
+signature SPECCHECK_GEN_TERM =
+  sig
+    val aterm:
+       term SpecCheck_Gen_Types.gen ->
+         term SpecCheck_Gen_Types.gen ->
+           term SpecCheck_Gen_Types.gen ->
+             term SpecCheck_Gen_Types.gen ->
+               int * int * int * int -> term SpecCheck_Gen_Types.gen
+    val aterm':
+       int SpecCheck_Gen_Types.gen ->
+         int SpecCheck_Gen_Types.gen ->
+           int * int * int * int -> term SpecCheck_Gen_Types.gen
+    val atyp:
+       typ SpecCheck_Gen_Types.gen ->
+         typ SpecCheck_Gen_Types.gen ->
+           int * int -> typ SpecCheck_Gen_Types.gen
+    val atyp':
+       int SpecCheck_Gen_Types.gen ->
+         int SpecCheck_Gen_Types.gen ->
+           int * int -> typ SpecCheck_Gen_Types.gen
+    val basic_name:
+       string ->
+         int SpecCheck_Gen_Types.gen -> string SpecCheck_Gen_Types.gen
+    val bound: (int, 'a) gen_state -> (term, 'a) gen_state
+    val const:
+       (string, 'a) gen_state -> (typ, 'a) gen_state -> (term, 'a) gen_state
+    val const': int SpecCheck_Gen_Types.gen -> term SpecCheck_Gen_Types.gen
+    val const_name:
+       int SpecCheck_Gen_Types.gen -> string SpecCheck_Gen_Types.gen
+    val dummyS: (sort, 'a) gen_state
+    val dummyT: (typ, 'a) gen_state
+    val free:
+       (string, 'a) gen_state -> (typ, 'a) gen_state -> (term, 'a) gen_state
+    val free': int SpecCheck_Gen_Types.gen -> term SpecCheck_Gen_Types.gen
+    val free_name:
+       int SpecCheck_Gen_Types.gen -> string SpecCheck_Gen_Types.gen
+    val indexname:
+       (string, 'a) gen_state ->
+         (int, 'a) gen_state -> (indexname, 'a) gen_state
+    val sort:
+       (int, 'a) gen_state -> (class, 'a) gen_state -> (sort, 'a) gen_state
+    val term_tree:
+       (int -> int -> (term * int, 'a) gen_state) -> (term, 'a) gen_state
+    val term_tree_path:
+       ((term * int) list -> (term * int, 'a) gen_state) ->
+         (term, 'a) gen_state
+    val tfree:
+       (string, 'a) gen_state -> (sort, 'a) gen_state -> (typ, 'a) gen_state
+    val tfree': int SpecCheck_Gen_Types.gen -> typ SpecCheck_Gen_Types.gen
+    val tfree_name: (string, 'a) gen_state -> (string, 'a) gen_state
+    val tfree_name':
+       int SpecCheck_Gen_Types.gen -> string SpecCheck_Gen_Types.gen
+    val tvar:
+       (indexname, 'a) gen_state ->
+         (sort, 'a) gen_state -> (typ, 'a) gen_state
+    val tvar':
+       int SpecCheck_Gen_Types.gen ->
+         int SpecCheck_Gen_Types.gen -> typ SpecCheck_Gen_Types.gen
+    val tvar_name: (indexname, 'a) gen_state -> (indexname, 'a) gen_state
+    val tvar_name':
+       int SpecCheck_Gen_Types.gen ->
+         int SpecCheck_Gen_Types.gen -> indexname SpecCheck_Gen_Types.gen
+    val typ:
+       typ SpecCheck_Gen_Types.gen ->
+         typ SpecCheck_Gen_Types.gen ->
+           typ SpecCheck_Gen_Types.gen ->
+             int * int * int -> typ SpecCheck_Gen_Types.gen
+    val typ':
+       int SpecCheck_Gen_Types.gen ->
+         int SpecCheck_Gen_Types.gen ->
+           typ SpecCheck_Gen_Types.gen ->
+             typ SpecCheck_Gen_Types.gen ->
+               int * int * int -> typ SpecCheck_Gen_Types.gen
+    val typ'':
+       int SpecCheck_Gen_Types.gen ->
+         int SpecCheck_Gen_Types.gen ->
+           int SpecCheck_Gen_Types.gen ->
+             int * int * int -> typ SpecCheck_Gen_Types.gen
+    val type':
+       string SpecCheck_Gen_Types.gen ->
+         int SpecCheck_Gen_Types.gen ->
+           typ SpecCheck_Gen_Types.gen ->
+             typ SpecCheck_Gen_Types.gen ->
+               int * int * int -> typ SpecCheck_Gen_Types.gen
+    val type'':
+       int SpecCheck_Gen_Types.gen ->
+         int SpecCheck_Gen_Types.gen ->
+           typ SpecCheck_Gen_Types.gen ->
+             typ SpecCheck_Gen_Types.gen ->
+               int * int * int -> typ SpecCheck_Gen_Types.gen
+    val type_name:
+       int SpecCheck_Gen_Types.gen -> string SpecCheck_Gen_Types.gen
+    val var:
+       (indexname, 'a) gen_state ->
+         (typ, 'a) gen_state -> (term, 'a) gen_state
+    val var':
+       int SpecCheck_Gen_Types.gen ->
+         int SpecCheck_Gen_Types.gen -> term SpecCheck_Gen_Types.gen
+    val var_name:
+       int SpecCheck_Gen_Types.gen ->
+         int SpecCheck_Gen_Types.gen -> indexname SpecCheck_Gen_Types.gen
+  end
+structure SpecCheck_Gen_Term: SPECCHECK_GEN_TERM
+structure SpecCheck_Generator:
+  sig
+    val aterm:
+       term gen ->
+         term gen ->
+           term gen -> term gen -> int * int * int * int -> term gen
+    val aterm': int gen -> int gen -> int * int * int * int -> term gen
+    val atyp: typ gen -> typ gen -> int * int -> typ gen
+    val atyp': int gen -> int gen -> int * int -> typ gen
+    val basic_name: string -> int gen -> string gen
+    val bernoulli: real -> bool gen
+    val binom_dist: real -> int -> int gen
+    val bound: (int, 'a) gen_state -> (term, 'a) gen_state
+    val char: char gen
+    val char_of: string -> char gen
+    val cobool: (bool, 'a) cogen
+    val cochar: (char, 'a) cogen
+    type ('a, 'b) cogen = ('a, 'b, SpecCheck_Random.rand) cogen_state
+    type ('a, 'b, 'c) cogen_state =
+       'a -> ('b, 'c) gen_state -> ('b, 'c) gen_state
+    val coint: (int, 'a) cogen
+    val colist: ('a, 'b) cogen -> ('a list, 'b) cogen
+    val const:
+       (string, 'a) gen_state -> (typ, 'a) gen_state -> (term, 'a) gen_state
+    val const': int gen -> term gen
+    val const_name: int gen -> string gen
+    val cooption: ('a, 'b) cogen -> ('a option, 'b) cogen
+    val costring: (string, 'a) cogen
+    val cosubstring: (substring, 'a) cogen
+    val digit: char gen
+    val dummyS: (sort, 'a) gen_state
+    val dummyT: (typ, 'a) gen_state
+    val elements: 'a vector -> 'a gen
+    val elementsL: 'a list -> 'a gen
+    val elementsW: (int * 'a) vector -> 'a gen
+    val elementsWL: (int * 'a) list -> 'a gen
+    val filter: ('a -> bool) -> ('a, 'b) gen_state -> ('a, 'b) gen_state
+    val filter_bounded:
+       int -> ('a -> bool) -> ('a, 'b) gen_state -> ('a, 'b) gen_state
+    val free:
+       (string, 'a) gen_state -> (typ, 'a) gen_state -> (term, 'a) gen_state
+    val free': int gen -> term gen
+    val free_name: int gen -> string gen
+    val function: ('a, 'b) cogen -> 'b gen -> ('a -> 'b) gen
+    val function': 'a gen -> (''b -> 'a) gen
+    type 'a gen = ('a, SpecCheck_Random.rand) gen_state
+    type ('a, 'b) gen_state = 'b -> 'a * 'b
+    val indexname:
+       (string, 'a) gen_state ->
+         (int, 'a) gen_state -> (indexname, 'a) gen_state
+    val join: (('a, 'b) gen_state, 'b) gen_state -> ('a, 'b) gen_state
+    val letter: char gen
+    val list:
+       (int, 'a) gen_state -> ('b, 'a) gen_state -> ('b list, 'a) gen_state
+    val lowercase_letter: char gen
+    val map: ('a -> 'b) -> ('a, 'c) gen_state -> ('b, 'c) gen_state
+    val map2:
+       ('a -> 'b -> 'c) ->
+         ('a, 'd) gen_state -> ('b, 'd) gen_state -> ('c, 'd) gen_state
+    val map3:
+       ('a -> 'b -> 'c -> 'd) ->
+         ('a, 'e) gen_state ->
+           ('b, 'e) gen_state -> ('c, 'e) gen_state -> ('d, 'e) gen_state
+    val map4:
+       ('a -> 'b -> 'c -> 'd -> 'e) ->
+         ('a, 'f) gen_state ->
+           ('b, 'f) gen_state ->
+             ('c, 'f) gen_state -> ('d, 'f) gen_state -> ('e, 'f) gen_state
+    val neg: int -> int gen
+    val nonneg: int -> int gen
+    val nonpos: int -> int gen
+    val of_seq: ('a option, 'a Seq.seq) gen_state
+    val one_of: 'a gen vector -> 'a gen
+    val one_ofL: 'a gen list -> 'a gen
+    val one_ofW: (int * 'a gen) vector -> 'a gen
+    val one_ofWL: (int * 'a gen) list -> 'a gen
+    val option:
+       (bool, 'a) gen_state ->
+         ('b, 'a) gen_state -> ('b option, 'a) gen_state
+    val pos: int -> int gen
+    val range_char: char * char -> char gen
+    val range_int: int * int -> int gen
+    val range_real: real * real -> real gen
+    val real: real gen
+    val real_finite: real gen
+    val real_neg: real gen
+    val real_nonneg: real gen
+    val real_nonpos: real gen
+    val real_pos: real gen
+    val ref_gen: ('a, 'b) gen_state -> ('a ref, 'b) gen_state
+    val return: 'a -> ('a, 'b) gen_state
+    val seq:
+       ('a option, 'b * SpecCheck_Random.rand) gen_state ->
+         'b -> 'a Seq.seq gen
+    val shuffle: 'a list -> 'a list gen
+    val sort:
+       (int, 'a) gen_state -> (class, 'a) gen_state -> (sort, 'a) gen_state
+    val string: int gen -> char gen -> string gen
+    val substring: string gen -> substring gen
+    val term_tree:
+       (int -> int -> (term * int, 'a) gen_state) -> (term, 'a) gen_state
+    val term_tree_path:
+       ((term * int) list -> (term * int, 'a) gen_state) ->
+         (term, 'a) gen_state
+    val tfree:
+       (string, 'a) gen_state -> (sort, 'a) gen_state -> (typ, 'a) gen_state
+    val tfree': int gen -> typ gen
+    val tfree_name: (string, 'a) gen_state -> (string, 'a) gen_state
+    val tfree_name': int gen -> string gen
+    val tvar:
+       (indexname, 'a) gen_state ->
+         (sort, 'a) gen_state -> (typ, 'a) gen_state
+    val tvar': int gen -> int gen -> typ gen
+    val tvar_name: (indexname, 'a) gen_state -> (indexname, 'a) gen_state
+    val tvar_name': int gen -> int gen -> indexname gen
+    val typ: typ gen -> typ gen -> typ gen -> int * int * int -> typ gen
+    val typ':
+       int gen ->
+         int gen -> typ gen -> typ gen -> int * int * int -> typ gen
+    val typ'': int gen -> int gen -> int gen -> int * int * int -> typ gen
+    val type':
+       string gen ->
+         int gen -> typ gen -> typ gen -> int * int * int -> typ gen
+    val type'':
+       int gen ->
+         int gen -> typ gen -> typ gen -> int * int * int -> typ gen
+    val type_name: int gen -> string gen
+    val unfold_while:
+       ('a -> (bool, 'b) gen_state) ->
+         ('a, 'b) gen_state -> ('a list, 'b) gen_state
+    val unit: (unit, 'a) gen_state
+    val uppercase_letter: char gen
+    val var:
+       (indexname, 'a) gen_state ->
+         (typ, 'a) gen_state -> (term, 'a) gen_state
+    val var': int gen -> int gen -> term gen
+    val var_name: int gen -> int gen -> indexname gen
+    val variant: (int, 'a) cogen
+    val vector:
+       (int, 'a) gen_state ->
+         ('b, 'a) gen_state -> ('b vector, 'a) gen_state
+    val zip:
+       ('a, 'b) gen_state -> ('c, 'b) gen_state -> ('a * 'c, 'b) gen_state
+    val zip3:
+       ('a, 'b) gen_state ->
+         ('c, 'b) gen_state ->
+           ('d, 'b) gen_state -> ('a * 'c * 'd, 'b) gen_state
+    val zip4:
+       ('a, 'b) gen_state ->
+         ('c, 'b) gen_state ->
+           ('d, 'b) gen_state ->
+             ('e, 'b) gen_state -> ('a * 'c * 'd * 'e, 'b) gen_state
+  end
+signature CTR_UTILITIES =
+  sig
+    val qualified_name_of_const_name: string -> string
+    val thm_printer: Proof.context -> bool -> string -> thm list -> unit
+  end
+structure CTR_Utilities: CTR_UTILITIES
+### theory "SpecCheck.SpecCheck_Generators"
+### 0.170s elapsed time, 0.654s cpu time, 0.038s GC time
+Loading theory "SpecCheck.SpecCheck_Shrink" (required by "Draft.UD_TestsMoreTemplates" via "Draft.UD_Tests" via "Draft.IML_UT" via "SpecCheck.SpecCheck")
+instantiation
+  set :: (zero) zero
+  zero_set == zero_class.zero :: 'a set
+### theory "Draft.CTR_Tools"
+### 0.224s elapsed time, 0.861s cpu time, 0.038s GC time
+Loading theory "Draft.UD" (required by "Draft.UD_TestsMoreTemplates" via "Draft.UD_Tests")
+signature SPECCHECK_SHRINK_TYPES = sig type 'a shrink = 'a -> 'a Seq.seq end
+structure SpecCheck_Shrink_Types: SPECCHECK_SHRINK_TYPES
+instantiation
+  set :: (one) one
+  one_set == one_class.one :: 'a set
+signature SPECCHECK_SHRINK_BASE =
+  sig
+    val int: int shrink
+    val list: 'a shrink -> 'a list shrink
+    val list': 'a list shrink
+    val none: 'a shrink
+    val product: 'a shrink -> 'b shrink -> ('a * 'b) shrink
+    val product3:
+       'a shrink -> 'b shrink -> 'c shrink -> ('a * 'b * 'c) shrink
+    val product4:
+       'a shrink ->
+         'b shrink -> 'c shrink -> 'd shrink -> ('a * 'b * 'c * 'd) shrink
+    type 'a shrink = 'a -> 'a Seq.seq
+    val term: term shrink
+  end
+structure SpecCheck_Shrink_Base: SPECCHECK_SHRINK_BASE
+structure SpecCheck_Shrink:
+  sig
+    val int: int shrink
+    val list: 'a shrink -> 'a list shrink
+    val list': 'a list shrink
+    val none: 'a shrink
+    val product: 'a shrink -> 'b shrink -> ('a * 'b) shrink
+    val product3:
+       'a shrink -> 'b shrink -> 'c shrink -> ('a * 'b * 'c) shrink
+    val product4:
+       'a shrink ->
+         'b shrink -> 'c shrink -> 'd shrink -> ('a * 'b * 'c * 'd) shrink
+    type 'a shrink = 'a -> 'a Seq.seq
+    val term: term shrink
+  end
+### theory "SpecCheck.SpecCheck_Shrink"
+### 0.021s elapsed time, 0.085s cpu time, 0.000s GC time
+Loading theory "SpecCheck.SpecCheck" (required by "Draft.UD_TestsMoreTemplates" via "Draft.UD_Tests" via "Draft.IML_UT")
+signature LECKER =
+  sig
+    type 'a test = ('a, SpecCheck_Random.rand) test_state
+    val test_group: 'a -> 'b -> ('a, 'b) test_state list -> 'b
+    type ('a, 'b) test_state = 'a -> 'b -> 'b
+  end
+structure Lecker: LECKER
+signature UD_WITH = sig structure UDWithData: NAMED_THMS end
+structure UD_With: UD_WITH
+signature UD_CONSTS =
+  sig
+    structure ConstsData: THEORY_DATA
+    val const_of_key: theory -> Symtab.key -> term option
+    val get_keys: theory -> Symtab.key list
+    val remove_const: Symtab.key -> theory -> theory
+    val update_const: Symtab.key -> term -> theory -> theory
+  end
+structure UD_Consts: UD_CONSTS
+Found termination order: "size_list size <*mlex*> {}"
+signature SPECCHECK =
+  sig
+    val check:
+       'a SpecCheck_Show_Base.show ->
+         ('a, 'b) gen_state ->
+           string ->
+             'a SpecCheck_Property.prop -> (Proof.context, 'b) test_state
+    val check_base:
+       ('a, 'b) gen_state ->
+         string ->
+           'a SpecCheck_Property.prop -> (Proof.context, 'b) test_state
+    val check_list:
+       'a SpecCheck_Show_Base.show ->
+         'a list ->
+           string ->
+             'a SpecCheck_Property.prop -> Proof.context -> 'a Seq.seq
+    val check_list_base:
+       'a list ->
+         string -> 'a SpecCheck_Property.prop -> Proof.context -> 'a Seq.seq
+    val check_list_style:
+       'a SpecCheck_Output_Style_Types.output_style ->
+         'a SpecCheck_Show_Base.show option ->
+           'a list ->
+             string ->
+               'a SpecCheck_Property.prop -> Proof.context -> 'a Seq.seq
+    val check_seq:
+       'a SpecCheck_Show_Base.show ->
+         'a Seq.seq ->
+           string ->
+             'a SpecCheck_Property.prop -> Proof.context -> 'a Seq.seq
+    val check_seq_base:
+       'a Seq.seq ->
+         string -> 'a SpecCheck_Property.prop -> Proof.context -> 'a Seq.seq
+    val check_seq_style:
+       'a SpecCheck_Output_Style_Types.output_style ->
+         'a SpecCheck_Show_Base.show option ->
+           'a Seq.seq ->
+             string ->
+               'a SpecCheck_Property.prop -> Proof.context -> 'a Seq.seq
+    val check_shrink:
+       'a SpecCheck_Show_Base.show ->
+         'a SpecCheck_Shrink_Base.shrink ->
+           ('a, 'b) gen_state ->
+             string ->
+               'a SpecCheck_Property.prop -> (Proof.context, 'b) test_state
+    val check_style:
+       'a SpecCheck_Output_Style_Types.output_style ->
+         'a SpecCheck_Show_Base.show option ->
+           'a SpecCheck_Shrink_Base.shrink ->
+             ('a, 'b) gen_state ->
+               string ->
+                 'a SpecCheck_Property.prop ->
+                   (Proof.context, 'b) test_state
+    val check_unit_tests:
+       'a SpecCheck_Show_Base.show ->
+         'a list ->
+           string ->
+             'a SpecCheck_Property.prop -> (Proof.context, 'b) test_state
+    val check_unit_tests_base:
+       'a list ->
+         string ->
+           'a SpecCheck_Property.prop -> (Proof.context, 'b) test_state
+    val check_unit_tests_style:
+       'a SpecCheck_Output_Style_Types.output_style ->
+         'a SpecCheck_Show_Base.show option ->
+           'a list ->
+             string ->
+               'a SpecCheck_Property.prop -> (Proof.context, 'b) test_state
+    val run_a_test:
+       'a SpecCheck_Property.prop ->
+         'a ->
+           SpecCheck_Base.stats ->
+             SpecCheck_Base.result_single * SpecCheck_Base.stats
+    val try_shrink:
+       'a SpecCheck_Property.prop ->
+         'a SpecCheck_Shrink_Base.shrink ->
+           'a -> int -> SpecCheck_Base.stats -> 'a * SpecCheck_Base.stats
+  end
+structure SpecCheck: SPECCHECK
+### theory "SpecCheck.SpecCheck"
+### 0.059s elapsed time, 0.220s cpu time, 0.058s GC time
+Loading theory "Draft.IML_UT" (required by "Draft.UD_TestsMoreTemplates" via "Draft.UD_Tests")
+val check_seq_base = fn:
+   'a Seq.seq ->
+     string -> 'a SpecCheck_Property.prop -> Proof.context -> 'a Seq.seq
+val check_list_style = fn:
+   'a SpecCheck_Output_Style_Types.output_style ->
+     'a SpecCheck_Show_Base.show option ->
+       'a list ->
+         string -> 'a SpecCheck_Property.prop -> Proof.context -> 'a Seq.seq
+val check_list_base = fn:
+   'a list ->
+     string -> 'a SpecCheck_Property.prop -> Proof.context -> 'a Seq.seq
+val check_list = fn:
+   'a SpecCheck_Show_Base.show ->
+     'a list ->
+       string -> 'a SpecCheck_Property.prop -> Proof.context -> 'a Seq.seq
+val check_base = fn:
+   ('a, 'b) gen_state ->
+     string -> 'a SpecCheck_Property.prop -> (Proof.context, 'b) test_state
+val run_a_test = fn:
+   'a SpecCheck_Property.prop ->
+     'a ->
+       SpecCheck_Base.stats ->
+         SpecCheck_Base.result_single * SpecCheck_Base.stats
+val check_unit_tests_base = fn:
+   'a list ->
+     string -> 'a SpecCheck_Property.prop -> (Proof.context, 'b) test_state
+val check_shrink = fn:
+   'a SpecCheck_Show_Base.show ->
+     'a SpecCheck_Shrink_Base.shrink ->
+       ('a, 'b) gen_state ->
+         string ->
+           'a SpecCheck_Property.prop -> (Proof.context, 'b) test_state
+val check_unit_tests = fn:
+   'a SpecCheck_Show_Base.show ->
+     'a list ->
+       string ->
+         'a SpecCheck_Property.prop -> (Proof.context, 'b) test_state
+val check_style = fn:
+   'a SpecCheck_Output_Style_Types.output_style ->
+     'a SpecCheck_Show_Base.show option ->
+       'a SpecCheck_Shrink_Base.shrink ->
+         ('a, 'b) gen_state ->
+           string ->
+             'a SpecCheck_Property.prop -> (Proof.context, 'b) test_state
+val try_shrink = fn:
+   'a SpecCheck_Property.prop ->
+     'a SpecCheck_Shrink_Base.shrink ->
+       'a -> int -> SpecCheck_Base.stats -> 'a * SpecCheck_Base.stats
+val check_seq = fn:
+   'a SpecCheck_Show_Base.show ->
+     'a Seq.seq ->
+       string -> 'a SpecCheck_Property.prop -> Proof.context -> 'a Seq.seq
+val check_unit_tests_style = fn:
+   'a SpecCheck_Output_Style_Types.output_style ->
+     'a SpecCheck_Show_Base.show option ->
+       'a list ->
+         string ->
+           'a SpecCheck_Property.prop -> (Proof.context, 'b) test_state
+val check_seq_style = fn:
+   'a SpecCheck_Output_Style_Types.output_style ->
+     'a SpecCheck_Show_Base.show option ->
+       'a Seq.seq ->
+         string -> 'a SpecCheck_Property.prop -> Proof.context -> 'a Seq.seq
+val check = fn:
+   'a SpecCheck_Show_Base.show ->
+     ('a, 'b) gen_state ->
+       string ->
+         'a SpecCheck_Property.prop -> (Proof.context, 'b) test_state
+structure Prop: SPECCHECK_PROPERTY
+structure Show:
+  sig
+    val bool: bool show
+    val char: char show
+    val env: Proof.context -> Envir.env show
+    val int: int show
+    val list: 'a show -> 'a list show
+    val none: 'a show
+    val option: 'a show -> 'a option show
+    val real: real show
+    val record: (string * Pretty.T) list show
+    type 'a show = 'a -> Pretty.T
+    val string: string show
+    val tenv: Proof.context -> Envir.tenv show
+    val term: Proof.context -> term show
+    val thm: Proof.context -> thm show
+    val tyenv: Proof.context -> Type.tyenv show
+    val typ: Proof.context -> typ show
+    val zip: 'a show -> 'b show -> ('a * 'b) show
+    val zip3: 'a show -> 'b show -> 'c show -> ('a * 'b * 'c) show
+    val zip4:
+       'a show -> 'b show -> 'c show -> 'd show -> ('a * 'b * 'c * 'd) show
+  end
+val style_error = fn:
+   'a SpecCheck_Show_Base.show option ->
+     Proof.context ->
+       string -> Timing.timing -> 'a SpecCheck_Base.result -> unit
+val check_list_unit = fn:
+   'a SpecCheck_Show_Base.show ->
+     'a list ->
+       string -> 'a SpecCheck_Property.prop -> Proof.context -> 'b -> unit
+### theory "Draft.IML_UT"
+### 0.004s elapsed time, 0.015s cpu time, 0.000s GC time
+Loading theory "HOL-Library.Tree" (required by "Draft.UD_TestsMoreTemplates" via "Draft.ExtrEqs" via "Draft.Templates")
+signature UD =
+  sig
+    val axioms_of_ci:
+       theory -> Defs.T -> string * typ -> (string option * string) list
+    val das_of_ci: theory -> Defs.T -> string * typ -> thm list
+    datatype ud_thm_out_type = nontrivial of thm * thm | trivial of thm
+    val unoverload_definition:
+       binding * mixfix ->
+         string * typ -> theory -> ud_thm_out_type * theory
+  end
+structure UD: UD
+### theory "Draft.UD"
+### 0.116s elapsed time, 0.473s cpu time, 0.058s GC time
+Loading theory "Draft.UD_Tests" (required by "Draft.UD_TestsMoreTemplates")
+### theory "HOL-Library.Nat_Bijection"
+### 0.362s elapsed time, 1.440s cpu time, 0.096s GC time
+Loading theory "HOL-Library.Stream" (required by "Draft.UD_TestsMoreTemplates" via "Draft.ExtrEqs")
+### theory "HOL-Library.Set_Algebras"
+### 0.224s elapsed time, 0.918s cpu time, 0.058s GC time
+Loading theory "HOL-Library.BigO" (required by "Draft.UD_TestsMoreTemplates" via "Draft.ExtrEqs")
+consts
+  shift :: "'a list => 'a stream => 'a stream"
+Proofs for coinductive predicate(s) "streamsp"
+  Proving monotonicity ...
+theorem closed.with_def: closed.with == %open S. open (- S)
+theorem closed.with: topological_space.closed == closed.with
+theorem
+  islimpt.with_def: islimpt.with ?open == topological_space.islimpt ?open
+theorem islimpt.with: islimpt == islimpt.with open
+consts
+  left :: "'a tree => 'a tree"
+consts
+  right :: "'a tree => 'a tree"
+signature UD_TEST_UNOVERLOAD_DEFINITION =
+  sig
+    val test_suite: Proof.context -> unit -> unit
+    type unoverload_definition_in_type
+  end
+structure ud_test_unoverload_definition: UD_TEST_UNOVERLOAD_DEFINITION
+theorem closed'.with: closed == closed.with open
+Testing: trivial equality
+OK, passed 1 tests.
+Time: 0.001s (run) / 0.001s (total)
+theorem
+  closure.with_def:
+    closure.with ?open == %S. S Un {x. islimpt.with ?open x S}
+theorem closure.with: closure == closure.with open
+Testing: nontrivial equality
+OK, passed 1 tests.
+Time: 0.004s (run) / 0.004s (total)
+Testing: extra type variables
+OK, passed 1 tests.
+Time: 0.000s (run) / 0.000s (total)
+Testing: constant already exists
+OK, passed 1 tests.
+Time: 0.000s (run) / 0.000s (total)
+Testing: no suitable CIs
+OK, passed 1 tests.
+Time: 0.000s (run) / 0.000s (total)
+val it = (): unit
+### theory "Draft.UD_Tests"
+### 0.576s elapsed time, 2.280s cpu time, 0.241s GC time
+consts
+  snth :: "'a stream => nat => 'a"
+Found termination order: "size <*mlex*> {}"
+consts
+  stake :: "nat => 'a stream => 'a list"
+consts
+  sdrop :: "nat => 'a stream => 'a stream"
+Found termination order: "size <*mlex*> {}"
+consts
+  sfilter :: "('a => bool) => 'a stream => 'a stream"
+consts
+  cycle :: "'a list => 'a stream"
+Found termination order: "size <*mlex*> {}"
+consts
+  siterate :: "('a => 'a) => 'a => 'a stream"
+class height = type +
+  fixes height :: "'a => nat"
+instantiation
+  tree :: (type) height
+  height_tree == height :: 'a tree => nat
+consts
+  flat :: "'a list stream => 'a stream"
+Found termination order: "size <*mlex*> {}"
+consts
+  sinterleave :: "'a stream => 'a stream => 'a stream"
+consts
+  szip :: "'a stream => 'b stream => ('a * 'b) stream"
+### theory "HOL-Library.BigO"
+### 0.985s elapsed time, 3.445s cpu time, 0.818s GC time
+Found termination order: "size <*mlex*> {}"
+consts
+  smap2 :: "('a => 'b => 'c) => 'a stream => 'b stream => 'c stream"
+### theory "HOL-Library.Stream"
+### 1.050s elapsed time, 3.579s cpu time, 0.818s GC time
+Found termination order: "size <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+Found termination order: "(%p. size (fst p)) <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+Found termination order: "(%p. size (snd p)) <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+### theory "HOL-Library.Tree"
+### 1.846s elapsed time, 4.797s cpu time, 0.949s GC time
+Loading theory "Draft.Templates" (required by "Draft.UD_TestsMoreTemplates" via "Draft.ExtrEqs")
+datatype template_term
+=
+     t_empty
+   | template_app of template_term * template_term
+   | template_hole of int
+   | template_var of int
+datatype sign
+= equals | greater_equals | greater_than | less_equals | less_than
+datatype template
+=
+     template_bimplication of template * template
+   | template_dunno
+   | template_equation of template_term * template_term
+   | template_implication of template list * template
+   | template_inequation of sign * template_term * template_term
+   | template_negation of template
+   | template_predicate of template_term
+constructor t_empty: template_term
+constructor template_app: template_term * template_term -> template_term
+constructor template_hole: int -> template_term
+constructor template_var: int -> template_term
+constructor equals: sign
+constructor greater_equals: sign
+constructor greater_than: sign
+constructor less_equals: sign
+constructor less_than: sign
+constructor template_bimplication: template * template -> template
+constructor template_dunno: template
+constructor template_equation: template_term * template_term -> template
+constructor template_implication: template list * template -> template
+constructor template_inequation:
+   sign * template_term * template_term -> template
+constructor template_negation: template -> template
+constructor template_predicate: template_term -> template
+val vfs = fn: term -> (indexname * typ) list * (string * typ) list
+val indexOf = fn: ''a list -> ''a -> int -> int
+val has_eq = fn: term -> bool
+val term2template = fn:
+   (indexname * typ) list -> (string * typ) list -> term -> template_term
+val lemma2predicate = fn: term -> term -> template
+val makeTemplatewithContext = fn: term -> term -> template
+val lemma2template = fn: term -> template
+val thm2template = fn: thm -> template
+val tterm2string = fn: template_term -> string
+val template2string = fn: template -> string
+val t = "height ?t <= size ?t": thm
+val th =
+   Const ("HOL.Trueprop", "bool => prop") $
+     (Const ("Orderings.ord_class.less_eq", "nat => nat => bool") $
+       (Const ("Tree.height_class.height", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree")) $
+       (Const ("Nat.size_class.size", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree"))):
+   term
+### theory "Draft.Templates"
+### 0.047s elapsed time, 0.062s cpu time, 0.000s GC time
+Loading theory "Draft.ExtrEqs" (required by "Draft.UD_TestsMoreTemplates")
+val eqpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Var (("_dummy_", 2), "?'a"))
+       ):
+   term Find_Theorems.criterion
+val badeqpattern = Pattern (Const ("Pure.eq", "?'a => ?'a => prop")):
+   term Find_Theorems.criterion
+val undefpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Const ("HOL.undefined", "?'a"))
+       ):
+   term Find_Theorems.criterion
+val thmpattern =
+   Pattern
+    (Const ("HOL.Trueprop", "bool => prop") $ Var (("_dummy_", 1), "bool")):
+   term Find_Theorems.criterion
+val badnames =
+   ["*nitpick*", "*Nitpick*", "*full_exhaustive*", "*_def*", "Enum.finite*",
+    "*Quickcheck*", "ATP*", "*Nunchaku*", "*Code*", "*BNF*", "*SMT*",
+    "*.*.*"]:
+   string list
+val unwanted_names =
+   [(false, Name "*nitpick*"), (false, Name "*Nitpick*"),
+    (false, Name "*full_exhaustive*"), (false, Name "*_def*"),
+    (false, Name "Enum.finite*"), (false, Name "*Quickcheck*"),
+    (false, Name "ATP*"), (false, Name "*Nunchaku*"),
+    (false, Name "*Code*"), (false, Name "*BNF*"), (false, Name "*SMT*"),
+    (false, Name "*.*.*")]:
+   (bool * term Find_Theorems.criterion) list
+val has_vars = fn: term -> bool
+val get_all_eqs = fn: string -> Proof.context -> (string * thm) list
+val get_all_thms = fn: string -> Proof.context -> (string * thm) list
+val get_noneq_thms = fn: string -> Proof.context -> (string * thm) list
+val template_eqs = fn:
+   string -> Proof.context -> (string * thm * template) list
+val template_thms = fn:
+   string -> Proof.context -> (string * thm * template) list
+### theory "Draft.ExtrEqs"
+### 0.452s elapsed time, 0.506s cpu time, 0.068s GC time
+Loading theory "Draft.UD_TestsMoreTemplates"
+val templateLemmas = []: (string * thm * template) list
+### theory "Draft.UD_TestsMoreTemplates"
+### 0.264s elapsed time, 0.360s cpu time, 0.000s GC time
+val it = (): unit

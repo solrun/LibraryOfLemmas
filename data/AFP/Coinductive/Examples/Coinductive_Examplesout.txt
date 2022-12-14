@@ -1,0 +1,1894 @@
+Loading theory "HOL-Combinatorics.Transposition" (required by "Draft.Coinductive_ExamplesMoreTemplates" via "Draft.Coinductive_Examples" via "Draft.LList_CCPO_Topology" via "Draft.CCPO_Topology" via "HOL-Analysis.Extended_Real_Limits" via "HOL-Analysis.Topology_Euclidean_Space" via "HOL-Analysis.Elementary_Normed_Spaces" via "HOL-Analysis.Cartesian_Space")
+Loading theory "HOL-Library.Case_Converter" (required by "Draft.Coinductive_ExamplesMoreTemplates" via "Draft.Coinductive_Examples" via "Draft.LList_CCPO_Topology" via "Draft.Coinductive_List_Prefix" via "Draft.Coinductive_List" via "HOL-Library.Simps_Case_Conv")
+Loading theory "HOL-Library.Cancellation" (required by "Draft.Coinductive_ExamplesMoreTemplates" via "Draft.Coinductive_Examples" via "Draft.Hamming_Stream" via "HOL-Computational_Algebra.Primes" via "HOL-Computational_Algebra.Euclidean_Algorithm" via "HOL-Computational_Algebra.Factorial_Ring" via "HOL-Library.Multiset")
+Loading theory "HOL-Library.Complete_Partial_Order2" (required by "Draft.Coinductive_ExamplesMoreTemplates" via "Draft.Coinductive_Examples" via "Draft.LList_CCPO_Topology" via "Draft.CCPO_Topology" via "Draft.Coinductive_Nat")
+### theory "HOL-Combinatorics.Transposition"
+### 0.114s elapsed time, 0.483s cpu time, 0.000s GC time
+Loading theory "HOL-Library.FuncSet" (required by "Draft.Coinductive_ExamplesMoreTemplates" via "Draft.Coinductive_Examples" via "Draft.LList_CCPO_Topology" via "Draft.CCPO_Topology" via "HOL-Analysis.Extended_Real_Limits" via "HOL-Analysis.Topology_Euclidean_Space" via "HOL-Analysis.Elementary_Normed_Spaces")
+class ccpo = Sup + order +
+  assumes
+    "ccpo_Sup_upper":
+      "!!A x.
+          [| Complete_Partial_Order.chain (<=) A; x : A |]
+          ==> x <= \<Squnion> A"
+  assumes
+    "ccpo_Sup_least":
+      "!!A z.
+          [| Complete_Partial_Order.chain (<=) A; !!x. x : A ==> x <= z |]
+          ==> \<Squnion> A <= z"
+signature CASE_CONVERTER =
+  sig
+    type elimination_strategy
+    val keep_constructor_context: elimination_strategy
+    val replace_by_type:
+       (Proof.context -> string * string -> bool) -> elimination_strategy
+    val to_case:
+       Proof.context ->
+         elimination_strategy ->
+           (string * typ -> int) -> thm list -> thm list option
+  end
+structure Case_Converter: CASE_CONVERTER
+### theory "HOL-Library.Case_Converter"
+### 0.209s elapsed time, 0.853s cpu time, 0.046s GC time
+Loading theory "HOL-Library.Simps_Case_Conv" (required by "Draft.Coinductive_ExamplesMoreTemplates" via "Draft.Coinductive_Examples" via "Draft.LList_CCPO_Topology" via "Draft.Coinductive_List_Prefix" via "Draft.Coinductive_List")
+signature SIMPS_CASE_CONV =
+  sig
+    val gen_to_simps: Proof.context -> thm list -> thm -> thm list
+    val to_case: Proof.context -> thm list -> thm
+    val to_simps: Proof.context -> thm -> thm list
+  end
+structure Simps_Case_Conv: SIMPS_CASE_CONV
+### theory "HOL-Library.Simps_Case_Conv"
+### 0.055s elapsed time, 0.217s cpu time, 0.000s GC time
+Loading theory "HOL-Library.Function_Algebras" (required by "Draft.Coinductive_ExamplesMoreTemplates" via "Draft.ExtrEqs" via "HOL-Library.BigO")
+instantiation
+  fun :: (type, plus) plus
+  plus_fun == plus :: ('a => 'b) => ('a => 'b) => 'a => 'b
+instantiation
+  fun :: (type, zero) zero
+  zero_fun == zero_class.zero :: 'a => 'b
+signature CANCEL = sig val proc: Proof.context -> cterm -> thm option end
+functor Cancel_Fun (Data: CANCEL_NUMERALS_DATA): CANCEL
+instantiation
+  fun :: (type, times) times
+  times_fun == times :: ('a => 'b) => ('a => 'b) => 'a => 'b
+instantiation
+  fun :: (type, one) one
+  one_fun == one_class.one :: 'a => 'b
+signature CANCEL_DATA =
+  sig
+    val dest_coeff: term -> int * term
+    val dest_sum: term -> term list
+    val find_first_coeff: term -> term list -> int * term list
+    val mk_coeff: int * term -> term
+    val mk_sum: typ -> term list -> term
+    val norm_ss1: simpset
+    val norm_ss2: simpset
+    val norm_tac: Proof.context -> tactic
+    val numeral_simp_tac: Proof.context -> tactic
+    val prove_conv:
+       tactic list -> Proof.context -> thm list -> term * term -> thm option
+    val simplify_meta_eq: Proof.context -> thm -> thm
+    val trans_tac: Proof.context -> thm option -> tactic
+  end
+structure Cancel_Data: CANCEL_DATA
+val cont_intro_tac = fn: Proof.context -> int -> tactic
+val cont_intro_simproc = fn: Proof.context -> cterm -> thm option
+### theory "HOL-Library.Function_Algebras"
+### 0.120s elapsed time, 0.469s cpu time, 0.052s GC time
+Loading theory "HOL-Library.Infinite_Set" (required by "Draft.Coinductive_ExamplesMoreTemplates" via "Draft.Coinductive_Examples" via "Draft.LList_CCPO_Topology" via "Draft.CCPO_Topology" via "HOL-Analysis.Extended_Real_Limits" via "HOL-Analysis.Topology_Euclidean_Space" via "HOL-Analysis.Elementary_Normed_Spaces" via "HOL-Analysis.Elementary_Metric_Spaces" via "HOL-Analysis.Abstract_Topology_2" via "HOL-Analysis.Elementary_Topology" via "HOL-Library.Set_Idioms" via "HOL-Library.Countable_Set")
+class preorder = ord +
+  assumes "less_le_not_le": "!!x y. (x < y) = (x <= y & ~ y <= x)"
+    and "order_refl": "!!x. x <= x"
+    and "order_trans": "!!x y z. [| x <= y; y <= z |] ==> x <= z"
+locale partial_function_definitions
+  fixes leq :: "'a => 'a => bool"
+    and lub :: "'a set => 'a"
+  assumes "partial_function_definitions leq lub"
+signature CANCEL_SIMPROCS =
+  sig
+    val diff_cancel: Proof.context -> cterm -> thm option
+    val eq_cancel: Proof.context -> cterm -> thm option
+    val less_cancel: Proof.context -> cterm -> thm option
+    val less_eq_cancel: Proof.context -> cterm -> thm option
+  end
+structure Cancel_Simprocs: CANCEL_SIMPROCS
+### theory "HOL-Library.Cancellation"
+### 0.418s elapsed time, 1.671s cpu time, 0.098s GC time
+Loading theory "HOL-Library.Multiset" (required by "Draft.Coinductive_ExamplesMoreTemplates" via "Draft.Coinductive_Examples" via "Draft.Hamming_Stream" via "HOL-Computational_Algebra.Primes" via "HOL-Computational_Algebra.Euclidean_Algorithm" via "HOL-Computational_Algebra.Factorial_Ring")
+class ccpo = Sup + order +
+  assumes
+    "ccpo_Sup_upper":
+      "!!A x.
+          [| Complete_Partial_Order.chain (<=) A; x : A |]
+          ==> x <= \<Squnion> A"
+  assumes
+    "ccpo_Sup_least":
+      "!!A z.
+          [| Complete_Partial_Order.chain (<=) A; !!x. x : A ==> x <= z |]
+          ==> \<Squnion> A <= z"
+### theory "HOL-Library.FuncSet"
+### 0.422s elapsed time, 1.646s cpu time, 0.208s GC time
+Loading theory "HOL-Library.Disjoint_Sets" (required by "Draft.Coinductive_ExamplesMoreTemplates" via "Draft.Coinductive_Examples" via "Draft.LList_CCPO_Topology" via "Draft.CCPO_Topology" via "HOL-Analysis.Extended_Real_Limits" via "HOL-Analysis.Topology_Euclidean_Space" via "HOL-Analysis.Elementary_Normed_Spaces" via "HOL-Analysis.Elementary_Metric_Spaces" via "HOL-Analysis.Abstract_Topology_2" via "HOL-Analysis.Elementary_Topology")
+instantiation
+  multiset :: (type) cancel_comm_monoid_add
+  zero_multiset == zero_class.zero :: 'a multiset
+  minus_multiset == minus :: 'a multiset => 'a multiset => 'a multiset
+  plus_multiset == plus :: 'a multiset => 'a multiset => 'a multiset
+consts
+  enumerate :: "'a set => nat => 'a"
+locale comm_monoid_set
+  fixes f :: "'a => 'a => 'a"  (infixl \<open>\<^bold>*\<close> 70)
+    and z :: "'a"  (\<open>\<^bold>1\<close>)
+  assumes "comm_monoid_set (\<^bold>*) \<^bold>1"
+### theory "HOL-Library.Infinite_Set"
+### 0.327s elapsed time, 1.282s cpu time, 0.181s GC time
+Loading theory "HOL-Library.Nat_Bijection" (required by "Draft.Coinductive_ExamplesMoreTemplates" via "Draft.ExtrEqs" via "HOL-Library.Stream")
+locale partial_function_definitions
+  fixes leq :: "'a => 'a => bool"
+    and lub :: "'a set => 'a"
+  assumes "partial_function_definitions leq lub"
+Found termination order: "(%p. size (snd p)) <*mlex*> {}"
+### theory "HOL-Library.Disjoint_Sets"
+### 0.450s elapsed time, 1.645s cpu time, 0.573s GC time
+Loading theory "HOL-Library.Old_Datatype" (required by "Draft.Coinductive_ExamplesMoreTemplates" via "Draft.Coinductive_Examples" via "Draft.LList_CCPO_Topology" via "Draft.CCPO_Topology" via "HOL-Analysis.Extended_Real_Limits" via "HOL-Analysis.Topology_Euclidean_Space" via "HOL-Analysis.Elementary_Normed_Spaces" via "HOL-Analysis.Elementary_Metric_Spaces" via "HOL-Analysis.Abstract_Topology_2" via "HOL-Analysis.Elementary_Topology" via "HOL-Library.Set_Idioms" via "HOL-Library.Countable_Set" via "HOL-Library.Countable")
+class ccpo = Sup + order +
+  assumes
+    "ccpo_Sup_upper":
+      "!!A x.
+          [| Complete_Partial_Order.chain (<=) A; x : A |]
+          ==> x <= \<Squnion> A"
+  assumes
+    "ccpo_Sup_least":
+      "!!A z.
+          [| Complete_Partial_Order.chain (<=) A; !!x. x : A ==> x <= z |]
+          ==> \<Squnion> A <= z"
+class ccpo = Sup + order +
+  assumes
+    "ccpo_Sup_upper":
+      "!!A x.
+          [| Complete_Partial_Order.chain (<=) A; x : A |]
+          ==> x <= \<Squnion> A"
+  assumes
+    "ccpo_Sup_least":
+      "!!A z.
+          [| Complete_Partial_Order.chain (<=) A; !!x. x : A ==> x <= z |]
+          ==> \<Squnion> A <= z"
+Found termination order: "size_list size <*mlex*> {}"
+locale partial_function_definitions
+  fixes leq :: "'a => 'a => bool"
+    and lub :: "'a set => 'a"
+  assumes "partial_function_definitions leq lub"
+Proofs for inductive predicate(s) "compact"
+  Proving monotonicity ...
+class ccpo = Sup + order +
+  assumes
+    "ccpo_Sup_upper":
+      "!!A x.
+          [| Complete_Partial_Order.chain (<=) A; x : A |]
+          ==> x <= \<Squnion> A"
+  assumes
+    "ccpo_Sup_least":
+      "!!A z.
+          [| Complete_Partial_Order.chain (<=) A; !!x. x : A ==> x <= z |]
+          ==> \<Squnion> A <= z"
+locale partial_function_definitions
+  fixes leq :: "'a => 'a => bool"
+    and lub :: "'a set => 'a"
+  assumes "partial_function_definitions leq lub"
+### theory "HOL-Library.Nat_Bijection"
+### 0.537s elapsed time, 1.973s cpu time, 0.653s GC time
+Loading theory "HOL-Library.Stream" (required by "Draft.Coinductive_ExamplesMoreTemplates" via "Draft.ExtrEqs")
+class ccpo = Sup + order +
+  assumes
+    "ccpo_Sup_upper":
+      "!!A x.
+          [| Complete_Partial_Order.chain (<=) A; x : A |]
+          ==> x <= \<Squnion> A"
+  assumes
+    "ccpo_Sup_least":
+      "!!A z.
+          [| Complete_Partial_Order.chain (<=) A; !!x. x : A ==> x <= z |]
+          ==> \<Squnion> A <= z"
+locale partial_function_definitions
+  fixes leq :: "'a => 'a => bool"
+    and lub :: "'a set => 'a"
+  assumes "partial_function_definitions leq lub"
+### Partially applied constant "Multiset.inter_mset" on left hand side of equation, in theorem:
+### semilattice_inf.Inf_fin (\<inter>#) (set (?x # ?xs)) ==
+### fold (\<inter>#) ?xs ?x
+### Partially applied constant "Multiset.union_mset" on left hand side of equation, in theorem:
+### semilattice_sup.Sup_fin (\<union>#) (set (?x # ?xs)) ==
+### fold (\<union>#) ?xs ?x
+signature OLD_DATATYPE =
+  sig
+    val check_specs: spec list -> theory -> spec list * Proof.context
+    type config = {quiet: bool, strict: bool}
+    val default_config: config
+    type descr =
+       (int * (string * dtyp list * (string * dtyp list) list)) list
+    val distinct_lemma: thm
+    datatype dtyp
+    = DtRec of int | DtTFree of string * sort | DtType of string * dtyp list
+    type info =
+       {case_cong: thm,
+        case_cong_weak: thm,
+        case_name: string,
+        case_rewrites: thm list,
+        descr: descr,
+        distinct: thm list,
+        exhaust: thm,
+        index: int,
+        induct: thm,
+        inducts: thm list,
+        inject: thm list,
+        nchotomy: thm,
+        rec_names: string list,
+        rec_rewrites: thm list, split: thm, split_asm: thm}
+    val read_specs: spec_cmd list -> theory -> spec list * Proof.context
+    type spec =
+       (binding * (string * sort) list * mixfix) *
+       (binding * typ list * mixfix) list
+    type spec_cmd =
+       (binding * (string * string option) list * mixfix) *
+       (binding * string list * mixfix) list
+  end
+structure Old_Datatype: OLD_DATATYPE
+### theory "HOL-Library.Old_Datatype"
+### 0.482s elapsed time, 1.895s cpu time, 0.244s GC time
+Loading theory "Draft.Resumption" (required by "Draft.Coinductive_ExamplesMoreTemplates" via "Draft.Coinductive_Examples")
+class ccpo = Sup + order +
+  assumes
+    "ccpo_Sup_upper":
+      "!!A x.
+          [| Complete_Partial_Order.chain (<=) A; x : A |]
+          ==> x <= \<Squnion> A"
+  assumes
+    "ccpo_Sup_least":
+      "!!A z.
+          [| Complete_Partial_Order.chain (<=) A; !!x. x : A ==> x <= z |]
+          ==> \<Squnion> A <= z"
+locale partial_function_definitions
+  fixes leq :: "'a => 'a => bool"
+    and lub :: "'a set => 'a"
+  assumes "partial_function_definitions leq lub"
+Proofs for coinductive predicate(s) "resumptionp"
+  Proving monotonicity ...
+signature MULTISET_SIMPROCS =
+  sig
+    val subset_cancel_msets: Proof.context -> cterm -> thm option
+    val subseteq_cancel_msets: Proof.context -> cterm -> thm option
+  end
+structure Multiset_Simprocs: MULTISET_SIMPROCS
+class complete_lattice = ccpo + conditionally_complete_lattice +
+  bounded_lattice +
+  assumes "Inf_lower": "!!x A. x : A ==> \<Sqinter> A <= x"
+    and
+    "Inf_greatest": "!!A z. (!!x. x : A ==> z <= x) ==> z <= \<Sqinter> A"
+    and "Sup_upper": "!!x A. x : A ==> x <= \<Squnion> A"
+    and "Sup_least": "!!A z. (!!x. x : A ==> x <= z) ==> \<Squnion> A <= z"
+    and "Inf_empty": "\<Sqinter> {} = \<top>"
+    and "Sup_empty": "\<Squnion> {} = \<bottom>"
+consts
+  shift :: "'a list => 'a stream => 'a stream"
+instantiation
+  multiset :: (type) Inf
+  Inf_multiset == Inf :: 'a multiset set => 'a multiset
+Proofs for coinductive predicate(s) "streamsp"
+  Proving monotonicity ...
+instantiation
+  multiset :: (type) Sup
+  Sup_multiset == Sup :: 'a multiset set => 'a multiset
+consts
+  snth :: "'a stream => nat => 'a"
+consts
+  stake :: "nat => 'a stream => 'a list"
+class complete_distrib_lattice = complete_lattice + distrib_lattice +
+  assumes
+    "Inf_Sup_le":
+      "!!A. \<Sqinter> (Sup ` A)
+            <= \<Squnion> (Inf ` {f ` A |f. ALL Y:A. f Y : Y})"
+consts
+  sdrop :: "nat => 'a stream => 'a stream"
+instantiation
+  multiset :: (type) size
+  size_multiset == size :: 'a multiset => nat
+consts
+  sfilter :: "('a => bool) => 'a stream => 'a stream"
+consts
+  cycle :: "'a list => 'a stream"
+consts
+  siterate :: "('a => 'a) => 'a => 'a stream"
+locale comp_fun_commute
+  fixes f :: "'a => 'b => 'b"
+  assumes "comp_fun_commute f"
+class complete_lattice = ccpo + conditionally_complete_lattice +
+  bounded_lattice +
+  assumes "Inf_lower": "!!x A. x : A ==> \<Sqinter> A <= x"
+    and
+    "Inf_greatest": "!!A z. (!!x. x : A ==> z <= x) ==> z <= \<Sqinter> A"
+    and "Sup_upper": "!!x A. x : A ==> x <= \<Squnion> A"
+    and "Sup_least": "!!A z. (!!x. x : A ==> x <= z) ==> \<Squnion> A <= z"
+    and "Inf_empty": "\<Sqinter> {} = \<top>"
+    and "Sup_empty": "\<Squnion> {} = \<bottom>"
+consts
+  flat :: "'a list stream => 'a stream"
+consts
+  sinterleave :: "'a stream => 'a stream => 'a stream"
+consts
+  mset :: "'a list => 'a multiset"
+consts
+  szip :: "'a stream => 'b stream => ('a * 'b) stream"
+consts
+  smap2 :: "('a => 'b => 'c) => 'a stream => 'b stream => 'c stream"
+### theory "HOL-Library.Stream"
+### 1.241s elapsed time, 4.699s cpu time, 1.325s GC time
+Loading theory "HOL-Library.Phantom_Type" (required by "Draft.Coinductive_ExamplesMoreTemplates" via "Draft.Coinductive_Examples" via "Draft.LList_CCPO_Topology" via "Draft.CCPO_Topology" via "HOL-Analysis.Extended_Real_Limits" via "HOL-Analysis.Topology_Euclidean_Space" via "HOL-Analysis.Elementary_Normed_Spaces" via "HOL-Analysis.Cartesian_Space" via "HOL-Analysis.Finite_Cartesian_Product" via "HOL-Library.Numeral_Type" via "HOL-Library.Cardinality")
+class linorder = order +
+  assumes "linear": "!!x y. x <= y | y <= x"
+consts
+  RESUMPTION_corec_aux ::
+    "nat
+     => ('e => ('a, 'b, 'c, 'd, 'e) resumption_corec)
+        => 'e => ('c + 'b + 'a, 'd) Old_Datatype.node set"
+Proofs for coinductive predicate(s) "Eq_RESUMPTION"
+  Proving monotonicity ...
+locale comm_monoid_mset
+  fixes f :: "'a => 'a => 'a"  (infixl \<open>\<^bold>*\<close> 70)
+    and z :: "'a"  (\<open>\<^bold>1\<close>)
+  assumes "comm_monoid_mset (\<^bold>*) \<^bold>1"
+### theory "Draft.Resumption"
+### 1.362s elapsed time, 5.173s cpu time, 1.428s GC time
+Loading theory "HOL-Library.Product_Plus" (required by "Draft.Coinductive_ExamplesMoreTemplates" via "Draft.Coinductive_Examples" via "Draft.LList_CCPO_Topology" via "Draft.CCPO_Topology" via "HOL-Analysis.Extended_Real_Limits" via "HOL-Analysis.Topology_Euclidean_Space" via "HOL-Analysis.Elementary_Normed_Spaces" via "HOL-Analysis.Elementary_Metric_Spaces" via "HOL-Analysis.Abstract_Topology_2" via "HOL-Analysis.Elementary_Topology" via "HOL-Analysis.Product_Vector")
+instantiation
+  prod :: (zero, zero) zero
+  zero_prod == zero_class.zero :: 'a * 'b
+instantiation
+  prod :: (plus, plus) plus
+  plus_prod == plus :: 'a * 'b => 'a * 'b => 'a * 'b
+instantiation
+  prod :: (minus, minus) minus
+  minus_prod == minus :: 'a * 'b => 'a * 'b => 'a * 'b
+instantiation
+  prod :: (uminus, uminus) uminus
+  uminus_prod == uminus :: 'a * 'b => 'a * 'b
+class comm_monoid_add = ab_semigroup_add + monoid_add +
+  assumes "add_0": "!!a. (0::'a) + a = a"
+### theory "HOL-Library.Product_Plus"
+### 0.093s elapsed time, 0.380s cpu time, 0.000s GC time
+Loading theory "HOL-Library.Set_Algebras" (required by "Draft.Coinductive_ExamplesMoreTemplates" via "Draft.ExtrEqs" via "HOL-Library.BigO")
+instantiation
+  set :: (plus) plus
+  plus_set == plus :: 'a set => 'a set => 'a set
+instantiation
+  set :: (times) times
+  times_set == times :: 'a set => 'a set => 'a set
+class comm_monoid_add = ab_semigroup_add + monoid_add +
+  assumes "add_0": "!!a. (0::'a) + a = a"
+instantiation
+  set :: (zero) zero
+  zero_set == zero_class.zero :: 'a set
+locale partial_function_definitions
+  fixes leq :: "'a => 'a => bool"
+    and lub :: "'a set => 'a"
+  assumes "partial_function_definitions leq lub"
+instantiation
+  set :: (one) one
+  one_set == one_class.one :: 'a set
+### theory "HOL-Library.Complete_Partial_Order2"
+### 3.024s elapsed time, 11.572s cpu time, 2.542s GC time
+Loading theory "HOL-Library.Sublist" (required by "Draft.Coinductive_ExamplesMoreTemplates" via "Draft.Coinductive_Examples" via "Draft.LList_CCPO_Topology" via "Draft.Coinductive_List_Prefix" via "Draft.Coinductive_List")
+class canonically_ordered_monoid_add = ordered_comm_monoid_add +
+  assumes "le_iff_add": "!!a b. (a <= b) = (EX c. b = a + c)"
+### theory "HOL-Library.Phantom_Type"
+### 0.581s elapsed time, 2.290s cpu time, 0.286s GC time
+Loading theory "HOL-Library.Cardinality" (required by "Draft.Coinductive_ExamplesMoreTemplates" via "Draft.Coinductive_Examples" via "Draft.LList_CCPO_Topology" via "Draft.CCPO_Topology" via "HOL-Analysis.Extended_Real_Limits" via "HOL-Analysis.Topology_Euclidean_Space" via "HOL-Analysis.Elementary_Normed_Spaces" via "HOL-Analysis.Cartesian_Space" via "HOL-Analysis.Finite_Cartesian_Product" via "HOL-Library.Numeral_Type")
+### Additional type variable(s) in locale specification "CARD_1": 'a
+class CARD_1 = type +
+  assumes "CARD_1": "CARD('a) = 1"
+### theory "HOL-Library.Set_Algebras"
+### 0.271s elapsed time, 1.067s cpu time, 0.210s GC time
+Loading theory "HOL-Library.Tree" (required by "Draft.Coinductive_ExamplesMoreTemplates" via "Draft.ExtrEqs" via "Draft.Templates")
+class comm_monoid_mult = ab_semigroup_mult + monoid_mult + dvd +
+  assumes "mult_1": "!!a. (1::'a) * a = a"
+### Additional type variable(s) in locale specification "card2": 'a
+consts
+  prefixes :: "'a list => 'a list list"
+class card2 = finite +
+  assumes "two_le_card": "2 <= CARD('a)"
+class finite_UNIV = type +
+  fixes finite_UNIV :: "('a, bool) phantom"
+  assumes "finite_UNIV": "finite_UNIV = Phantom('a) (finite UNIV)"
+class card_UNIV = finite_UNIV +
+  fixes card_UNIV :: "('a, nat) phantom"
+  assumes "card_UNIV": "card_UNIV_class.card_UNIV = Phantom('a) CARD('a)"
+instantiation
+  nat :: card_UNIV
+  card_UNIV_nat == card_UNIV_class.card_UNIV :: (nat, nat) phantom
+  finite_UNIV_nat == finite_UNIV :: (nat, bool) phantom
+instantiation
+  int :: card_UNIV
+  card_UNIV_int == card_UNIV_class.card_UNIV :: (int, nat) phantom
+  finite_UNIV_int == finite_UNIV :: (int, bool) phantom
+Found termination order: "(%p. length (snd p)) <*mlex*> {}"
+instantiation
+  natural :: card_UNIV
+  card_UNIV_natural == card_UNIV_class.card_UNIV :: (natural, nat) phantom
+  finite_UNIV_natural == finite_UNIV :: (natural, bool) phantom
+instantiation
+  integer :: card_UNIV
+  card_UNIV_integer == card_UNIV_class.card_UNIV :: (integer, nat) phantom
+  finite_UNIV_integer == finite_UNIV :: (integer, bool) phantom
+instantiation
+  list :: (type) card_UNIV
+  card_UNIV_list == card_UNIV_class.card_UNIV :: ('a list, nat) phantom
+  finite_UNIV_list == finite_UNIV :: ('a list, bool) phantom
+instantiation
+  unit :: card_UNIV
+  card_UNIV_unit == card_UNIV_class.card_UNIV :: (unit, nat) phantom
+  finite_UNIV_unit == finite_UNIV :: (unit, bool) phantom
+instantiation
+  bool :: card_UNIV
+  card_UNIV_bool == card_UNIV_class.card_UNIV :: (bool, nat) phantom
+  finite_UNIV_bool == finite_UNIV :: (bool, bool) phantom
+instantiation
+  char :: card_UNIV
+  card_UNIV_char == card_UNIV_class.card_UNIV :: (char, nat) phantom
+  finite_UNIV_char == finite_UNIV :: (char, bool) phantom
+instantiation
+  prod :: (finite_UNIV, finite_UNIV) finite_UNIV
+  finite_UNIV_prod == finite_UNIV :: ('a * 'b, bool) phantom
+instantiation
+  prod :: (card_UNIV, card_UNIV) card_UNIV
+  card_UNIV_prod == card_UNIV_class.card_UNIV :: ('a * 'b, nat) phantom
+instantiation
+  sum :: (finite_UNIV, finite_UNIV) finite_UNIV
+  finite_UNIV_sum == finite_UNIV :: ('a + 'b, bool) phantom
+instantiation
+  sum :: (card_UNIV, card_UNIV) card_UNIV
+  card_UNIV_sum == card_UNIV_class.card_UNIV :: ('a + 'b, nat) phantom
+instantiation
+  fun :: (finite_UNIV, card_UNIV) finite_UNIV
+  finite_UNIV_fun == finite_UNIV :: ('a => 'b, bool) phantom
+instantiation
+  fun :: (card_UNIV, card_UNIV) card_UNIV
+  card_UNIV_fun == card_UNIV_class.card_UNIV :: ('a => 'b, nat) phantom
+instantiation
+  option :: (finite_UNIV) finite_UNIV
+  finite_UNIV_option == finite_UNIV :: ('a option, bool) phantom
+instantiation
+  option :: (card_UNIV) card_UNIV
+  card_UNIV_option == card_UNIV_class.card_UNIV :: ('a option, nat) phantom
+instantiation
+  String.literal :: card_UNIV
+  card_UNIV_literal == card_UNIV_class.card_UNIV ::
+    (String.literal, nat) phantom
+  finite_UNIV_literal == finite_UNIV :: (String.literal, bool) phantom
+instantiation
+  set :: (finite_UNIV) finite_UNIV
+  finite_UNIV_set == finite_UNIV :: ('a set, bool) phantom
+instantiation
+  set :: (card_UNIV) card_UNIV
+  card_UNIV_set == card_UNIV_class.card_UNIV :: ('a set, nat) phantom
+instantiation
+  Enum.finite_1 :: card_UNIV
+  card_UNIV_finite_1 == card_UNIV_class.card_UNIV ::
+    (Enum.finite_1, nat) phantom
+  finite_UNIV_finite_1 == finite_UNIV :: (Enum.finite_1, bool) phantom
+instantiation
+  Enum.finite_2 :: card_UNIV
+  card_UNIV_finite_2 == card_UNIV_class.card_UNIV ::
+    (Enum.finite_2, nat) phantom
+  finite_UNIV_finite_2 == finite_UNIV :: (Enum.finite_2, bool) phantom
+consts
+  left :: "'a tree => 'a tree"
+consts
+  right :: "'a tree => 'a tree"
+instantiation
+  Enum.finite_3 :: card_UNIV
+  card_UNIV_finite_3 == card_UNIV_class.card_UNIV ::
+    (Enum.finite_3, nat) phantom
+  finite_UNIV_finite_3 == finite_UNIV :: (Enum.finite_3, bool) phantom
+instantiation
+  Enum.finite_4 :: card_UNIV
+  card_UNIV_finite_4 == card_UNIV_class.card_UNIV ::
+    (Enum.finite_4, nat) phantom
+  finite_UNIV_finite_4 == finite_UNIV :: (Enum.finite_4, bool) phantom
+instantiation
+  Enum.finite_5 :: card_UNIV
+  card_UNIV_finite_5 == card_UNIV_class.card_UNIV ::
+    (Enum.finite_5, nat) phantom
+  finite_UNIV_finite_5 == finite_UNIV :: (Enum.finite_5, bool) phantom
+### theory "HOL-Library.Cardinality"
+### 1.128s elapsed time, 4.214s cpu time, 1.441s GC time
+Loading theory "HOL-Library.Numeral_Type" (required by "Draft.Coinductive_ExamplesMoreTemplates" via "Draft.Coinductive_Examples" via "Draft.LList_CCPO_Topology" via "Draft.CCPO_Topology" via "HOL-Analysis.Extended_Real_Limits" via "HOL-Analysis.Topology_Euclidean_Space" via "HOL-Analysis.Elementary_Normed_Spaces" via "HOL-Analysis.Cartesian_Space" via "HOL-Analysis.Finite_Cartesian_Product")
+consts
+  suffixes :: "'a list => 'a list list"
+Found termination order: "size <*mlex*> {}"
+Proofs for inductive predicate(s) "list_emb"
+  Proving monotonicity ...
+Found termination order: "size <*mlex*> {}"
+class linorder = order +
+  assumes "linear": "!!x y. x <= y | y <= x"
+instantiation
+  num1 :: CARD_1
+instantiation
+  num1 :: {comm_monoid_mult,numeral,comm_ring}
+  uminus_num1 == uminus :: num1 => num1
+  zero_num1 == zero_class.zero :: num1
+  minus_num1 == minus :: num1 => num1 => num1
+  plus_num1 == plus :: num1 => num1 => num1
+  one_num1 == one_class.one :: num1
+  times_num1 == times :: num1 => num1 => num1
+Found termination order: "size <*mlex*> {}"
+instantiation
+  num1 :: linorder
+  less_eq_num1 == less_eq :: num1 => num1 => bool
+  less_num1 == less :: num1 => num1 => bool
+class height = type +
+  fixes height :: "'a => nat"
+instantiation
+  tree :: (type) height
+  height_tree == height :: 'a tree => nat
+locale mod_type
+  fixes n :: "int"
+    and Rep :: "'a => int"
+    and Abs :: "int => 'a"
+  assumes "mod_type n Rep Abs"
+locale mod_ring
+  fixes n :: "int"
+    and Rep :: "'a => int"
+    and Abs :: "int => 'a"
+  assumes "mod_ring n Rep Abs"
+instantiation
+  bit0 :: (finite) {minus,one,plus,times,uminus,zero}
+  bit1 :: (finite) {minus,one,plus,times,uminus,zero}
+  zero_bit0 == zero_class.zero :: 'a bit0
+  uminus_bit0 == uminus :: 'a bit0 => 'a bit0
+  times_bit0 == times :: 'a bit0 => 'a bit0 => 'a bit0
+  plus_bit0 == plus :: 'a bit0 => 'a bit0 => 'a bit0
+  one_bit0 == one_class.one :: 'a bit0
+  minus_bit0 == minus :: 'a bit0 => 'a bit0 => 'a bit0
+  zero_bit1 == zero_class.zero :: 'a bit1
+  uminus_bit1 == uminus :: 'a bit1 => 'a bit1
+  times_bit1 == times :: 'a bit1 => 'a bit1 => 'a bit1
+  plus_bit1 == plus :: 'a bit1 => 'a bit1 => 'a bit1
+  one_bit1 == one_class.one :: 'a bit1
+  minus_bit1 == minus :: 'a bit1 => 'a bit1 => 'a bit1
+Found termination order: "size <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+instantiation
+  multiset :: (preorder) order
+  less_eq_multiset == less_eq :: 'a multiset => 'a multiset => bool
+  less_multiset == less :: 'a multiset => 'a multiset => bool
+Found termination order: "size <*mlex*> {}"
+instantiation
+  bit0 :: (finite) linorder
+  bit1 :: (finite) linorder
+  less_eq_bit0 == less_eq :: 'a bit0 => 'a bit0 => bool
+  less_bit0 == less :: 'a bit0 => 'a bit0 => bool
+  less_eq_bit1 == less_eq :: 'a bit1 => 'a bit1 => bool
+  less_bit1 == less :: 'a bit1 => 'a bit1 => bool
+instantiation
+  multiset :: (preorder) ordered_ab_semigroup_add
+Proofs for inductive predicate(s) "pw_leq"
+  Proving monotonicity ...
+instantiation
+  num0 :: equal
+  equal_num0 == equal_class.equal :: num0 => num0 => bool
+Found termination order: "size <*mlex*> {}"
+instantiation
+  num1 :: equal
+  equal_num1 == equal_class.equal :: num1 => num1 => bool
+instantiation
+  num1 :: enum
+  enum_num1 == enum_class.enum :: num1 list
+  enum_all_num1 == enum_class.enum_all :: (num1 => bool) => bool
+  enum_ex_num1 == enum_class.enum_ex :: (num1 => bool) => bool
+instantiation
+  num0 :: card_UNIV
+  num1 :: card_UNIV
+  card_UNIV_num0 == card_UNIV_class.card_UNIV :: (num0, nat) phantom
+  finite_UNIV_num0 == finite_UNIV :: (num0, bool) phantom
+  card_UNIV_num1 == card_UNIV_class.card_UNIV :: (num1, nat) phantom
+  finite_UNIV_num1 == finite_UNIV :: (num1, bool) phantom
+Found termination order: "size <*mlex*> {}"
+consts
+  sublists :: "'a list => 'a list list"
+instantiation
+  bit0 :: (finite) equal
+  bit1 :: (finite) equal
+  equal_bit0 == equal_class.equal :: 'a bit0 => 'a bit0 => bool
+  equal_bit1 == equal_class.equal :: 'a bit1 => 'a bit1 => bool
+Found termination order: "size <*mlex*> {}"
+instantiation
+  bit0 :: (finite) enum
+  enum_bit0 == enum_class.enum :: 'a bit0 list
+  enum_all_bit0 == enum_class.enum_all :: ('a bit0 => bool) => bool
+  enum_ex_bit0 == enum_class.enum_ex :: ('a bit0 => bool) => bool
+instantiation
+  bit1 :: (finite) enum
+  enum_bit1 == enum_class.enum :: 'a bit1 list
+  enum_all_bit1 == enum_class.enum_all :: ('a bit1 => bool) => bool
+  enum_ex_bit1 == enum_class.enum_ex :: ('a bit1 => bool) => bool
+Found termination order: "size <*mlex*> {}"
+instantiation
+  bit0 :: (finite) finite_UNIV
+  bit1 :: (finite) finite_UNIV
+  finite_UNIV_bit0 == finite_UNIV :: ('a bit0, bool) phantom
+  finite_UNIV_bit1 == finite_UNIV :: ('a bit1, bool) phantom
+Found termination order: "(%p. length (fst p)) <*mlex*> {}"
+instantiation
+  bit0 :: ({card_UNIV,finite}) card_UNIV
+  bit1 :: ({card_UNIV,finite}) card_UNIV
+  card_UNIV_bit0 == card_UNIV_class.card_UNIV :: ('a bit0, nat) phantom
+  card_UNIV_bit1 == card_UNIV_class.card_UNIV :: ('a bit1, nat) phantom
+### theory "HOL-Library.Sublist"
+### 1.941s elapsed time, 7.417s cpu time, 1.883s GC time
+Loading theory "HOL-Library.Prefix_Order" (required by "Draft.Coinductive_ExamplesMoreTemplates" via "Draft.Coinductive_Examples" via "Draft.LList_CCPO_Topology" via "Draft.Coinductive_List_Prefix")
+instantiation
+  multiset :: (equal) equal
+  equal_multiset == equal_class.equal :: 'a multiset => 'a multiset => bool
+### theory "HOL-Library.Numeral_Type"
+### 0.804s elapsed time, 3.158s cpu time, 0.442s GC time
+Loading theory "HOL-Library.Countable" (required by "Draft.Coinductive_ExamplesMoreTemplates" via "Draft.Coinductive_Examples" via "Draft.LList_CCPO_Topology" via "Draft.CCPO_Topology" via "HOL-Analysis.Extended_Real_Limits" via "HOL-Analysis.Topology_Euclidean_Space" via "HOL-Analysis.Elementary_Normed_Spaces" via "HOL-Analysis.Elementary_Metric_Spaces" via "HOL-Analysis.Abstract_Topology_2" via "HOL-Analysis.Elementary_Topology" via "HOL-Library.Set_Idioms" via "HOL-Library.Countable_Set")
+instantiation
+  list :: (type) order
+  less_eq_list == less_eq :: 'a list => 'a list => bool
+  less_list == less :: 'a list => 'a list => bool
+instantiation
+  multiset :: (random) random
+  random_multiset == random_class.random ::
+    natural
+    => natural * natural
+       => ('a multiset * (unit => term)) * natural * natural
+instantiation
+  multiset :: (full_exhaustive) full_exhaustive
+  full_exhaustive_multiset == full_exhaustive_class.full_exhaustive ::
+    ('a multiset * (unit => term) => (bool * term list) option)
+    => natural => (bool * term list) option
+### theory "HOL-Library.Prefix_Order"
+### 0.063s elapsed time, 0.251s cpu time, 0.000s GC time
+Loading theory "HOL-Analysis.Metric_Arith" (required by "Draft.Coinductive_ExamplesMoreTemplates" via "Draft.Coinductive_Examples" via "Draft.LList_CCPO_Topology" via "Draft.CCPO_Topology" via "HOL-Analysis.Extended_Real_Limits" via "HOL-Analysis.Topology_Euclidean_Space" via "HOL-Analysis.Elementary_Normed_Spaces" via "HOL-Analysis.Elementary_Metric_Spaces")
+Found termination order: "(%p. size (fst p)) <*mlex*> {}"
+Proofs for inductive predicate(s) "pred_mset"
+  Proving monotonicity ...
+Found termination order: "size <*mlex*> {}"
+Proofs for inductive predicate(s) "rel_mset'"
+  Proving monotonicity ...
+Found termination order: "(%p. size (snd p)) <*mlex*> {}"
+### theory "HOL-Library.Multiset"
+### 4.819s elapsed time, 18.415s cpu time, 4.435s GC time
+Loading theory "HOL-Computational_Algebra.Factorial_Ring" (required by "Draft.Coinductive_ExamplesMoreTemplates" via "Draft.Coinductive_Examples" via "Draft.Hamming_Stream" via "HOL-Computational_Algebra.Primes" via "HOL-Computational_Algebra.Euclidean_Algorithm")
+### Additional type variable(s) in locale specification "countable": 'a
+Found termination order: "size <*mlex*> {}"
+class countable = type +
+  assumes "ex_inj": "EX to_nat. inj to_nat"
+### theory "HOL-Library.Tree"
+### 2.504s elapsed time, 9.758s cpu time, 2.142s GC time
+Loading theory "Draft.Templates" (required by "Draft.Coinductive_ExamplesMoreTemplates" via "Draft.ExtrEqs")
+signature METRIC_ARITH =
+  sig
+    val argo_timeout: real Config.T
+    val metric_arith_tac: Proof.context -> int -> tactic
+    val trace: bool Config.T
+  end
+structure Metric_Arith: METRIC_ARITH
+### theory "HOL-Analysis.Metric_Arith"
+### 0.690s elapsed time, 2.841s cpu time, 0.380s GC time
+Loading theory "HOL-Analysis.Inner_Product" (required by "Draft.Coinductive_ExamplesMoreTemplates" via "Draft.Coinductive_Examples" via "Draft.LList_CCPO_Topology" via "Draft.CCPO_Topology" via "HOL-Analysis.Extended_Real_Limits" via "HOL-Analysis.Topology_Euclidean_Space" via "HOL-Analysis.Elementary_Normed_Spaces" via "HOL-Analysis.Cartesian_Space" via "HOL-Analysis.Finite_Cartesian_Product" via "HOL-Analysis.Euclidean_Space")
+Proofs for inductive predicate(s) "finite_item"
+  Proving monotonicity ...
+datatype template_term
+=
+     t_empty
+   | template_app of template_term * template_term
+   | template_hole of int
+   | template_var of int
+datatype sign
+= equals | greater_equals | greater_than | less_equals | less_than
+datatype template
+=
+     template_bimplication of template * template
+   | template_dunno
+   | template_equation of template_term * template_term
+   | template_implication of template list * template
+   | template_inequation of sign * template_term * template_term
+   | template_negation of template
+   | template_predicate of template_term
+constructor t_empty: template_term
+constructor template_app: template_term * template_term -> template_term
+constructor template_hole: int -> template_term
+constructor template_var: int -> template_term
+constructor equals: sign
+constructor greater_equals: sign
+constructor greater_than: sign
+constructor less_equals: sign
+constructor less_than: sign
+constructor template_bimplication: template * template -> template
+constructor template_dunno: template
+constructor template_equation: template_term * template_term -> template
+constructor template_implication: template list * template -> template
+constructor template_inequation:
+   sign * template_term * template_term -> template
+constructor template_negation: template -> template
+constructor template_predicate: template_term -> template
+val vfs = fn: term -> (indexname * typ) list * (string * typ) list
+val indexOf = fn: ''a list -> ''a -> int -> int
+val has_eq = fn: term -> bool
+val term2template = fn:
+   (indexname * typ) list -> (string * typ) list -> term -> template_term
+val lemma2predicate = fn: term -> term -> template
+val makeTemplatewithContext = fn: term -> term -> template
+val lemma2template = fn: term -> template
+val thm2template = fn: thm -> template
+val tterm2string = fn: template_term -> string
+val template2string = fn: template -> string
+val t = "height ?t <= size ?t": thm
+val th =
+   Const ("HOL.Trueprop", "bool => prop") $
+     (Const ("Orderings.ord_class.less_eq", "nat => nat => bool") $
+       (Const ("Tree.height_class.height", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree")) $
+       (Const ("Nat.size_class.size", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree"))):
+   term
+### theory "Draft.Templates"
+### 0.066s elapsed time, 0.270s cpu time, 0.000s GC time
+Loading theory "HOL-Analysis.L2_Norm" (required by "Draft.Coinductive_ExamplesMoreTemplates" via "Draft.Coinductive_Examples" via "Draft.LList_CCPO_Topology" via "Draft.CCPO_Topology" via "HOL-Analysis.Extended_Real_Limits" via "HOL-Analysis.Topology_Euclidean_Space" via "HOL-Analysis.Elementary_Normed_Spaces" via "HOL-Analysis.Cartesian_Space" via "HOL-Analysis.Finite_Cartesian_Product" via "HOL-Analysis.Euclidean_Space")
+### theory "HOL-Analysis.L2_Norm"
+### 0.108s elapsed time, 0.422s cpu time, 0.058s GC time
+Loading theory "HOL-Analysis.Product_Vector" (required by "Draft.Coinductive_ExamplesMoreTemplates" via "Draft.Coinductive_Examples" via "Draft.LList_CCPO_Topology" via "Draft.CCPO_Topology" via "HOL-Analysis.Extended_Real_Limits" via "HOL-Analysis.Topology_Euclidean_Space" via "HOL-Analysis.Elementary_Normed_Spaces" via "HOL-Analysis.Elementary_Metric_Spaces" via "HOL-Analysis.Abstract_Topology_2" via "HOL-Analysis.Elementary_Topology")
+val old_countable_datatype_tac = fn: Proof.context -> int -> tactic
+### ML warning (line 93 of "~~/src/HOL/Tools/BNF/bnf_lfp_countable.ML"):
+### Pattern is not exhaustive.
+### ML warning (line 139 of "~~/src/HOL/Tools/BNF/bnf_lfp_countable.ML"):
+### Pattern is not exhaustive.
+### ML warning (line 143 of "~~/src/HOL/Tools/BNF/bnf_lfp_countable.ML"):
+### Matches are not exhaustive.
+### ML warning (line 145 of "~~/src/HOL/Tools/BNF/bnf_lfp_countable.ML"):
+### Matches are not exhaustive.
+### ML warning (line 156 of "~~/src/HOL/Tools/BNF/bnf_lfp_countable.ML"):
+### Pattern is not exhaustive.
+signature BNF_LFP_COUNTABLE =
+  sig
+    val countable_datatype_tac: Proof.context -> tactic
+    val derive_encode_injectives_thms:
+       Proof.context -> string list -> thm list
+  end
+structure BNF_LFP_Countable: BNF_LFP_COUNTABLE
+val countable_datatype_tac = fn: Proof.context -> thm -> thm Seq.seq
+val countable_tac = fn: Proof.context -> int -> tactic
+locale module_prod
+  fixes s1 :: "'a => 'b => 'b"
+    and s2 :: "'a => 'c => 'c"
+  assumes "module_prod s1 s2"
+### theory "HOL-Library.Countable"
+### 1.242s elapsed time, 5.018s cpu time, 0.567s GC time
+Loading theory "HOL-Library.Countable_Set" (required by "Draft.Coinductive_ExamplesMoreTemplates" via "Draft.Coinductive_Examples" via "Draft.LList_CCPO_Topology" via "Draft.CCPO_Topology" via "HOL-Analysis.Extended_Real_Limits" via "HOL-Analysis.Topology_Euclidean_Space" via "HOL-Analysis.Elementary_Normed_Spaces" via "HOL-Analysis.Elementary_Metric_Spaces" via "HOL-Analysis.Abstract_Topology_2" via "HOL-Analysis.Elementary_Topology" via "HOL-Library.Set_Idioms")
+locale vector_space_prod
+  fixes s1 :: "'a => 'b => 'b"  (infixr \<open>*a\<close> 75)
+    and s2 :: "'a => 'c => 'c"  (infixr \<open>*b\<close> 75)
+  assumes "vector_space_prod (*a) (*b)"
+### Cannot skip proof of schematic goal statement
+class real_inner = dist_norm + real_vector + sgn_div_norm +
+  uniformity_dist + open_uniformity +
+  fixes inner :: "'a => 'a => real"
+  assumes "inner_commute": "!!x y. inner x y = inner y x"
+    and "inner_add_left": "!!x y z. inner (x + y) z = inner x z + inner y z"
+    and
+    "inner_scaleR_left": "!!r x y. inner (r *\<^sub>R x) y = r * inner x y"
+    and "inner_ge_zero": "!!x. 0 <= inner x x"
+    and "inner_eq_zero_iff": "!!x. (inner x x = 0) = (x = (0::'a))"
+    and "norm_eq_sqrt_inner": "!!x. norm x = sqrt (inner x x)"
+class normalization_semidom = algebraic_semidom +
+  semidom_divide_unit_factor +
+  fixes normalize :: "'a => 'a"
+  assumes
+    "unit_factor_mult_normalize": "!!a. unit_factor a * normalize a = a"
+    and "normalize_0": "normalize (0::'a) = (0::'a)"
+instantiation
+  prod :: (real_vector, real_vector) real_vector
+  scaleR_prod == scaleR :: real => 'a * 'b => 'a * 'b
+### Cannot skip proof of schematic goal statement
+instantiation
+  prod :: (metric_space, metric_space) dist
+  dist_prod == dist :: 'a * 'b => 'a * 'b => real
+instantiation
+  prod :: (uniformity, uniformity) uniformity
+  uniformity_prod == uniformity :: (('a * 'b) * 'a * 'b) filter
+instantiation
+  prod :: (uniform_space, uniform_space) uniform_space
+instantiation
+  prod :: (metric_space, metric_space) uniformity_dist
+instantiation
+  prod :: (metric_space, metric_space) metric_space
+instantiation
+  prod :: (real_normed_vector, real_normed_vector) real_normed_vector
+  sgn_prod == sgn :: 'a * 'b => 'a * 'b
+  norm_prod == norm :: 'a * 'b => real
+locale comm_monoid_set
+  fixes f :: "'a => 'a => 'a"  (infixl \<open>\<^bold>*\<close> 70)
+    and z :: "'a"  (\<open>\<^bold>1\<close>)
+  assumes "comm_monoid_set (\<^bold>*) \<^bold>1"
+### theory "HOL-Library.Countable_Set"
+### 0.478s elapsed time, 1.885s cpu time, 0.217s GC time
+Loading theory "HOL-Library.Countable_Complete_Lattices" (required by "Draft.Coinductive_ExamplesMoreTemplates" via "Draft.Coinductive_Examples" via "Draft.LList_CCPO_Topology" via "Draft.CCPO_Topology" via "HOL-Analysis.Extended_Real_Limits" via "HOL-Library.Extended_Real" via "HOL-Library.Extended_Nat" via "HOL-Library.Order_Continuity")
+class semiring_gcd = gcd + normalization_semidom +
+  assumes "gcd_dvd1": "!!a b. gcd a b dvd a"
+    and "gcd_dvd2": "!!a b. gcd a b dvd b"
+    and "gcd_greatest": "!!c a b. [| c dvd a; c dvd b |] ==> c dvd gcd a b"
+    and "normalize_gcd": "!!a b. normalize (gcd a b) = gcd a b"
+    and "lcm_gcd": "!!a b. lcm a b = normalize (a * b div gcd a b)"
+instantiation
+  real :: real_inner
+  inner_real == inner :: real => real => real
+instantiation
+  complex :: real_inner
+  inner_complex == inner :: complex => complex => real
+locale finite_dimensional_vector_space_prod
+  fixes s1 :: "'a => 'b => 'b"  (infixr \<open>*a\<close> 75)
+    and s2 :: "'a => 'c => 'c"  (infixr \<open>*b\<close> 75)
+    and B1 :: "'b set"
+    and B2 :: "'c set"
+  assumes "finite_dimensional_vector_space_prod (*a) (*b) B1 B2"
+### theory "HOL-Analysis.Product_Vector"
+### 0.967s elapsed time, 3.808s cpu time, 0.411s GC time
+Loading theory "HOL-Library.Set_Idioms" (required by "Draft.Coinductive_ExamplesMoreTemplates" via "Draft.Coinductive_Examples" via "Draft.LList_CCPO_Topology" via "Draft.CCPO_Topology" via "HOL-Analysis.Extended_Real_Limits" via "HOL-Analysis.Topology_Euclidean_Space" via "HOL-Analysis.Elementary_Normed_Spaces" via "HOL-Analysis.Elementary_Metric_Spaces" via "HOL-Analysis.Abstract_Topology_2" via "HOL-Analysis.Elementary_Topology")
+bundle inner_syntax
+bundle no_inner_syntax
+### theory "HOL-Analysis.Inner_Product"
+### 1.132s elapsed time, 4.455s cpu time, 0.468s GC time
+Loading theory "HOL-Analysis.Euclidean_Space" (required by "Draft.Coinductive_ExamplesMoreTemplates" via "Draft.Coinductive_Examples" via "Draft.LList_CCPO_Topology" via "Draft.CCPO_Topology" via "HOL-Analysis.Extended_Real_Limits" via "HOL-Analysis.Topology_Euclidean_Space" via "HOL-Analysis.Elementary_Normed_Spaces" via "HOL-Analysis.Cartesian_Space" via "HOL-Analysis.Finite_Cartesian_Product")
+### theory "HOL-Library.Set_Idioms"
+### 0.218s elapsed time, 0.865s cpu time, 0.063s GC time
+Loading theory "HOL-Analysis.Abstract_Topology" (required by "Draft.Coinductive_ExamplesMoreTemplates" via "Draft.Coinductive_Examples" via "Draft.LList_CCPO_Topology" via "Draft.CCPO_Topology" via "HOL-Analysis.Extended_Real_Limits" via "HOL-Analysis.Topology_Euclidean_Space" via "HOL-Analysis.Elementary_Normed_Spaces" via "HOL-Analysis.Elementary_Metric_Spaces" via "HOL-Analysis.Abstract_Topology_2")
+class countable_complete_lattice = Inf + Sup + lattice + bot + top +
+  assumes "ccInf_lower": "!!A x. [| countable A; x : A |] ==> Inf A <= x"
+  assumes
+    "ccInf_greatest":
+      "!!A z. [| countable A; !!x. x : A ==> z <= x |] ==> z <= Inf A"
+  assumes "ccSup_upper": "!!A x. [| countable A; x : A |] ==> x <= Sup A"
+  assumes
+    "ccSup_least":
+      "!!A z. [| countable A; !!x. x : A ==> x <= z |] ==> Sup A <= z"
+  assumes "ccInf_empty": "Inf {} = top"
+  assumes "ccSup_empty": "Sup {} = bot"
+class factorial_semiring = normalization_semidom +
+  assumes
+    "prime_factorization_exists":
+      "!!x. x ~= (0::'a) ==>
+            EX A. (ALL x. x :# A --> prime_elem x) &
+                  normalize (\<Prod>\<^sub># A) = normalize x"
+class factorial_semiring = normalization_semidom +
+  assumes
+    "prime_factorization_exists":
+      "!!x. x ~= (0::'a) ==>
+            EX A. (ALL x. x :# A --> prime_elem x) &
+                  normalize (\<Prod>\<^sub># A) = normalize x"
+class euclidean_space = real_inner +
+  fixes Basis :: "'a set"
+  assumes "nonempty_Basis": "Basis ~= {}"
+  assumes "finite_Basis": "finite Basis"
+  assumes
+    "inner_Basis":
+      "!!u v.
+          [| u : Basis; v : Basis |]
+          ==> inner u v = (if u = v then 1 else 0)"
+  assumes
+    "euclidean_all_zero_iff":
+      "!!x. (ALL u:Basis. inner x u = 0) = (x = (0::'a))"
+class countable_complete_distrib_lattice = countable_complete_lattice +
+  assumes
+    "sup_ccInf": "!!B a. countable B ==> sup a (Inf B) = Inf (sup a ` B)"
+  assumes
+    "inf_ccSup": "!!B a. countable B ==> inf a (Sup B) = Sup (inf a ` B)"
+instantiation
+  real :: euclidean_space
+  Basis_real == Basis :: real set
+instantiation
+  complex :: euclidean_space
+  Basis_complex == Basis :: complex set
+instantiation
+  prod :: (real_inner, real_inner) real_inner
+  inner_prod == inner :: 'a * 'b => 'a * 'b => real
+instantiation
+  prod :: (euclidean_space, euclidean_space) euclidean_space
+  Basis_prod == Basis :: ('a * 'b) set
+### Cannot skip proof of schematic goal statement
+### Cannot skip proof of schematic goal statement
+### theory "HOL-Analysis.Euclidean_Space"
+### 1.749s elapsed time, 6.846s cpu time, 0.815s GC time
+Loading theory "HOL-Analysis.Elementary_Topology" (required by "Draft.Coinductive_ExamplesMoreTemplates" via "Draft.Coinductive_Examples" via "Draft.LList_CCPO_Topology" via "Draft.CCPO_Topology" via "HOL-Analysis.Extended_Real_Limits" via "HOL-Analysis.Topology_Euclidean_Space" via "HOL-Analysis.Elementary_Normed_Spaces" via "HOL-Analysis.Elementary_Metric_Spaces" via "HOL-Analysis.Abstract_Topology_2")
+### theory "HOL-Library.Countable_Complete_Lattices"
+### 2.311s elapsed time, 9.041s cpu time, 1.137s GC time
+Loading theory "HOL-Analysis.Finite_Cartesian_Product" (required by "Draft.Coinductive_ExamplesMoreTemplates" via "Draft.Coinductive_Examples" via "Draft.LList_CCPO_Topology" via "Draft.CCPO_Topology" via "HOL-Analysis.Extended_Real_Limits" via "HOL-Analysis.Topology_Euclidean_Space" via "HOL-Analysis.Elementary_Normed_Spaces" via "HOL-Analysis.Cartesian_Space")
+class topological_space = open +
+  assumes "open_UNIV": "open UNIV"
+  assumes "open_Int": "!!S T. [| open S; open T |] ==> open (S Int T)"
+  assumes "open_Union": "!!K. Ball K open ==> open (\<Union> K)"
+locale countable_basis
+  fixes p :: "'a set => bool"
+    and B :: "'a set set"
+  assumes "countable_basis p B"
+class factorial_semiring_gcd = factorial_semiring + Gcd +
+  assumes "gcd_eq_gcd_factorial": "!!a b. gcd a b = gcd_factorial a b"
+    and "lcm_eq_lcm_factorial": "!!a b. lcm a b = lcm_factorial a b"
+    and "Gcd_eq_Gcd_factorial": "!!A. Gcd A = Gcd_factorial A"
+    and "Lcm_eq_Lcm_factorial": "!!A. Lcm A = Lcm_factorial A"
+class second_countable_topology = topological_space +
+  assumes
+    "ex_countable_subbasis":
+      "EX B. countable B & open = generate_topology B"
+Proofs for inductive predicate(s) "generate_topology_on"
+  Proving monotonicity ...
+### theory "HOL-Analysis.Abstract_Topology"
+### 2.722s elapsed time, 10.646s cpu time, 1.350s GC time
+Loading theory "HOL-Analysis.Linear_Algebra" (required by "Draft.Coinductive_ExamplesMoreTemplates" via "Draft.Coinductive_Examples" via "Draft.LList_CCPO_Topology" via "Draft.CCPO_Topology" via "HOL-Analysis.Extended_Real_Limits" via "HOL-Analysis.Topology_Euclidean_Space" via "HOL-Analysis.Elementary_Normed_Spaces" via "HOL-Analysis.Cartesian_Space")
+bundle vec_syntax
+bundle no_vec_syntax
+instantiation
+  vec :: (zero, finite) zero
+  zero_vec == zero_class.zero :: ('a, 'b) vec
+instantiation
+  vec :: (plus, finite) plus
+  plus_vec == plus :: ('a, 'b) vec => ('a, 'b) vec => ('a, 'b) vec
+instantiation
+  vec :: (minus, finite) minus
+  minus_vec == minus :: ('a, 'b) vec => ('a, 'b) vec => ('a, 'b) vec
+instantiation
+  vec :: (uminus, finite) uminus
+  uminus_vec == uminus :: ('a, 'b) vec => ('a, 'b) vec
+instantiation
+  vec :: (times, finite) times
+  times_vec == times :: ('a, 'b) vec => ('a, 'b) vec => ('a, 'b) vec
+instantiation
+  vec :: (one, finite) one
+  one_vec == one_class.one :: ('a, 'b) vec
+instantiation
+  vec :: (ord, finite) ord
+  less_eq_vec == less_eq :: ('a, 'b) vec => ('a, 'b) vec => bool
+  less_vec == less :: ('a, 'b) vec => ('a, 'b) vec => bool
+instantiation
+  vec :: (real_vector, finite) real_vector
+  scaleR_vec == scaleR :: real => ('a, 'b) vec => ('a, 'b) vec
+instantiation
+  vec :: (topological_space, finite) topological_space
+  open_vec == open :: ('a, 'b) vec set => bool
+instantiation
+  vec :: (metric_space, finite) dist
+  dist_vec == dist :: ('a, 'b) vec => ('a, 'b) vec => real
+instantiation
+  vec :: (metric_space, finite) uniformity_dist
+  uniformity_vec == uniformity :: (('a, 'b) vec * ('a, 'b) vec) filter
+instantiation
+  vec :: (metric_space, finite) metric_space
+instantiation
+  vec :: (real_normed_vector, finite) real_normed_vector
+  sgn_vec == sgn :: ('a, 'b) vec => ('a, 'b) vec
+  norm_vec == norm :: ('a, 'b) vec => real
+instantiation
+  vec :: (real_inner, finite) real_inner
+  inner_vec == inner :: ('a, 'b) vec => ('a, 'b) vec => real
+instantiation
+  vec :: (euclidean_space, finite) euclidean_space
+  Basis_vec == Basis :: ('a, 'b) vec set
+class real_inner = real_normed_vector +
+  fixes inner :: "'a => 'a => real"
+  assumes "inner_commute": "!!x y. x \<bullet> y = y \<bullet> x"
+    and
+    "inner_add_left":
+      "!!x y z. (x + y) \<bullet> z = x \<bullet> z + y \<bullet> z"
+    and
+    "inner_scaleR_left":
+      "!!r x y. r *\<^sub>R x \<bullet> y = r * (x \<bullet> y)"
+    and "inner_ge_zero": "!!x. 0 <= x \<bullet> x"
+    and "inner_eq_zero_iff": "!!x. (x \<bullet> x = 0) = (x = (0::'a))"
+    and "norm_eq_sqrt_inner": "!!x. norm x = sqrt (x \<bullet> x)"
+### theory "HOL-Analysis.Elementary_Topology"
+### 2.210s elapsed time, 8.587s cpu time, 1.488s GC time
+Loading theory "HOL-Library.BigO" (required by "Draft.Coinductive_ExamplesMoreTemplates" via "Draft.ExtrEqs")
+### theory "HOL-Analysis.Finite_Cartesian_Product"
+### 1.885s elapsed time, 7.314s cpu time, 1.343s GC time
+Loading theory "HOL-Library.Indicator_Function" (required by "Draft.Coinductive_ExamplesMoreTemplates" via "Draft.Coinductive_Examples" via "Draft.LList_CCPO_Topology" via "Draft.CCPO_Topology" via "HOL-Analysis.Extended_Real_Limits" via "HOL-Analysis.Topology_Euclidean_Space" via "HOL-Analysis.Elementary_Normed_Spaces" via "HOL-Analysis.Elementary_Metric_Spaces" via "HOL-Analysis.Abstract_Topology_2")
+### theory "HOL-Analysis.Linear_Algebra"
+### 1.169s elapsed time, 4.497s cpu time, 0.974s GC time
+Loading theory "HOL-Analysis.Cartesian_Space" (required by "Draft.Coinductive_ExamplesMoreTemplates" via "Draft.Coinductive_Examples" via "Draft.LList_CCPO_Topology" via "Draft.CCPO_Topology" via "HOL-Analysis.Extended_Real_Limits" via "HOL-Analysis.Topology_Euclidean_Space" via "HOL-Analysis.Elementary_Normed_Spaces")
+### theory "HOL-Library.Indicator_Function"
+### 0.452s elapsed time, 1.745s cpu time, 0.302s GC time
+Loading theory "HOL-Analysis.Abstract_Topology_2" (required by "Draft.Coinductive_ExamplesMoreTemplates" via "Draft.Coinductive_Examples" via "Draft.LList_CCPO_Topology" via "Draft.CCPO_Topology" via "HOL-Analysis.Extended_Real_Limits" via "HOL-Analysis.Topology_Euclidean_Space" via "HOL-Analysis.Elementary_Normed_Spaces" via "HOL-Analysis.Elementary_Metric_Spaces")
+### theory "HOL-Library.BigO"
+### 0.906s elapsed time, 3.477s cpu time, 0.686s GC time
+Loading theory "Draft.ExtrEqs" (required by "Draft.Coinductive_ExamplesMoreTemplates")
+locale linear_first_finite_dimensional_vector_space
+  fixes scaleB :: "'a => 'b => 'b"  (infixr \<open>*b\<close> 75)
+    and scaleC :: "'a => 'c => 'c"  (infixr \<open>*c\<close> 75)
+    and BasisB :: "'b set"
+    and f :: "'b => 'c"
+  assumes "linear_first_finite_dimensional_vector_space (*b) (*c) BasisB f"
+### theory "HOL-Computational_Algebra.Factorial_Ring"
+### 7.975s elapsed time, 30.955s cpu time, 6.888s GC time
+Loading theory "HOL-Computational_Algebra.Euclidean_Algorithm" (required by "Draft.Coinductive_ExamplesMoreTemplates" via "Draft.Coinductive_Examples" via "Draft.Hamming_Stream" via "HOL-Computational_Algebra.Primes")
+val eqpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Var (("_dummy_", 2), "?'a"))
+       ):
+   term Find_Theorems.criterion
+val badeqpattern = Pattern (Const ("Pure.eq", "?'a => ?'a => prop")):
+   term Find_Theorems.criterion
+val undefpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Const ("HOL.undefined", "?'a"))
+       ):
+   term Find_Theorems.criterion
+val thmpattern =
+   Pattern
+    (Const ("HOL.Trueprop", "bool => prop") $ Var (("_dummy_", 1), "bool")):
+   term Find_Theorems.criterion
+val badnames =
+   ["*nitpick*", "*Nitpick*", "*full_exhaustive*", "*_def*", "Enum.finite*",
+    "*Quickcheck*", "ATP*", "*Nunchaku*", "*Code*", "*BNF*", "*SMT*",
+    "*.*.*"]:
+   string list
+val unwanted_names =
+   [(false, Name "*nitpick*"), (false, Name "*Nitpick*"),
+    (false, Name "*full_exhaustive*"), (false, Name "*_def*"),
+    (false, Name "Enum.finite*"), (false, Name "*Quickcheck*"),
+    (false, Name "ATP*"), (false, Name "*Nunchaku*"),
+    (false, Name "*Code*"), (false, Name "*BNF*"), (false, Name "*SMT*"),
+    (false, Name "*.*.*")]:
+   (bool * term Find_Theorems.criterion) list
+val has_vars = fn: term -> bool
+val get_all_eqs = fn: string -> Proof.context -> (string * thm) list
+val get_all_thms = fn: string -> Proof.context -> (string * thm) list
+val get_noneq_thms = fn: string -> Proof.context -> (string * thm) list
+val template_eqs = fn:
+   string -> Proof.context -> (string * thm * template) list
+val template_thms = fn:
+   string -> Proof.context -> (string * thm * template) list
+### theory "Draft.ExtrEqs"
+### 1.471s elapsed time, 5.514s cpu time, 3.098s GC time
+Loading theory "HOL-Library.Liminf_Limsup" (required by "Draft.Coinductive_ExamplesMoreTemplates" via "Draft.Coinductive_Examples" via "Draft.LList_CCPO_Topology" via "Draft.CCPO_Topology" via "HOL-Analysis.Extended_Real_Limits" via "HOL-Library.Extended_Real")
+### theory "HOL-Analysis.Abstract_Topology_2"
+### 2.192s elapsed time, 8.282s cpu time, 3.581s GC time
+Loading theory "HOL-Analysis.Connected" (required by "Draft.Coinductive_ExamplesMoreTemplates" via "Draft.Coinductive_Examples" via "Draft.LList_CCPO_Topology" via "Draft.CCPO_Topology" via "HOL-Analysis.Extended_Real_Limits" via "HOL-Analysis.Topology_Euclidean_Space" via "HOL-Analysis.Elementary_Normed_Spaces")
+### theory "HOL-Analysis.Cartesian_Space"
+### 2.529s elapsed time, 9.577s cpu time, 3.841s GC time
+Loading theory "HOL-Analysis.Elementary_Metric_Spaces" (required by "Draft.Coinductive_ExamplesMoreTemplates" via "Draft.Coinductive_Examples" via "Draft.LList_CCPO_Topology" via "Draft.CCPO_Topology" via "HOL-Analysis.Extended_Real_Limits" via "HOL-Analysis.Topology_Euclidean_Space" via "HOL-Analysis.Elementary_Normed_Spaces")
+### theory "HOL-Library.Liminf_Limsup"
+### 1.297s elapsed time, 4.855s cpu time, 3.041s GC time
+Loading theory "HOL-Library.Order_Continuity" (required by "Draft.Coinductive_ExamplesMoreTemplates" via "Draft.Coinductive_Examples" via "Draft.LList_CCPO_Topology" via "Draft.CCPO_Topology" via "HOL-Analysis.Extended_Real_Limits" via "HOL-Library.Extended_Real" via "HOL-Library.Extended_Nat")
+### theory "HOL-Analysis.Connected"
+### 1.084s elapsed time, 4.023s cpu time, 2.874s GC time
+Loading theory "HOL-Library.Sum_of_Squares" (required by "Draft.Coinductive_ExamplesMoreTemplates" via "Draft.Coinductive_Examples" via "Draft.LList_CCPO_Topology" via "Draft.CCPO_Topology" via "HOL-Analysis.Extended_Real_Limits" via "HOL-Analysis.Topology_Euclidean_Space" via "HOL-Analysis.Norm_Arith")
+### theory "HOL-Library.Order_Continuity"
+### 0.622s elapsed time, 2.421s cpu time, 0.289s GC time
+Loading theory "HOL-Library.Extended_Nat" (required by "Draft.Coinductive_ExamplesMoreTemplates" via "Draft.Coinductive_Examples" via "Draft.LList_CCPO_Topology" via "Draft.CCPO_Topology" via "HOL-Analysis.Extended_Real_Limits" via "HOL-Library.Extended_Real")
+class infinity = type +
+  fixes infinity :: "'a"
+instantiation
+  enat :: infinity
+  infinity_enat == infinity :: enat
+Proofs for inductive predicate(s) "rec_set_enat"
+class heine_borel = metric_space +
+  assumes
+    "bounded_imp_convergent_subsequence":
+      "!!f. bounded (range f) ==>
+            EX l r. strict_mono r & (f o r) \<longlonglongrightarrow> l"
+### No equation for constructor "Extended_Nat.infinity_class.infinity"
+### in definition of function "the_enat"
+consts
+  the_enat :: "enat => nat"
+instantiation
+  enat :: zero_neq_one
+  one_enat == one_class.one :: enat
+  zero_enat == zero_class.zero :: enat
+### ML warning (line 261 of "~~/src/HOL/Library/Sum_of_Squares/positivstellensatz.ML"):
+### Value identifier (pth_abs) has not been referenced.
+### ML warning (line 265 of "~~/src/HOL/Library/Sum_of_Squares/positivstellensatz.ML"):
+### Value identifier (pth_max) has not been referenced.
+### ML warning (line 269 of "~~/src/HOL/Library/Sum_of_Squares/positivstellensatz.ML"):
+### Value identifier (pth_min) has not been referenced.
+### ML warning (line 379 of "~~/src/HOL/Library/Sum_of_Squares/positivstellensatz.ML"):
+### Pattern is not exhaustive.
+signature FUNC =
+  sig
+    exception DUP of key
+    exception SAME
+    exception UNDEF of key
+    val apply: 'a table -> key -> 'a
+    val applyd: 'a table -> (key -> 'a) -> key -> 'a
+    val build: ('a table -> 'a table) -> 'a table
+    val choose: 'a table -> key * 'a
+    val combine:
+       ('a -> 'a -> 'a) -> ('a -> bool) -> 'a table -> 'a table -> 'a table
+    val cons_list: key * 'a -> 'a list table -> 'a list table
+    val default: key * 'a -> 'a table -> 'a table
+    val defined: 'a table -> key -> bool
+    val delete: key -> 'a table -> 'a table
+    val delete_safe: key -> 'a table -> 'a table
+    val dest: 'a table -> (key * 'a) list
+    val dest_list: 'a list table -> (key * 'a) list
+    val dom: 'a table -> key list
+    val empty: 'a table
+    val exists: (key * 'a -> bool) -> 'a table -> bool
+    val fold: (key * 'a -> 'b -> 'b) -> 'a table -> 'b -> 'b
+    val fold_rev: (key * 'a -> 'b -> 'b) -> 'a table -> 'b -> 'b
+    val forall: (key * 'a -> bool) -> 'a table -> bool
+    val get_first: (key * 'a -> 'b option) -> 'a table -> 'b option
+    val insert: ('a * 'a -> bool) -> key * 'a -> 'a table -> 'a table
+    val insert_list:
+       ('a * 'a -> bool) -> key * 'a -> 'a list table -> 'a list table
+    val insert_set: key -> set -> set
+    val is_empty: 'a table -> bool
+    val is_single: 'a table -> bool
+    val join: (key -> 'a * 'a -> 'a) -> 'a table * 'a table -> 'a table
+    type key
+    val keys: 'a table -> key list
+    val lookup: 'a table -> key -> 'a option
+    val lookup_key: 'a table -> key -> (key * 'a) option
+    val lookup_list: 'a list table -> key -> 'a list
+    val make: (key * 'a) list -> 'a table
+    val make_list: (key * 'a) list -> 'a list table
+    val make_set: key list -> set
+    val map: (key -> 'a -> 'b) -> 'a table -> 'b table
+    val map_default: key * 'a -> ('a -> 'a) -> 'a table -> 'a table
+    val map_entry: key -> ('a -> 'a) -> 'a table -> 'a table
+    val max: 'a table -> (key * 'a) option
+    val member: ('a * 'b -> bool) -> 'b table -> key * 'a -> bool
+    val merge: ('a * 'a -> bool) -> 'a table * 'a table -> 'a table
+    val merge_list:
+       ('a * 'a -> bool) -> 'a list table * 'a list table -> 'a list table
+    val min: 'a table -> (key * 'a) option
+    val onefunc: key * 'a -> 'a table
+    val remove: ('a * 'b -> bool) -> key * 'a -> 'b table -> 'b table
+    val remove_list:
+       ('a * 'b -> bool) -> key * 'a -> 'b list table -> 'b list table
+    val remove_set: key -> set -> set
+    type set = unit table
+    type 'a table
+    val tryapplyd: 'a table -> key -> 'a -> 'a
+    val update: key * 'a -> 'a table -> 'a table
+    val update_list:
+       ('a * 'a -> bool) -> key * 'a -> 'a list table -> 'a list table
+    val update_new: key * 'a -> 'a table -> 'a table
+    val updatep: (key * 'a -> bool) -> key * 'a -> 'a table -> 'a table
+  end
+functor FuncFun (Key: KEY): FUNC
+signature REAL_ARITH =
+  sig
+    type cert_conv = cterm -> thm * pss_tree
+    val cterm_of_rat: Rat.rat -> cterm
+    val dest_ratconst: cterm -> Rat.rat
+    val gen_gen_real_arith:
+       Proof.context ->
+         (Rat.rat -> cterm) * conv * conv * conv * conv * conv * conv *
+         conv * conv * conv * prover
+           -> cert_conv
+    val gen_prover_real_arith: Proof.context -> prover -> cert_conv
+    val gen_real_arith:
+       Proof.context ->
+         (Rat.rat -> cterm) * conv * conv * conv * conv * conv * conv *
+         conv * prover
+           -> cert_conv
+    val is_ratconst: cterm -> bool
+    datatype positivstellensatz
+    =
+         Axiom_eq of int
+       | Axiom_le of int
+       | Axiom_lt of int
+       | Eqmul of FuncUtil.poly * positivstellensatz
+       | Product of positivstellensatz * positivstellensatz
+       | Rational_eq of Rat.rat
+       | Rational_le of Rat.rat
+       | Rational_lt of Rat.rat
+       | Square of FuncUtil.poly
+       | Sum of positivstellensatz * positivstellensatz
+    type prover =
+       tree_choice list ->
+         (thm list * thm list * thm list -> positivstellensatz -> thm) ->
+           thm list * thm list * thm list -> thm * pss_tree
+    datatype pss_tree
+    = Branch of pss_tree * pss_tree | Cert of positivstellensatz | Trivial
+    val real_linear_prover:
+       (thm list * thm list * thm list -> positivstellensatz -> thm) ->
+         thm list * thm list * thm list -> thm * pss_tree
+    datatype tree_choice = Left | Right
+  end
+structure FuncUtil:
+  sig
+    structure Ctermfunc: FUNC
+    structure Intfunc: FUNC
+    structure Intpairfunc: FUNC
+    structure Monomialfunc: FUNC
+    structure Ratfunc: FUNC
+    structure Symfunc: FUNC
+    structure Termfunc: FUNC
+    val dest_monomial: 'a Ctermfunc.table -> (cterm * 'a) list
+    type monomial = int Ctermfunc.table
+    val monomial_ord: int Ctermfunc.table * int Ctermfunc.table -> order
+    val monomial_order: int Ctermfunc.table * int Ctermfunc.table -> order
+    type poly = Rat.rat Monomialfunc.table
+  end
+structure RealArith: REAL_ARITH
+instantiation
+  enat :: comm_monoid_add
+  plus_enat == plus :: enat => enat => enat
+instantiation
+  enat :: {comm_semiring_1,semiring_no_zero_divisors}
+  times_enat == times :: enat => enat => enat
+instantiation
+  enat :: minus
+  minus_enat == minus :: enat => enat => enat
+signature POSITIVSTELLENSATZ_TOOLS =
+  sig
+    val print_cert: RealArith.pss_tree -> string
+    val read_cert: Proof.context -> string -> RealArith.pss_tree
+  end
+structure Positivstellensatz_Tools: POSITIVSTELLENSATZ_TOOLS
+instantiation
+  enat :: linordered_ab_semigroup_add
+  less_eq_enat == less_eq :: enat => enat => bool
+  less_enat == less :: enat => enat => bool
+instantiation
+  enat :: {order_bot,order_top}
+  top_enat == top :: enat
+  bot_enat == bot :: enat
+structure Cancel_Enat_Common:
+  sig
+    val dest_sum: term -> term list
+    val dest_summing: term * term list -> term list
+    val find_first: term -> term list -> term list
+    val find_first_t: term list -> term -> term list -> term list
+    val mk_eq: term * term -> term
+    val mk_sum: typ -> term list -> term
+    val norm_ss: simpset
+    val norm_tac: Proof.context -> tactic
+    val simplify_meta_eq: Proof.context -> thm -> thm -> thm
+    val trans_tac: Proof.context -> thm option -> tactic
+  end
+structure Eq_Enat_Cancel:
+  sig val proc: Proof.context -> term -> thm option end
+structure Le_Enat_Cancel:
+  sig val proc: Proof.context -> term -> thm option end
+structure Less_Enat_Cancel:
+  sig val proc: Proof.context -> term -> thm option end
+instantiation
+  enat :: complete_lattice
+  Inf_enat == Inf :: enat set => enat
+  Sup_enat == Sup :: enat set => enat
+  sup_enat == sup :: enat => enat => enat
+  inf_enat == inf :: enat => enat => enat
+### theory "HOL-Library.Extended_Nat"
+### 0.742s elapsed time, 2.871s cpu time, 0.291s GC time
+Loading theory "Draft.Coinductive_Nat" (required by "Draft.Coinductive_ExamplesMoreTemplates" via "Draft.Coinductive_Examples" via "Draft.LList_CCPO_Topology" via "Draft.CCPO_Topology")
+signature SUM_OF_SQUARES =
+  sig
+    exception Failure of string
+    val debug: bool Config.T
+    val debug_message: Proof.context -> (unit -> string) -> unit
+    datatype proof_method
+    = Certificate of RealArith.pss_tree | Prover of string -> string
+    val sos_tac:
+       (RealArith.pss_tree -> unit) ->
+         proof_method -> Proof.context -> int -> tactic
+    val trace: bool Config.T
+    val trace_message: Proof.context -> (unit -> string) -> unit
+  end
+structure Sum_of_Squares: SUM_OF_SQUARES
+signature SOS_WRAPPER =
+  sig val sos_tac: Proof.context -> string option -> int -> tactic end
+structure SOS_Wrapper: SOS_WRAPPER
+### theory "HOL-Library.Sum_of_Squares"
+### 1.390s elapsed time, 5.373s cpu time, 0.616s GC time
+Loading theory "HOL-Library.Extended_Real" (required by "Draft.Coinductive_ExamplesMoreTemplates" via "Draft.Coinductive_Examples" via "Draft.LList_CCPO_Topology" via "Draft.CCPO_Topology" via "HOL-Analysis.Extended_Real_Limits")
+Proofs for coinductive predicate(s) "enat_setp"
+  Proving monotonicity ...
+locale co
+### theory "HOL-Analysis.Elementary_Metric_Spaces"
+### 2.670s elapsed time, 10.180s cpu time, 3.520s GC time
+Loading theory "HOL-Analysis.Elementary_Normed_Spaces" (required by "Draft.Coinductive_ExamplesMoreTemplates" via "Draft.Coinductive_Examples" via "Draft.LList_CCPO_Topology" via "Draft.CCPO_Topology" via "HOL-Analysis.Extended_Real_Limits" via "HOL-Analysis.Topology_Euclidean_Space")
+class euclidean_semiring_gcd = normalization_euclidean_semiring + Gcd +
+  assumes "gcd_eucl": "normalization_euclidean_semiring_class.gcd = gcd"
+    and "lcm_eucl": "normalization_euclidean_semiring_class.lcm = lcm"
+  assumes "Gcd_eucl": "normalization_euclidean_semiring_class.Gcd = Gcd"
+    and "Lcm_eucl": "normalization_euclidean_semiring_class.Lcm = Lcm"
+instantiation
+  enat :: linorder_topology
+  open_enat == open :: enat set => bool
+Proofs for coinductive predicate(s) "Le_enatp"
+  Proving monotonicity ...
+### theory "Draft.Coinductive_Nat"
+### 0.804s elapsed time, 3.107s cpu time, 0.424s GC time
+Loading theory "Draft.Coinductive_List" (required by "Draft.Coinductive_ExamplesMoreTemplates" via "Draft.Coinductive_Examples" via "Draft.LList_CCPO_Topology" via "Draft.Coinductive_List_Prefix")
+instantiation
+  ereal :: uminus
+  uminus_ereal == uminus :: ereal => ereal
+Found termination order: "{}"
+instantiation
+  ereal :: infinity
+  infinity_ereal == infinity :: ereal
+instantiation
+  ereal :: abs
+  abs_ereal == abs :: ereal => ereal
+instantiation
+  ereal :: {comm_monoid_add,zero_neq_one}
+  one_ereal == one_class.one :: ereal
+  zero_ereal == zero_class.zero :: ereal
+  plus_ereal == plus :: ereal => ereal => ereal
+instantiation
+  ereal :: linorder
+  less_eq_ereal == less_eq :: ereal => ereal => bool
+  less_ereal == less :: ereal => ereal => bool
+instantiation
+  ereal :: {comm_monoid_mult,sgn}
+  sgn_ereal == sgn :: ereal => ereal
+  times_ereal == times :: ereal => ereal => ereal
+### theory "HOL-Analysis.Elementary_Normed_Spaces"
+### 1.435s elapsed time, 5.503s cpu time, 0.873s GC time
+Loading theory "HOL-Analysis.Norm_Arith" (required by "Draft.Coinductive_ExamplesMoreTemplates" via "Draft.Coinductive_Examples" via "Draft.LList_CCPO_Topology" via "Draft.CCPO_Topology" via "HOL-Analysis.Extended_Real_Limits" via "HOL-Analysis.Topology_Euclidean_Space")
+instantiation
+  ereal :: minus
+  minus_ereal == minus :: ereal => ereal => ereal
+instantiation
+  ereal :: inverse
+  inverse_ereal == inverse :: ereal => ereal
+  divide_ereal == divide :: ereal => ereal => ereal
+consts
+  unfold_llist ::
+    "('a => bool) => ('a => 'b) => ('a => 'a) => 'a => 'b llist"
+### ML warning (line 103 of "~~/src/HOL/Analysis/normarith.ML"):
+### Matches are not exhaustive.
+signature NORM_ARITH =
+  sig
+    val norm_arith: Proof.context -> conv
+    val norm_arith_tac: Proof.context -> int -> tactic
+  end
+structure NormArith: NORM_ARITH
+### theory "HOL-Analysis.Norm_Arith"
+### 0.341s elapsed time, 1.268s cpu time, 0.260s GC time
+Loading theory "HOL-Analysis.Topology_Euclidean_Space" (required by "Draft.Coinductive_ExamplesMoreTemplates" via "Draft.Coinductive_Examples" via "Draft.LList_CCPO_Topology" via "Draft.CCPO_Topology" via "HOL-Analysis.Extended_Real_Limits")
+instantiation
+  ereal :: lattice
+  inf_ereal == inf :: ereal => ereal => ereal
+  sup_ereal == sup :: ereal => ereal => ereal
+instantiation
+  ereal :: complete_lattice
+  Inf_ereal == Inf :: ereal set => ereal
+  Sup_ereal == Sup :: ereal set => ereal
+  bot_ereal == bot :: ereal
+  top_ereal == top :: ereal
+Proofs for inductive predicate(s) "lsetp"
+  Proving monotonicity ...
+Proofs for inductive predicate(s) "lfinite"
+  Proving monotonicity ...
+consts
+  lappend :: "'a llist => 'a llist => 'a llist"
+instantiation
+  ereal :: linear_continuum_topology
+  open_ereal == open :: ereal set => bool
+### Ignoring duplicate rewrite rule:
+### lnull (lappend ?xs1 ?ys1) == lnull ?xs1 & lnull ?ys1
+Proofs for coinductive predicate(s) "lprefix"
+  Proving monotonicity ...
+consts
+  lSup :: "'a llist set => 'a llist"
+### Cannot skip proof of schematic goal statement
+### Cannot skip proof of schematic goal statement
+consts
+  iterates :: "('a => 'a) => 'a => 'a llist"
+consts
+  llist_of :: "'a list => 'a llist"
+consts
+  ltake :: "enat => 'a llist => 'a llist"
+### Ambiguous input (line 1019 of "$AFP/Coinductive/Coinductive_List.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" ldrop)
+###       ("_cargs" ("_position" n) ("_position" xs)))
+###     ("_case_syntax" ("_position" n)
+###       ("_case2"
+###         ("_case1" ("\<^const>Groups.zero_class.zero") ("_position" xs))
+###         ("_case1" ("_applC" ("_position" eSuc) ("_position" n'))
+###           ("_case_syntax" ("_position" xs)
+###             ("_case2" ("_case1" ("_position" LNil) ("_position" LNil))
+###               ("_case1"
+###                 ("_applC" ("_position" LCons)
+###                   ("_cargs" ("_position" x) ("_position" xs')))
+###                 ("_applC" ("_position" ldrop)
+###                   ("_cargs" ("_position" n') ("_position" xs')))))))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" ldrop)
+###       ("_cargs" ("_position" n) ("_position" xs)))
+###     ("_case_syntax" ("_position" n)
+###       ("_case2"
+###         ("_case1" ("\<^const>Groups.zero_class.zero") ("_position" xs))
+###         ("_case2"
+###           ("_case1" ("_applC" ("_position" eSuc) ("_position" n'))
+###             ("_case_syntax" ("_position" xs)
+###               ("_case1" ("_position" LNil) ("_position" LNil))))
+###           ("_case1"
+###             ("_applC" ("_position" LCons)
+###               ("_cargs" ("_position" x) ("_position" xs')))
+###             ("_applC" ("_position" ldrop)
+###               ("_cargs" ("_position" n') ("_position" xs')))))))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+consts
+  ltakeWhile :: "('a => bool) => 'a llist => 'a llist"
+consts
+  lnth :: "'a llist => nat => 'a"
+consts
+  lzip :: "'a llist => 'b llist => ('a * 'b) llist"
+Proofs for coinductive predicate(s) "ldistinct"
+  Proving monotonicity ...
+Proofs for coinductive predicate(s) "llexord"
+  Proving monotonicity ...
+### theory "HOL-Library.Extended_Real"
+### 4.076s elapsed time, 15.477s cpu time, 5.504s GC time
+Loading theory "HOL-Library.Extended_Nonnegative_Real" (required by "Draft.Coinductive_ExamplesMoreTemplates" via "Draft.Coinductive_Examples" via "Draft.LList_CCPO_Topology" via "Draft.CCPO_Topology" via "HOL-Analysis.Extended_Real_Limits")
+### Ambiguous input (line 1508 of "$AFP/Coinductive/Coinductive_List.thy") produces 2 parse trees:
+### ("\<^const>Pure.eq" ("_position" F)
+###   ("_lambda"
+###     ("_pttrns" ("_position" ltake)
+###       ("_pttrns" ("_position" n) ("_position" xs)))
+###     ("_case_syntax" ("_position" xs)
+###       ("_case2" ("_case1" ("_position" LNil) ("_position" LNil))
+###         ("_case2"
+###           ("_case1"
+###             ("_applC" ("_position" LCons)
+###               ("_cargs" ("_position" x) ("_position" xs)))
+###             ("_case_syntax" ("_position" n)
+###               ("_case1" ("\<^const>Groups.zero_class.zero")
+###                 ("_position" LNil))))
+###           ("_case1" ("_applC" ("_position" eSuc) ("_position" n))
+###             ("_applC" ("_position" LCons)
+###               ("_cargs" ("_position" x)
+###                 ("_applC" ("_position" ltake)
+###                   ("_cargs" ("_position" n) ("_position" xs)))))))))))
+### ("\<^const>Pure.eq" ("_position" F)
+###   ("_lambda"
+###     ("_pttrns" ("_position" ltake)
+###       ("_pttrns" ("_position" n) ("_position" xs)))
+###     ("_case_syntax" ("_position" xs)
+###       ("_case2" ("_case1" ("_position" LNil) ("_position" LNil))
+###         ("_case1"
+###           ("_applC" ("_position" LCons)
+###             ("_cargs" ("_position" x) ("_position" xs)))
+###           ("_case_syntax" ("_position" n)
+###             ("_case2"
+###               ("_case1" ("\<^const>Groups.zero_class.zero")
+###                 ("_position" LNil))
+###               ("_case1" ("_applC" ("_position" eSuc) ("_position" n))
+###                 ("_applC" ("_position" LCons)
+###                   ("_cargs" ("_position" x)
+###                     ("_applC" ("_position" ltake)
+###                       ("_cargs" ("_position" n) ("_position" xs)))))))))))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+instantiation
+  ennreal :: complete_linorder
+  Inf_ennreal == Inf :: ennreal set => ennreal
+  Sup_ennreal == Sup :: ennreal set => ennreal
+  bot_ennreal == bot :: ennreal
+  sup_ennreal == sup :: ennreal => ennreal => ennreal
+  top_ennreal == top :: ennreal
+  inf_ennreal == inf :: ennreal => ennreal => ennreal
+  less_eq_ennreal == less_eq :: ennreal => ennreal => bool
+  less_ennreal == less :: ennreal => ennreal => bool
+### Ignoring duplicate rewrite rule:
+### lnull (lzip ?xs1 ?ys1) == lnull ?xs1 | lnull ?ys1
+### Ambiguous input (line 2485 of "$AFP/Coinductive/Coinductive_List.thy") produces 2 parse trees:
+### ("\<^const>Pure.eq" ("_position" F)
+###   ("_lambda"
+###     ("_pttrns" ("_position" lzip)
+###       ("_pattern" ("_position" xs) ("_position" ys)))
+###     ("_case_syntax" ("_position" xs)
+###       ("_case2" ("_case1" ("_position" LNil) ("_position" LNil))
+###         ("_case2"
+###           ("_case1"
+###             ("_applC" ("_position" LCons)
+###               ("_cargs" ("_position" x) ("_position" xs')))
+###             ("_case_syntax" ("_position" ys)
+###               ("_case1" ("_position" LNil) ("_position" LNil))))
+###           ("_case1"
+###             ("_applC" ("_position" LCons)
+###               ("_cargs" ("_position" y) ("_position" ys')))
+###             ("_applC" ("_position" LCons)
+###               ("_cargs"
+###                 ("_tuple" ("_position" x) ("_tuple_arg" ("_position" y)))
+###                 ("_applC" ("_position" curry)
+###                   ("_cargs" ("_position" lzip)
+###                     ("_cargs" ("_position" xs') ("_position" ys'))))))))))))
+### ("\<^const>Pure.eq" ("_position" F)
+###   ("_lambda"
+###     ("_pttrns" ("_position" lzip)
+###       ("_pattern" ("_position" xs) ("_position" ys)))
+###     ("_case_syntax" ("_position" xs)
+###       ("_case2" ("_case1" ("_position" LNil) ("_position" LNil))
+###         ("_case1"
+###           ("_applC" ("_position" LCons)
+###             ("_cargs" ("_position" x) ("_position" xs')))
+###           ("_case_syntax" ("_position" ys)
+###             ("_case2" ("_case1" ("_position" LNil) ("_position" LNil))
+###               ("_case1"
+###                 ("_applC" ("_position" LCons)
+###                   ("_cargs" ("_position" y) ("_position" ys')))
+###                 ("_applC" ("_position" LCons)
+###                   ("_cargs"
+###                     ("_tuple" ("_position" x)
+###                       ("_tuple_arg" ("_position" y)))
+###                     ("_applC" ("_position" curry)
+###                       ("_cargs" ("_position" lzip)
+###                         ("_cargs" ("_position" xs')
+###                           ("_position" ys'))))))))))))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+instantiation
+  ennreal :: infinity
+  infinity_ennreal == infinity :: ennreal
+instantiation
+  ennreal :: {comm_semiring_1,semiring_1_no_zero_divisors}
+  zero_ennreal == zero_class.zero :: ennreal
+  plus_ennreal == plus :: ennreal => ennreal => ennreal
+  one_ennreal == one_class.one :: ennreal
+  times_ennreal == times :: ennreal => ennreal => ennreal
+instantiation
+  ennreal :: minus
+  minus_ennreal == minus :: ennreal => ennreal => ennreal
+instantiation
+  ennreal :: inverse
+  inverse_ennreal == inverse :: ennreal => ennreal
+  divide_ennreal == divide :: ennreal => ennreal => ennreal
+structure Cancel_Ennreal_Common:
+  sig
+    val dest_sum: term -> term list
+    val dest_summing: term * term list -> term list
+    val find_first: term -> term list -> term list
+    val find_first_t: term list -> term -> term list -> term list
+    val mk_eq: term * term -> term
+    val mk_sum: typ -> term list -> term
+    val norm_ss: simpset
+    val norm_tac: Proof.context -> tactic
+    val simplify_meta_eq: Proof.context -> thm -> thm -> thm
+    val trans_tac: Proof.context -> thm option -> tactic
+  end
+structure Eq_Ennreal_Cancel:
+  sig val proc: Proof.context -> term -> thm option end
+structure Le_Ennreal_Cancel:
+  sig val proc: Proof.context -> term -> thm option end
+structure Less_Ennreal_Cancel:
+  sig val proc: Proof.context -> term -> thm option end
+class ord = type +
+  fixes less_eq :: "'a => 'a => bool"
+    and less :: "'a => 'a => bool"
+Proofs for coinductive predicate(s) "lsorted"
+### theory "HOL-Analysis.Topology_Euclidean_Space"
+### 3.256s elapsed time, 12.383s cpu time, 4.767s GC time
+  Proving monotonicity ...
+### Partially applied constant "Sublist.list_emb" on left hand side of equation, in theorem:
+### subseq_order.lsorted LNil == True
+### Partially applied constant "Sublist.list_emb" on left hand side of equation, in theorem:
+### subseq_order.lsorted (LCons ?x LNil) == True
+### Partially applied constant "Sublist.list_emb" on left hand side of equation, in theorem:
+### subseq_order.lsorted (LCons ?x (LCons ?y ?xs)) ==
+### subseq ?x ?y & subseq_order.lsorted (LCons ?y ?xs)
+### Partially applied constant "Sublist.sublist" on left hand side of equation, in theorem:
+### sublist_order.lsorted LNil == True
+### Partially applied constant "Sublist.sublist" on left hand side of equation, in theorem:
+### sublist_order.lsorted (LCons ?x LNil) == True
+### Partially applied constant "Sublist.sublist" on left hand side of equation, in theorem:
+### sublist_order.lsorted (LCons ?x (LCons ?y ?xs)) ==
+### sublist ?x ?y & sublist_order.lsorted (LCons ?y ?xs)
+### Partially applied constant "Sublist.suffix" on left hand side of equation, in theorem:
+### suffix_order.lsorted LNil == True
+### Partially applied constant "Sublist.suffix" on left hand side of equation, in theorem:
+### suffix_order.lsorted (LCons ?x LNil) == True
+### Partially applied constant "Sublist.suffix" on left hand side of equation, in theorem:
+### suffix_order.lsorted (LCons ?x (LCons ?y ?xs)) ==
+### suffix ?x ?y & suffix_order.lsorted (LCons ?y ?xs)
+### Partially applied constant "Sublist.prefix" on left hand side of equation, in theorem:
+### prefix_order.lsorted LNil == True
+### Partially applied constant "Sublist.prefix" on left hand side of equation, in theorem:
+### prefix_order.lsorted (LCons ?x LNil) == True
+### Partially applied constant "Sublist.prefix" on left hand side of equation, in theorem:
+### prefix_order.lsorted (LCons ?x (LCons ?y ?xs)) ==
+### prefix ?x ?y & prefix_order.lsorted (LCons ?y ?xs)
+instantiation
+  ennreal :: linear_continuum_topology
+  open_ennreal == open :: ennreal set => bool
+"- \<infinity>"
+  :: "ereal"
+class preorder = ord +
+  assumes "less_le_not_le": "!!x y. (x < y) = (x <= y & ~ y <= x)"
+    and "order_refl": "!!x. x <= x"
+    and "order_trans": "!!x y z. [| x <= y; y <= z |] ==> x <= z"
+"\<infinity>"
+  :: "ereal"
+class linorder = order +
+  assumes "linear": "!!x y. x <= y | y <= x"
+### Introduced fixed type variable(s): 'a in "P__" or "xs__"
+### Introduced fixed type variable(s): 'a in "P__" or "xs__"
+### Introduced fixed type variable(s): 'a in "P__" or "Q__"
+### theory "HOL-Library.Extended_Nonnegative_Real"
+### 1.745s elapsed time, 6.650s cpu time, 0.960s GC time
+Loading theory "HOL-Analysis.Extended_Real_Limits" (required by "Draft.Coinductive_ExamplesMoreTemplates" via "Draft.Coinductive_Examples" via "Draft.LList_CCPO_Topology" via "Draft.CCPO_Topology")
+### Introduced fixed type variable(s): 'a in "xs__"
+class preorder = ord +
+  assumes "less_le_not_le": "!!x y. (x < y) = (x <= y & ~ y <= x)"
+    and "order_refl": "!!x. x <= x"
+    and "order_trans": "!!x y z. [| x <= y; y <= z |] ==> x <= z"
+"ereal (13 / 4)"
+  :: "ereal"
+"True"
+  :: "bool"
+"True"
+  :: "bool"
+class monoid_add = semigroup_add + zero +
+  assumes "add_0_left": "!!a. (0::'a) + a = a"
+    and "add_0_right": "!!a. a + (0::'a) = a"
+### theory "Draft.Coinductive_List"
+### 18.299s elapsed time, 62.974s cpu time, 47.250s GC time
+Loading theory "Draft.Coinductive_List_Prefix" (required by "Draft.Coinductive_ExamplesMoreTemplates" via "Draft.Coinductive_Examples" via "Draft.LList_CCPO_Topology")
+Loading theory "Draft.Koenigslemma" (required by "Draft.Coinductive_ExamplesMoreTemplates" via "Draft.Coinductive_Examples")
+Proofs for coinductive predicate(s) "pathsp"
+  Proving monotonicity ...
+Proofs for inductive predicate(s) "reachable_viap"
+  Proving monotonicity ...
+### theory "Draft.Koenigslemma"
+### 0.238s elapsed time, 0.943s cpu time, 0.103s GC time
+Loading theory "Draft.LMirror" (required by "Draft.Coinductive_ExamplesMoreTemplates" via "Draft.Coinductive_Examples")
+consts
+  lmirror_aux :: "'a llist => 'a llist => 'a llist"
+instantiation
+  llist :: (type) order
+  less_eq_llist == less_eq :: 'a llist => 'a llist => bool
+  less_llist == less :: 'a llist => 'a llist => bool
+### Ignoring duplicate rewrite rule:
+### lnull (lmirror_aux ?acc1 ?xs1) == lnull ?xs1 & lnull ?acc1
+instantiation
+  llist :: (type) order_bot
+  bot_llist == bot :: 'a llist
+instantiation
+  llist :: (type) semilattice_inf
+  inf_llist == inf :: 'a llist => 'a llist => 'a llist
+instantiation
+  llist :: (type) ccpo
+  Sup_llist == Sup :: 'a llist set => 'a llist
+### theory "Draft.Coinductive_List_Prefix"
+### 0.391s elapsed time, 1.544s cpu time, 0.179s GC time
+Loading theory "Draft.TLList" (required by "Draft.Coinductive_ExamplesMoreTemplates" via "Draft.Coinductive_Examples" via "Draft.TLList_CCPO_Examples" via "Draft.TLList_CCPO")
+### theory "Draft.LMirror"
+### 0.161s elapsed time, 0.633s cpu time, 0.076s GC time
+### theory "HOL-Analysis.Extended_Real_Limits"
+### 13.530s elapsed time, 44.920s cpu time, 41.370s GC time
+Loading theory "Draft.CCPO_Topology" (required by "Draft.Coinductive_ExamplesMoreTemplates" via "Draft.Coinductive_Examples" via "Draft.LList_CCPO_Topology")
+overloading
+  terminal0 \<equiv> terminal0 :: ('a, 'b) tllist => 'b
+consts
+  unfold_tllist ::
+    "('a => bool)
+     => ('a => 'b) => ('a => 'c) => ('a => 'a) => 'a => ('c, 'b) tllist"
+consts
+  tllist_of_llist :: "'a llist => ('a, 'b) tllist"
+consts
+  llist_of_tllist :: "('a, 'b) tllist => 'a llist"
+class ccpo_topology = ccpo + open +
+  assumes
+    "open_ccpo":
+      "!!A. open A =
+            (ALL C.
+                chain C --> C ~= {} --> \<Squnion> C : A --> C Int A ~= {})"
+instantiation
+  set :: (type) ccpo_topology
+  open_set == open :: 'a set set => bool
+instantiation
+  enat :: ccpo_topology
+### theory "Draft.CCPO_Topology"
+### 1.414s elapsed time, 4.284s cpu time, 0.320s GC time
+Loading theory "Draft.LList_CCPO_Topology" (required by "Draft.Coinductive_ExamplesMoreTemplates" via "Draft.Coinductive_Examples")
+### theory "Draft.TLList"
+### 1.697s elapsed time, 5.142s cpu time, 0.363s GC time
+Loading theory "Draft.TLList_CCPO" (required by "Draft.Coinductive_ExamplesMoreTemplates" via "Draft.Coinductive_Examples" via "Draft.TLList_CCPO_Examples")
+### theory "HOL-Computational_Algebra.Euclidean_Algorithm"
+### 24.015s elapsed time, 83.498s cpu time, 51.939s GC time
+Loading theory "HOL-Computational_Algebra.Primes" (required by "Draft.Coinductive_ExamplesMoreTemplates" via "Draft.Coinductive_Examples" via "Draft.Hamming_Stream")
+instantiation
+  llist :: (type) ccpo_topology
+  open_llist == open :: 'a llist set => bool
+### theory "HOL-Computational_Algebra.Primes"
+### 0.271s elapsed time, 0.843s cpu time, 0.148s GC time
+Loading theory "Draft.Hamming_Stream" (required by "Draft.Coinductive_ExamplesMoreTemplates" via "Draft.Coinductive_Examples")
+consts
+  edrop :: "enat => 'a list => 'a list"
+consts
+  up :: "'a => 'a list => 'a list"
+locale tllist_pf
+  fixes b :: "'b"
+### theory "Draft.TLList_CCPO"
+### 0.538s elapsed time, 1.887s cpu time, 0.213s GC time
+Loading theory "Draft.TLList_CCPO_Examples" (required by "Draft.Coinductive_ExamplesMoreTemplates" via "Draft.Coinductive_Examples")
+### Ignoring duplicate rewrite rule:
+### [| mcont ?luba1 ?orda1 Sup (<=) ?f1; mcont ?luba1 ?orda1 Sup (<=) ?g1 |]
+### ==> ccpo.admissible ?luba1 ?orda1 (%x. ?f1 x <= ?g1 x) == True
+### theory "Draft.TLList_CCPO_Examples"
+### 0.090s elapsed time, 0.363s cpu time, 0.000s GC time
+Found termination order:
+  "case_sum (%p. size_list (nat o abs) (snd p))
+    (%p. size_list (nat o abs) (snd p)) <*mlex*>
+   {}"
+class ord = type +
+  fixes less_eq :: "'a => 'a => bool"
+    and less :: "'a => 'a => bool"
+### Ambiguous input (line 28 of "$AFP/Coinductive/Examples/Hamming_Stream.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" lmerge)
+###       ("_cargs" ("_position" xs) ("_position" ys)))
+###     ("_case_syntax" ("_position" xs)
+###       ("_case2" ("_case1" ("_position" LNil) ("_position" LNil))
+###         ("_case1"
+###           ("_applC" ("_position" LCons)
+###             ("_cargs" ("_position" x) ("_position" xs')))
+###           ("_case_syntax" ("_position" ys)
+###             ("_case2" ("_case1" ("_position" LNil) ("_position" LNil))
+###               ("_case1"
+###                 ("_applC" ("_position" LCons)
+###                   ("_cargs" ("_position" y) ("_position" ys')))
+###                 ("\<^const>HOL.If"
+###                   ("\<^const>Orderings.ord_class.less"
+###                     ("_applC" ("_position" lhd) ("_position" xs))
+###                     ("_applC" ("_position" lhd) ("_position" ys)))
+###                   ("_applC" ("_position" LCons)
+###                     ("_cargs" ("_position" x)
+###                       ("_applC" ("_position" lmerge)
+###                         ("_cargs" ("_position" xs') ("_position" ys)))))
+###                   ("_applC" ("_position" LCons)
+###                     ("_cargs" ("_position" y)
+###                       ("\<^const>HOL.If"
+###                         ("\<^const>Orderings.ord_class.less"
+###                           ("_applC" ("_position" lhd) ("_position" ys))
+###                           ("_applC" ("_position" lhd) ("_position" xs)))
+###                         ("_applC" ("_position" lmerge)
+###                           ("_cargs" ("_position" xs) ("_position" ys')))
+###                         ("_applC" ("_position" lmerge)
+###                           ("_cargs" ("_position" xs')
+###                             ("_position" ys')))))))))))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" lmerge)
+###       ("_cargs" ("_position" xs) ("_position" ys)))
+###     ("_case_syntax" ("_position" xs)
+###       ("_case2" ("_case1" ("_position" LNil) ("_position" LNil))
+###         ("_case2"
+###           ("_case1"
+###             ("_applC" ("_position" LCons)
+###               ("_cargs" ("_position" x) ("_position" xs')))
+###             ("_case_syntax" ("_position" ys)
+###               ("_case1" ("_position" LNil) ("_position" LNil))))
+###           ("_case1"
+###             ("_applC" ("_position" LCons)
+###               ("_cargs" ("_position" y) ("_position" ys')))
+###             ("\<^const>HOL.If"
+###               ("\<^const>Orderings.ord_class.less"
+###                 ("_applC" ("_position" lhd) ("_position" xs))
+###                 ("_applC" ("_position" lhd) ("_position" ys)))
+###               ("_applC" ("_position" LCons)
+###                 ("_cargs" ("_position" x)
+###                   ("_applC" ("_position" lmerge)
+###                     ("_cargs" ("_position" xs') ("_position" ys)))))
+###               ("_applC" ("_position" LCons)
+###                 ("_cargs" ("_position" y)
+###                   ("\<^const>HOL.If"
+###                     ("\<^const>Orderings.ord_class.less"
+###                       ("_applC" ("_position" lhd) ("_position" ys))
+###                       ("_applC" ("_position" lhd) ("_position" xs)))
+###                     ("_applC" ("_position" lmerge)
+###                       ("_cargs" ("_position" xs) ("_position" ys')))
+###                     ("_applC" ("_position" lmerge)
+###                       ("_cargs" ("_position" xs')
+###                         ("_position" ys')))))))))))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+consts
+  lmerge :: "'a llist => 'a llist => 'a llist"
+### Ignoring duplicate rewrite rule:
+### lnull (lmerge ?xs1 ?ys1) == lnull ?xs1 | lnull ?ys1
+### theory "Draft.LList_CCPO_Topology"
+### 1.141s elapsed time, 3.702s cpu time, 0.325s GC time
+### Ambiguous input (line 85 of "$AFP/Coinductive/Examples/Hamming_Stream.thy") produces 2 parse trees:
+### ("\<^const>Pure.eq" ("_position" F)
+###   ("_lambda"
+###     ("_pttrns" ("_position" lmerge)
+###       ("_pattern" ("_position" xs) ("_position" ys)))
+###     ("_case_syntax" ("_position" xs)
+###       ("_case2" ("_case1" ("_position" LNil) ("_position" LNil))
+###         ("_case2"
+###           ("_case1"
+###             ("_applC" ("_position" LCons)
+###               ("_cargs" ("_position" x) ("_position" xs')))
+###             ("_case_syntax" ("_position" ys)
+###               ("_case1" ("_position" LNil) ("_position" LNil))))
+###           ("_case1"
+###             ("_applC" ("_position" LCons)
+###               ("_cargs" ("_position" y) ("_position" ys')))
+###             ("\<^const>HOL.If"
+###               ("\<^const>Orderings.ord_class.less" ("_position" x)
+###                 ("_position" y))
+###               ("_applC" ("_position" LCons)
+###                 ("_cargs" ("_position" x)
+###                   ("_applC" ("_position" curry)
+###                     ("_cargs" ("_position" lmerge)
+###                       ("_cargs" ("_position" xs') ("_position" ys))))))
+###               ("\<^const>HOL.If"
+###                 ("\<^const>Orderings.ord_class.less" ("_position" y)
+###                   ("_position" x))
+###                 ("_applC" ("_position" LCons)
+###                   ("_cargs" ("_position" y)
+###                     ("_applC" ("_position" curry)
+###                       ("_cargs" ("_position" lmerge)
+###                         ("_cargs" ("_position" xs) ("_position" ys'))))))
+###                 ("_applC" ("_position" LCons)
+###                   ("_cargs" ("_position" y)
+###                     ("_applC" ("_position" curry)
+###                       ("_cargs" ("_position" lmerge)
+###                         ("_cargs" ("_position" xs')
+###                           ("_position" ys'))))))))))))))
+### ("\<^const>Pure.eq" ("_position" F)
+###   ("_lambda"
+###     ("_pttrns" ("_position" lmerge)
+###       ("_pattern" ("_position" xs) ("_position" ys)))
+###     ("_case_syntax" ("_position" xs)
+###       ("_case2" ("_case1" ("_position" LNil) ("_position" LNil))
+###         ("_case1"
+###           ("_applC" ("_position" LCons)
+###             ("_cargs" ("_position" x) ("_position" xs')))
+###           ("_case_syntax" ("_position" ys)
+###             ("_case2" ("_case1" ("_position" LNil) ("_position" LNil))
+###               ("_case1"
+###                 ("_applC" ("_position" LCons)
+###                   ("_cargs" ("_position" y) ("_position" ys')))
+###                 ("\<^const>HOL.If"
+###                   ("\<^const>Orderings.ord_class.less" ("_position" x)
+###                     ("_position" y))
+###                   ("_applC" ("_position" LCons)
+###                     ("_cargs" ("_position" x)
+###                       ("_applC" ("_position" curry)
+###                         ("_cargs" ("_position" lmerge)
+###                           ("_cargs" ("_position" xs') ("_position" ys))))))
+###                   ("\<^const>HOL.If"
+###                     ("\<^const>Orderings.ord_class.less" ("_position" y)
+###                       ("_position" x))
+###                     ("_applC" ("_position" LCons)
+###                       ("_cargs" ("_position" y)
+###                         ("_applC" ("_position" curry)
+###                           ("_cargs" ("_position" lmerge)
+###                             ("_cargs" ("_position" xs)
+###                               ("_position" ys'))))))
+###                     ("_applC" ("_position" LCons)
+###                       ("_cargs" ("_position" y)
+###                         ("_applC" ("_position" curry)
+###                           ("_cargs" ("_position" lmerge)
+###                             ("_cargs" ("_position" xs')
+###                               ("_position" ys'))))))))))))))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+class linorder = order +
+  assumes "linear": "!!x y. x <= y | y <= x"
+### theory "Draft.Hamming_Stream"
+### 0.800s elapsed time, 2.197s cpu time, 0.193s GC time
+Loading theory "Draft.Coinductive_Examples" (required by "Draft.Coinductive_ExamplesMoreTemplates")
+### theory "Draft.Coinductive_Examples"
+### 1.113s elapsed time, 1.219s cpu time, 0.054s GC time
+Loading theory "Draft.Coinductive_ExamplesMoreTemplates"
+val templateLemmas = []: (string * thm * template) list
+### theory "Draft.Coinductive_ExamplesMoreTemplates"
+### 0.845s elapsed time, 1.220s cpu time, 0.151s GC time
+val it = (): unit

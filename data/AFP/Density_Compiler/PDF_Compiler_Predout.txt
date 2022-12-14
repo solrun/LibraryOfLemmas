@@ -1,0 +1,1793 @@
+Loading theory "HOL-Library.Function_Algebras" (required by "Draft.PDF_Compiler_PredTemplates" via "Draft.ExtrEqs" via "HOL-Library.BigO")
+Loading theory "Draft.Density_Predicates" (required by "Draft.PDF_Compiler_PredTemplates" via "Draft.PDF_Compiler_Pred" via "Draft.PDF_Semantics" via "Draft.PDF_Values")
+Loading theory "Draft.Templates" (required by "Draft.PDF_Compiler_PredTemplates" via "Draft.ExtrEqs")
+instantiation
+  fun :: (type, plus) plus
+  plus_fun == plus :: ('a => 'b) => ('a => 'b) => 'a => 'b
+instantiation
+  fun :: (type, zero) zero
+  zero_fun == zero_class.zero :: 'a => 'b
+instantiation
+  fun :: (type, times) times
+  times_fun == times :: ('a => 'b) => ('a => 'b) => 'a => 'b
+instantiation
+  fun :: (type, one) one
+  one_fun == one_class.one :: 'a => 'b
+datatype template_term
+=
+     t_empty
+   | template_app of template_term * template_term
+   | template_hole of int
+   | template_var of int
+datatype sign
+= equals | greater_equals | greater_than | less_equals | less_than
+datatype template
+=
+     template_bimplication of template * template
+   | template_dunno
+   | template_equation of template_term * template_term
+   | template_implication of template list * template
+   | template_inequation of sign * template_term * template_term
+   | template_negation of template
+   | template_predicate of template_term
+constructor t_empty: template_term
+constructor template_app: template_term * template_term -> template_term
+constructor template_hole: int -> template_term
+constructor template_var: int -> template_term
+constructor equals: sign
+constructor greater_equals: sign
+constructor greater_than: sign
+constructor less_equals: sign
+constructor less_than: sign
+constructor template_bimplication: template * template -> template
+constructor template_dunno: template
+constructor template_equation: template_term * template_term -> template
+constructor template_implication: template list * template -> template
+constructor template_inequation:
+   sign * template_term * template_term -> template
+constructor template_negation: template -> template
+constructor template_predicate: template_term -> template
+val vfs = fn: term -> (indexname * typ) list * (string * typ) list
+val indexOf = fn: ''a list -> ''a -> int -> int
+val has_eq = fn: term -> bool
+val term2template = fn:
+   (indexname * typ) list -> (string * typ) list -> term -> template_term
+val lemma2predicate = fn: term -> term -> template
+val makeTemplatewithContext = fn: term -> term -> template
+val lemma2template = fn: term -> template
+val thm2template = fn: thm -> template
+val tterm2string = fn: template_term -> string
+val template2string = fn: template -> string
+val t = "height ?t <= size ?t": thm
+val th =
+   Const ("HOL.Trueprop", "bool => prop") $
+     (Const ("Orderings.ord_class.less_eq", "nat => nat => bool") $
+       (Const ("Tree.height_class.height", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree")) $
+       (Const ("Nat.size_class.size", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree"))):
+   term
+### theory "Draft.Templates"
+### 0.088s elapsed time, 0.302s cpu time, 0.000s GC time
+### theory "HOL-Library.Function_Algebras"
+### 0.108s elapsed time, 0.341s cpu time, 0.000s GC time
+Loading theory "HOL-Library.BigO" (required by "Draft.PDF_Compiler_PredTemplates" via "Draft.ExtrEqs")
+### theory "Draft.Density_Predicates"
+### 0.340s elapsed time, 0.822s cpu time, 0.042s GC time
+Loading theory "Draft.PDF_Transformations" (required by "Draft.PDF_Compiler_PredTemplates" via "Draft.PDF_Compiler_Pred")
+Loading theory "Draft.PDF_Values" (required by "Draft.PDF_Compiler_PredTemplates" via "Draft.PDF_Compiler_Pred" via "Draft.PDF_Semantics")
+### theory "Draft.PDF_Transformations"
+### 0.167s elapsed time, 0.496s cpu time, 0.074s GC time
+### theory "HOL-Library.BigO"
+### 0.661s elapsed time, 1.552s cpu time, 0.201s GC time
+Loading theory "Draft.ExtrEqs" (required by "Draft.PDF_Compiler_PredTemplates")
+val eqpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Var (("_dummy_", 2), "?'a"))
+       ):
+   term Find_Theorems.criterion
+val badeqpattern = Pattern (Const ("Pure.eq", "?'a => ?'a => prop")):
+   term Find_Theorems.criterion
+val undefpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Const ("HOL.undefined", "?'a"))
+       ):
+   term Find_Theorems.criterion
+val thmpattern =
+   Pattern
+    (Const ("HOL.Trueprop", "bool => prop") $ Var (("_dummy_", 1), "bool")):
+   term Find_Theorems.criterion
+val badnames =
+   ["*nitpick*", "*Nitpick*", "*full_exhaustive*", "*_def*", "Enum.finite*",
+    "*Quickcheck*", "ATP*", "*Nunchaku*", "*Code*", "*BNF*", "*SMT*",
+    "*.*.*"]:
+   string list
+val unwanted_names =
+   [(false, Name "*nitpick*"), (false, Name "*Nitpick*"),
+    (false, Name "*full_exhaustive*"), (false, Name "*_def*"),
+    (false, Name "Enum.finite*"), (false, Name "*Quickcheck*"),
+    (false, Name "ATP*"), (false, Name "*Nunchaku*"),
+    (false, Name "*Code*"), (false, Name "*BNF*"), (false, Name "*SMT*"),
+    (false, Name "*.*.*")]:
+   (bool * term Find_Theorems.criterion) list
+val has_vars = fn: term -> bool
+val get_all_eqs = fn: string -> Proof.context -> (string * thm) list
+val get_all_thms = fn: string -> Proof.context -> (string * thm) list
+val get_noneq_thms = fn: string -> Proof.context -> (string * thm) list
+val template_eqs = fn:
+   string -> Proof.context -> (string * thm * template) list
+val template_thms = fn:
+   string -> Proof.context -> (string * thm * template) list
+### theory "Draft.ExtrEqs"
+### 0.489s elapsed time, 0.999s cpu time, 0.064s GC time
+### No equation for constructor "UnitVal"
+### No equation for constructor "BoolVal"
+### No equation for constructor "IntVal"
+### No equation for constructor "RealVal"
+consts
+  extract_pair' :: "(val => 'a) => (val => 'b) => val => 'a * 'b"
+Found termination order: "size <*mlex*> {}"
+consts
+  stock_measure :: "pdf_type => val measure"
+### theory "Draft.PDF_Values"
+### 1.697s elapsed time, 2.905s cpu time, 0.315s GC time
+Loading theory "Draft.PDF_Semantics" (required by "Draft.PDF_Compiler_PredTemplates" via "Draft.PDF_Compiler_Pred")
+class expr = type +
+  fixes free_vars :: "'a => nat set"
+instantiation
+  expr :: expr
+  free_vars_expr == free_vars :: expr => nat set
+consts
+  free_vars_expr :: "expr => nat set"
+consts
+  free_vars_expr_code :: "expr => nat set"
+consts
+  dist_param_type :: "pdf_dist => pdf_type"
+consts
+  dist_result_type :: "pdf_dist => pdf_type"
+consts
+  dist_measure :: "pdf_dist => val => val measure"
+consts
+  dist_dens :: "pdf_dist => val => val => ennreal"
+consts
+  op_type :: "pdf_operator => pdf_type => pdf_type option"
+### Ambiguous input (line 414 of "$AFP/Density_Compiler/PDF_Semantics.thy") produces 2 parse trees:
+### ("\<^const>Pure.imp"
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^fixed>expr_typing" ("_position" \<Gamma>) ("_position" e1)
+###       ("_position" t1)))
+###   ("\<^const>Pure.imp"
+###     ("\<^const>HOL.Trueprop"
+###       ("\<^fixed>expr_typing"
+###         ("\<^const>PDF_Semantics.de_bruijn_insert" ("_position" t1)
+###           ("_position" \<Gamma>))
+###         ("_position" e2) ("_position" t2)))
+###     ("\<^const>HOL.Trueprop"
+###       ("\<^fixed>expr_typing" ("_position" \<Gamma>)
+###         ("_applC" ("_position" LetVar)
+###           ("_cargs" ("_position" e1) ("_position" e2)))
+###         ("_position" t2)))))
+### ("\<^const>Pure.imp"
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^fixed>expr_typing" ("_position" \<Gamma>) ("_position" e1)
+###       ("_position" t1)))
+###   ("\<^const>Pure.imp"
+###     ("\<^const>HOL.Trueprop"
+###       ("\<^fixed>expr_typing"
+###         ("\<^const>Linear_Temporal_Logic_on_Streams.HLD_nxt"
+###           ("_position" t1) ("_position" \<Gamma>))
+###         ("_position" e2) ("_position" t2)))
+###     ("\<^const>HOL.Trueprop"
+###       ("\<^fixed>expr_typing" ("_position" \<Gamma>)
+###         ("_applC" ("_position" LetVar)
+###           ("_cargs" ("_position" e1) ("_position" e2)))
+###         ("_position" t2)))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+Proofs for inductive predicate(s) "expr_typing"
+  Proving monotonicity ...
+Found termination order: "(%p. size (snd p)) <*mlex*> {}"
+consts
+  countable_type :: "pdf_type => bool"
+Found termination order: "{}"
+### Ambiguous input (line 607 of "$AFP/Density_Compiler/PDF_Semantics.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" expr_sem)
+###       ("_cargs" ("_position" \<sigma>)
+###         ("\<^const>PDF_Semantics.expr.LetVar" ("_position" e1)
+###           ("_position" e2))))
+###     ("_do_block"
+###       ("_do_cons"
+###         ("_do_bind" ("_position" v)
+###           ("_applC" ("_position" expr_sem)
+###             ("_cargs" ("_position" \<sigma>) ("_position" e1))))
+###         ("_do_final"
+###           ("_applC" ("_position" expr_sem)
+###             ("_cargs"
+###               ("\<^const>PDF_Semantics.de_bruijn_insert" ("_position" v)
+###                 ("_position" \<sigma>))
+###               ("_position" e2))))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" expr_sem)
+###       ("_cargs" ("_position" \<sigma>)
+###         ("\<^const>PDF_Semantics.expr.LetVar" ("_position" e1)
+###           ("_position" e2))))
+###     ("_do_block"
+###       ("_do_cons"
+###         ("_do_bind" ("_position" v)
+###           ("_applC" ("_position" expr_sem)
+###             ("_cargs" ("_position" \<sigma>) ("_position" e1))))
+###         ("_do_final"
+###           ("_applC" ("_position" expr_sem)
+###             ("_cargs"
+###               ("\<^const>Linear_Temporal_Logic_on_Streams.HLD_nxt"
+###                 ("_position" v) ("_position" \<sigma>))
+###               ("_position" e2))))))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+consts
+  expr_sem :: "(nat => val) => expr => val measure"
+Found termination order: "size <*mlex*> {}"
+### Ambiguous input (line 965 of "$AFP/Density_Compiler/PDF_Semantics.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" expr_sem_rf)
+###       ("_cargs" ("_position" \<sigma>)
+###         ("_applC" ("_position" LetVar)
+###           ("_cargs" ("_position" e1) ("_position" e2)))))
+###     ("_applC" ("_position" expr_sem_rf)
+###       ("_cargs"
+###         ("\<^const>PDF_Semantics.de_bruijn_insert"
+###           ("_applC" ("_position" expr_sem_rf)
+###             ("_cargs" ("_position" \<sigma>) ("_position" e1)))
+###           ("_position" \<sigma>))
+###         ("_position" e2)))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" expr_sem_rf)
+###       ("_cargs" ("_position" \<sigma>)
+###         ("_applC" ("_position" LetVar)
+###           ("_cargs" ("_position" e1) ("_position" e2)))))
+###     ("_applC" ("_position" expr_sem_rf)
+###       ("_cargs"
+###         ("\<^const>Linear_Temporal_Logic_on_Streams.HLD_nxt"
+###           ("_applC" ("_position" expr_sem_rf)
+###             ("_cargs" ("_position" \<sigma>) ("_position" e1)))
+###           ("_position" \<sigma>))
+###         ("_position" e2)))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+consts
+  expr_sem_rf :: "(nat => val) => expr => val"
+### theory "Draft.PDF_Semantics"
+### 4.466s elapsed time, 5.591s cpu time, 1.476s GC time
+Loading theory "Draft.PDF_Density_Contexts" (required by "Draft.PDF_Compiler_PredTemplates" via "Draft.PDF_Compiler_Pred")
+locale density_context
+  fixes V :: "nat set"
+    and V' :: "nat set"
+    and \<Gamma> :: "nat => pdf_type"
+    and \<delta> :: "(nat => val) => ennreal"
+  assumes "density_context V V' \<Gamma> \<delta>"
+### theory "Draft.PDF_Density_Contexts"
+### 0.386s elapsed time, 0.433s cpu time, 0.057s GC time
+Loading theory "Draft.PDF_Compiler_Pred" (required by "Draft.PDF_Compiler_PredTemplates")
+### Ambiguous input (line 36 of "$AFP/Density_Compiler/PDF_Compiler_Pred.thy") produces 2 parse trees:
+### ("_bigimpl"
+###   ("_asms"
+###     ("\<^const>HOL.Trueprop"
+###       ("\<^fixed>expr_has_density"
+###         ("_tuple" ("\<^const>Set.empty")
+###           ("_tuple_args"
+###             ("\<^const>Set.union" ("_position" V) ("_position" V'))
+###             ("_tuple_args" ("_position" \<Gamma>)
+###               ("_tuple_arg"
+###                 ("_lambda" ("_idtdummy")
+###                   ("\<^const>Groups.one_class.one"))))))
+###         ("_position" e1) ("_position" f)))
+###     ("_asm"
+###       ("\<^const>HOL.Trueprop"
+###         ("\<^fixed>expr_has_density"
+###           ("_tuple" ("_applC" ("_position" shift_var_set) ("_position" V))
+###             ("_tuple_args"
+###               ("\<^const>Set.image" ("_position" Suc) ("_position" V'))
+###               ("_tuple_args"
+###                 ("\<^const>PDF_Semantics.de_bruijn_insert"
+###                   ("_applC" ("_position" the)
+###                     ("_applC" ("_position" expr_type)
+###                       ("_cargs" ("_position" \<Gamma>) ("_position" e1))))
+###                   ("_position" \<Gamma>))
+###                 ("_tuple_arg"
+###                   ("_applC" ("_position" insert_dens)
+###                     ("_cargs" ("_position" V)
+###                       ("_cargs" ("_position" V')
+###                         ("_cargs" ("_position" f)
+###                           ("_position" \<delta>)))))))))
+###           ("_position" e2) ("_position" g)))))
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^fixed>expr_has_density"
+###       ("_tuple" ("_position" V)
+###         ("_tuple_args" ("_position" V')
+###           ("_tuple_args" ("_position" \<Gamma>)
+###             ("_tuple_arg" ("_position" \<delta>)))))
+###       ("_applC" ("_position" LetVar)
+###         ("_cargs" ("_position" e1) ("_position" e2)))
+###       ("_lambda" ("_position" \<rho>)
+###         ("_applC" ("_position" g)
+###           ("_applC" ("_position" case_nat)
+###             ("_cargs" ("_position" undefined) ("_position" \<rho>))))))))
+### ("_bigimpl"
+###   ("_asms"
+###     ("\<^const>HOL.Trueprop"
+###       ("\<^fixed>expr_has_density"
+###         ("_tuple" ("\<^const>Set.empty")
+###           ("_tuple_args"
+###             ("\<^const>Set.union" ("_position" V) ("_position" V'))
+###             ("_tuple_args" ("_position" \<Gamma>)
+###               ("_tuple_arg"
+###                 ("_lambda" ("_idtdummy")
+###                   ("\<^const>Groups.one_class.one"))))))
+###         ("_position" e1) ("_position" f)))
+###     ("_asm"
+###       ("\<^const>HOL.Trueprop"
+###         ("\<^fixed>expr_has_density"
+###           ("_tuple" ("_applC" ("_position" shift_var_set) ("_position" V))
+###             ("_tuple_args"
+###               ("\<^const>Set.image" ("_position" Suc) ("_position" V'))
+###               ("_tuple_args"
+###                 ("\<^const>Linear_Temporal_Logic_on_Streams.HLD_nxt"
+###                   ("_applC" ("_position" the)
+###                     ("_applC" ("_position" expr_type)
+###                       ("_cargs" ("_position" \<Gamma>) ("_position" e1))))
+###                   ("_position" \<Gamma>))
+###                 ("_tuple_arg"
+###                   ("_applC" ("_position" insert_dens)
+###                     ("_cargs" ("_position" V)
+###                       ("_cargs" ("_position" V')
+###                         ("_cargs" ("_position" f)
+###                           ("_position" \<delta>)))))))))
+###           ("_position" e2) ("_position" g)))))
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^fixed>expr_has_density"
+###       ("_tuple" ("_position" V)
+###         ("_tuple_args" ("_position" V')
+###           ("_tuple_args" ("_position" \<Gamma>)
+###             ("_tuple_arg" ("_position" \<delta>)))))
+###       ("_applC" ("_position" LetVar)
+###         ("_cargs" ("_position" e1) ("_position" e2)))
+###       ("_lambda" ("_position" \<rho>)
+###         ("_applC" ("_position" g)
+###           ("_applC" ("_position" case_nat)
+###             ("_cargs" ("_position" undefined) ("_position" \<rho>))))))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+Proofs for inductive predicate(s) "expr_has_density"
+  Proving monotonicity ...
+### theory "Draft.PDF_Compiler_Pred"
+### 0.721s elapsed time, 0.811s cpu time, 0.105s GC time
+Loading theory "Draft.PDF_Compiler_PredTemplates"
+val templateLemmas =
+   [("PDF_Compiler_Pred.prob_space_empty_dens_ctxt",
+     "prob_space
+       (dens_ctxt_measure ({}, {}, ?\<Gamma>, %_. 1) (%_. undefined))",
+     template_predicate
+      (
+         template_app
+          (template_hole 7,
+           template_app
+            (template_app
+              (template_hole 6,
+               template_app
+                (template_app (template_hole 5, template_hole 4),
+                 template_app
+                  (template_app (template_hole 3, template_hole 4),
+                   template_app
+                    (template_app (template_hole 2, template_var 0),
+                     t_empty)))),
+             t_empty))
+         )),
+    ("PDF_Compiler_Pred.branch_prob_empty_ctxt",
+     "branch_prob ({}, {}, ?\<Gamma>, %_. 1) (%_. undefined) = 1",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 6,
+           template_app
+            (template_app (template_hole 5, template_hole 4),
+             template_app
+              (template_app (template_hole 3, template_hole 4),
+               template_app
+                (template_app (template_hole 2, template_var 0),
+                 t_empty)))),
+         t_empty),
+       template_hole 1)),
+    ("PDF_Compiler_Pred.expr_has_density_intros",
+     "(?V, ?V', ?\<Gamma>, ?\<delta>) \<turnstile>\<^sub>d
+       Fail ?t \<Rightarrow> (%_ _. 0)",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_app
+              (template_hole 5,
+               template_app
+                (template_app (template_hole 4, template_var 4),
+                 template_app
+                  (template_app (template_hole 3, template_var 3),
+                   template_app
+                    (template_app (template_hole 2, template_var 2),
+                     template_var 1)))),
+             template_app (template_hole 1, template_var 0)),
+           t_empty)
+         )),
+    ("PDF_Compiler_Pred.restrict_state_measure",
+     "(%x. restrict x ?V')
+      : state_measure (?V Un ?V') ?\<Gamma> \<rightarrow>\<^sub>M
+        state_measure ?V' ?\<Gamma>",
+     template_predicate
+      (
+         template_app
+          (template_app (template_hole 4, t_empty),
+           template_app
+            (template_app
+              (template_hole 2,
+               template_app
+                (template_app
+                  (template_hole 1,
+                   template_app
+                    (template_app (template_hole 0, template_var 1),
+                     template_var 2)),
+                 template_var 0)),
+             template_app
+              (template_app (template_hole 1, template_var 2),
+               template_var 0)))
+         )),
+    ("PDF_Compiler_Pred.expr_has_density_intros",
+     "?x : ?V ==>
+      (?V, ?V', ?\<Gamma>, ?\<delta>) \<turnstile>\<^sub>d
+       Var ?x \<Rightarrow> marg_dens (?V, ?V', ?\<Gamma>, ?\<delta>) ?x",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 6, template_var 4),
+              template_var 3)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_hole 5,
+                 template_app
+                  (template_app (template_hole 4, template_var 3),
+                   template_app
+                    (template_app (template_hole 3, template_var 2),
+                     template_app
+                      (template_app (template_hole 2, template_var 1),
+                       template_var 0)))),
+               template_app (template_hole 1, template_var 4)),
+             template_app
+              (template_app
+                (template_hole 0,
+                 template_app
+                  (template_app (template_hole 4, template_var 3),
+                   template_app
+                    (template_app (template_hole 3, template_var 2),
+                     template_app
+                      (template_app (template_hole 2, template_var 1),
+                       template_var 0)))),
+               template_var 4))
+           ))),
+    ("PDF_Compiler_Pred.expr_has_density_intros",
+     "(?V, ?V', ?\<Gamma>, ?\<delta>) \<turnstile>\<^sub>d
+       ?e \<Rightarrow> ?f ==>
+      (?V, ?V', ?\<Gamma>, ?\<delta>) \<turnstile>\<^sub>d
+       Random ?dst ?e \<Rightarrow> apply_dist_to_dens ?dst ?f",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_hole 5,
+                  template_app
+                   (template_app (template_hole 4, template_var 6),
+                    template_app
+                     (template_app (template_hole 3, template_var 5),
+                      template_app
+                       (template_app (template_hole 2, template_var 4),
+                        template_var 3)))),
+                template_var 2),
+              template_var 1)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_hole 5,
+                 template_app
+                  (template_app (template_hole 4, template_var 6),
+                   template_app
+                    (template_app (template_hole 3, template_var 5),
+                     template_app
+                      (template_app (template_hole 2, template_var 4),
+                       template_var 3)))),
+               template_app
+                (template_app (template_hole 1, template_var 0),
+                 template_var 2)),
+             template_app
+              (template_app (template_hole 0, template_var 0),
+               template_var 1))
+           ))),
+    ("PDF_Compiler_Pred.has_subprob_density_distr_Fst",
+     "has_subprob_density ?M (stock_measure (PRODUCT ?t1.0 ?t2.0)) ?f ==>
+      has_subprob_density (distr ?M (stock_measure ?t1.0) (op_sem Fst))
+       (stock_measure ?t1.0)
+       (%x. \<integral>\<^sup>+ y. ?f <|x, y|>
+                               \<partial>stock_measure ?t2.0)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 7, template_var 3),
+                template_app
+                 (template_hole 6,
+                  template_app
+                   (template_app (template_hole 5, template_var 2),
+                    template_var 1))),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_hole 7,
+                 template_app
+                  (template_app
+                    (template_app (template_hole 4, template_var 3),
+                     template_app (template_hole 6, template_var 2)),
+                   template_app (template_hole 3, template_hole 2))),
+               template_app (template_hole 6, template_var 2)),
+             t_empty)
+           ))),
+    ("PDF_Compiler_Pred.has_subprob_density_distr_Snd",
+     "has_subprob_density ?M (stock_measure (PRODUCT ?t1.0 ?t2.0)) ?f ==>
+      has_subprob_density (distr ?M (stock_measure ?t2.0) (op_sem Snd))
+       (stock_measure ?t2.0)
+       (%y. \<integral>\<^sup>+ x. ?f <|x, y|>
+                               \<partial>stock_measure ?t1.0)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 7, template_var 3),
+                template_app
+                 (template_hole 6,
+                  template_app
+                   (template_app (template_hole 5, template_var 2),
+                    template_var 1))),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_hole 7,
+                 template_app
+                  (template_app
+                    (template_app (template_hole 4, template_var 3),
+                     template_app (template_hole 6, template_var 1)),
+                   template_app (template_hole 3, template_hole 2))),
+               template_app (template_hole 6, template_var 1)),
+             t_empty)
+           ))),
+    ("PDF_Compiler_Pred.expr_has_density_intros",
+     "(?V, ?V', ?\<Gamma>, ?\<delta>) \<turnstile>\<^sub>d
+       ?e \<Rightarrow> ?f ==>
+      (?V, ?V', ?\<Gamma>, ?\<delta>) \<turnstile>\<^sub>d
+       Minus $$ ?e \<Rightarrow>
+       (%\<sigma> x. ?f \<sigma> (op_sem Minus x))",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_hole 6,
+                  template_app
+                   (template_app (template_hole 5, template_var 5),
+                    template_app
+                     (template_app (template_hole 4, template_var 4),
+                      template_app
+                       (template_app (template_hole 3, template_var 3),
+                        template_var 2)))),
+                template_var 1),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_hole 6,
+                 template_app
+                  (template_app (template_hole 5, template_var 5),
+                   template_app
+                    (template_app (template_hole 4, template_var 4),
+                     template_app
+                      (template_app (template_hole 3, template_var 3),
+                       template_var 2)))),
+               template_app
+                (template_app (template_hole 2, template_hole 1),
+                 template_var 1)),
+             t_empty)
+           ))),
+    ("PDF_Compiler_Pred.expr_has_density_intros",
+     "countable_type (val_type ?v) ==>
+      (?V, ?V', ?\<Gamma>, ?\<delta>) \<turnstile>\<^sub>d
+       Val ?v \<Rightarrow>
+       (%\<rho> x.
+           branch_prob (?V, ?V', ?\<Gamma>, ?\<delta>) \<rho> *
+           indicator {?v} x)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_hole 11,
+              template_app (template_hole 10, template_var 4))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_hole 9,
+                 template_app
+                  (template_app (template_hole 8, template_var 3),
+                   template_app
+                    (template_app (template_hole 7, template_var 2),
+                     template_app
+                      (template_app (template_hole 6, template_var 1),
+                       template_var 0)))),
+               template_app (template_hole 5, template_var 4)),
+             t_empty)
+           ))),
+    ("PDF_Compiler_Pred.dens_ctxt_measure_empty_bind",
+     "[| ?\<rho> : space (state_measure ?V' ?\<Gamma>);
+         ?f : state_measure ?V' ?\<Gamma> \<rightarrow>\<^sub>M
+              subprob_algebra ?N |]
+      ==> dens_ctxt_measure ({}, ?V', ?\<Gamma>, %_. 1) ?\<rho> >>= ?f =
+          ?f ?\<rho>",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 13, template_var 4),
+              template_app
+               (template_hole 12,
+                template_app
+                 (template_app (template_hole 11, template_var 3),
+                  template_var 2)))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 10, template_var 1),
+              template_app
+               (template_app
+                 (template_hole 9,
+                  template_app
+                   (template_app (template_hole 11, template_var 3),
+                    template_var 2)),
+                template_app (template_hole 8, template_var 0)))
+            )],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 6,
+             template_app
+              (template_app
+                (template_hole 5,
+                 template_app
+                  (template_app (template_hole 4, template_hole 3),
+                   template_app
+                    (template_app (template_hole 2, template_var 3),
+                     template_app
+                      (template_app (template_hole 1, template_var 2),
+                       t_empty)))),
+               template_var 4)),
+           template_var 1),
+         template_app (template_var 1, template_var 4)))),
+    ("PDF_Compiler_Pred.expr_has_density_sound",
+     "[| ({}, {}, ?\<Gamma>, %_. 1) \<turnstile>\<^sub>d
+          ?e \<Rightarrow> ?f;
+         ?\<Gamma> \<turnstile> ?e : ?t; free_vars ?e = {} |]
+      ==> has_subprob_density (expr_sem ?\<sigma> ?e) (stock_measure ?t)
+           (?f (%_. undefined))",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_hole 12,
+                  template_app
+                   (template_app (template_hole 11, template_hole 10),
+                    template_app
+                     (template_app (template_hole 9, template_hole 10),
+                      template_app
+                       (template_app (template_hole 8, template_var 4),
+                        t_empty)))),
+                template_var 3),
+              template_var 2)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 6, template_var 4),
+                template_var 3),
+              template_var 1)
+            ),
+        template_equation
+         (template_app (template_hole 4, template_var 3),
+          template_hole 10)],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_hole 3,
+                 template_app
+                  (template_app (template_hole 2, template_var 0),
+                   template_var 3)),
+               template_app (template_hole 1, template_var 1)),
+             template_app (template_var 2, t_empty))
+           ))),
+    ("PDF_Compiler_Pred.expr_has_density_intros",
+     "(?V, ?V', ?\<Gamma>, ?\<delta>) \<turnstile>\<^sub>d
+       ?e \<Rightarrow> ?f ==>
+      (?V, ?V', ?\<Gamma>, ?\<delta>) \<turnstile>\<^sub>d
+       Fst $$ ?e \<Rightarrow>
+       (%\<rho> x.
+           \<integral>\<^sup>+ y. ?f \<rho> <|x, y|>
+                              \<partial>stock_measure
+   (the (expr_type ?\<Gamma> (Snd $$ ?e))))",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_hole 11,
+                  template_app
+                   (template_app (template_hole 10, template_var 5),
+                    template_app
+                     (template_app (template_hole 9, template_var 4),
+                      template_app
+                       (template_app (template_hole 8, template_var 3),
+                        template_var 2)))),
+                template_var 1),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_hole 11,
+                 template_app
+                  (template_app (template_hole 10, template_var 5),
+                   template_app
+                    (template_app (template_hole 9, template_var 4),
+                     template_app
+                      (template_app (template_hole 8, template_var 3),
+                       template_var 2)))),
+               template_app
+                (template_app (template_hole 7, template_hole 6),
+                 template_var 1)),
+             t_empty)
+           ))),
+    ("PDF_Compiler_Pred.expr_has_density_intros",
+     "(?V, ?V', ?\<Gamma>, ?\<delta>) \<turnstile>\<^sub>d
+       ?e \<Rightarrow> ?f ==>
+      (?V, ?V', ?\<Gamma>, ?\<delta>) \<turnstile>\<^sub>d
+       Inverse $$ ?e \<Rightarrow>
+       (%\<sigma> x.
+           ?f \<sigma> (op_sem Inverse x) *
+           ennreal ((inverse (extract_real x))\<^sup>2))",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_hole 14,
+                  template_app
+                   (template_app (template_hole 13, template_var 5),
+                    template_app
+                     (template_app (template_hole 12, template_var 4),
+                      template_app
+                       (template_app (template_hole 11, template_var 3),
+                        template_var 2)))),
+                template_var 1),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_hole 14,
+                 template_app
+                  (template_app (template_hole 13, template_var 5),
+                   template_app
+                    (template_app (template_hole 12, template_var 4),
+                     template_app
+                      (template_app (template_hole 11, template_var 3),
+                       template_var 2)))),
+               template_app
+                (template_app (template_hole 10, template_hole 9),
+                 template_var 1)),
+             t_empty)
+           ))),
+    ("PDF_Compiler_Pred.expr_has_density_intros",
+     "(?V, ?V', ?\<Gamma>, ?\<delta>) \<turnstile>\<^sub>d
+       ?e \<Rightarrow> ?f ==>
+      (?V, ?V', ?\<Gamma>, ?\<delta>) \<turnstile>\<^sub>d
+       Snd $$ ?e \<Rightarrow>
+       (%\<rho> y.
+           \<integral>\<^sup>+ x. ?f \<rho> <|x, y|>
+                              \<partial>stock_measure
+   (the (expr_type ?\<Gamma> (Fst $$ ?e))))",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_hole 11,
+                  template_app
+                   (template_app (template_hole 10, template_var 5),
+                    template_app
+                     (template_app (template_hole 9, template_var 4),
+                      template_app
+                       (template_app (template_hole 8, template_var 3),
+                        template_var 2)))),
+                template_var 1),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_hole 11,
+                 template_app
+                  (template_app (template_hole 10, template_var 5),
+                   template_app
+                    (template_app (template_hole 9, template_var 4),
+                     template_app
+                      (template_app (template_hole 8, template_var 3),
+                       template_var 2)))),
+               template_app
+                (template_app (template_hole 7, template_hole 6),
+                 template_var 1)),
+             t_empty)
+           ))),
+    ("PDF_Compiler_Pred.expr_has_density_intros",
+     "[| randomfree ?e; free_vars ?e <= ?V' |]
+      ==> (?V, ?V', ?\<Gamma>, ?\<delta>) \<turnstile>\<^sub>d
+           Random ?dst ?e \<Rightarrow>
+           (%\<rho> x.
+               branch_prob (?V, ?V', ?\<Gamma>, ?\<delta>) \<rho> *
+               dist_dens ?dst (expr_sem_rf \<rho> ?e) x)",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 11, template_var 5)),
+        template_inequation
+         (less_equals, template_app (template_hole 9, template_var 5),
+          template_var 4)],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_hole 8,
+                 template_app
+                  (template_app (template_hole 7, template_var 3),
+                   template_app
+                    (template_app (template_hole 6, template_var 4),
+                     template_app
+                      (template_app (template_hole 5, template_var 2),
+                       template_var 1)))),
+               template_app
+                (template_app (template_hole 4, template_var 0),
+                 template_var 5)),
+             t_empty)
+           ))),
+    ("PDF_Compiler_Pred.expr_has_density_intros",
+     "[| ?x : ?V; ?y : ?V; ?x ~= ?y |]
+      ==> (?V, ?V', ?\<Gamma>, ?\<delta>) \<turnstile>\<^sub>d
+           <Var ?x ,  Var ?y> \<Rightarrow>
+           marg_dens2 (?V, ?V', ?\<Gamma>, ?\<delta>) ?x ?y",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 9, template_var 5),
+              template_var 4)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 9, template_var 3),
+              template_var 4)
+            ),
+        template_negation
+         (template_equation (template_var 5, template_var 3))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_hole 6,
+                 template_app
+                  (template_app (template_hole 5, template_var 4),
+                   template_app
+                    (template_app (template_hole 4, template_var 2),
+                     template_app
+                      (template_app (template_hole 3, template_var 1),
+                       template_var 0)))),
+               template_app
+                (template_app
+                  (template_hole 2,
+                   template_app (template_hole 1, template_var 5)),
+                 template_app (template_hole 1, template_var 3))),
+             template_app
+              (template_app
+                (template_app
+                  (template_hole 0,
+                   template_app
+                    (template_app (template_hole 5, template_var 4),
+                     template_app
+                      (template_app (template_hole 4, template_var 2),
+                       template_app
+                        (template_app (template_hole 3, template_var 1),
+                         template_var 0)))),
+                 template_var 5),
+               template_var 3))
+           ))),
+    ("PDF_Compiler_Pred.expr_has_density_intros",
+     "(?V, ?V', ?\<Gamma>, ?\<delta>) \<turnstile>\<^sub>d
+       ?e \<Rightarrow> ?f ==>
+      (?V, ?V', ?\<Gamma>, ?\<delta>) \<turnstile>\<^sub>d
+       Add $$ ?e \<Rightarrow>
+       (%\<sigma> z.
+           \<integral>\<^sup>+ x. ?f \<sigma>
+                                   <|x, op_sem Add <|z, op_sem Minus x|>|>
+                              \<partial>stock_measure (val_type z))",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_hole 11,
+                  template_app
+                   (template_app (template_hole 10, template_var 5),
+                    template_app
+                     (template_app (template_hole 9, template_var 4),
+                      template_app
+                       (template_app (template_hole 8, template_var 3),
+                        template_var 2)))),
+                template_var 1),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_hole 11,
+                 template_app
+                  (template_app (template_hole 10, template_var 5),
+                   template_app
+                    (template_app (template_hole 9, template_var 4),
+                     template_app
+                      (template_app (template_hole 8, template_var 3),
+                       template_var 2)))),
+               template_app
+                (template_app (template_hole 7, template_hole 6),
+                 template_var 1)),
+             t_empty)
+           ))),
+    ("PDF_Compiler_Pred.expr_has_density_intros",
+     "(?V, ?V', ?\<Gamma>, ?\<delta>) \<turnstile>\<^sub>d
+       ?e \<Rightarrow> ?f ==>
+      (?V, ?V', ?\<Gamma>, ?\<delta>) \<turnstile>\<^sub>d
+       Exp $$ ?e \<Rightarrow>
+       (%\<sigma> x.
+           if 0 < extract_real x
+           then ?f \<sigma> (lift_RealVal safe_ln x) *
+                ennreal (inverse (extract_real x))
+           else 0)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_hole 15,
+                  template_app
+                   (template_app (template_hole 14, template_var 5),
+                    template_app
+                     (template_app (template_hole 13, template_var 4),
+                      template_app
+                       (template_app (template_hole 12, template_var 3),
+                        template_var 2)))),
+                template_var 1),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_hole 15,
+                 template_app
+                  (template_app (template_hole 14, template_var 5),
+                   template_app
+                    (template_app (template_hole 13, template_var 4),
+                     template_app
+                      (template_app (template_hole 12, template_var 3),
+                       template_var 2)))),
+               template_app
+                (template_app (template_hole 11, template_hole 10),
+                 template_var 1)),
+             t_empty)
+           ))),
+    ("PDF_Compiler_Pred.expr_has_density_intros",
+     "[| (?V, ?V', ?\<Gamma>, ?\<delta>) \<turnstile>\<^sub>d
+          ?e \<Rightarrow> ?f;
+         randomfree ?e'; free_vars ?e' <= ?V' |]
+      ==> (?V, ?V', ?\<Gamma>, ?\<delta>) \<turnstile>\<^sub>d
+           Add $$ <?e ,  ?e'> \<Rightarrow>
+           (%\<rho> x.
+               ?f \<rho>
+                (op_sem Add <|x, expr_sem_rf \<rho> (Minus $$ ?e')|>))",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_hole 13,
+                  template_app
+                   (template_app (template_hole 12, template_var 6),
+                    template_app
+                     (template_app (template_hole 11, template_var 5),
+                      template_app
+                       (template_app (template_hole 10, template_var 4),
+                        template_var 3)))),
+                template_var 2),
+              template_var 1)
+            ),
+        template_predicate (template_app (template_hole 9, template_var 0)),
+        template_inequation
+         (less_equals, template_app (template_hole 7, template_var 0),
+          template_var 5)],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_hole 13,
+                 template_app
+                  (template_app (template_hole 12, template_var 6),
+                   template_app
+                    (template_app (template_hole 11, template_var 5),
+                     template_app
+                      (template_app (template_hole 10, template_var 4),
+                       template_var 3)))),
+               template_app
+                (template_app (template_hole 6, template_hole 5),
+                 template_app
+                  (template_app (template_hole 4, template_var 2),
+                   template_var 0))),
+             t_empty)
+           ))),
+    ("PDF_Compiler_Pred.expr_has_density_intros",
+     "[| countable_type (the (expr_type ?\<Gamma> (?oper $$ ?e)));
+         (?V, ?V', ?\<Gamma>, ?\<delta>) \<turnstile>\<^sub>d
+          ?e \<Rightarrow> ?f |]
+      ==> (?V, ?V', ?\<Gamma>, ?\<delta>) \<turnstile>\<^sub>d
+           ?oper $$ ?e \<Rightarrow>
+           (%\<rho> y.
+               \<integral>\<^sup>+ x. (if op_sem ?oper x = y then 1
+ else 0) *
+?f \<rho> x
+                                  \<partial>stock_measure
+       (the (expr_type ?\<Gamma> ?e)))",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_hole 15,
+              template_app
+               (template_hole 14,
+                template_app
+                 (template_app (template_hole 13, template_var 6),
+                  template_app
+                   (template_app (template_hole 12, template_var 5),
+                    template_var 4))))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_hole 11,
+                  template_app
+                   (template_app (template_hole 10, template_var 3),
+                    template_app
+                     (template_app (template_hole 9, template_var 2),
+                      template_app
+                       (template_app (template_hole 8, template_var 6),
+                        template_var 1)))),
+                template_var 4),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_hole 11,
+                 template_app
+                  (template_app (template_hole 10, template_var 3),
+                   template_app
+                    (template_app (template_hole 9, template_var 2),
+                     template_app
+                      (template_app (template_hole 8, template_var 6),
+                       template_var 1)))),
+               template_app
+                (template_app (template_hole 12, template_var 5),
+                 template_var 4)),
+             t_empty)
+           ))),
+    ("PDF_Compiler_Pred.expr_has_density_intros",
+     "[| ({}, ?V Un ?V', ?\<Gamma>, %_. 1) \<turnstile>\<^sub>d
+          ?e1.0 \<Rightarrow> ?f;
+         (shift_var_set ?V, Suc ` ?V',
+          case_nat (the (expr_type ?\<Gamma> ?e1.0)) ?\<Gamma>,
+          insert_dens ?V ?V' ?f ?\<delta>) \<turnstile>\<^sub>d
+          ?e2.0 \<Rightarrow> ?g |]
+      ==> (?V, ?V', ?\<Gamma>, ?\<delta>) \<turnstile>\<^sub>d
+           LET ?e1.0 IN ?e2.0 \<Rightarrow>
+           (%\<rho>. ?g (case_nat undefined \<rho>))",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_hole 16,
+                  template_app
+                   (template_app (template_hole 15, template_hole 14),
+                    template_app
+                     (template_app
+                       (template_hole 13,
+                        template_app
+                         (template_app (template_hole 12, template_var 7),
+                          template_var 6)),
+                      template_app
+                       (template_app (template_hole 11, template_var 5),
+                        t_empty)))),
+                template_var 4),
+              template_var 3)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_hole 16,
+                  template_app
+                   (template_app
+                     (template_hole 15,
+                      template_app (template_hole 9, template_var 7)),
+                    template_app
+                     (template_app
+                       (template_hole 13,
+                        template_app
+                         (template_app (template_hole 8, template_hole 7),
+                          template_var 6)),
+                      template_app
+                       (template_app
+                         (template_hole 11,
+                          template_app
+                           (template_app
+                             (template_hole 6,
+                              template_app
+                               (template_hole 5,
+                                template_app
+                                 (template_app
+                                   (template_hole 4, template_var 5),
+                                  template_var 4))),
+                            template_var 5)),
+                        template_app
+                         (template_app
+                           (template_app
+                             (template_app
+                               (template_hole 3, template_var 7),
+                              template_var 6),
+                            template_var 3),
+                          template_var 2))))),
+                template_var 1),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_hole 16,
+                 template_app
+                  (template_app (template_hole 15, template_var 7),
+                   template_app
+                    (template_app (template_hole 13, template_var 6),
+                     template_app
+                      (template_app (template_hole 11, template_var 5),
+                       template_var 2)))),
+               template_app
+                (template_app (template_hole 2, template_var 4),
+                 template_var 1)),
+             t_empty)
+           ))),
+    ("PDF_Compiler_Pred.expr_has_density_intros",
+     "[| randomfree ?b;
+         (?V, ?V', ?\<Gamma>,
+          if_dens_det ?\<delta> ?b True) \<turnstile>\<^sub>d
+          ?e1.0 \<Rightarrow> ?g1.0;
+         (?V, ?V', ?\<Gamma>,
+          if_dens_det ?\<delta> ?b False) \<turnstile>\<^sub>d
+          ?e2.0 \<Rightarrow> ?g2.0 |]
+      ==> (?V, ?V', ?\<Gamma>, ?\<delta>) \<turnstile>\<^sub>d
+           IF ?b THEN ?e1.0 ELSE ?e2.0 \<Rightarrow>
+           (%\<rho> x. ?g1.0 \<rho> x + ?g2.0 \<rho> x)",
+     template_implication
+      ([template_predicate (template_app (template_hole 9, template_var 8)),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_hole 8,
+                  template_app
+                   (template_app (template_hole 7, template_var 7),
+                    template_app
+                     (template_app (template_hole 6, template_var 6),
+                      template_app
+                       (template_app (template_hole 5, template_var 5),
+                        template_app
+                         (template_app
+                           (template_app (template_hole 4, template_var 4),
+                            template_var 8),
+                          template_hole 3))))),
+                template_var 3),
+              template_var 2)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_hole 8,
+                  template_app
+                   (template_app (template_hole 7, template_var 7),
+                    template_app
+                     (template_app (template_hole 6, template_var 6),
+                      template_app
+                       (template_app (template_hole 5, template_var 5),
+                        template_app
+                         (template_app
+                           (template_app (template_hole 4, template_var 4),
+                            template_var 8),
+                          template_hole 2))))),
+                template_var 1),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_hole 8,
+                 template_app
+                  (template_app (template_hole 7, template_var 7),
+                   template_app
+                    (template_app (template_hole 6, template_var 6),
+                     template_app
+                      (template_app (template_hole 5, template_var 5),
+                       template_var 4)))),
+               template_app
+                (template_app
+                  (template_app (template_hole 1, template_var 8),
+                   template_var 3),
+                 template_var 1)),
+             t_empty)
+           ))),
+    ("PDF_Compiler_Pred.expr_has_density_intros",
+     "[| (?V, ?V', ?\<Gamma>, ?\<delta>) \<turnstile>\<^sub>d
+          ?e \<Rightarrow> ?f;
+         val_type ?c = REAL; ?c ~= RealVal 0 |]
+      ==> (?V, ?V', ?\<Gamma>, ?\<delta>) \<turnstile>\<^sub>d
+           Mult $$ <?e ,  Val ?c> \<Rightarrow>
+           (%\<rho> x.
+               ?f \<rho> (op_sem Mult <|x, op_sem Inverse ?c|>) *
+               ennreal (inverse \<bar>extract_real ?c\<bar>))",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_hole 22,
+                  template_app
+                   (template_app (template_hole 21, template_var 6),
+                    template_app
+                     (template_app (template_hole 20, template_var 5),
+                      template_app
+                       (template_app (template_hole 19, template_var 4),
+                        template_var 3)))),
+                template_var 2),
+              template_var 1)
+            ),
+        template_equation
+         (template_app (template_hole 17, template_var 0),
+          template_hole 16),
+        template_negation
+         (
+            template_equation
+             (template_var 0,
+              template_app (template_hole 13, template_hole 12))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_hole 22,
+                 template_app
+                  (template_app (template_hole 21, template_var 6),
+                   template_app
+                    (template_app (template_hole 20, template_var 5),
+                     template_app
+                      (template_app (template_hole 19, template_var 4),
+                       template_var 3)))),
+               template_app
+                (template_app (template_hole 11, template_hole 10),
+                 template_app
+                  (template_app (template_hole 9, template_var 2),
+                   template_app (template_hole 8, template_var 0)))),
+             t_empty)
+           ))),
+    ("PDF_Compiler_Pred.expr_has_density_sound_aux",
+     "[| (?V, ?V', ?\<Gamma>, ?\<delta>) \<turnstile>\<^sub>d
+          ?e \<Rightarrow> ?f;
+         ?\<Gamma> \<turnstile> ?e : ?t;
+         density_context ?V ?V' ?\<Gamma> ?\<delta>;
+         free_vars ?e <= ?V Un ?V' |]
+      ==> has_parametrized_subprob_density (state_measure ?V' ?\<Gamma>)
+           (%\<rho>.
+               dens_ctxt_measure (?V, ?V', ?\<Gamma>, ?\<delta>) \<rho> >>=
+               (%\<sigma>. expr_sem \<sigma> ?e))
+           (stock_measure ?t) ?f",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_hole 14,
+                  template_app
+                   (template_app (template_hole 13, template_var 6),
+                    template_app
+                     (template_app (template_hole 12, template_var 5),
+                      template_app
+                       (template_app (template_hole 11, template_var 4),
+                        template_var 3)))),
+                template_var 2),
+              template_var 1)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 10, template_var 4),
+                template_var 2),
+              template_var 0)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 9, template_var 6),
+                  template_var 5),
+                template_var 4),
+              template_var 3)
+            ),
+        template_inequation
+         (less_equals, template_app (template_hole 7, template_var 2),
+          template_app
+           (template_app (template_hole 6, template_var 6),
+            template_var 5))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_hole 5,
+                   template_app
+                    (template_app (template_hole 4, template_var 5),
+                     template_var 4)),
+                 t_empty),
+               template_app (template_hole 0, template_var 0)),
+             t_empty)
+           ))),
+    ("PDF_Compiler_Pred.addc_density_measurable",
+     "[| (%(x, y). ?f x y)
+         : borel_measurable
+            (state_measure ?V' ?\<Gamma> \<Otimes>\<^sub>M
+             stock_measure ?t);
+         ?t = REAL | ?t = INTEG; ?\<Gamma> \<turnstile> ?e' : ?t;
+         randomfree ?e'; free_vars ?e' <= ?V' |]
+      ==> (%(\<rho>, x).
+              ?f \<rho>
+               (op_sem Add <|x, expr_sem_rf \<rho> (Minus $$ ?e')|>))
+          : borel_measurable
+             (state_measure ?V' ?\<Gamma> \<Otimes>\<^sub>M
+              stock_measure ?t)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 20,
+                template_app (template_hole 19, template_var 4)),
+              template_app
+               (template_app
+                 (template_hole 18,
+                  template_app
+                   (template_app
+                     (template_hole 17,
+                      template_app
+                       (template_app (template_hole 16, template_var 3),
+                        template_var 2)),
+                    template_app (template_hole 15, template_var 1))),
+                template_hole 14))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 13,
+                template_app
+                 (template_app (template_hole 12, template_var 1),
+                  template_hole 11)),
+              template_app
+               (template_app (template_hole 12, template_var 1),
+                template_hole 10))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 9, template_var 2),
+                template_var 0),
+              template_var 1)
+            ),
+        template_predicate (template_app (template_hole 8, template_var 0)),
+        template_inequation
+         (less_equals, template_app (template_hole 6, template_var 0),
+          template_var 3)],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 20, template_app (template_hole 19, t_empty)),
+             template_app
+              (template_app
+                (template_hole 18,
+                 template_app
+                  (template_app
+                    (template_hole 17,
+                     template_app
+                      (template_app (template_hole 16, template_var 3),
+                       template_var 2)),
+                   template_app (template_hole 15, template_var 1))),
+               template_hole 14))
+           ))),
+    ("PDF_Compiler_Pred.expr_has_density_intros",
+     "[| ({}, ?V Un ?V', ?\<Gamma>, %_. 1) \<turnstile>\<^sub>d
+          ?b \<Rightarrow> ?f;
+         (?V, ?V', ?\<Gamma>,
+          if_dens ?\<delta> ?f True) \<turnstile>\<^sub>d
+          ?e1.0 \<Rightarrow> ?g1.0;
+         (?V, ?V', ?\<Gamma>,
+          if_dens ?\<delta> ?f False) \<turnstile>\<^sub>d
+          ?e2.0 \<Rightarrow> ?g2.0 |]
+      ==> (?V, ?V', ?\<Gamma>, ?\<delta>) \<turnstile>\<^sub>d
+           IF ?b THEN ?e1.0 ELSE ?e2.0 \<Rightarrow>
+           (%\<rho> x. ?g1.0 \<rho> x + ?g2.0 \<rho> x)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_hole 11,
+                  template_app
+                   (template_app (template_hole 10, template_hole 9),
+                    template_app
+                     (template_app
+                       (template_hole 8,
+                        template_app
+                         (template_app (template_hole 7, template_var 9),
+                          template_var 8)),
+                      template_app
+                       (template_app (template_hole 6, template_var 7),
+                        t_empty)))),
+                template_var 6),
+              template_var 5)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_hole 11,
+                  template_app
+                   (template_app (template_hole 10, template_var 9),
+                    template_app
+                     (template_app (template_hole 8, template_var 8),
+                      template_app
+                       (template_app (template_hole 6, template_var 7),
+                        template_app
+                         (template_app
+                           (template_app (template_hole 4, template_var 4),
+                            template_var 5),
+                          template_hole 3))))),
+                template_var 3),
+              template_var 2)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_hole 11,
+                  template_app
+                   (template_app (template_hole 10, template_var 9),
+                    template_app
+                     (template_app (template_hole 8, template_var 8),
+                      template_app
+                       (template_app (template_hole 6, template_var 7),
+                        template_app
+                         (template_app
+                           (template_app (template_hole 4, template_var 4),
+                            template_var 5),
+                          template_hole 2))))),
+                template_var 1),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_hole 11,
+                 template_app
+                  (template_app (template_hole 10, template_var 9),
+                   template_app
+                    (template_app (template_hole 8, template_var 8),
+                     template_app
+                      (template_app (template_hole 6, template_var 7),
+                       template_var 4)))),
+               template_app
+                (template_app
+                  (template_app (template_hole 1, template_var 6),
+                   template_var 3),
+                 template_var 1)),
+             t_empty)
+           ))),
+    ("PDF_Compiler_Pred.hd_cong",
+     "[| (?V, ?V', ?\<Gamma>, ?\<delta>) \<turnstile>\<^sub>d
+          ?e \<Rightarrow> ?f;
+         density_context ?V ?V' ?\<Gamma> ?\<delta>;
+         ?\<Gamma> \<turnstile> ?e : ?t; free_vars ?e <= ?V Un ?V';
+         !!\<rho> x.
+            [| \<rho> : space (state_measure ?V' ?\<Gamma>);
+               x : space (stock_measure ?t) |]
+            ==> ?f \<rho> x = ?f' \<rho> x |]
+      ==> (?V, ?V', ?\<Gamma>, ?\<delta>) \<turnstile>\<^sub>d
+           ?e \<Rightarrow> ?f'",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_hole 17,
+                  template_app
+                   (template_app (template_hole 16, template_var 7),
+                    template_app
+                     (template_app (template_hole 15, template_var 6),
+                      template_app
+                       (template_app (template_hole 14, template_var 5),
+                        template_var 4)))),
+                template_var 3),
+              template_var 2)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 13, template_var 7),
+                  template_var 6),
+                template_var 5),
+              template_var 4)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 12, template_var 5),
+                template_var 3),
+              template_var 1)
+            ),
+        template_inequation
+         (less_equals, template_app (template_hole 10, template_var 3),
+          template_app
+           (template_app (template_hole 9, template_var 7),
+            template_var 6)),
+        template_predicate (template_app (template_hole 8, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_hole 17,
+                 template_app
+                  (template_app (template_hole 16, template_var 7),
+                   template_app
+                    (template_app (template_hole 15, template_var 6),
+                     template_app
+                      (template_app (template_hole 14, template_var 5),
+                       template_var 4)))),
+               template_var 3),
+             template_var 0)
+           ))),
+    ("PDF_Compiler_Pred.expr_has_density_sound_op",
+     "[| density_context ?V ?V' ?\<Gamma> ?\<delta>;
+         has_parametrized_subprob_density (state_measure ?V' ?\<Gamma>)
+          (%\<rho>.
+              dens_ctxt_measure (?V, ?V', ?\<Gamma>, ?\<delta>) \<rho> >>=
+              (%\<sigma>. expr_sem \<sigma> ?e))
+          (stock_measure ?t) ?f;
+         (%(x, y). ?g x y)
+         : borel_measurable
+            (state_measure ?V' ?\<Gamma> \<Otimes>\<^sub>M
+             stock_measure ?t');
+         !!M \<rho>.
+            has_subprob_density M (stock_measure ?t) (?f \<rho>) ==>
+            has_density (distr M (stock_measure ?t') (op_sem ?oper))
+             (stock_measure ?t') (?g \<rho>);
+         ?\<Gamma> \<turnstile> ?e : ?t; op_type ?oper ?t = Some ?t';
+         free_vars (?oper $$ ?e) <= ?V Un ?V' |]
+      ==> has_parametrized_subprob_density (state_measure ?V' ?\<Gamma>)
+           (%\<rho>.
+               dens_ctxt_measure (?V, ?V', ?\<Gamma>, ?\<delta>) \<rho> >>=
+               (%\<sigma>. expr_sem \<sigma> (?oper $$ ?e)))
+           (stock_measure ?t') ?g",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 28, template_var 9),
+                  template_var 8),
+                template_var 7),
+              template_var 6)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_hole 27,
+                    template_app
+                     (template_app (template_hole 26, template_var 8),
+                      template_var 7)),
+                  t_empty),
+                template_app (template_hole 19, template_var 4)),
+              template_var 3)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 18,
+                template_app (template_hole 17, template_var 2)),
+              template_app
+               (template_app
+                 (template_hole 16,
+                  template_app
+                   (template_app
+                     (template_hole 15,
+                      template_app
+                       (template_app (template_hole 26, template_var 8),
+                        template_var 7)),
+                    template_app (template_hole 19, template_var 1))),
+                template_hole 14))
+            ),
+        template_predicate (template_app (template_hole 13, t_empty)),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 7, template_var 7),
+                template_var 5),
+              template_var 4)
+            ),
+        template_equation
+         (template_app
+           (template_app (template_hole 5, template_var 0), template_var 4),
+          template_app (template_hole 4, template_var 1)),
+        template_inequation
+         (less_equals,
+          template_app
+           (template_hole 2,
+            template_app
+             (template_app (template_hole 1, template_var 0),
+              template_var 5)),
+          template_app
+           (template_app (template_hole 0, template_var 9),
+            template_var 8))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_hole 27,
+                   template_app
+                    (template_app (template_hole 26, template_var 8),
+                     template_var 7)),
+                 t_empty),
+               template_app (template_hole 19, template_var 1)),
+             template_var 2)
+           )))]:
+   (string * thm * template) list
+### theory "Draft.PDF_Compiler_PredTemplates"
+### 1.644s elapsed time, 2.716s cpu time, 1.189s GC time
+val it = (): unit

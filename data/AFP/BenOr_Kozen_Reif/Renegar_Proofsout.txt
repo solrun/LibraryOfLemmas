@@ -1,0 +1,3650 @@
+Loading theory "Draft.More_Matrix" (required by "Draft.Renegar_ProofsTemplates" via "Draft.Renegar_Proofs" via "Draft.Renegar_Algorithm" via "Draft.BKR_Algorithm")
+Loading theory "Draft.Templates" (required by "Draft.Renegar_ProofsTemplates" via "Draft.ExtrEqs")
+datatype template_term
+=
+     t_empty
+   | template_app of template_term * template_term
+   | template_hole of int
+   | template_var of int
+datatype sign
+= equals | greater_equals | greater_than | less_equals | less_than
+datatype template
+=
+     template_bimplication of template * template
+   | template_dunno
+   | template_equation of template_term * template_term
+   | template_implication of template list * template
+   | template_inequation of sign * template_term * template_term
+   | template_negation of template
+   | template_predicate of template_term
+constructor t_empty: template_term
+constructor template_app: template_term * template_term -> template_term
+constructor template_hole: int -> template_term
+constructor template_var: int -> template_term
+constructor equals: sign
+constructor greater_equals: sign
+constructor greater_than: sign
+constructor less_equals: sign
+constructor less_than: sign
+constructor template_bimplication: template * template -> template
+constructor template_dunno: template
+constructor template_equation: template_term * template_term -> template
+constructor template_implication: template list * template -> template
+constructor template_inequation:
+   sign * template_term * template_term -> template
+constructor template_negation: template -> template
+constructor template_predicate: template_term -> template
+val vfs = fn: term -> (indexname * typ) list * (string * typ) list
+val indexOf = fn: ''a list -> ''a -> int -> int
+val has_eq = fn: term -> bool
+val term2template = fn:
+   (indexname * typ) list -> (string * typ) list -> term -> template_term
+val lemma2predicate = fn: term -> term -> template
+val makeTemplatewithContext = fn: term -> term -> template
+val lemma2template = fn: term -> template
+val thm2template = fn: thm -> template
+val tterm2string = fn: template_term -> string
+val template2string = fn: template -> string
+val t = "height ?t <= size ?t": thm
+val th =
+   Const ("HOL.Trueprop", "bool => prop") $
+     (Const ("Orderings.ord_class.less_eq", "nat => nat => bool") $
+       (Const ("Tree.height_class.height", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree")) $
+       (Const ("Nat.size_class.size", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree"))):
+   term
+### theory "Draft.Templates"
+### 0.065s elapsed time, 0.163s cpu time, 0.000s GC time
+Loading theory "Draft.ExtrEqs" (required by "Draft.Renegar_ProofsTemplates")
+instantiation
+  mat :: (conjugate) conjugate
+  conjugate_mat == conjugate :: 'a mat => 'a mat
+val eqpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Var (("_dummy_", 2), "?'a"))
+       ):
+   term Find_Theorems.criterion
+val badeqpattern = Pattern (Const ("Pure.eq", "?'a => ?'a => prop")):
+   term Find_Theorems.criterion
+val undefpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Const ("HOL.undefined", "?'a"))
+       ):
+   term Find_Theorems.criterion
+val thmpattern =
+   Pattern
+    (Const ("HOL.Trueprop", "bool => prop") $ Var (("_dummy_", 1), "bool")):
+   term Find_Theorems.criterion
+val badnames =
+   ["*nitpick*", "*Nitpick*", "*full_exhaustive*", "*_def*", "Enum.finite*",
+    "*Quickcheck*", "ATP*", "*Nunchaku*", "*Code*", "*BNF*", "*SMT*",
+    "*.*.*"]:
+   string list
+val unwanted_names =
+   [(false, Name "*nitpick*"), (false, Name "*Nitpick*"),
+    (false, Name "*full_exhaustive*"), (false, Name "*_def*"),
+    (false, Name "Enum.finite*"), (false, Name "*Quickcheck*"),
+    (false, Name "ATP*"), (false, Name "*Nunchaku*"),
+    (false, Name "*Code*"), (false, Name "*BNF*"), (false, Name "*SMT*"),
+    (false, Name "*.*.*")]:
+   (bool * term Find_Theorems.criterion) list
+val has_vars = fn: term -> bool
+val get_all_eqs = fn: string -> Proof.context -> (string * thm) list
+val get_all_thms = fn: string -> Proof.context -> (string * thm) list
+val get_noneq_thms = fn: string -> Proof.context -> (string * thm) list
+val template_eqs = fn:
+   string -> Proof.context -> (string * thm * template) list
+val template_thms = fn:
+   string -> Proof.context -> (string * thm * template) list
+### theory "Draft.ExtrEqs"
+### 0.553s elapsed time, 1.106s cpu time, 0.127s GC time
+locale vec_space
+  fixes f_ty :: "'a itself"
+    and n :: "nat"
+locale conjugatable_vec_space
+  fixes f_ty :: "'a itself"
+    and n :: "nat"
+locale conjugatable_vec_space
+  fixes f_ty :: "'a itself"
+    and n :: "nat"
+### theory "Draft.More_Matrix"
+### 2.014s elapsed time, 2.921s cpu time, 0.652s GC time
+Loading theory "Draft.BKR_Algorithm" (required by "Draft.Renegar_ProofsTemplates" via "Draft.Renegar_Proofs" via "Draft.Renegar_Algorithm")
+[| ?A : carrier_mat ?n ?n;
+   gauss_jordan ?A (1\<^sub>m ?n) = (1\<^sub>m ?n, ?B') |]
+==> ?A * ?B' = 1\<^sub>m ?n
+[| ?A : carrier_mat ?n ?n;
+   gauss_jordan ?A (1\<^sub>m ?n) = (1\<^sub>m ?n, ?B') |]
+==> ?B' * ?A = 1\<^sub>m ?n
+[| ?A : carrier_mat ?n ?n;
+   gauss_jordan ?A (1\<^sub>m ?n) = (1\<^sub>m ?n, ?B') |]
+==> ?B' : carrier_mat ?n ?n
+consts
+  matr_option :: "nat => 'a mat option => 'a mat"
+Found termination order: "{}"
+Found termination order: "{}"
+Found termination order: "{}"
+Found termination order: "{}"
+Found termination order: "(%p. length (snd p)) <*mlex*> {}"
+### theory "Draft.BKR_Algorithm"
+### 0.993s elapsed time, 1.030s cpu time, 0.088s GC time
+Loading theory "Draft.Matrix_Equation_Construction" (required by "Draft.Renegar_ProofsTemplates" via "Draft.Renegar_Proofs" via "Draft.BKR_Proofs")
+Loading theory "Draft.Renegar_Algorithm" (required by "Draft.Renegar_ProofsTemplates" via "Draft.Renegar_Proofs")
+Found termination order: "{}"
+?p ~= 0 ==> finite {x. poly ?p x = (0::?'a)}
+construct_lhs_vector ?p ?qs ?signs ==
+vec_of_list
+ (map (%w. rat_of_int
+            (int (length
+                   (filter (%v. v = w)
+                     (map (consistent_sign_vec_copr ?qs)
+                       (characterize_root_list_p ?p))))))
+   ?signs)
+Found termination order: "{}"
+Found termination order: "{}"
+### theory "Draft.Matrix_Equation_Construction"
+### 0.337s elapsed time, 0.668s cpu time, 0.050s GC time
+Loading theory "Draft.BKR_Proofs" (required by "Draft.Renegar_ProofsTemplates" via "Draft.Renegar_Proofs")
+Found termination order: "(%p. length (snd p)) <*mlex*> {}"
+### theory "Draft.Renegar_Algorithm"
+### 0.717s elapsed time, 1.436s cpu time, 0.186s GC time
+### theory "Draft.BKR_Proofs"
+### 0.707s elapsed time, 1.412s cpu time, 0.646s GC time
+Loading theory "Draft.Renegar_Proofs" (required by "Draft.Renegar_ProofsTemplates")
+[| ?A : carrier_mat ?n ?nc; ?n <= ?nc |]
+==> vec_space.rank ?n
+     (take_cols ?A (map snd (pivot_positions (gauss_jordan_single ?A)))) =
+    vec_space.rank ?n ?A
+[| ?A : carrier_mat ?n ?nc; vec_space.rank ?n ?A = ?nc;
+   distinct (cols ?A) |]
+==> ~ module.lin_dep class_ring (module_vec TYPE(?'a) ?n) (set (cols ?A))
+### theory "Draft.Renegar_Proofs"
+### 0.913s elapsed time, 1.052s cpu time, 0.243s GC time
+Loading theory "Draft.Renegar_ProofsTemplates"
+val templateLemmas =
+   [("Renegar_Proofs.dim_col_matrix_A_R",
+     "dim_col (M_mat_R ?signs ?subsets) = length ?signs",
+     template_equation
+      (template_app
+        (template_hole 2,
+         template_app
+          (template_app (template_hole 1, template_var 1), template_var 0)),
+       template_app (template_hole 0, template_var 1))),
+    ("Renegar_Proofs.dim_row_matrix_A_R",
+     "dim_row (M_mat_R ?signs ?subsets) = length ?subsets",
+     template_equation
+      (template_app
+        (template_hole 2,
+         template_app
+          (template_app (template_hole 1, template_var 1), template_var 0)),
+       template_app (template_hole 0, template_var 0))),
+    ("Renegar_Proofs.alt_matrix_char_R",
+     "alt_matrix_A_R ?signs ?subsets = M_mat_R ?signs ?subsets",
+     template_equation
+      (template_app
+        (template_app (template_hole 1, template_var 1), template_var 0),
+       template_app
+        (template_app (template_hole 0, template_var 1), template_var 0))),
+    ("Renegar_Proofs.size_of_rhs_R",
+     "dim_vec (v_vec_R ?p ?qs ?subsets) = length ?subsets",
+     template_equation
+      (template_app
+        (template_hole 2,
+         template_app
+          (template_app
+            (template_app (template_hole 1, template_var 2),
+             template_var 1),
+           template_var 0)),
+       template_app (template_hole 0, template_var 0))),
+    ("Renegar_Proofs.size_of_lhs_R",
+     "dim_vec (w_vec_R ?p ?qs ?signs) = length ?signs",
+     template_equation
+      (template_app
+        (template_hole 2,
+         template_app
+          (template_app
+            (template_app (template_hole 1, template_var 2),
+             template_var 1),
+           template_var 0)),
+       template_app (template_hole 0, template_var 0))),
+    ("Renegar_Proofs.size_of_mat_R",
+     "M_mat_R ?signs ?subsets
+      : carrier_mat (length ?subsets) (length ?signs)",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_hole 4,
+             template_app
+              (template_app (template_hole 3, template_var 1),
+               template_var 0)),
+           template_app
+            (template_app
+              (template_hole 2,
+               template_app (template_hole 1, template_var 0)),
+             template_app (template_hole 0, template_var 1)))
+         )),
+    ("Renegar_Proofs.length_subsets_smash_R",
+     "length (subsets_smash_R ?n ?subs1.0 ?subs2.0) =
+      length ?subs1.0 * length ?subs2.0",
+     template_equation
+      (template_app
+        (template_hole 2,
+         template_app
+          (template_app
+            (template_app (template_hole 1, template_var 2),
+             template_var 1),
+           template_var 0)),
+       template_app
+        (template_app
+          (template_hole 0, template_app (template_hole 2, template_var 1)),
+         template_app (template_hole 2, template_var 0)))),
+    ("Renegar_Proofs.mtx_row_length_R",
+     "list_all (%r. length r = length ?signs) (map (mtx_row_R ?signs) ?ls)",
+     template_predicate
+      (
+         template_app
+          (template_app (template_hole 5, t_empty),
+           template_app
+            (template_app
+              (template_hole 1,
+               template_app (template_hole 0, template_var 1)),
+             template_var 0))
+         )),
+    ("Renegar_Proofs.sum_list_map_power2", "0 <= sum_list (map power2 ?ls)",
+     template_inequation
+      (less_equals, template_hole 6,
+       template_app
+        (template_hole 5,
+         template_app
+          (template_app (template_hole 4, t_empty), template_var 0)))),
+    ("Renegar_Proofs.same_size_R",
+     "invertible_mat (M_mat_R ?signs ?subsets) ==>
+      length ?subsets = length ?signs",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_hole 4,
+              template_app
+               (template_app (template_hole 3, template_var 1),
+                template_var 0))
+            )],
+       template_equation
+        (template_app (template_hole 1, template_var 0),
+         template_app (template_hole 0, template_var 1)))),
+    ("Renegar_Proofs.sum_list_map_power2_poly",
+     "0 <= poly (sum_list (map power2 ?ls)) ?x",
+     template_inequation
+      (less_equals, template_hole 7,
+       template_app
+        (template_app
+          (template_hole 6,
+           template_app
+            (template_hole 5,
+             template_app
+              (template_app (template_hole 4, t_empty), template_var 1))),
+         template_var 0))),
+    ("Renegar_Proofs.consistent_signs_at_roots_eq",
+     "?p ~= 0 ==>
+      consistent_signs_at_roots ?p ?qs =
+      set (characterize_consistent_signs_at_roots ?p ?qs)",
+     template_implication
+      ([template_negation
+         (template_equation (template_var 1, template_hole 4))],
+       template_equation
+        (template_app
+          (template_app (template_hole 2, template_var 1), template_var 0),
+         template_app
+          (template_hole 1,
+           template_app
+            (template_app (template_hole 0, template_var 1),
+             template_var 0))))),
+    ("Renegar_Proofs.find_consistent_signs_at_roots_0_R",
+     "?p ~= 0 ==>
+      set (find_consistent_signs_at_roots_R ?p []) =
+      set (characterize_consistent_signs_at_roots ?p [])",
+     template_implication
+      ([template_negation
+         (template_equation (template_var 0, template_hole 5))],
+       template_equation
+        (template_app
+          (template_hole 3,
+           template_app
+            (template_app (template_hole 2, template_var 0),
+             template_hole 1)),
+         template_app
+          (template_hole 3,
+           template_app
+            (template_app (template_hole 0, template_var 0),
+             template_hole 1))))),
+    ("Renegar_Proofs.find_consistent_signs_at_roots_R",
+     "?p ~= 0 ==>
+      set (find_consistent_signs_at_roots_R ?p ?qs) =
+      set (characterize_consistent_signs_at_roots ?p ?qs)",
+     template_implication
+      ([template_negation
+         (template_equation (template_var 1, template_hole 4))],
+       template_equation
+        (template_app
+          (template_hole 2,
+           template_app
+            (template_app (template_hole 1, template_var 1),
+             template_var 0)),
+         template_app
+          (template_hole 2,
+           template_app
+            (template_app (template_hole 0, template_var 1),
+             template_var 0))))),
+    ("Renegar_Proofs.reduction_signs_is_get_signs_R",
+     "reduction_signs_R ?p ?qs ?signs ?subsets ?m =
+      get_signs_R (reduce_system_R ?p (?qs, ?m, ?subsets, ?signs))",
+     template_equation
+      (template_app
+        (template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 5, template_var 4),
+               template_var 3),
+             template_var 2),
+           template_var 1),
+         template_var 0),
+       template_app
+        (template_hole 4,
+         template_app
+          (template_app (template_hole 3, template_var 4),
+           template_app
+            (template_app (template_hole 2, template_var 3),
+             template_app
+              (template_app (template_hole 1, template_var 0),
+               template_app
+                (template_app (template_hole 0, template_var 1),
+                 template_var 2))))))),
+    ("Renegar_Proofs.reduction_subsets_is_get_subsets_R",
+     "reduction_subsets_R ?p ?qs ?signs ?subsets ?m =
+      get_subsets_R (reduce_system_R ?p (?qs, ?m, ?subsets, ?signs))",
+     template_equation
+      (template_app
+        (template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 5, template_var 4),
+               template_var 3),
+             template_var 2),
+           template_var 1),
+         template_var 0),
+       template_app
+        (template_hole 4,
+         template_app
+          (template_app (template_hole 3, template_var 4),
+           template_app
+            (template_app (template_hole 2, template_var 3),
+             template_app
+              (template_app (template_hole 1, template_var 0),
+               template_app
+                (template_app (template_hole 0, template_var 1),
+                 template_var 2))))))),
+    ("Renegar_Proofs.construct_NofI_R_relation",
+     "construct_NofI_R ?p ?I1.0 ?I2.0 =
+      construct_NofI (sum_list (map power2 (?p # ?I1.0))) ?I2.0",
+     template_equation
+      (template_app
+        (template_app
+          (template_app (template_hole 8, template_var 2), template_var 1),
+         template_var 0),
+       template_app
+        (template_app
+          (template_hole 7,
+           template_app
+            (template_hole 6,
+             template_app
+              (template_app (template_hole 5, t_empty),
+               template_app
+                (template_app (template_hole 0, template_var 2),
+                 template_var 1)))),
+         template_var 0))),
+    ("Renegar_Proofs.getter_functions_R",
+     "calculate_data_R ?p ?qs =
+      (get_matrix_R (calculate_data_R ?p ?qs),
+       get_subsets_R (calculate_data_R ?p ?qs),
+       get_signs_R (calculate_data_R ?p ?qs))",
+     template_equation
+      (template_app
+        (template_app (template_hole 5, template_var 1), template_var 0),
+       template_app
+        (template_app
+          (template_hole 4,
+           template_app
+            (template_hole 3,
+             template_app
+              (template_app (template_hole 5, template_var 1),
+               template_var 0))),
+         template_app
+          (template_app
+            (template_hole 2,
+             template_app
+              (template_hole 1,
+               template_app
+                (template_app (template_hole 5, template_var 1),
+                 template_var 0))),
+           template_app
+            (template_hole 0,
+             template_app
+              (template_app (template_hole 5, template_var 1),
+               template_var 0)))))),
+    ("Renegar_Proofs.find_consistent_signs_at_roots_1_R",
+     "?p ~= 0 & 0 < length ?qs -->
+      set (find_consistent_signs_at_roots_R ?p ?qs) =
+      set (characterize_consistent_signs_at_roots ?p ?qs)",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_hole 11,
+             template_app
+              (template_app
+                (template_hole 10,
+                 template_app
+                  (template_hole 9,
+                   template_app
+                    (template_app (template_hole 8, template_var 1),
+                     template_hole 7))),
+               template_app
+                (template_app (template_hole 6, template_hole 5),
+                 template_app (template_hole 4, template_var 0)))),
+           template_app
+            (template_app
+              (template_hole 3,
+               template_app
+                (template_hole 2,
+                 template_app
+                  (template_app (template_hole 1, template_var 1),
+                   template_var 0))),
+             template_app
+              (template_hole 2,
+               template_app
+                (template_app (template_hole 0, template_var 1),
+                 template_var 0))))
+         )),
+    ("Renegar_Proofs.less_three",
+     "(?n < Suc (Suc (Suc 0))) = (?n = 0 | ?n = 1 | ?n = 2)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 8, template_var 0),
+              template_app
+               (template_hole 7,
+                template_app
+                 (template_hole 7,
+                  template_app (template_hole 7, template_hole 6))))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 5,
+               template_app
+                (template_app (template_hole 4, template_var 0),
+                 template_hole 6)),
+             template_app
+              (template_app
+                (template_hole 5,
+                 template_app
+                  (template_app (template_hole 4, template_var 0),
+                   template_hole 3)),
+               template_app
+                (template_app (template_hole 4, template_var 0),
+                 template_app
+                  (template_hole 2,
+                   template_app (template_hole 1, template_hole 0)))))
+           ))),
+    ("Renegar_Proofs.find_consistent_signs_at_roots_len1_R",
+     "[| ?p ~= 0; length ?qs = 1 |]
+      ==> set (find_consistent_signs_at_roots_R ?p ?qs) =
+          set (characterize_consistent_signs_at_roots ?p ?qs)",
+     template_implication
+      ([template_negation
+         (template_equation (template_var 1, template_hole 7)),
+        template_equation
+         (template_app (template_hole 5, template_var 0), template_hole 4)],
+       template_equation
+        (template_app
+          (template_hole 2,
+           template_app
+            (template_app (template_hole 1, template_var 1),
+             template_var 0)),
+         template_app
+          (template_hole 2,
+           template_app
+            (template_app (template_hole 0, template_var 1),
+             template_var 0))))),
+    ("Renegar_Proofs.zer_iff",
+     "(poly (sum_list (map power2 ?ls)) ?x = 0) =
+      (ALL i:set ?ls. poly i ?x = 0)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 10,
+           template_app
+            (template_app
+              (template_hole 9,
+               template_app
+                (template_hole 8,
+                 template_app
+                  (template_app (template_hole 7, t_empty),
+                   template_var 1))),
+             template_var 0)),
+         template_hole 2),
+       template_app
+        (template_app
+          (template_hole 1, template_app (template_hole 0, template_var 1)),
+         t_empty))),
+    ("Renegar_Proofs.signs_are_cols_R",
+     "ALL i<length ?signs.
+         col (alt_matrix_A_R ?signs ?subsets) i =
+         vec (length ?subsets) (%j. z_R (?subsets ! j) (?signs ! i))",
+     template_predicate (template_app (template_hole 11, t_empty))),
+    ("Renegar_Proofs.subsets_are_rows_R",
+     "ALL i<length ?subsets.
+         row (alt_matrix_A_R ?signs ?subsets) i =
+         vec (length ?signs) (%j. z_R (?subsets ! i) (?signs ! j))",
+     template_predicate (template_app (template_hole 11, t_empty))),
+    ("Renegar_Proofs.calculate_data_satisfies_properties_R",
+     "?p ~= 0 & 0 < length ?qs -->
+      satisfies_properties_R ?p ?qs
+       (get_subsets_R (calculate_data_R ?p ?qs))
+       (get_signs_R (calculate_data_R ?p ?qs))
+       (get_matrix_R (calculate_data_R ?p ?qs))",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_hole 12,
+             template_app
+              (template_app
+                (template_hole 11,
+                 template_app
+                  (template_hole 10,
+                   template_app
+                    (template_app (template_hole 9, template_var 1),
+                     template_hole 8))),
+               template_app
+                (template_app (template_hole 7, template_hole 6),
+                 template_app (template_hole 5, template_var 0)))),
+           template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_app (template_hole 4, template_var 1),
+                   template_var 0),
+                 template_app
+                  (template_hole 3,
+                   template_app
+                    (template_app (template_hole 2, template_var 1),
+                     template_var 0))),
+               template_app
+                (template_hole 1,
+                 template_app
+                  (template_app (template_hole 2, template_var 1),
+                   template_var 0))),
+             template_app
+              (template_hole 0,
+               template_app
+                (template_app (template_hole 2, template_var 1),
+                 template_var 0))))
+         )),
+    ("Renegar_Proofs.subset_helper_R",
+     "ALL x:set (characterize_consistent_signs_at_roots ?p
+                  (?qs1.0 @ ?qs2.0)).
+         EX x1:set (characterize_consistent_signs_at_roots ?p ?qs1.0).
+            EX x2:set (characterize_consistent_signs_at_roots ?p ?qs2.0).
+               x = x1 @ x2",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_hole 6,
+             template_app
+              (template_hole 5,
+               template_app
+                (template_app (template_hole 4, template_var 2),
+                 template_app
+                  (template_app (template_hole 3, template_var 1),
+                   template_var 0)))),
+           t_empty)
+         )),
+    ("Renegar_Proofs.construct_lhs_matches_solve_for_lhs_R",
+     "[| satisfy_equation_R ?p ?qs ?subsets ?signs;
+         invertible_mat (M_mat_R ?signs ?subsets) |]
+      ==> w_vec_R ?p ?qs ?signs =
+          solve_for_lhs_R ?p ?qs ?subsets (M_mat_R ?signs ?subsets)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 5, template_var 3),
+                  template_var 2),
+                template_var 1),
+              template_var 0)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_hole 4,
+              template_app
+               (template_app (template_hole 3, template_var 0),
+                template_var 1))
+            )],
+       template_equation
+        (template_app
+          (template_app
+            (template_app (template_hole 1, template_var 3),
+             template_var 2),
+           template_var 0),
+         template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 0, template_var 3),
+               template_var 2),
+             template_var 1),
+           template_app
+            (template_app (template_hole 3, template_var 0),
+             template_var 1))))),
+    ("Renegar_Proofs.reduction_signs_are_distinct_R",
+     "[| satisfy_equation_R ?p ?qs ?subsets ?signs;
+         invertible_mat (M_mat_R ?signs ?subsets); distinct ?signs |]
+      ==> distinct
+           (reduction_signs_R ?p ?qs ?signs ?subsets
+             (M_mat_R ?signs ?subsets))",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 4, template_var 3),
+                  template_var 2),
+                template_var 1),
+              template_var 0)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_hole 3,
+              template_app
+               (template_app (template_hole 2, template_var 0),
+                template_var 1))
+            ),
+        template_predicate
+         (template_app (template_hole 1, template_var 0))],
+       template_predicate
+        (
+           template_app
+            (template_hole 1,
+             template_app
+              (template_app
+                (template_app
+                  (template_app
+                    (template_app (template_hole 0, template_var 3),
+                     template_var 2),
+                   template_var 0),
+                 template_var 1),
+               template_app
+                (template_app (template_hole 2, template_var 0),
+                 template_var 1)))
+           ))),
+    ("Renegar_Proofs.combining_to_smash_R",
+     "combine_systems_R ?p (?qs1.0, ?m1.0, ?sub1.0, ?sgn1.0)
+       (?qs2.0, ?m2.0, ?sub2.0, ?sgn2.0) =
+      smash_systems_R ?p ?qs1.0 ?qs2.0 ?sub1.0 ?sub2.0 ?sgn1.0 ?sgn2.0 ?m1.0
+       ?m2.0",
+     template_equation
+      (template_app
+        (template_app
+          (template_app (template_hole 4, template_var 8),
+           template_app
+            (template_app (template_hole 3, template_var 7),
+             template_app
+              (template_app (template_hole 2, template_var 6),
+               template_app
+                (template_app (template_hole 1, template_var 5),
+                 template_var 4)))),
+         template_app
+          (template_app (template_hole 3, template_var 3),
+           template_app
+            (template_app (template_hole 2, template_var 2),
+             template_app
+              (template_app (template_hole 1, template_var 1),
+               template_var 0)))),
+       template_app
+        (template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_app
+                    (template_app
+                      (template_app (template_hole 0, template_var 8),
+                       template_var 7),
+                     template_var 3),
+                   template_var 5),
+                 template_var 1),
+               template_var 4),
+             template_var 0),
+           template_var 6),
+         template_var 2))),
+    ("Renegar_Proofs.base_case_sgas_R",
+     "?p ~= 0 ==>
+      set (characterize_consistent_signs_at_roots ?p [?q])
+      <= {[1], [0], [- 1]}",
+     template_implication
+      ([template_negation
+         (template_equation (template_var 1, template_hole 12))],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_hole 10,
+           template_app
+            (template_app (template_hole 9, template_var 1),
+             template_app
+              (template_app (template_hole 8, template_var 0),
+               template_hole 7))),
+         template_app
+          (template_app
+            (template_hole 6,
+             template_app
+              (template_app (template_hole 5, template_hole 4),
+               template_hole 3)),
+           template_app
+            (template_app
+              (template_hole 6,
+               template_app
+                (template_app (template_hole 5, template_hole 2),
+                 template_hole 3)),
+             template_app
+              (template_app
+                (template_hole 6,
+                 template_app
+                  (template_app
+                    (template_hole 5,
+                     template_app (template_hole 1, template_hole 4)),
+                   template_hole 3)),
+               template_hole 0)))))),
+    ("Renegar_Proofs.length_1_calculate_data_satisfies_properties_R",
+     "[| ?p ~= 0; length ?qs = 1 |]
+      ==> satisfies_properties_R ?p ?qs
+           (get_subsets_R (calculate_data_R ?p ?qs))
+           (get_signs_R (calculate_data_R ?p ?qs))
+           (get_matrix_R (calculate_data_R ?p ?qs))",
+     template_implication
+      ([template_negation
+         (template_equation (template_var 1, template_hole 8)),
+        template_equation
+         (template_app (template_hole 6, template_var 0), template_hole 5)],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_app (template_hole 4, template_var 1),
+                   template_var 0),
+                 template_app
+                  (template_hole 3,
+                   template_app
+                    (template_app (template_hole 2, template_var 1),
+                     template_var 0))),
+               template_app
+                (template_hole 1,
+                 template_app
+                  (template_app (template_hole 2, template_var 1),
+                   template_var 0))),
+             template_app
+              (template_hole 0,
+               template_app
+                (template_app (template_hole 2, template_var 1),
+                 template_var 0)))
+           ))),
+    ("Renegar_Proofs.subset_step_R",
+     "[| set (characterize_consistent_signs_at_roots ?p ?qs1.0)
+         <= set ?signs1.0;
+         set (characterize_consistent_signs_at_roots ?p ?qs2.0)
+         <= set ?signs2.0 |]
+      ==> set (characterize_consistent_signs_at_roots ?p (?qs1.0 @ ?qs2.0))
+          <= set (signs_smash ?signs1.0 ?signs2.0)",
+     template_implication
+      ([template_inequation
+         (less_equals,
+          template_app
+           (template_hole 3,
+            template_app
+             (template_app (template_hole 2, template_var 4),
+              template_var 3)),
+          template_app (template_hole 3, template_var 2)),
+        template_inequation
+         (less_equals,
+          template_app
+           (template_hole 3,
+            template_app
+             (template_app (template_hole 2, template_var 4),
+              template_var 1)),
+          template_app (template_hole 3, template_var 0))],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_hole 3,
+           template_app
+            (template_app (template_hole 2, template_var 4),
+             template_app
+              (template_app (template_hole 1, template_var 3),
+               template_var 1))),
+         template_app
+          (template_hole 3,
+           template_app
+            (template_app (template_hole 0, template_var 2),
+             template_var 0))))),
+    ("Renegar_Proofs.reduce_system_matrix_signs_helper_aux_R",
+     "[| ALL x. List.member ?S x --> x < length ?signs; ?p ~= 0 |]
+      ==> alt_matrix_A_R (take_indices ?signs ?S) ?subsets =
+          take_cols_from_matrix (alt_matrix_A_R ?signs ?subsets) ?S",
+     template_implication
+      ([template_predicate (template_app (template_hole 11, t_empty)),
+        template_negation
+         (template_equation (template_var 1, template_hole 4))],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 2,
+             template_app
+              (template_app (template_hole 1, template_var 2),
+               template_var 3)),
+           template_var 0),
+         template_app
+          (template_app
+            (template_hole 0,
+             template_app
+              (template_app (template_hole 2, template_var 2),
+               template_var 0)),
+           template_var 3)))),
+    ("Renegar_Proofs.reduce_system_matrix_signs_helper_R",
+     "[| ALL x. List.member ?S x --> x < length ?signs; ?p ~= 0 |]
+      ==> M_mat_R (take_indices ?signs ?S) ?subsets =
+          take_cols_from_matrix (M_mat_R ?signs ?subsets) ?S",
+     template_implication
+      ([template_predicate (template_app (template_hole 11, t_empty)),
+        template_negation
+         (template_equation (template_var 1, template_hole 4))],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 2,
+             template_app
+              (template_app (template_hole 1, template_var 2),
+               template_var 3)),
+           template_var 0),
+         template_app
+          (template_app
+            (template_hole 0,
+             template_app
+              (template_app (template_hole 2, template_var 2),
+               template_var 0)),
+           template_var 3)))),
+    ("Renegar_Proofs.csv_length_same_as_qlist",
+     "[| ?p ~= 0; ?x : {x. poly ?p x = 0};
+         ?sign = consistent_sign_vec ?qs ?x |]
+      ==> length ?sign = length ?qs",
+     template_implication
+      ([template_negation
+         (template_equation (template_var 3, template_hole 10)),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 9, template_var 2),
+              template_app (template_hole 8, t_empty))
+            ),
+        template_equation
+         (template_var 1,
+          template_app
+           (template_app (template_hole 3, template_var 0),
+            template_var 2))],
+       template_equation
+        (template_app (template_hole 1, template_var 1),
+         template_app (template_hole 0, template_var 0)))),
+    ("Renegar_Proofs.in_set_R",
+     "[| ?p ~= 0; ?x : {x. poly ?p x = 0};
+         ?sign = consistent_sign_vec ?qs ?x |]
+      ==> ?sign : set (characterize_consistent_signs_at_roots ?p ?qs)",
+     template_implication
+      ([template_negation
+         (template_equation (template_var 3, template_hole 10)),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 9, template_var 2),
+              template_app (template_hole 8, t_empty))
+            ),
+        template_equation
+         (template_var 1,
+          template_app
+           (template_app (template_hole 3, template_var 0),
+            template_var 2))],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 2, template_var 1),
+             template_app
+              (template_hole 1,
+               template_app
+                (template_app (template_hole 0, template_var 3),
+                 template_var 0)))
+           ))),
+    ("Renegar_Proofs.matrix_equation_R",
+     "[| ?p ~= 0; distinct ?signs;
+         set (characterize_consistent_signs_at_roots ?p ?qs) <= set ?signs;
+         all_list_constr_R ?subsets (length ?qs) |]
+      ==> satisfy_equation_R ?p ?qs ?subsets ?signs",
+     template_implication
+      ([template_negation
+         (template_equation (template_var 3, template_hole 7)),
+        template_predicate (template_app (template_hole 6, template_var 2)),
+        template_inequation
+         (less_equals,
+          template_app
+           (template_hole 4,
+            template_app
+             (template_app (template_hole 3, template_var 3),
+              template_var 1)),
+          template_app (template_hole 4, template_var 2)),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 2, template_var 0),
+              template_app (template_hole 1, template_var 1))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 0, template_var 3),
+                 template_var 1),
+               template_var 0),
+             template_var 2)
+           ))),
+    ("Renegar_Proofs.construct_lhs_vector_cleaner_R",
+     "?p ~= 0 ==>
+      w_vec_R ?p ?qs ?signs =
+      vec_of_list
+       (map (%s. rat_of_int
+                  (int (card
+                         {x. poly ?p x = 0 &
+                             consistent_sign_vec ?qs x = s})))
+         ?signs)",
+     template_implication
+      ([template_negation
+         (template_equation (template_var 2, template_hole 14))],
+       template_equation
+        (template_app
+          (template_app
+            (template_app (template_hole 12, template_var 2),
+             template_var 1),
+           template_var 0),
+         template_app
+          (template_hole 11,
+           template_app
+            (template_app (template_hole 10, t_empty), template_var 0))))),
+    ("Renegar_Proofs.base_case_sgas_alt_R",
+     "[| length ?qs = 1; ?p ~= 0 |]
+      ==> set (characterize_consistent_signs_at_roots ?p ?qs)
+          <= {[1], [0], [- 1]}",
+     template_implication
+      ([template_equation
+         (template_app (template_hole 14, template_var 1),
+          template_hole 13),
+        template_negation
+         (template_equation (template_var 0, template_hole 10))],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_hole 8,
+           template_app
+            (template_app (template_hole 7, template_var 0),
+             template_var 1)),
+         template_app
+          (template_app
+            (template_hole 6,
+             template_app
+              (template_app (template_hole 5, template_hole 4),
+               template_hole 3)),
+           template_app
+            (template_app
+              (template_hole 6,
+               template_app
+                (template_app (template_hole 5, template_hole 2),
+                 template_hole 3)),
+             template_app
+              (template_app
+                (template_hole 6,
+                 template_app
+                  (template_app
+                    (template_hole 5,
+                     template_app (template_hole 1, template_hole 4)),
+                   template_hole 3)),
+               template_hole 0)))))),
+    ("Renegar_Proofs.smash_list_list_property_set",
+     "ALL elem.
+         elem : set (smash_list_list ?l1.0 ?l2.0) -->
+         (EX elem1 elem2.
+             elem1 : set ?l1.0 &
+             elem2 : set ?l2.0 &
+             elem = (fst elem1 @ fst elem2, snd elem1 @ snd elem2))",
+     template_predicate (template_app (template_hole 11, t_empty))),
+    ("Renegar_Proofs.take_indices_lem_R",
+     "[| ?n < length (take_indices ?arb_list ?index_list);
+         ALL q. List.member ?index_list q --> q < length ?arb_list |]
+      ==> EX k<length ?arb_list.
+             take_indices ?arb_list ?index_list ! ?n = ?arb_list ! k",
+     template_implication
+      ([template_inequation
+         (less_than, template_var 2,
+          template_app
+           (template_hole 8,
+            template_app
+             (template_app (template_hole 7, template_var 1),
+              template_var 0))),
+        template_predicate (template_app (template_hole 6, t_empty))],
+       template_predicate (template_app (template_hole 3, t_empty)))),
+    ("Renegar_Proofs.reduce_system_matrix_subsets_helper_R",
+     "[| ?p ~= 0; length ?signs <= length ?subsets;
+         ALL x. List.member ?S x --> x < length ?subsets |]
+      ==> M_mat_R ?signs (take_indices ?subsets ?S) =
+          take_rows_from_matrix (M_mat_R ?signs ?subsets) ?S",
+     template_implication
+      ([template_negation
+         (template_equation (template_var 3, template_hole 11)),
+        template_inequation
+         (less_equals, template_app (template_hole 9, template_var 2),
+          template_app (template_hole 8, template_var 1)),
+        template_predicate (template_app (template_hole 7, t_empty))],
+       template_equation
+        (template_app
+          (template_app (template_hole 2, template_var 2),
+           template_app
+            (template_app (template_hole 1, template_var 1),
+             template_var 0)),
+         template_app
+          (template_app
+            (template_hole 0,
+             template_app
+              (template_app (template_hole 2, template_var 2),
+               template_var 1)),
+           template_var 0)))),
+    ("Renegar_Proofs.reduce_system_matrix_subsets_helper_aux_R",
+     "[| length ?signs <= length ?subsets;
+         ALL x. List.member ?S x --> x < length ?subsets; ?p ~= 0 |]
+      ==> alt_matrix_A_R ?signs (take_indices ?subsets ?S) =
+          take_rows_from_matrix (alt_matrix_A_R ?signs ?subsets) ?S",
+     template_implication
+      ([template_inequation
+         (less_equals, template_app (template_hole 12, template_var 3),
+          template_app (template_hole 11, template_var 2)),
+        template_predicate (template_app (template_hole 10, t_empty)),
+        template_negation
+         (template_equation (template_var 0, template_hole 4))],
+       template_equation
+        (template_app
+          (template_app (template_hole 2, template_var 3),
+           template_app
+            (template_app (template_hole 1, template_var 2),
+             template_var 1)),
+         template_app
+          (template_app
+            (template_hole 0,
+             template_app
+              (template_app (template_hole 2, template_var 3),
+               template_var 2)),
+           template_var 1)))),
+    ("Renegar_Proofs.reduction_doesnt_break_subsets_R",
+     "[| ?p ~= 0; all_list_constr_R ?subsets (length ?qs);
+         satisfy_equation_R ?p ?qs ?subsets ?signs;
+         invertible_mat (M_mat_R ?signs ?subsets) |]
+      ==> all_list_constr_R
+           (reduction_subsets_R ?p ?qs ?signs ?subsets
+             (M_mat_R ?signs ?subsets))
+           (length ?qs)",
+     template_implication
+      ([template_negation
+         (template_equation (template_var 3, template_hole 6)),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 5, template_var 2),
+              template_app (template_hole 4, template_var 1))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 3, template_var 3),
+                  template_var 1),
+                template_var 2),
+              template_var 0)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_hole 2,
+              template_app
+               (template_app (template_hole 1, template_var 0),
+                template_var 2))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 5,
+               template_app
+                (template_app
+                  (template_app
+                    (template_app
+                      (template_app (template_hole 0, template_var 3),
+                       template_var 1),
+                     template_var 0),
+                   template_var 2),
+                 template_app
+                  (template_app (template_hole 1, template_var 0),
+                   template_var 2))),
+             template_app (template_hole 4, template_var 1))
+           ))),
+    ("Renegar_Proofs.construct_lhs_vector_clean_R",
+     "[| ?p ~= 0; ?i < length ?signs |]
+      ==> of_rat (w_vec_R ?p ?qs ?signs $ ?i) =
+          of_nat
+           (card
+             {x. poly ?p x = 0 & consistent_sign_vec ?qs x = ?signs ! ?i})",
+     template_implication
+      ([template_negation
+         (template_equation (template_var 3, template_hole 16)),
+        template_inequation
+         (less_than, template_var 2,
+          template_app (template_hole 14, template_var 1))],
+       template_equation
+        (template_app
+          (template_hole 12,
+           template_app
+            (template_app
+              (template_hole 11,
+               template_app
+                (template_app
+                  (template_app (template_hole 10, template_var 3),
+                   template_var 0),
+                 template_var 1)),
+             template_var 2)),
+         template_app
+          (template_hole 9,
+           template_app
+            (template_hole 8, template_app (template_hole 7, t_empty)))))),
+    ("Renegar_Proofs.consistent_signs_prop_R",
+     "[| ?p ~= 0; ?x : {x. poly ?p x = 0};
+         ?sign = consistent_sign_vec ?qs ?x |]
+      ==> list_all (%s. s = 1 | s = 0 | s = - 1) ?sign",
+     template_implication
+      ([template_negation
+         (template_equation (template_var 3, template_hole 13)),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 12, template_var 2),
+              template_app (template_hole 11, t_empty))
+            ),
+        template_equation
+         (template_var 1,
+          template_app
+           (template_app (template_hole 6, template_var 0),
+            template_var 2))],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 5, t_empty), template_var 1)
+           ))),
+    ("Renegar_Proofs.lhs_dot_rewrite",
+     "?p ~= 0 ==>
+      vec_of_list (mtx_row_R ?signs ?I) \<bullet> w_vec_R ?p ?qs ?signs =
+      (SUM s<-?signs. z_R ?I s *
+                      rat_of_int
+                       (int (card
+                              {x. poly ?p x = 0 &
+                                  consistent_sign_vec ?qs x = s})))",
+     template_implication
+      ([template_negation
+         (template_equation (template_var 3, template_hole 19))],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 17,
+             template_app
+              (template_hole 16,
+               template_app
+                (template_app (template_hole 15, template_var 2),
+                 template_var 1))),
+           template_app
+            (template_app
+              (template_app (template_hole 14, template_var 3),
+               template_var 0),
+             template_var 2)),
+         template_app
+          (template_hole 13,
+           template_app
+            (template_app (template_hole 12, t_empty), template_var 2))))),
+    ("Renegar_Proofs.z_lemma_R",
+     "[| ?sign : set (characterize_consistent_signs_at_roots ?p ?qs);
+         list_constr (fst ?I) (length ?qs);
+         list_constr (snd ?I) (length ?qs) |]
+      ==> z_R ?I ?sign = 1 | z_R ?I ?sign = 0 | z_R ?I ?sign = - 1",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 12, template_var 3),
+              template_app
+               (template_hole 11,
+                template_app
+                 (template_app (template_hole 10, template_var 2),
+                  template_var 1)))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 9,
+                template_app (template_hole 8, template_var 0)),
+              template_app (template_hole 7, template_var 1))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 9,
+                template_app (template_hole 6, template_var 0)),
+              template_app (template_hole 7, template_var 1))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 5,
+               template_app
+                (template_app
+                  (template_hole 4,
+                   template_app
+                    (template_app (template_hole 3, template_var 0),
+                     template_var 3)),
+                 template_hole 2)),
+             template_app
+              (template_app
+                (template_hole 5,
+                 template_app
+                  (template_app
+                    (template_hole 4,
+                     template_app
+                      (template_app (template_hole 3, template_var 0),
+                       template_var 3)),
+                   template_hole 1)),
+               template_app
+                (template_app
+                  (template_hole 4,
+                   template_app
+                    (template_app (template_hole 3, template_var 0),
+                     template_var 3)),
+                 template_app (template_hole 0, template_hole 2))))
+           ))),
+    ("Renegar_Proofs.reduction_doesnt_break_length_signs_R",
+     "[| ALL x:set ?signs. length x = length ?qs;
+         satisfy_equation_R ?p ?qs ?subsets ?signs;
+         invertible_mat (M_mat_R ?signs ?subsets) |]
+      ==> ALL x:set (reduction_signs_R ?p ?qs ?signs ?subsets
+                      (M_mat_R ?signs ?subsets)).
+             length x = length ?qs",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 8,
+                template_app (template_hole 7, template_var 3)),
+              t_empty)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 3, template_var 1),
+                  template_var 2),
+                template_var 0),
+              template_var 3)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_hole 2,
+              template_app
+               (template_app (template_hole 1, template_var 3),
+                template_var 0))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 8,
+               template_app
+                (template_hole 7,
+                 template_app
+                  (template_app
+                    (template_app
+                      (template_app
+                        (template_app (template_hole 0, template_var 1),
+                         template_var 2),
+                       template_var 3),
+                     template_var 0),
+                   template_app
+                    (template_app (template_hole 1, template_var 3),
+                     template_var 0)))),
+             t_empty)
+           ))),
+    ("Renegar_Proofs.subsets_smash_property_R",
+     "ALL elem.
+         List.member (subsets_smash_R ?n ?subsets1.0 ?subsets2.0) elem -->
+         (EX elem1 elem2.
+             elem1 : set ?subsets1.0 &
+             elem2 : set ?subsets2.0 &
+             elem =
+             (fst elem1 @ map ((+) ?n) (fst elem2),
+              snd elem1 @ map ((+) ?n) (snd elem2)))",
+     template_predicate (template_app (template_hole 14, t_empty))),
+    ("Renegar_Proofs.base_case_satisfy_equation_R",
+     "?p ~= 0 ==>
+      satisfy_equation_R ?p [?q] [([], []), ([0], []), ([], [0])]
+       [[1], [0], [- 1]]",
+     template_implication
+      ([template_negation
+         (template_equation (template_var 1, template_hole 16))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 15, template_var 1),
+                 template_app
+                  (template_app (template_hole 14, template_var 0),
+                   template_hole 13)),
+               template_app
+                (template_app
+                  (template_hole 12,
+                   template_app
+                    (template_app (template_hole 11, template_hole 10),
+                     template_hole 10)),
+                 template_app
+                  (template_app
+                    (template_hole 12,
+                     template_app
+                      (template_app
+                        (template_hole 11,
+                         template_app
+                          (template_app (template_hole 9, template_hole 8),
+                           template_hole 10)),
+                       template_hole 10)),
+                   template_app
+                    (template_app
+                      (template_hole 12,
+                       template_app
+                        (template_app (template_hole 11, template_hole 10),
+                         template_app
+                          (template_app (template_hole 9, template_hole 8),
+                           template_hole 10))),
+                     template_hole 7)))),
+             template_app
+              (template_app
+                (template_hole 6,
+                 template_app
+                  (template_app (template_hole 5, template_hole 4),
+                   template_hole 3)),
+               template_app
+                (template_app
+                  (template_hole 6,
+                   template_app
+                    (template_app (template_hole 5, template_hole 2),
+                     template_hole 3)),
+                 template_app
+                  (template_app
+                    (template_hole 6,
+                     template_app
+                      (template_app
+                        (template_hole 5,
+                         template_app (template_hole 1, template_hole 4)),
+                       template_hole 3)),
+                   template_hole 0))))
+           ))),
+    ("Renegar_Proofs.z_signs_R1",
+     "[| list_all (%i. i < length ?signs) ?I;
+         list_all (%s. s = 1 | s = 0 | s = - 1) ?signs |]
+      ==> prod_list (map ((!) (map_sgas ?signs)) ?I) = 1 |
+          prod_list (map ((!) (map_sgas ?signs)) ?I) = 0",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 12, t_empty), template_var 0)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 9, t_empty), template_var 1)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 8,
+               template_app
+                (template_app
+                  (template_hole 7,
+                   template_app
+                    (template_hole 3,
+                     template_app
+                      (template_app
+                        (template_hole 2,
+                         template_app
+                          (template_hole 1,
+                           template_app (template_hole 0, template_var 1))),
+                       template_var 0))),
+                 template_hole 6)),
+             template_app
+              (template_app
+                (template_hole 7,
+                 template_app
+                  (template_hole 3,
+                   template_app
+                    (template_app
+                      (template_hole 2,
+                       template_app
+                        (template_hole 1,
+                         template_app (template_hole 0, template_var 1))),
+                     template_var 0))),
+               template_hole 5))
+           ))),
+    ("Renegar_Proofs.base_case_satisfy_equation_alt_R",
+     "[| length ?qs = 1; ?p ~= 0 |]
+      ==> satisfy_equation_R ?p ?qs [([], []), ([0], []), ([], [0])]
+           [[1], [0], [- 1]]",
+     template_implication
+      ([template_equation
+         (template_app (template_hole 18, template_var 1),
+          template_hole 17),
+        template_negation
+         (template_equation (template_var 0, template_hole 14))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 13, template_var 0),
+                 template_var 1),
+               template_app
+                (template_app
+                  (template_hole 12,
+                   template_app
+                    (template_app (template_hole 11, template_hole 10),
+                     template_hole 10)),
+                 template_app
+                  (template_app
+                    (template_hole 12,
+                     template_app
+                      (template_app
+                        (template_hole 11,
+                         template_app
+                          (template_app (template_hole 9, template_hole 8),
+                           template_hole 10)),
+                       template_hole 10)),
+                   template_app
+                    (template_app
+                      (template_hole 12,
+                       template_app
+                        (template_app (template_hole 11, template_hole 10),
+                         template_app
+                          (template_app (template_hole 9, template_hole 8),
+                           template_hole 10))),
+                     template_hole 7)))),
+             template_app
+              (template_app
+                (template_hole 6,
+                 template_app
+                  (template_app (template_hole 5, template_hole 4),
+                   template_hole 3)),
+               template_app
+                (template_app
+                  (template_hole 6,
+                   template_app
+                    (template_app (template_hole 5, template_hole 2),
+                     template_hole 3)),
+                 template_app
+                  (template_app
+                    (template_hole 6,
+                     template_app
+                      (template_app
+                        (template_hole 5,
+                         template_app (template_hole 1, template_hole 4)),
+                       template_hole 3)),
+                   template_hole 0))))
+           ))),
+    ("Renegar_Proofs.horiz_vector_helper_pos_ind_R2",
+     "[| ?p ~= 0; ?x : {x. poly ?p x = 0};
+         ?sign = consistent_sign_vec ?qs ?x; list_constr ?I (length ?qs) |]
+      ==> (prod_list (map ((!) ?sign) ?I) = 1) =
+          (0 < poly (prod_list (retrieve_polys ?qs ?I)) ?x)",
+     template_implication
+      ([template_negation
+         (template_equation (template_var 4, template_hole 18)),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 17, template_var 3),
+              template_app (template_hole 16, t_empty))
+            ),
+        template_equation
+         (template_var 2,
+          template_app
+           (template_app (template_hole 11, template_var 1),
+            template_var 3)),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 10, template_var 0),
+              template_app (template_hole 9, template_var 1))
+            )],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 7,
+             template_app
+              (template_hole 6,
+               template_app
+                (template_app
+                  (template_hole 5,
+                   template_app (template_hole 4, template_var 2)),
+                 template_var 0))),
+           template_hole 3),
+         template_app
+          (template_app (template_hole 2, template_hole 13),
+           template_app
+            (template_app
+              (template_hole 14,
+               template_app
+                (template_hole 1,
+                 template_app
+                  (template_app (template_hole 0, template_var 1),
+                   template_var 0))),
+             template_var 3))))),
+    ("Renegar_Proofs.horiz_vector_helper_zer_ind_R2",
+     "[| ?p ~= 0; ?x : {x. poly ?p x = 0};
+         ?sign = consistent_sign_vec ?qs ?x; list_constr ?I (length ?qs) |]
+      ==> (prod_list (map ((!) ?sign) ?I) = 0) =
+          (poly (prod_list (retrieve_polys ?qs ?I)) ?x = 0)",
+     template_implication
+      ([template_negation
+         (template_equation (template_var 4, template_hole 17)),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 16, template_var 3),
+              template_app (template_hole 15, t_empty))
+            ),
+        template_equation
+         (template_var 2,
+          template_app
+           (template_app (template_hole 10, template_var 1),
+            template_var 3)),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 9, template_var 0),
+              template_app (template_hole 8, template_var 1))
+            )],
+       template_bimplication
+        (template_equation
+          (template_app
+            (template_hole 5,
+             template_app
+              (template_app
+                (template_hole 4,
+                 template_app (template_hole 3, template_var 2)),
+               template_var 0)),
+           template_hole 2),
+         template_equation
+          (template_app
+            (template_app
+              (template_hole 13,
+               template_app
+                (template_hole 1,
+                 template_app
+                  (template_app (template_hole 0, template_var 1),
+                   template_var 0))),
+             template_var 3),
+           template_hole 12)))),
+    ("Renegar_Proofs.z_signs_R2",
+     "[| list_all (%i. i < length ?signs) ?I;
+         list_all (%s. s = 1 | s = 0 | s = - 1) ?signs |]
+      ==> prod_list (map ((!) ?signs) ?I) = 1 |
+          prod_list (map ((!) ?signs) ?I) = 0 |
+          prod_list (map ((!) ?signs) ?I) = - 1",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 11, t_empty), template_var 0)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 8, t_empty), template_var 1)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 7,
+               template_app
+                (template_app
+                  (template_hole 6,
+                   template_app
+                    (template_hole 2,
+                     template_app
+                      (template_app
+                        (template_hole 1,
+                         template_app (template_hole 0, template_var 1)),
+                       template_var 0))),
+                 template_hole 5)),
+             template_app
+              (template_app
+                (template_hole 7,
+                 template_app
+                  (template_app
+                    (template_hole 6,
+                     template_app
+                      (template_hole 2,
+                       template_app
+                        (template_app
+                          (template_hole 1,
+                           template_app (template_hole 0, template_var 1)),
+                         template_var 0))),
+                   template_hole 4)),
+               template_app
+                (template_app
+                  (template_hole 6,
+                   template_app
+                    (template_hole 2,
+                     template_app
+                      (template_app
+                        (template_hole 1,
+                         template_app (template_hole 0, template_var 1)),
+                       template_var 0))),
+                 template_app (template_hole 3, template_hole 5))))
+           ))),
+    ("Renegar_Proofs.horiz_vector_helper_pos_ind_R1",
+     "[| ?p ~= 0; ?x : {x. poly ?p x = 0};
+         ?sign = consistent_sign_vec ?qs ?x; list_constr ?I (length ?qs) |]
+      ==> (prod_list (map ((!) (map_sgas ?sign)) ?I) = 1) =
+          (ALL p:set (retrieve_polys ?qs ?I). poly p ?x = 0)",
+     template_implication
+      ([template_negation
+         (template_equation (template_var 4, template_hole 19)),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 18, template_var 3),
+              template_app (template_hole 17, t_empty))
+            ),
+        template_equation
+         (template_var 2,
+          template_app
+           (template_app (template_hole 12, template_var 1),
+            template_var 3)),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 11, template_var 0),
+              template_app (template_hole 10, template_var 1))
+            )],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 8,
+             template_app
+              (template_hole 7,
+               template_app
+                (template_app
+                  (template_hole 6,
+                   template_app
+                    (template_hole 5,
+                     template_app (template_hole 4, template_var 2))),
+                 template_var 0))),
+           template_hole 3),
+         template_app
+          (template_app
+            (template_hole 2,
+             template_app
+              (template_hole 1,
+               template_app
+                (template_app (template_hole 0, template_var 1),
+                 template_var 0))),
+           t_empty)))),
+    ("Renegar_Proofs.reduction_deletes_bad_sign_conds_R",
+     "[| ?p ~= 0; well_def_signs (length ?qs) ?signs; distinct ?signs;
+         set (characterize_consistent_signs_at_roots ?p ?qs) <= set ?signs;
+         satisfy_equation_R ?p ?qs ?subsets ?signs;
+         invertible_mat (M_mat_R ?signs ?subsets) |]
+      ==> set (characterize_consistent_signs_at_roots ?p ?qs) =
+          set (reduction_signs_R ?p ?qs ?signs ?subsets
+                (M_mat_R ?signs ?subsets))",
+     template_implication
+      ([template_negation
+         (template_equation (template_var 3, template_hole 11)),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 10,
+                template_app (template_hole 9, template_var 2)),
+              template_var 1)
+            ),
+        template_predicate (template_app (template_hole 8, template_var 1)),
+        template_inequation
+         (less_equals,
+          template_app
+           (template_hole 6,
+            template_app
+             (template_app (template_hole 5, template_var 3),
+              template_var 2)),
+          template_app (template_hole 6, template_var 1)),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 4, template_var 3),
+                  template_var 2),
+                template_var 0),
+              template_var 1)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_hole 3,
+              template_app
+               (template_app (template_hole 2, template_var 1),
+                template_var 0))
+            )],
+       template_equation
+        (template_app
+          (template_hole 6,
+           template_app
+            (template_app (template_hole 5, template_var 3),
+             template_var 2)),
+         template_app
+          (template_hole 6,
+           template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_app (template_hole 0, template_var 3),
+                   template_var 2),
+                 template_var 1),
+               template_var 0),
+             template_app
+              (template_app (template_hole 2, template_var 1),
+               template_var 0)))))),
+    ("Renegar_Proofs.reduction_doesnt_break_things_signs_R",
+     "[| ?p ~= 0; well_def_signs (length ?qs) ?signs; distinct ?signs;
+         set (characterize_consistent_signs_at_roots ?p ?qs) <= set ?signs;
+         satisfy_equation_R ?p ?qs ?subsets ?signs;
+         invertible_mat (M_mat_R ?signs ?subsets) |]
+      ==> set (characterize_consistent_signs_at_roots ?p ?qs)
+          <= set (reduction_signs_R ?p ?qs ?signs ?subsets
+                   (M_mat_R ?signs ?subsets))",
+     template_implication
+      ([template_negation
+         (template_equation (template_var 3, template_hole 10)),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 9,
+                template_app (template_hole 8, template_var 2)),
+              template_var 1)
+            ),
+        template_predicate (template_app (template_hole 7, template_var 1)),
+        template_inequation
+         (less_equals,
+          template_app
+           (template_hole 5,
+            template_app
+             (template_app (template_hole 4, template_var 3),
+              template_var 2)),
+          template_app (template_hole 5, template_var 1)),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 3, template_var 3),
+                  template_var 2),
+                template_var 0),
+              template_var 1)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_hole 2,
+              template_app
+               (template_app (template_hole 1, template_var 1),
+                template_var 0))
+            )],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_hole 5,
+           template_app
+            (template_app (template_hole 4, template_var 3),
+             template_var 2)),
+         template_app
+          (template_hole 5,
+           template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_app (template_hole 0, template_var 3),
+                   template_var 2),
+                 template_var 1),
+               template_var 0),
+             template_app
+              (template_app (template_hole 1, template_var 1),
+               template_var 0)))))),
+    ("Renegar_Proofs.reducing_sys_satisfies_properties_R",
+     "[| ?p ~= 0; 0 < length ?qs;
+         satisfies_properties_R ?p ?qs ?subsets ?signs ?matrix |]
+      ==> satisfies_properties_R ?p ?qs
+           (get_subsets_R
+             (reduce_system_R ?p (?qs, ?matrix, ?subsets, ?signs)))
+           (get_signs_R
+             (reduce_system_R ?p (?qs, ?matrix, ?subsets, ?signs)))
+           (get_matrix_R
+             (reduce_system_R ?p (?qs, ?matrix, ?subsets, ?signs)))",
+     template_implication
+      ([template_negation
+         (template_equation (template_var 4, template_hole 11)),
+        template_inequation
+         (less_than, template_hole 9,
+          template_app (template_hole 8, template_var 3)),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app (template_hole 7, template_var 4),
+                    template_var 3),
+                  template_var 2),
+                template_var 1),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_app (template_hole 7, template_var 4),
+                   template_var 3),
+                 template_app
+                  (template_hole 6,
+                   template_app
+                    (template_app (template_hole 5, template_var 4),
+                     template_app
+                      (template_app (template_hole 4, template_var 3),
+                       template_app
+                        (template_app (template_hole 3, template_var 0),
+                         template_app
+                          (template_app (template_hole 2, template_var 2),
+                           template_var 1)))))),
+               template_app
+                (template_hole 1,
+                 template_app
+                  (template_app (template_hole 5, template_var 4),
+                   template_app
+                    (template_app (template_hole 4, template_var 3),
+                     template_app
+                      (template_app (template_hole 3, template_var 0),
+                       template_app
+                        (template_app (template_hole 2, template_var 2),
+                         template_var 1)))))),
+             template_app
+              (template_hole 0,
+               template_app
+                (template_app (template_hole 5, template_var 4),
+                 template_app
+                  (template_app (template_hole 4, template_var 3),
+                   template_app
+                    (template_app (template_hole 3, template_var 0),
+                     template_app
+                      (template_app (template_hole 2, template_var 2),
+                       template_var 1))))))
+           ))),
+    ("Renegar_Proofs.matrix_equation_main_step_R",
+     "[| ?p ~= 0; distinct ?signs;
+         set (characterize_consistent_signs_at_roots ?p ?qs) <= set ?signs;
+         list_constr (fst ?I) (length ?qs);
+         list_constr (snd ?I) (length ?qs) |]
+      ==> vec_of_list (mtx_row_R ?signs ?I) \<bullet>
+          w_vec_R ?p ?qs ?signs =
+          construct_NofI_R ?p (retrieve_polys ?qs (fst ?I))
+           (retrieve_polys ?qs (snd ?I))",
+     template_implication
+      ([template_negation
+         (template_equation (template_var 3, template_hole 15)),
+        template_predicate
+         (template_app (template_hole 14, template_var 2)),
+        template_inequation
+         (less_equals,
+          template_app
+           (template_hole 12,
+            template_app
+             (template_app (template_hole 11, template_var 3),
+              template_var 1)),
+          template_app (template_hole 12, template_var 2)),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 10,
+                template_app (template_hole 9, template_var 0)),
+              template_app (template_hole 8, template_var 1))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 10,
+                template_app (template_hole 7, template_var 0)),
+              template_app (template_hole 8, template_var 1))
+            )],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 5,
+             template_app
+              (template_hole 4,
+               template_app
+                (template_app (template_hole 3, template_var 2),
+                 template_var 0))),
+           template_app
+            (template_app
+              (template_app (template_hole 2, template_var 3),
+               template_var 1),
+             template_var 2)),
+         template_app
+          (template_app
+            (template_app (template_hole 1, template_var 3),
+             template_app
+              (template_app (template_hole 0, template_var 1),
+               template_app (template_hole 9, template_var 0))),
+           template_app
+            (template_app (template_hole 0, template_var 1),
+             template_app (template_hole 7, template_var 0)))))),
+    ("Renegar_Proofs.z_signs_R",
+     "[| list_all (%i. i < length ?signs) (fst ?I);
+         list_all (%i. i < length ?signs) (snd ?I);
+         list_all (%s. s = 1 | s = 0 | s = - 1) ?signs |]
+      ==> z_R ?I ?signs = 1 | z_R ?I ?signs = 0 | z_R ?I ?signs = - 1",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 11, t_empty),
+              template_app (template_hole 8, template_var 0))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 11, t_empty),
+              template_app (template_hole 7, template_var 0))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 6, t_empty), template_var 1)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 5,
+               template_app
+                (template_app
+                  (template_hole 4,
+                   template_app
+                    (template_app (template_hole 0, template_var 0),
+                     template_var 1)),
+                 template_hole 3)),
+             template_app
+              (template_app
+                (template_hole 5,
+                 template_app
+                  (template_app
+                    (template_hole 4,
+                     template_app
+                      (template_app (template_hole 0, template_var 0),
+                       template_var 1)),
+                   template_hole 2)),
+               template_app
+                (template_app
+                  (template_hole 4,
+                   template_app
+                    (template_app (template_hole 0, template_var 0),
+                     template_var 1)),
+                 template_app (template_hole 1, template_hole 3))))
+           ))),
+    ("Renegar_Proofs.construct_lhs_vector_drop_consistent_R",
+     "[| ?p ~= 0; distinct ?signs;
+         set (characterize_consistent_signs_at_roots ?p ?qs) <= set ?signs;
+         list_constr (fst ?I) (length ?qs);
+         list_constr (snd ?I) (length ?qs) |]
+      ==> vec_of_list (mtx_row_R ?signs ?I) \<bullet>
+          w_vec_R ?p ?qs ?signs =
+          vec_of_list
+           (mtx_row_R (characterize_consistent_signs_at_roots ?p ?qs)
+             ?I) \<bullet>
+          w_vec_R ?p ?qs (characterize_consistent_signs_at_roots ?p ?qs)",
+     template_implication
+      ([template_negation
+         (template_equation (template_var 3, template_hole 13)),
+        template_predicate
+         (template_app (template_hole 12, template_var 2)),
+        template_inequation
+         (less_equals,
+          template_app
+           (template_hole 10,
+            template_app
+             (template_app (template_hole 9, template_var 3),
+              template_var 1)),
+          template_app (template_hole 10, template_var 2)),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 8,
+                template_app (template_hole 7, template_var 0)),
+              template_app (template_hole 6, template_var 1))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 8,
+                template_app (template_hole 5, template_var 0)),
+              template_app (template_hole 6, template_var 1))
+            )],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 3,
+             template_app
+              (template_hole 2,
+               template_app
+                (template_app (template_hole 1, template_var 2),
+                 template_var 0))),
+           template_app
+            (template_app
+              (template_app (template_hole 0, template_var 3),
+               template_var 1),
+             template_var 2)),
+         template_app
+          (template_app
+            (template_hole 3,
+             template_app
+              (template_hole 2,
+               template_app
+                (template_app
+                  (template_hole 1,
+                   template_app
+                    (template_app (template_hole 9, template_var 3),
+                     template_var 1)),
+                 template_var 0))),
+           template_app
+            (template_app
+              (template_app (template_hole 0, template_var 3),
+               template_var 1),
+             template_app
+              (template_app (template_hole 9, template_var 3),
+               template_var 1)))))),
+    ("Renegar_Proofs.reduce_system_sign_conditions_R",
+     "[| ?p ~= 0; well_def_signs (length ?qs) ?signs; distinct ?signs;
+         set (characterize_consistent_signs_at_roots ?p ?qs) <= set ?signs;
+         satisfy_equation_R ?p ?qs ?subsets ?signs;
+         invertible_mat (M_mat_R ?signs ?subsets) |]
+      ==> set (get_signs_R
+                (reduce_system_R ?p
+                  (?qs, M_mat_R ?signs ?subsets, ?subsets, ?signs))) =
+          set (characterize_consistent_signs_at_roots ?p ?qs)",
+     template_implication
+      ([template_negation
+         (template_equation (template_var 3, template_hole 15)),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 14,
+                template_app (template_hole 13, template_var 2)),
+              template_var 1)
+            ),
+        template_predicate
+         (template_app (template_hole 12, template_var 1)),
+        template_inequation
+         (less_equals,
+          template_app
+           (template_hole 10,
+            template_app
+             (template_app (template_hole 9, template_var 3),
+              template_var 2)),
+          template_app (template_hole 10, template_var 1)),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 8, template_var 3),
+                  template_var 2),
+                template_var 0),
+              template_var 1)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_hole 7,
+              template_app
+               (template_app (template_hole 6, template_var 1),
+                template_var 0))
+            )],
+       template_equation
+        (template_app
+          (template_hole 10,
+           template_app
+            (template_hole 4,
+             template_app
+              (template_app (template_hole 3, template_var 3),
+               template_app
+                (template_app (template_hole 2, template_var 2),
+                 template_app
+                  (template_app
+                    (template_hole 1,
+                     template_app
+                      (template_app (template_hole 6, template_var 1),
+                       template_var 0)),
+                   template_app
+                    (template_app (template_hole 0, template_var 0),
+                     template_var 1)))))),
+         template_app
+          (template_hole 10,
+           template_app
+            (template_app (template_hole 9, template_var 3),
+             template_var 2))))),
+    ("Renegar_Proofs.matrix_construction_is_kronecker_product_R",
+     "[| !!l i.
+            [| l : set ?subs1.0; i : set (fst l) | i : set (snd l) |]
+            ==> i < ?n1.0;
+         !!j. j : set ?signs1.0 ==> length j = ?n1.0 |]
+      ==> M_mat_R (signs_smash ?signs1.0 ?signs2.0)
+           (subsets_smash_R ?n1.0 ?subs1.0 ?subs2.0) =
+          kronecker_product (M_mat_R ?signs1.0 ?subs1.0)
+           (M_mat_R ?signs2.0 ?subs2.0)",
+     template_implication
+      ([template_predicate (template_app (template_hole 20, t_empty)),
+        template_predicate (template_app (template_hole 9, t_empty))],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 3,
+             template_app
+              (template_app (template_hole 2, template_var 2),
+               template_var 1)),
+           template_app
+            (template_app
+              (template_app (template_hole 1, template_var 3),
+               template_var 4),
+             template_var 0)),
+         template_app
+          (template_app
+            (template_hole 0,
+             template_app
+              (template_app (template_hole 3, template_var 2),
+               template_var 4)),
+           template_app
+            (template_app (template_hole 3, template_var 1),
+             template_var 0))))),
+    ("Renegar_Proofs.reduction_doesnt_break_things_invertibility_R",
+     "[| length ?subsets = length ?signs;
+         invertible_mat (M_mat_R ?signs ?subsets); ?p ~= 0;
+         well_def_signs (length ?qs) ?signs; distinct ?signs;
+         set (characterize_consistent_signs_at_roots ?p ?qs) <= set ?signs;
+         satisfy_equation_R ?p ?qs ?subsets ?signs |]
+      ==> invertible_mat
+           (get_matrix_R
+             (reduce_system_R ?p
+               (?qs, M_mat_R ?signs ?subsets, ?subsets, ?signs)))",
+     template_implication
+      ([template_equation
+         (template_app (template_hole 18, template_var 3),
+          template_app (template_hole 17, template_var 2)),
+        template_predicate
+         (
+            template_app
+             (template_hole 16,
+              template_app
+               (template_app (template_hole 15, template_var 2),
+                template_var 3))
+            ),
+        template_negation
+         (template_equation (template_var 1, template_hole 12)),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 11,
+                template_app (template_hole 10, template_var 0)),
+              template_var 2)
+            ),
+        template_predicate (template_app (template_hole 9, template_var 2)),
+        template_inequation
+         (less_equals,
+          template_app
+           (template_hole 7,
+            template_app
+             (template_app (template_hole 6, template_var 1),
+              template_var 0)),
+          template_app (template_hole 7, template_var 2)),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 5, template_var 1),
+                  template_var 0),
+                template_var 3),
+              template_var 2)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_hole 16,
+             template_app
+              (template_hole 4,
+               template_app
+                (template_app (template_hole 3, template_var 1),
+                 template_app
+                  (template_app (template_hole 2, template_var 0),
+                   template_app
+                    (template_app
+                      (template_hole 1,
+                       template_app
+                        (template_app (template_hole 15, template_var 2),
+                         template_var 3)),
+                     template_app
+                      (template_app (template_hole 0, template_var 3),
+                       template_var 2))))))
+           ))),
+    ("Renegar_Proofs.z_append_R",
+     "[| !!i. i : set (fst ?xs) ==> i < length ?as;
+         !!i. i : set (snd ?xs) ==> i < length ?as |]
+      ==> z_R (fst ?xs @ map ((+) (length ?as)) (fst ?ys),
+               snd ?xs @ map ((+) (length ?as)) (snd ?ys))
+           (?as @ ?bs) =
+          z_R ?xs ?as * z_R ?ys ?bs",
+     template_implication
+      ([template_predicate (template_app (template_hole 15, t_empty)),
+        template_predicate (template_app (template_hole 15, t_empty))],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 6,
+             template_app
+              (template_app
+                (template_hole 5,
+                 template_app
+                  (template_app
+                    (template_hole 4,
+                     template_app (template_hole 11, template_var 3)),
+                   template_app
+                    (template_app
+                      (template_hole 3,
+                       template_app
+                        (template_hole 2,
+                         template_app (template_hole 9, template_var 2))),
+                     template_app (template_hole 11, template_var 1)))),
+               template_app
+                (template_app
+                  (template_hole 4,
+                   template_app (template_hole 8, template_var 3)),
+                 template_app
+                  (template_app
+                    (template_hole 3,
+                     template_app
+                      (template_hole 2,
+                       template_app (template_hole 9, template_var 2))),
+                   template_app (template_hole 8, template_var 1))))),
+           template_app
+            (template_app (template_hole 1, template_var 2),
+             template_var 0)),
+         template_app
+          (template_app
+            (template_hole 0,
+             template_app
+              (template_app (template_hole 6, template_var 3),
+               template_var 2)),
+           template_app
+            (template_app (template_hole 6, template_var 1),
+             template_var 0))))),
+    ("Renegar_Proofs.matrix_equation_pretty",
+     "[| ?p ~= 0; distinct ?signs;
+         consistent_signs_at_roots ?p ?qs <= set ?signs;
+         !!a b i.
+            [| (a, b) : set ?subsets; i : set a | i : set b |]
+            ==> i < length ?qs |]
+      ==> M_mat_R ?signs ?subsets *\<^sub>v w_vec_R ?p ?qs ?signs =
+          v_vec_R ?p ?qs ?subsets",
+     template_implication
+      ([template_negation
+         (template_equation (template_var 3, template_hole 19)),
+        template_predicate
+         (template_app (template_hole 18, template_var 2)),
+        template_inequation
+         (less_equals,
+          template_app
+           (template_app (template_hole 16, template_var 3),
+            template_var 1),
+          template_app (template_hole 15, template_var 2)),
+        template_predicate (template_app (template_hole 14, t_empty))],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 3,
+             template_app
+              (template_app (template_hole 2, template_var 2),
+               template_var 0)),
+           template_app
+            (template_app
+              (template_app (template_hole 1, template_var 3),
+               template_var 1),
+             template_var 2)),
+         template_app
+          (template_app
+            (template_app (template_hole 0, template_var 3),
+             template_var 1),
+           template_var 0)))),
+    ("Renegar_Proofs.smaller_sys_are_good_R",
+     "[| ?p ~= 0; 0 < length ?qs1.0; 0 < length ?qs2.0;
+         set (find_consistent_signs_at_roots_R ?p ?qs1.0) =
+         set (characterize_consistent_signs_at_roots ?p ?qs1.0);
+         set (find_consistent_signs_at_roots_R ?p ?qs2.0) =
+         set (characterize_consistent_signs_at_roots ?p ?qs2.0) |]
+      ==> set (snd (snd (reduce_system_R ?p
+                          (combine_systems_R ?p
+                            (?qs1.0, calculate_data_R ?p ?qs1.0)
+                            (?qs2.0, calculate_data_R ?p ?qs2.0))))) =
+          set (characterize_consistent_signs_at_roots ?p
+                (?qs1.0 @ ?qs2.0))",
+     template_implication
+      ([template_negation
+         (template_equation (template_var 2, template_hole 14)),
+        template_inequation
+         (less_than, template_hole 12,
+          template_app (template_hole 11, template_var 1)),
+        template_inequation
+         (less_than, template_hole 12,
+          template_app (template_hole 11, template_var 0)),
+        template_equation
+         (template_app
+           (template_hole 9,
+            template_app
+             (template_app (template_hole 8, template_var 2),
+              template_var 1)),
+          template_app
+           (template_hole 9,
+            template_app
+             (template_app (template_hole 7, template_var 2),
+              template_var 1))),
+        template_equation
+         (template_app
+           (template_hole 9,
+            template_app
+             (template_app (template_hole 8, template_var 2),
+              template_var 0)),
+          template_app
+           (template_hole 9,
+            template_app
+             (template_app (template_hole 7, template_var 2),
+              template_var 0)))],
+       template_equation
+        (template_app
+          (template_hole 9,
+           template_app
+            (template_hole 6,
+             template_app
+              (template_hole 5,
+               template_app
+                (template_app (template_hole 4, template_var 2),
+                 template_app
+                  (template_app
+                    (template_app (template_hole 3, template_var 2),
+                     template_app
+                      (template_app (template_hole 2, template_var 1),
+                       template_app
+                        (template_app (template_hole 1, template_var 2),
+                         template_var 1))),
+                   template_app
+                    (template_app (template_hole 2, template_var 0),
+                     template_app
+                      (template_app (template_hole 1, template_var 2),
+                       template_var 0))))))),
+         template_app
+          (template_hole 9,
+           template_app
+            (template_app (template_hole 7, template_var 2),
+             template_app
+              (template_app (template_hole 0, template_var 1),
+               template_var 0)))))),
+    ("Renegar_Proofs.construct_NofI_prop_R",
+     "?p ~= 0 ==>
+      construct_NofI_R ?p ?I1.0 ?I2.0 =
+      rat_of_int
+       (int (card
+              {x. poly ?p x = 0 &
+                  (ALL q:set ?I1.0. poly q x = 0) &
+                  0 < poly (prod_list ?I2.0) x}) -
+        int (card
+              {x. poly ?p x = 0 &
+                  (ALL q:set ?I1.0. poly q x = 0) &
+                  poly (prod_list ?I2.0) x < 0}))",
+     template_implication
+      ([template_negation
+         (template_equation (template_var 2, template_hole 15))],
+       template_equation
+        (template_app
+          (template_app
+            (template_app (template_hole 13, template_var 2),
+             template_var 1),
+           template_var 0),
+         template_app
+          (template_hole 12,
+           template_app
+            (template_app
+              (template_hole 11,
+               template_app
+                (template_hole 10,
+                 template_app
+                  (template_hole 9,
+                   template_app (template_hole 8, t_empty)))),
+             template_app
+              (template_hole 10,
+               template_app
+                (template_hole 9,
+                 template_app (template_hole 8, t_empty)))))))),
+    ("Renegar_Proofs.construct_NofI_R_prop_helper",
+     "?p ~= 0 ==>
+      construct_NofI_R ?p ?I1.0 ?I2.0 =
+      rat_of_int
+       (int (card
+              {x. poly (sum_list (map power2 (?p # ?I1.0))) x = 0 &
+                  0 < poly (prod_list ?I2.0) x}) -
+        int (card
+              {x. poly (sum_list (map power2 (?p # ?I1.0))) x = 0 &
+                  poly (prod_list ?I2.0) x < 0}))",
+     template_implication
+      ([template_negation
+         (template_equation (template_var 2, template_hole 20))],
+       template_equation
+        (template_app
+          (template_app
+            (template_app (template_hole 18, template_var 2),
+             template_var 1),
+           template_var 0),
+         template_app
+          (template_hole 17,
+           template_app
+            (template_app
+              (template_hole 16,
+               template_app
+                (template_hole 15,
+                 template_app
+                  (template_hole 14,
+                   template_app (template_hole 13, t_empty)))),
+             template_app
+              (template_hole 15,
+               template_app
+                (template_hole 14,
+                 template_app (template_hole 13, t_empty)))))))),
+    ("Renegar_Proofs.take_cols_subsets_og_cols_R",
+     "[| length ?subsets = length ?signs;
+         invertible_mat (M_mat_R ?signs ?subsets); ?p ~= 0;
+         well_def_signs (length ?qs) ?signs; distinct ?signs;
+         set (characterize_consistent_signs_at_roots ?p ?qs) <= set ?signs;
+         satisfy_equation_R ?p ?qs ?subsets ?signs |]
+      ==> set (take_indices (cols (M_mat_R ?signs ?subsets))
+                (find_nonzeros_from_input_vec
+                  (solve_for_lhs_R ?p ?qs ?subsets
+                    (M_mat_R ?signs ?subsets))))
+          <= set (cols (M_mat_R ?signs ?subsets))",
+     template_implication
+      ([template_equation
+         (template_app (template_hole 19, template_var 3),
+          template_app (template_hole 18, template_var 2)),
+        template_predicate
+         (
+            template_app
+             (template_hole 17,
+              template_app
+               (template_app (template_hole 16, template_var 2),
+                template_var 3))
+            ),
+        template_negation
+         (template_equation (template_var 1, template_hole 13)),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 12,
+                template_app (template_hole 11, template_var 0)),
+              template_var 2)
+            ),
+        template_predicate
+         (template_app (template_hole 10, template_var 2)),
+        template_inequation
+         (less_equals,
+          template_app
+           (template_hole 8,
+            template_app
+             (template_app (template_hole 7, template_var 1),
+              template_var 0)),
+          template_app (template_hole 8, template_var 2)),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 6, template_var 1),
+                  template_var 0),
+                template_var 3),
+              template_var 2)
+            )],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_hole 4,
+           template_app
+            (template_app
+              (template_hole 3,
+               template_app
+                (template_hole 2,
+                 template_app
+                  (template_app (template_hole 16, template_var 2),
+                   template_var 3))),
+             template_app
+              (template_hole 1,
+               template_app
+                (template_app
+                  (template_app
+                    (template_app (template_hole 0, template_var 1),
+                     template_var 0),
+                   template_var 3),
+                 template_app
+                  (template_app (template_hole 16, template_var 2),
+                   template_var 3))))),
+         template_app
+          (template_hole 4,
+           template_app
+            (template_hole 2,
+             template_app
+              (template_app (template_hole 16, template_var 2),
+               template_var 3)))))),
+    ("Renegar_Proofs.horiz_vector_helper_pos_R",
+     "[| ?p ~= 0; ?x : {x. poly ?p x = 0};
+         ?sign = consistent_sign_vec ?qs ?x;
+         list_constr (fst ?I) (length ?qs);
+         list_constr (snd ?I) (length ?qs) |]
+      ==> ((ALL p:set (retrieve_polys ?qs (fst ?I)). poly p ?x = 0) &
+           0 < poly (prod_list (retrieve_polys ?qs (snd ?I))) ?x) =
+          (z_R ?I ?sign = 1)",
+     template_implication
+      ([template_negation
+         (template_equation (template_var 4, template_hole 21)),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 20, template_var 3),
+              template_app (template_hole 19, t_empty))
+            ),
+        template_equation
+         (template_var 2,
+          template_app
+           (template_app (template_hole 14, template_var 1),
+            template_var 3)),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 13,
+                template_app (template_hole 12, template_var 0)),
+              template_app (template_hole 11, template_var 1))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 13,
+                template_app (template_hole 10, template_var 0)),
+              template_app (template_hole 11, template_var 1))
+            )],
+       template_implication
+        ([template_predicate
+           (
+              template_app
+               (template_app
+                 (template_hole 8,
+                  template_app
+                   (template_app
+                     (template_hole 7,
+                      template_app
+                       (template_hole 6,
+                        template_app
+                         (template_app (template_hole 5, template_var 1),
+                          template_app
+                           (template_hole 12, template_var 0)))),
+                    t_empty)),
+                template_app
+                 (template_app (template_hole 4, template_hole 16),
+                  template_app
+                   (template_app
+                     (template_hole 17,
+                      template_app
+                       (template_hole 3,
+                        template_app
+                         (template_app (template_hole 5, template_var 1),
+                          template_app
+                           (template_hole 10, template_var 0)))),
+                    template_var 3)))
+              )],
+         template_equation
+          (template_app
+            (template_app (template_hole 1, template_var 0),
+             template_var 2),
+           template_hole 0)))),
+    ("Renegar_Proofs.horiz_vector_helper_neg_R",
+     "[| ?p ~= 0; ?x : {x. poly ?p x = 0};
+         ?sign = consistent_sign_vec ?qs ?x;
+         list_constr (fst ?I) (length ?qs);
+         list_constr (snd ?I) (length ?qs) |]
+      ==> ((ALL p:set (retrieve_polys ?qs (fst ?I)). poly p ?x = 0) &
+           poly (prod_list (retrieve_polys ?qs (snd ?I))) ?x < 0) =
+          (z_R ?I ?sign = - 1)",
+     template_implication
+      ([template_negation
+         (template_equation (template_var 4, template_hole 22)),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 21, template_var 3),
+              template_app (template_hole 20, t_empty))
+            ),
+        template_equation
+         (template_var 2,
+          template_app
+           (template_app (template_hole 15, template_var 1),
+            template_var 3)),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 14,
+                template_app (template_hole 13, template_var 0)),
+              template_app (template_hole 12, template_var 1))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 14,
+                template_app (template_hole 11, template_var 0)),
+              template_app (template_hole 12, template_var 1))
+            )],
+       template_implication
+        ([template_predicate
+           (
+              template_app
+               (template_app
+                 (template_hole 9,
+                  template_app
+                   (template_app
+                     (template_hole 8,
+                      template_app
+                       (template_hole 7,
+                        template_app
+                         (template_app (template_hole 6, template_var 1),
+                          template_app
+                           (template_hole 13, template_var 0)))),
+                    t_empty)),
+                template_app
+                 (template_app
+                   (template_hole 5,
+                    template_app
+                     (template_app
+                       (template_hole 18,
+                        template_app
+                         (template_hole 4,
+                          template_app
+                           (template_app (template_hole 6, template_var 1),
+                            template_app
+                             (template_hole 11, template_var 0)))),
+                      template_var 3)),
+                  template_hole 17))
+              )],
+         template_equation
+          (template_app
+            (template_app (template_hole 2, template_var 0),
+             template_var 2),
+           template_app (template_hole 1, template_hole 0))))),
+    ("Renegar_Proofs.reduction_doesnt_break_things_invertibility_step1_R",
+     "[| length ?subsets = length ?signs;
+         invertible_mat (M_mat_R ?signs ?subsets); ?p ~= 0;
+         well_def_signs (length ?qs) ?signs; distinct ?signs;
+         set (characterize_consistent_signs_at_roots ?p ?qs) <= set ?signs;
+         satisfy_equation_R ?p ?qs ?subsets ?signs |]
+      ==> vec_space.rank (length ?signs)
+           (reduce_mat_cols (M_mat_R ?signs ?subsets)
+             (solve_for_lhs_R ?p ?qs ?subsets (M_mat_R ?signs ?subsets))) =
+          length
+           (find_nonzeros_from_input_vec
+             (solve_for_lhs_R ?p ?qs ?subsets (M_mat_R ?signs ?subsets)))",
+     template_implication
+      ([template_equation
+         (template_app (template_hole 18, template_var 3),
+          template_app (template_hole 17, template_var 2)),
+        template_predicate
+         (
+            template_app
+             (template_hole 16,
+              template_app
+               (template_app (template_hole 15, template_var 2),
+                template_var 3))
+            ),
+        template_negation
+         (template_equation (template_var 1, template_hole 12)),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 11,
+                template_app (template_hole 10, template_var 0)),
+              template_var 2)
+            ),
+        template_predicate (template_app (template_hole 9, template_var 2)),
+        template_inequation
+         (less_equals,
+          template_app
+           (template_hole 7,
+            template_app
+             (template_app (template_hole 6, template_var 1),
+              template_var 0)),
+          template_app (template_hole 7, template_var 2)),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 5, template_var 1),
+                  template_var 0),
+                template_var 3),
+              template_var 2)
+            )],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 4,
+             template_app (template_hole 17, template_var 2)),
+           template_app
+            (template_app
+              (template_hole 3,
+               template_app
+                (template_app (template_hole 15, template_var 2),
+                 template_var 3)),
+             template_app
+              (template_app
+                (template_app
+                  (template_app (template_hole 2, template_var 1),
+                   template_var 0),
+                 template_var 3),
+               template_app
+                (template_app (template_hole 15, template_var 2),
+                 template_var 3)))),
+         template_app
+          (template_hole 1,
+           template_app
+            (template_hole 0,
+             template_app
+              (template_app
+                (template_app
+                  (template_app (template_hole 2, template_var 1),
+                   template_var 0),
+                 template_var 3),
+               template_app
+                (template_app (template_hole 15, template_var 2),
+                 template_var 3))))))),
+    ("Renegar_Proofs.reduce_system_matrix_equation_preserved_R",
+     "[| ?p ~= 0; well_def_signs (length ?qs) ?signs;
+         all_list_constr_R ?subsets (length ?qs); distinct ?signs;
+         set (characterize_consistent_signs_at_roots ?p ?qs) <= set ?signs;
+         satisfy_equation_R ?p ?qs ?subsets ?signs;
+         invertible_mat (M_mat_R ?signs ?subsets) |]
+      ==> satisfy_equation_R ?p ?qs
+           (get_subsets_R
+             (reduce_system_R ?p
+               (?qs, M_mat_R ?signs ?subsets, ?subsets, ?signs)))
+           (get_signs_R
+             (reduce_system_R ?p
+               (?qs, M_mat_R ?signs ?subsets, ?subsets, ?signs)))",
+     template_implication
+      ([template_negation
+         (template_equation (template_var 3, template_hole 16)),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 15,
+                template_app (template_hole 14, template_var 2)),
+              template_var 1)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 13, template_var 0),
+              template_app (template_hole 14, template_var 2))
+            ),
+        template_predicate
+         (template_app (template_hole 12, template_var 1)),
+        template_inequation
+         (less_equals,
+          template_app
+           (template_hole 10,
+            template_app
+             (template_app (template_hole 9, template_var 3),
+              template_var 2)),
+          template_app (template_hole 10, template_var 1)),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 8, template_var 3),
+                  template_var 2),
+                template_var 0),
+              template_var 1)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_hole 7,
+              template_app
+               (template_app (template_hole 6, template_var 1),
+                template_var 0))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 8, template_var 3),
+                 template_var 2),
+               template_app
+                (template_hole 5,
+                 template_app
+                  (template_app (template_hole 4, template_var 3),
+                   template_app
+                    (template_app (template_hole 3, template_var 2),
+                     template_app
+                      (template_app
+                        (template_hole 2,
+                         template_app
+                          (template_app (template_hole 6, template_var 1),
+                           template_var 0)),
+                       template_app
+                        (template_app (template_hole 1, template_var 0),
+                         template_var 1)))))),
+             template_app
+              (template_hole 0,
+               template_app
+                (template_app (template_hole 4, template_var 3),
+                 template_app
+                  (template_app (template_hole 3, template_var 2),
+                   template_app
+                    (template_app
+                      (template_hole 2,
+                       template_app
+                        (template_app (template_hole 6, template_var 1),
+                         template_var 0)),
+                     template_app
+                      (template_app (template_hole 1, template_var 0),
+                       template_var 1))))))
+           ))),
+    ("Renegar_Proofs.reduce_system_matrix_match_R",
+     "[| ?p ~= 0; well_def_signs (length ?qs) ?signs; distinct ?signs;
+         set (characterize_consistent_signs_at_roots ?p ?qs) <= set ?signs;
+         satisfy_equation_R ?p ?qs ?subsets ?signs;
+         invertible_mat (M_mat_R ?signs ?subsets) |]
+      ==> M_mat_R
+           (get_signs_R
+             (reduce_system_R ?p
+               (?qs, M_mat_R ?signs ?subsets, ?subsets, ?signs)))
+           (get_subsets_R
+             (reduce_system_R ?p
+               (?qs, M_mat_R ?signs ?subsets, ?subsets, ?signs))) =
+          get_matrix_R
+           (reduce_system_R ?p
+             (?qs, M_mat_R ?signs ?subsets, ?subsets, ?signs))",
+     template_implication
+      ([template_negation
+         (template_equation (template_var 3, template_hole 17)),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 16,
+                template_app (template_hole 15, template_var 2)),
+              template_var 1)
+            ),
+        template_predicate
+         (template_app (template_hole 14, template_var 1)),
+        template_inequation
+         (less_equals,
+          template_app
+           (template_hole 12,
+            template_app
+             (template_app (template_hole 11, template_var 3),
+              template_var 2)),
+          template_app (template_hole 12, template_var 1)),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 10, template_var 3),
+                  template_var 2),
+                template_var 0),
+              template_var 1)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_hole 9,
+              template_app
+               (template_app (template_hole 8, template_var 1),
+                template_var 0))
+            )],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 8,
+             template_app
+              (template_hole 6,
+               template_app
+                (template_app (template_hole 5, template_var 3),
+                 template_app
+                  (template_app (template_hole 4, template_var 2),
+                   template_app
+                    (template_app
+                      (template_hole 3,
+                       template_app
+                        (template_app (template_hole 8, template_var 1),
+                         template_var 0)),
+                     template_app
+                      (template_app (template_hole 2, template_var 0),
+                       template_var 1)))))),
+           template_app
+            (template_hole 1,
+             template_app
+              (template_app (template_hole 5, template_var 3),
+               template_app
+                (template_app (template_hole 4, template_var 2),
+                 template_app
+                  (template_app
+                    (template_hole 3,
+                     template_app
+                      (template_app (template_hole 8, template_var 1),
+                       template_var 0)),
+                   template_app
+                    (template_app (template_hole 2, template_var 0),
+                     template_var 1)))))),
+         template_app
+          (template_hole 0,
+           template_app
+            (template_app (template_hole 5, template_var 3),
+             template_app
+              (template_app (template_hole 4, template_var 2),
+               template_app
+                (template_app
+                  (template_hole 3,
+                   template_app
+                    (template_app (template_hole 8, template_var 1),
+                     template_var 0)),
+                 template_app
+                  (template_app (template_hole 2, template_var 0),
+                   template_var 1)))))))),
+    ("Renegar_Proofs.base_case_matrix_eq",
+     "?p ~= 0 ==>
+      mat_of_rows_list 3 [[1, 1, 1], [0, 1, 0], [1, 0, - 1]] *\<^sub>v
+      w_vec_R ?p [?q] [[1], [0], [- 1]] =
+      v_vec_R ?p [?q] [([], []), ([0], []), ([], [0])]",
+     template_implication
+      ([template_negation
+         (template_equation (template_var 1, template_hole 23))],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 21,
+             template_app
+              (template_app
+                (template_hole 20,
+                 template_app
+                  (template_hole 19,
+                   template_app (template_hole 18, template_hole 17))),
+               template_app
+                (template_app
+                  (template_hole 16,
+                   template_app
+                    (template_app (template_hole 15, template_hole 14),
+                     template_app
+                      (template_app (template_hole 15, template_hole 14),
+                       template_app
+                        (template_app (template_hole 15, template_hole 14),
+                         template_hole 13)))),
+                 template_app
+                  (template_app
+                    (template_hole 16,
+                     template_app
+                      (template_app (template_hole 15, template_hole 12),
+                       template_app
+                        (template_app (template_hole 15, template_hole 14),
+                         template_app
+                          (template_app
+                            (template_hole 15, template_hole 12),
+                           template_hole 13)))),
+                   template_app
+                    (template_app
+                      (template_hole 16,
+                       template_app
+                        (template_app (template_hole 15, template_hole 14),
+                         template_app
+                          (template_app
+                            (template_hole 15, template_hole 12),
+                           template_app
+                            (template_app
+                              (template_hole 15,
+                               template_app
+                                (template_hole 11, template_hole 14)),
+                             template_hole 13)))),
+                     template_hole 10))))),
+           template_app
+            (template_app
+              (template_app (template_hole 9, template_var 1),
+               template_app
+                (template_app (template_hole 8, template_var 0),
+                 template_hole 7)),
+             template_app
+              (template_app
+                (template_hole 16,
+                 template_app
+                  (template_app (template_hole 15, template_hole 14),
+                   template_hole 13)),
+               template_app
+                (template_app
+                  (template_hole 16,
+                   template_app
+                    (template_app (template_hole 15, template_hole 12),
+                     template_hole 13)),
+                 template_app
+                  (template_app
+                    (template_hole 16,
+                     template_app
+                      (template_app
+                        (template_hole 15,
+                         template_app (template_hole 11, template_hole 14)),
+                       template_hole 13)),
+                   template_hole 10))))),
+         template_app
+          (template_app
+            (template_app (template_hole 6, template_var 1),
+             template_app
+              (template_app (template_hole 8, template_var 0),
+               template_hole 7)),
+           template_app
+            (template_app
+              (template_hole 5,
+               template_app
+                (template_app (template_hole 4, template_hole 3),
+                 template_hole 3)),
+             template_app
+              (template_app
+                (template_hole 5,
+                 template_app
+                  (template_app
+                    (template_hole 4,
+                     template_app
+                      (template_app (template_hole 2, template_hole 1),
+                       template_hole 3)),
+                   template_hole 3)),
+               template_app
+                (template_app
+                  (template_hole 5,
+                   template_app
+                    (template_app (template_hole 4, template_hole 3),
+                     template_app
+                      (template_app (template_hole 2, template_hole 1),
+                       template_hole 3))),
+                 template_hole 0))))))),
+    ("Renegar_Proofs.combining_sys_satisfies_properties_helper_R",
+     "[| ?p ~= 0; 0 < length ?qs1.0; 0 < length ?qs2.0;
+         satisfies_properties_R ?p ?qs1.0 ?subsets1.0 ?signs1.0 ?matrix1.0;
+         satisfies_properties_R ?p ?qs2.0 ?subsets2.0 ?signs2.0
+          ?matrix2.0 |]
+      ==> satisfies_properties_R ?p (?qs1.0 @ ?qs2.0)
+           (get_subsets_R
+             (snd (combine_systems_R ?p
+                    (?qs1.0, ?matrix1.0, ?subsets1.0, ?signs1.0)
+                    (?qs2.0, ?matrix2.0, ?subsets2.0, ?signs2.0))))
+           (get_signs_R
+             (snd (combine_systems_R ?p
+                    (?qs1.0, ?matrix1.0, ?subsets1.0, ?signs1.0)
+                    (?qs2.0, ?matrix2.0, ?subsets2.0, ?signs2.0))))
+           (get_matrix_R
+             (snd (combine_systems_R ?p
+                    (?qs1.0, ?matrix1.0, ?subsets1.0, ?signs1.0)
+                    (?qs2.0, ?matrix2.0, ?subsets2.0, ?signs2.0))))",
+     template_implication
+      ([template_negation
+         (template_equation (template_var 8, template_hole 13)),
+        template_inequation
+         (less_than, template_hole 11,
+          template_app (template_hole 10, template_var 7)),
+        template_inequation
+         (less_than, template_hole 11,
+          template_app (template_hole 10, template_var 6)),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app (template_hole 9, template_var 8),
+                    template_var 7),
+                  template_var 5),
+                template_var 4),
+              template_var 3)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app (template_hole 9, template_var 8),
+                    template_var 6),
+                  template_var 2),
+                template_var 1),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_app (template_hole 9, template_var 8),
+                   template_app
+                    (template_app (template_hole 8, template_var 7),
+                     template_var 6)),
+                 template_app
+                  (template_hole 7,
+                   template_app
+                    (template_hole 6,
+                     template_app
+                      (template_app
+                        (template_app (template_hole 5, template_var 8),
+                         template_app
+                          (template_app (template_hole 4, template_var 7),
+                           template_app
+                            (template_app (template_hole 3, template_var 3),
+                             template_app
+                              (template_app
+                                (template_hole 2, template_var 5),
+                               template_var 4)))),
+                       template_app
+                        (template_app (template_hole 4, template_var 6),
+                         template_app
+                          (template_app (template_hole 3, template_var 0),
+                           template_app
+                            (template_app (template_hole 2, template_var 2),
+                             template_var 1))))))),
+               template_app
+                (template_hole 1,
+                 template_app
+                  (template_hole 6,
+                   template_app
+                    (template_app
+                      (template_app (template_hole 5, template_var 8),
+                       template_app
+                        (template_app (template_hole 4, template_var 7),
+                         template_app
+                          (template_app (template_hole 3, template_var 3),
+                           template_app
+                            (template_app (template_hole 2, template_var 5),
+                             template_var 4)))),
+                     template_app
+                      (template_app (template_hole 4, template_var 6),
+                       template_app
+                        (template_app (template_hole 3, template_var 0),
+                         template_app
+                          (template_app (template_hole 2, template_var 2),
+                           template_var 1))))))),
+             template_app
+              (template_hole 0,
+               template_app
+                (template_hole 6,
+                 template_app
+                  (template_app
+                    (template_app (template_hole 5, template_var 8),
+                     template_app
+                      (template_app (template_hole 4, template_var 7),
+                       template_app
+                        (template_app (template_hole 3, template_var 3),
+                         template_app
+                          (template_app (template_hole 2, template_var 5),
+                           template_var 4)))),
+                   template_app
+                    (template_app (template_hole 4, template_var 6),
+                     template_app
+                      (template_app (template_hole 3, template_var 0),
+                       template_app
+                        (template_app (template_hole 2, template_var 2),
+                         template_var 1)))))))
+           ))),
+    ("Renegar_Proofs.combining_sys_satisfies_properties_R",
+     "[| ?p ~= 0; 0 < length ?qs1.0; 0 < length ?qs2.0;
+         satisfies_properties_R ?p ?qs1.0
+          (get_subsets_R (calculate_data_R ?p ?qs1.0))
+          (get_signs_R (calculate_data_R ?p ?qs1.0))
+          (get_matrix_R (calculate_data_R ?p ?qs1.0));
+         satisfies_properties_R ?p ?qs2.0
+          (get_subsets_R (calculate_data_R ?p ?qs2.0))
+          (get_signs_R (calculate_data_R ?p ?qs2.0))
+          (get_matrix_R (calculate_data_R ?p ?qs2.0)) |]
+      ==> satisfies_properties_R ?p (?qs1.0 @ ?qs2.0)
+           (get_subsets_R
+             (snd (combine_systems_R ?p (?qs1.0, calculate_data_R ?p ?qs1.0)
+                    (?qs2.0, calculate_data_R ?p ?qs2.0))))
+           (get_signs_R
+             (snd (combine_systems_R ?p (?qs1.0, calculate_data_R ?p ?qs1.0)
+                    (?qs2.0, calculate_data_R ?p ?qs2.0))))
+           (get_matrix_R
+             (snd (combine_systems_R ?p (?qs1.0, calculate_data_R ?p ?qs1.0)
+                    (?qs2.0, calculate_data_R ?p ?qs2.0))))",
+     template_implication
+      ([template_negation
+         (template_equation (template_var 2, template_hole 12)),
+        template_inequation
+         (less_than, template_hole 10,
+          template_app (template_hole 9, template_var 1)),
+        template_inequation
+         (less_than, template_hole 10,
+          template_app (template_hole 9, template_var 0)),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app (template_hole 8, template_var 2),
+                    template_var 1),
+                  template_app
+                   (template_hole 7,
+                    template_app
+                     (template_app (template_hole 6, template_var 2),
+                      template_var 1))),
+                template_app
+                 (template_hole 5,
+                  template_app
+                   (template_app (template_hole 6, template_var 2),
+                    template_var 1))),
+              template_app
+               (template_hole 4,
+                template_app
+                 (template_app (template_hole 6, template_var 2),
+                  template_var 1)))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app (template_hole 8, template_var 2),
+                    template_var 0),
+                  template_app
+                   (template_hole 7,
+                    template_app
+                     (template_app (template_hole 6, template_var 2),
+                      template_var 0))),
+                template_app
+                 (template_hole 5,
+                  template_app
+                   (template_app (template_hole 6, template_var 2),
+                    template_var 0))),
+              template_app
+               (template_hole 4,
+                template_app
+                 (template_app (template_hole 6, template_var 2),
+                  template_var 0)))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_app (template_hole 8, template_var 2),
+                   template_app
+                    (template_app (template_hole 3, template_var 1),
+                     template_var 0)),
+                 template_app
+                  (template_hole 7,
+                   template_app
+                    (template_hole 2,
+                     template_app
+                      (template_app
+                        (template_app (template_hole 1, template_var 2),
+                         template_app
+                          (template_app (template_hole 0, template_var 1),
+                           template_app
+                            (template_app (template_hole 6, template_var 2),
+                             template_var 1))),
+                       template_app
+                        (template_app (template_hole 0, template_var 0),
+                         template_app
+                          (template_app (template_hole 6, template_var 2),
+                           template_var 0)))))),
+               template_app
+                (template_hole 5,
+                 template_app
+                  (template_hole 2,
+                   template_app
+                    (template_app
+                      (template_app (template_hole 1, template_var 2),
+                       template_app
+                        (template_app (template_hole 0, template_var 1),
+                         template_app
+                          (template_app (template_hole 6, template_var 2),
+                           template_var 1))),
+                     template_app
+                      (template_app (template_hole 0, template_var 0),
+                       template_app
+                        (template_app (template_hole 6, template_var 2),
+                         template_var 0)))))),
+             template_app
+              (template_hole 4,
+               template_app
+                (template_hole 2,
+                 template_app
+                  (template_app
+                    (template_app (template_hole 1, template_var 2),
+                     template_app
+                      (template_app (template_hole 0, template_var 1),
+                       template_app
+                        (template_app (template_hole 6, template_var 2),
+                         template_var 1))),
+                   template_app
+                    (template_app (template_hole 0, template_var 0),
+                     template_app
+                      (template_app (template_hole 6, template_var 2),
+                       template_var 0))))))
+           ))),
+    ("Renegar_Proofs.inductive_step_R",
+     "[| ?p ~= 0; 0 < length ?qs1.0; 0 < length ?qs2.0;
+         well_def_signs (length ?qs1.0) ?signs1.0;
+         well_def_signs (length ?qs2.0) ?signs2.0; distinct ?signs1.0;
+         distinct ?signs2.0;
+         set (characterize_consistent_signs_at_roots ?p ?qs1.0)
+         <= set ?signs1.0;
+         set (characterize_consistent_signs_at_roots ?p ?qs2.0)
+         <= set ?signs2.0;
+         all_list_constr_R ?subsets1.0 (length ?qs1.0);
+         all_list_constr_R ?subsets2.0 (length ?qs2.0);
+         invertible_mat (M_mat_R ?signs1.0 ?subsets1.0);
+         invertible_mat (M_mat_R ?signs2.0 ?subsets2.0) |]
+      ==> satisfy_equation_R ?p (?qs1.0 @ ?qs2.0)
+           (subsets_smash_R (length ?qs1.0) ?subsets1.0 ?subsets2.0)
+           (signs_smash ?signs1.0 ?signs2.0) &
+          invertible_mat
+           (M_mat_R (signs_smash ?signs1.0 ?signs2.0)
+             (subsets_smash_R (length ?qs1.0) ?subsets1.0 ?subsets2.0))",
+     template_implication
+      ([template_negation
+         (template_equation (template_var 6, template_hole 16)),
+        template_inequation
+         (less_than, template_hole 14,
+          template_app (template_hole 13, template_var 5)),
+        template_inequation
+         (less_than, template_hole 14,
+          template_app (template_hole 13, template_var 4)),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 12,
+                template_app (template_hole 13, template_var 5)),
+              template_var 3)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 12,
+                template_app (template_hole 13, template_var 4)),
+              template_var 2)
+            ),
+        template_predicate
+         (template_app (template_hole 11, template_var 3)),
+        template_predicate
+         (template_app (template_hole 11, template_var 2)),
+        template_inequation
+         (less_equals,
+          template_app
+           (template_hole 9,
+            template_app
+             (template_app (template_hole 8, template_var 6),
+              template_var 5)),
+          template_app (template_hole 9, template_var 3)),
+        template_inequation
+         (less_equals,
+          template_app
+           (template_hole 9,
+            template_app
+             (template_app (template_hole 8, template_var 6),
+              template_var 4)),
+          template_app (template_hole 9, template_var 2)),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 7, template_var 1),
+              template_app (template_hole 13, template_var 5))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 7, template_var 0),
+              template_app (template_hole 13, template_var 4))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_hole 6,
+              template_app
+               (template_app (template_hole 5, template_var 3),
+                template_var 1))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_hole 6,
+              template_app
+               (template_app (template_hole 5, template_var 2),
+                template_var 0))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 4,
+               template_app
+                (template_app
+                  (template_app
+                    (template_app (template_hole 3, template_var 6),
+                     template_app
+                      (template_app (template_hole 2, template_var 5),
+                       template_var 4)),
+                   template_app
+                    (template_app
+                      (template_app
+                        (template_hole 1,
+                         template_app (template_hole 13, template_var 5)),
+                       template_var 1),
+                     template_var 0)),
+                 template_app
+                  (template_app (template_hole 0, template_var 3),
+                   template_var 2))),
+             template_app
+              (template_hole 6,
+               template_app
+                (template_app
+                  (template_hole 5,
+                   template_app
+                    (template_app (template_hole 0, template_var 3),
+                     template_var 2)),
+                 template_app
+                  (template_app
+                    (template_app
+                      (template_hole 1,
+                       template_app (template_hole 13, template_var 5)),
+                     template_var 1),
+                   template_var 0))))
+           ))),
+    ("Renegar_Proofs.matrix_equation_helper_step_R",
+     "[| ?p ~= 0; distinct ?signs;
+         set (characterize_consistent_signs_at_roots ?p ?qs) <= set ?signs;
+         list_constr (fst ?I) (length ?qs);
+         list_constr (snd ?I) (length ?qs) |]
+      ==> vec_of_list (mtx_row_R ?signs ?I) \<bullet>
+          w_vec_R ?p ?qs ?signs =
+          rat_of_int
+           (int (card
+                  {x. poly ?p x = 0 &
+                      (ALL p:set (retrieve_polys ?qs (fst ?I)).
+                          poly p x = 0) &
+                      0 < poly (prod_list (retrieve_polys ?qs (snd ?I)))
+                           x})) -
+          rat_of_int
+           (int (card
+                  {x. poly ?p x = 0 &
+                      (ALL p:set (retrieve_polys ?qs (fst ?I)).
+                          poly p x = 0) &
+                      poly (prod_list (retrieve_polys ?qs (snd ?I))) x
+                      < 0}))",
+     template_implication
+      ([template_negation
+         (template_equation (template_var 3, template_hole 27)),
+        template_predicate
+         (template_app (template_hole 26, template_var 2)),
+        template_inequation
+         (less_equals,
+          template_app
+           (template_hole 24,
+            template_app
+             (template_app (template_hole 23, template_var 3),
+              template_var 1)),
+          template_app (template_hole 24, template_var 2)),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 22,
+                template_app (template_hole 21, template_var 0)),
+              template_app (template_hole 20, template_var 1))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 22,
+                template_app (template_hole 19, template_var 0)),
+              template_app (template_hole 20, template_var 1))
+            )],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 17,
+             template_app
+              (template_hole 16,
+               template_app
+                (template_app (template_hole 15, template_var 2),
+                 template_var 0))),
+           template_app
+            (template_app
+              (template_app (template_hole 14, template_var 3),
+               template_var 1),
+             template_var 2)),
+         template_app
+          (template_app
+            (template_hole 13,
+             template_app
+              (template_hole 12,
+               template_app
+                (template_hole 11,
+                 template_app
+                  (template_hole 10,
+                   template_app (template_hole 9, t_empty))))),
+           template_app
+            (template_hole 12,
+             template_app
+              (template_hole 11,
+               template_app
+                (template_hole 10,
+                 template_app (template_hole 9, t_empty))))))))]:
+   (string * thm * template) list
+### theory "Draft.Renegar_ProofsTemplates"
+### 0.759s elapsed time, 0.922s cpu time, 0.101s GC time
+val it = (): unit

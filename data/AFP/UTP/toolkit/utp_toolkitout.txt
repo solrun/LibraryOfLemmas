@@ -1,0 +1,255 @@
+Loading theory "Draft.Total_Recall" (required by "Draft.utp_toolkitTemplates" via "Draft.utp_toolkit")
+Loading theory "Draft.List_Lexord_Alt" (required by "Draft.utp_toolkitTemplates" via "Draft.utp_toolkit")
+Loading theory "Draft.Map_Extra" (required by "Draft.utp_toolkitTemplates" via "Draft.utp_toolkit")
+Loading theory "Draft.Templates" (required by "Draft.utp_toolkitTemplates" via "Draft.ExtrEqs")
+### theory "Draft.List_Lexord_Alt"
+### 0.038s elapsed time, 0.178s cpu time, 0.000s GC time
+Loading theory "Draft.FSet_Extra" (required by "Draft.utp_toolkitTemplates" via "Draft.utp_toolkit" via "Draft.Countable_Set_Extra")
+datatype template_term
+=
+     t_empty
+   | template_app of template_term * template_term
+   | template_hole of int
+   | template_var of int
+datatype sign
+= equals | greater_equals | greater_than | less_equals | less_than
+datatype template
+=
+     template_bimplication of template * template
+   | template_dunno
+   | template_equation of template_term * template_term
+   | template_implication of template list * template
+   | template_inequation of sign * template_term * template_term
+   | template_negation of template
+   | template_predicate of template_term
+constructor t_empty: template_term
+constructor template_app: template_term * template_term -> template_term
+constructor template_hole: int -> template_term
+constructor template_var: int -> template_term
+constructor equals: sign
+constructor greater_equals: sign
+constructor greater_than: sign
+constructor less_equals: sign
+constructor less_than: sign
+constructor template_bimplication: template * template -> template
+constructor template_dunno: template
+constructor template_equation: template_term * template_term -> template
+constructor template_implication: template list * template -> template
+constructor template_inequation:
+   sign * template_term * template_term -> template
+constructor template_negation: template -> template
+constructor template_predicate: template_term -> template
+val vfs = fn: term -> (indexname * typ) list * (string * typ) list
+val indexOf = fn: ''a list -> ''a -> int -> int
+val has_eq = fn: term -> bool
+val term2template = fn:
+   (indexname * typ) list -> (string * typ) list -> term -> template_term
+val lemma2predicate = fn: term -> term -> template
+val makeTemplatewithContext = fn: term -> term -> template
+val lemma2template = fn: term -> template
+val thm2template = fn: thm -> template
+val tterm2string = fn: template_term -> string
+val template2string = fn: template -> string
+val t = "height ?t <= size ?t": thm
+val th =
+   Const ("HOL.Trueprop", "bool => prop") $
+     (Const ("Orderings.ord_class.less_eq", "nat => nat => bool") $
+       (Const ("Tree.height_class.height", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree")) $
+       (Const ("Nat.size_class.size", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree"))):
+   term
+### theory "Draft.Templates"
+### 0.112s elapsed time, 0.419s cpu time, 0.037s GC time
+Loading theory "Draft.Infinity" (required by "Draft.utp_toolkitTemplates" via "Draft.utp_toolkit")
+signature ORDERS =
+  sig
+    val input_ord: string * string -> order
+    val mixfix_ord: mixfix * mixfix -> order
+    val mode_ord: (string * bool) * (string * bool) -> order
+    val source_ord: Input.source * Input.source -> order
+    val triple_ord:
+       ('a * 'b -> order) ->
+         ('c * 'd -> order) ->
+           ('e * 'f -> order) -> ('a * 'c * 'e) * ('b * 'd * 'f) -> order
+  end
+structure Orders: ORDERS
+signature STRINGOF =
+  sig
+    val input: string -> string
+    val list:
+       string * string * string -> ('a -> string) -> 'a list -> string
+    val mixfix: mixfix -> string
+    val mode: string * bool -> string
+  end
+structure StringOf: STRINGOF
+signature TOTALRECALL =
+  sig
+    val execute_all: theory -> theory
+    val record_no_notation:
+       Syntax.mode -> (string * mixfix) list -> theory -> theory
+    val record_no_syntax:
+       Syntax.mode -> (string * string * mixfix) list -> theory -> theory
+  end
+structure TotalRecall: TOTALRECALL
+### theory "Draft.Total_Recall"
+### 0.139s elapsed time, 0.524s cpu time, 0.037s GC time
+Loading theory "Draft.ExtrEqs" (required by "Draft.utp_toolkitTemplates")
+### Additional type variable(s) in locale specification "infinite": 'a
+class linorder = order +
+  assumes "linear": "!!x y. x <= y | y <= x"
+class infinite = type +
+  assumes "infinite_UNIV": "infinite UNIV"
+### Ignoring duplicate rewrite rule:
+### finite UNIV == False
+Found termination order: "{}"
+### theory "Draft.FSet_Extra"
+### 0.450s elapsed time, 1.689s cpu time, 0.119s GC time
+Loading theory "Draft.List_Extra" (required by "Draft.utp_toolkitTemplates" via "Draft.utp_toolkit" via "Draft.Countable_Set_Extra" via "Draft.Sequence")
+### theory "Draft.Infinity"
+### 0.481s elapsed time, 1.813s cpu time, 0.171s GC time
+Loading theory "Draft.Positive" (required by "Draft.utp_toolkitTemplates" via "Draft.utp_toolkit")
+### theory "Draft.Map_Extra"
+### 0.685s elapsed time, 2.582s cpu time, 0.208s GC time
+Loading theory "Draft.Partial_Fun" (required by "Draft.utp_toolkitTemplates" via "Draft.utp_toolkit")
+val eqpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Var (("_dummy_", 2), "?'a"))
+       ):
+   term Find_Theorems.criterion
+val badeqpattern = Pattern (Const ("Pure.eq", "?'a => ?'a => prop")):
+   term Find_Theorems.criterion
+val undefpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Const ("HOL.undefined", "?'a"))
+       ):
+   term Find_Theorems.criterion
+val thmpattern =
+   Pattern
+    (Const ("HOL.Trueprop", "bool => prop") $ Var (("_dummy_", 1), "bool")):
+   term Find_Theorems.criterion
+val badnames =
+   ["*nitpick*", "*Nitpick*", "*full_exhaustive*", "*_def*", "Enum.finite*",
+    "*Quickcheck*", "ATP*", "*Nunchaku*", "*Code*", "*BNF*", "*SMT*",
+    "*.*.*"]:
+   string list
+val unwanted_names =
+   [(false, Name "*nitpick*"), (false, Name "*Nitpick*"),
+    (false, Name "*full_exhaustive*"), (false, Name "*_def*"),
+    (false, Name "Enum.finite*"), (false, Name "*Quickcheck*"),
+    (false, Name "ATP*"), (false, Name "*Nunchaku*"),
+    (false, Name "*Code*"), (false, Name "*BNF*"), (false, Name "*SMT*"),
+    (false, Name "*.*.*")]:
+   (bool * term Find_Theorems.criterion) list
+val has_vars = fn: term -> bool
+val get_all_eqs = fn: string -> Proof.context -> (string * thm) list
+val get_all_thms = fn: string -> Proof.context -> (string * thm) list
+val get_noneq_thms = fn: string -> Proof.context -> (string * thm) list
+val template_eqs = fn:
+   string -> Proof.context -> (string * thm * template) list
+val template_thms = fn:
+   string -> Proof.context -> (string * thm * template) list
+### theory "Draft.ExtrEqs"
+### 0.593s elapsed time, 2.259s cpu time, 0.171s GC time
+"fBall"
+  :: "'a fset => ('a => bool) => bool"
+instantiation
+  pos :: ({zero,linorder}) zero
+  zero_pos == zero_class.zero :: 'a\<^sup>+
+instantiation
+  pos :: ({zero,linorder}) linorder
+  less_eq_pos == less_eq :: 'a\<^sup>+ => 'a\<^sup>+ => bool
+  less_pos == less :: 'a\<^sup>+ => 'a\<^sup>+ => bool
+instantiation
+  pos :: (linordered_semidom) linordered_semidom
+  one_pos == one_class.one :: 'a\<^sup>+
+  times_pos == times :: 'a\<^sup>+ => 'a\<^sup>+ => 'a\<^sup>+
+  minus_pos == minus :: 'a\<^sup>+ => 'a\<^sup>+ => 'a\<^sup>+
+  plus_pos == plus :: 'a\<^sup>+ => 'a\<^sup>+ => 'a\<^sup>+
+locale abel_semigroup
+  fixes f :: "'a => 'a => 'a"  (infixl \<open>\<^bold>*\<close> 70)
+  assumes "abel_semigroup (\<^bold>*)"
+consts
+  nth_el :: "'a list => nat => 'a option"
+instantiation
+  pos :: (linordered_field) semidom_divide
+  divide_pos == divide :: 'a\<^sup>+ => 'a\<^sup>+ => 'a\<^sup>+
+instantiation
+  pos :: (linordered_field) inverse
+  inverse_pos == inverse :: 'a\<^sup>+ => 'a\<^sup>+
+### theory "Draft.Positive"
+### 0.497s elapsed time, 1.607s cpu time, 0.166s GC time
+instantiation
+  pfun :: (type, type) zero
+  zero_pfun == zero_class.zero :: ('a, 'b) pfun
+instantiation
+  pfun :: (type, type) plus
+  plus_pfun == plus :: ('a, 'b) pfun => ('a, 'b) pfun => ('a, 'b) pfun
+Found termination order: "(%p. length (snd p)) <*mlex*> {}"
+instantiation
+  pfun :: (type, type) minus
+  minus_pfun == minus :: ('a, 'b) pfun => ('a, 'b) pfun => ('a, 'b) pfun
+instantiation
+  pfun :: (type, type) inf
+  inf_pfun == inf :: ('a, 'b) pfun => ('a, 'b) pfun => ('a, 'b) pfun
+### Partially applied constant "List_Extra.gcp" on left hand side of equation, in theorem:
+### semilattice_inf.Inf_fin gcp (set (?x # ?xs)) == fold gcp ?xs ?x
+instantiation
+  pfun :: (type, type) order
+  less_eq_pfun == less_eq :: ('a, 'b) pfun => ('a, 'b) pfun => bool
+  less_pfun == less :: ('a, 'b) pfun => ('a, 'b) pfun => bool
+instantiation
+  list :: (type) minus
+  minus_list == minus :: 'a list => 'a list => 'a list
+### theory "Draft.List_Extra"
+### 1.054s elapsed time, 3.029s cpu time, 0.767s GC time
+Loading theory "Draft.Sequence" (required by "Draft.utp_toolkitTemplates" via "Draft.utp_toolkit" via "Draft.Countable_Set_Extra")
+### theory "Draft.Partial_Fun"
+### 0.930s elapsed time, 2.451s cpu time, 0.678s GC time
+Loading theory "Draft.Finite_Fun" (required by "Draft.utp_toolkitTemplates" via "Draft.utp_toolkit")
+instantiation
+  seq :: (ord) ord
+  less_eq_seq == less_eq :: 'a seq => 'a seq => bool
+  less_seq == less :: 'a seq => 'a seq => bool
+### Generation of a parametrized correspondence relation failed.
+### Reason:  No relator for the type "Partial_Fun.pfun" found.
+Found termination order: "(%p. length (snd (snd p))) <*mlex*> {}"
+Proofs for inductive predicate(s) "sorted_rel"
+  Proving monotonicity ...
+### theory "Draft.Sequence"
+### 0.465s elapsed time, 0.957s cpu time, 0.085s GC time
+Loading theory "Draft.Countable_Set_Extra" (required by "Draft.utp_toolkitTemplates" via "Draft.utp_toolkit")
+instantiation
+  ffun :: (type, type) zero
+  zero_ffun == zero_class.zero :: ('a, 'b) ffun
+instantiation
+  ffun :: (type, type) plus
+  plus_ffun == plus :: ('a, 'b) ffun => ('a, 'b) ffun => ('a, 'b) ffun
+instantiation
+  ffun :: (type, type) minus
+  minus_ffun == minus :: ('a, 'b) ffun => ('a, 'b) ffun => ('a, 'b) ffun
+instantiation
+  ffun :: (type, type) inf
+  inf_ffun == inf :: ('a, 'b) ffun => ('a, 'b) ffun => ('a, 'b) ffun
+instantiation
+  ffun :: (type, type) order
+  less_eq_ffun == less_eq :: ('a, 'b) ffun => ('a, 'b) ffun => bool
+  less_ffun == less :: ('a, 'b) ffun => ('a, 'b) ffun => bool
+### theory "Draft.Finite_Fun"
+### 0.662s elapsed time, 1.363s cpu time, 0.166s GC time
+### theory "Draft.Countable_Set_Extra"
+### 0.540s elapsed time, 0.880s cpu time, 0.157s GC time
+Loading theory "Draft.utp_toolkit" (required by "Draft.utp_toolkitTemplates")
+### theory "Draft.utp_toolkit"
+### 1.723s elapsed time, 2.196s cpu time, 0.684s GC time
+Loading theory "Draft.utp_toolkitTemplates"
+val templateLemmas = []: (string * thm * template) list
+### theory "Draft.utp_toolkitTemplates"
+### 0.632s elapsed time, 0.834s cpu time, 0.120s GC time
+val it = (): unit

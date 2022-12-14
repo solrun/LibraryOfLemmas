@@ -1,0 +1,358 @@
+Loading theory "Draft.Roots_via_IA" (required by "Draft.Roots_via_IATemplates")
+Loading theory "Draft.Templates" (required by "Draft.Roots_via_IATemplates" via "Draft.ExtrEqs")
+datatype template_term
+=
+     t_empty
+   | template_app of template_term * template_term
+   | template_hole of int
+   | template_var of int
+datatype sign
+= equals | greater_equals | greater_than | less_equals | less_than
+datatype template
+=
+     template_bimplication of template * template
+   | template_dunno
+   | template_equation of template_term * template_term
+   | template_implication of template list * template
+   | template_inequation of sign * template_term * template_term
+   | template_negation of template
+   | template_predicate of template_term
+constructor t_empty: template_term
+constructor template_app: template_term * template_term -> template_term
+constructor template_hole: int -> template_term
+constructor template_var: int -> template_term
+constructor equals: sign
+constructor greater_equals: sign
+constructor greater_than: sign
+constructor less_equals: sign
+constructor less_than: sign
+constructor template_bimplication: template * template -> template
+constructor template_dunno: template
+constructor template_equation: template_term * template_term -> template
+constructor template_implication: template list * template -> template
+constructor template_inequation:
+   sign * template_term * template_term -> template
+constructor template_negation: template -> template
+constructor template_predicate: template_term -> template
+val vfs = fn: term -> (indexname * typ) list * (string * typ) list
+val indexOf = fn: ''a list -> ''a -> int -> int
+val has_eq = fn: term -> bool
+val term2template = fn:
+   (indexname * typ) list -> (string * typ) list -> term -> template_term
+val lemma2predicate = fn: term -> term -> template
+val makeTemplatewithContext = fn: term -> term -> template
+val lemma2template = fn: term -> template
+val thm2template = fn: thm -> template
+val tterm2string = fn: template_term -> string
+val template2string = fn: template -> string
+val t = "height ?t <= size ?t": thm
+val th =
+   Const ("HOL.Trueprop", "bool => prop") $
+     (Const ("Orderings.ord_class.less_eq", "nat => nat => bool") $
+       (Const ("Tree.height_class.height", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree")) $
+       (Const ("Nat.size_class.size", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree"))):
+   term
+### theory "Draft.Templates"
+### 0.064s elapsed time, 0.165s cpu time, 0.000s GC time
+Loading theory "Draft.ExtrEqs" (required by "Draft.Roots_via_IATemplates")
+Found termination order: "(%p. length (fst p)) <*mlex*> {}"
+### Generation of a parametrized correspondence relation failed.
+### Reason:  No relator for the type "Polynomial.poly" found.
+### theory "Draft.Roots_via_IA"
+### 0.459s elapsed time, 0.953s cpu time, 0.050s GC time
+val eqpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Var (("_dummy_", 2), "?'a"))
+       ):
+   term Find_Theorems.criterion
+val badeqpattern = Pattern (Const ("Pure.eq", "?'a => ?'a => prop")):
+   term Find_Theorems.criterion
+val undefpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Const ("HOL.undefined", "?'a"))
+       ):
+   term Find_Theorems.criterion
+val thmpattern =
+   Pattern
+    (Const ("HOL.Trueprop", "bool => prop") $ Var (("_dummy_", 1), "bool")):
+   term Find_Theorems.criterion
+val badnames =
+   ["*nitpick*", "*Nitpick*", "*full_exhaustive*", "*_def*", "Enum.finite*",
+    "*Quickcheck*", "ATP*", "*Nunchaku*", "*Code*", "*BNF*", "*SMT*",
+    "*.*.*"]:
+   string list
+val unwanted_names =
+   [(false, Name "*nitpick*"), (false, Name "*Nitpick*"),
+    (false, Name "*full_exhaustive*"), (false, Name "*_def*"),
+    (false, Name "Enum.finite*"), (false, Name "*Quickcheck*"),
+    (false, Name "ATP*"), (false, Name "*Nunchaku*"),
+    (false, Name "*Code*"), (false, Name "*BNF*"), (false, Name "*SMT*"),
+    (false, Name "*.*.*")]:
+   (bool * term Find_Theorems.criterion) list
+val has_vars = fn: term -> bool
+val get_all_eqs = fn: string -> Proof.context -> (string * thm) list
+val get_all_thms = fn: string -> Proof.context -> (string * thm) list
+val get_noneq_thms = fn: string -> Proof.context -> (string * thm) list
+val template_eqs = fn:
+   string -> Proof.context -> (string * thm * template) list
+val template_thms = fn:
+   string -> Proof.context -> (string * thm * template) list
+### theory "Draft.ExtrEqs"
+### 0.596s elapsed time, 1.039s cpu time, 0.135s GC time
+Loading theory "Draft.Roots_via_IATemplates"
+val templateLemmas =
+   [("Roots_via_IA.genuine_roots_impl", "distinct (genuine_roots_impl ?p)",
+     template_predicate
+      (
+         template_app
+          (template_hole 1, template_app (template_hole 0, template_var 0))
+         )),
+    ("Roots_via_IA.filter_fun_real", "filter_fun ?p (filter_fun_real ?p)",
+     template_predicate
+      (
+         template_app
+          (template_app (template_hole 1, template_var 0),
+           template_app (template_hole 0, template_var 0))
+         )),
+    ("Roots_via_IA.filter_fun_complex",
+     "filter_fun ?p (filter_fun_complex ?p)",
+     template_predicate
+      (
+         template_app
+          (template_app (template_hole 1, template_var 0),
+           template_app (template_hole 0, template_var 0))
+         )),
+    ("Roots_via_IA.in_interval_of_complex",
+     "?z \<in>\<^sub>c interval_of_complex ?prec ?z",
+     template_predicate
+      (
+         template_app
+          (template_app (template_hole 1, template_var 1),
+           template_app
+            (template_app (template_hole 0, template_var 0),
+             template_var 1))
+         )),
+    ("Roots_via_IA.in_interval_of_real",
+     "?x \<in>\<^sub>i interval_of_real ?prec ?x",
+     template_predicate
+      (
+         template_app
+          (template_app (template_hole 1, template_var 1),
+           template_app
+            (template_app (template_hole 0, template_var 0),
+             template_var 1))
+         )),
+    ("Roots_via_IA.distinct_genuine_roots",
+     "distinct ?xs ==> distinct (genuine_roots ?p ?xs)",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 1, template_var 1))],
+       template_predicate
+        (
+           template_app
+            (template_hole 1,
+             template_app
+              (template_app (template_hole 0, template_var 0),
+               template_var 1))
+           ))),
+    ("Roots_via_IA.length_coeffs_degree'",
+     "length (coeffs ?p) = (if ?p = 0 then 0 else Suc (degree ?p))",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_hole 7,
+              template_app (template_hole 6, template_var 0))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_hole 5,
+                 template_app
+                  (template_app (template_hole 4, template_var 0),
+                   template_hole 3)),
+               template_hole 2),
+             template_app
+              (template_hole 1,
+               template_app (template_hole 0, template_var 0)))
+           ))),
+    ("Roots_via_IA.genuine_roots_impl",
+     "set (genuine_roots_impl ?p) = {z. poly (gr_poly ?p) z = (0::?'a)}",
+     template_equation
+      (template_app
+        (template_hole 6, template_app (template_hole 5, template_var 0)),
+       template_app (template_hole 4, t_empty))),
+    ("Roots_via_IA.genuine_roots_step",
+     "filter_fun ?p ?f ==>
+      genuine_roots ?p ?xs = genuine_roots ?p (filter (?f ?prec) ?xs)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 3, template_var 3),
+              template_var 2)
+            )],
+       template_equation
+        (template_app
+          (template_app (template_hole 1, template_var 3), template_var 1),
+         template_app
+          (template_app (template_hole 1, template_var 3),
+           template_app
+            (template_app
+              (template_hole 0,
+               template_app (template_var 2, template_var 0)),
+             template_var 1))))),
+    ("Roots_via_IA.genuine_roots'_code",
+     "genuine_roots' ?prec ?gr =
+      (if length (gr_list ?gr) = gr_numroots ?gr then gr_list ?gr
+       else genuine_roots' (2 * ?prec)
+             (genuine_roots_impl_step' ?prec ?gr))",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 10, template_var 1),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_hole 9,
+                 template_app
+                  (template_app
+                    (template_hole 8,
+                     template_app
+                      (template_hole 7,
+                       template_app (template_hole 6, template_var 0))),
+                   template_app (template_hole 5, template_var 0))),
+               template_app (template_hole 6, template_var 0)),
+             template_app
+              (template_app
+                (template_hole 10,
+                 template_app
+                  (template_app
+                    (template_hole 4,
+                     template_app
+                      (template_hole 3,
+                       template_app (template_hole 2, template_hole 1))),
+                   template_var 1)),
+               template_app
+                (template_app (template_hole 0, template_var 1),
+                 template_var 0)))
+           ))),
+    ("Roots_via_IA.poly_in_poly_interval_real",
+     "[| list_all2 in_interval (coeffs ?p) ?cs; ?x \<in>\<^sub>i ?ivl |]
+      ==> poly ?p ?x \<in>\<^sub>i poly_interval ?cs ?ivl",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 4, t_empty),
+                template_app (template_hole 2, template_var 3)),
+              template_var 2)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 3, template_var 1),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 3,
+               template_app
+                (template_app (template_hole 1, template_var 3),
+                 template_var 1)),
+             template_app
+              (template_app (template_hole 0, template_var 2),
+               template_var 0))
+           ))),
+    ("Roots_via_IA.poly_in_poly_interval_complex",
+     "[| list_all2 in_complex_interval (coeffs ?p) ?cs;
+         ?x \<in>\<^sub>c ?ivl |]
+      ==> poly ?p ?x \<in>\<^sub>c poly_interval ?cs ?ivl",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 4, t_empty),
+                template_app (template_hole 2, template_var 3)),
+              template_var 2)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 3, template_var 1),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 3,
+               template_app
+                (template_app (template_hole 1, template_var 3),
+                 template_var 1)),
+             template_app
+              (template_app (template_hole 0, template_var 2),
+               template_var 0))
+           ))),
+    ("Roots_via_IA.genuine_roots_step_preserve_invar",
+     "[| filter_fun ?p ?f; {z. poly ?p z = (0::?'a)} <= set ?xs |]
+      ==> {z. poly ?p z = (0::?'a)} <= set (filter (?f ?prec) ?xs)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 7, template_var 3),
+              template_var 2)
+            ),
+        template_inequation
+         (less_equals, template_app (template_hole 5, t_empty),
+          template_app (template_hole 1, template_var 1))],
+       template_inequation
+        (less_equals, template_app (template_hole 5, t_empty),
+         template_app
+          (template_hole 1,
+           template_app
+            (template_app
+              (template_hole 0,
+               template_app (template_var 2, template_var 0)),
+             template_var 1))))),
+    ("Roots_via_IA.genuine_roots_finish",
+     "[| {z. poly ?p z = (0::?'a)} <= set ?xs; distinct ?xs;
+         length ?xs = card {z. poly ?p z = (0::?'a)} |]
+      ==> genuine_roots ?p ?xs = ?xs",
+     template_implication
+      ([template_inequation
+         (less_equals, template_app (template_hole 10, t_empty),
+          template_app (template_hole 6, template_var 0)),
+        template_predicate (template_app (template_hole 5, template_var 0)),
+        template_equation
+         (template_app (template_hole 3, template_var 0),
+          template_app
+           (template_hole 2, template_app (template_hole 10, t_empty)))],
+       template_equation
+        (template_app
+          (template_app (template_hole 0, template_var 1), template_var 0),
+         template_var 0)))]:
+   (string * thm * template) list
+### theory "Draft.Roots_via_IATemplates"
+### 0.867s elapsed time, 1.032s cpu time, 0.094s GC time
+val it = (): unit

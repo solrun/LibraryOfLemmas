@@ -1,0 +1,968 @@
+Loading theory "SpecCheck.SpecCheck_Base" (required by "Draft.IML_UTMoreTemplates" via "Draft.IML_UT" via "SpecCheck.SpecCheck" via "SpecCheck.SpecCheck_Generators")
+Loading theory "SpecCheck.SpecCheck_Show" (required by "Draft.IML_UTMoreTemplates" via "Draft.IML_UT" via "SpecCheck.SpecCheck")
+Loading theory "HOL-Library.Function_Algebras" (required by "Draft.IML_UTMoreTemplates" via "Draft.ExtrEqs" via "HOL-Library.BigO")
+Loading theory "HOL-Library.Nat_Bijection" (required by "Draft.IML_UTMoreTemplates" via "Draft.ExtrEqs" via "HOL-Library.Stream")
+signature SPECCHECK_UTIL = sig val spaces: string list -> string end
+structure SpecCheck_Util: SPECCHECK_UTIL
+signature SPECCHECK_SHOW_TYPES = sig type 'a show = 'a -> Pretty.T end
+structure SpecCheck_Show_Types: SPECCHECK_SHOW_TYPES
+signature SPECCHECK_SHOW_BASE =
+  sig
+    val bool: bool show
+    val char: char show
+    val int: int show
+    val list: 'a show -> 'a list show
+    val none: 'a show
+    val option: 'a show -> 'a option show
+    val real: real show
+    val record: (string * Pretty.T) list show
+    type 'a show = 'a -> Pretty.T
+    val string: string show
+    val zip: 'a show -> 'b show -> ('a * 'b) show
+    val zip3: 'a show -> 'b show -> 'c show -> ('a * 'b * 'c) show
+    val zip4:
+       'a show -> 'b show -> 'c show -> 'd show -> ('a * 'b * 'c * 'd) show
+  end
+structure SpecCheck_Show_Base: SPECCHECK_SHOW_BASE
+signature SPECCHECK_BASE =
+  sig
+    val add_timing: Timing.timing -> Timing.timing -> Timing.timing
+    val empty_stats: stats
+    val failure_data: 'a list -> 'a failure_data
+    type 'a failure_data =
+       {counterexamples: 'a list, the_exception: exn option}
+    val failure_data_exn: 'a list -> exn -> 'a failure_data
+    val num_shrinks: stats -> int
+    val num_tests: stats -> int
+    datatype 'a result
+    =
+         Failure of stats * 'a failure_data
+       | Gave_Up of stats
+       | Success of stats
+    datatype result_single = Discard | Exception of exn | Result of bool
+    type stats =
+       {num_discarded_tests: int,
+        num_failed_shrinks: int,
+        num_failed_tests: int,
+        num_recently_discarded_tests: int,
+        num_success_shrinks: int,
+        num_success_tests: int, timing: Timing.timing}
+    val stats_of_result: 'a result -> stats
+  end
+structure SpecCheck_Base: SPECCHECK_BASE
+### ML warning (line 36 of "$AFP/SpecCheck/property.ML"):
+### Handler catches all exceptions.
+### ML warning (line 51 of "$AFP/SpecCheck/property.ML"):
+### Handler catches all exceptions.
+signature SPECCHECK_PROPERTY =
+  sig
+    val ==> : 'a pred * 'a pred -> 'a prop
+    val expect_failure: exn -> ('a -> 'b) -> 'a prop
+    val implies: 'a pred -> 'a prop -> 'a prop
+    type 'a pred = 'a -> bool
+    val prop: 'a pred -> 'a prop
+    type 'a prop
+  end
+structure SpecCheck_Property: SPECCHECK_PROPERTY
+signature SPECCHECK_SHOW_TERM =
+  sig
+    val env: Proof.context -> Envir.env SpecCheck_Show_Types.show
+    val tenv: Proof.context -> Envir.tenv SpecCheck_Show_Types.show
+    val term: Proof.context -> term SpecCheck_Show_Types.show
+    val thm: Proof.context -> thm SpecCheck_Show_Types.show
+    val tyenv: Proof.context -> Type.tyenv SpecCheck_Show_Types.show
+    val typ: Proof.context -> typ SpecCheck_Show_Types.show
+  end
+structure SpecCheck_Show_Term: SPECCHECK_SHOW_TERM
+structure SpecCheck_Show:
+  sig
+    val bool: bool show
+    val char: char show
+    val env: Proof.context -> Envir.env show
+    val int: int show
+    val list: 'a show -> 'a list show
+    val none: 'a show
+    val option: 'a show -> 'a option show
+    val real: real show
+    val record: (string * Pretty.T) list show
+    type 'a show = 'a -> Pretty.T
+    val string: string show
+    val tenv: Proof.context -> Envir.tenv show
+    val term: Proof.context -> term show
+    val thm: Proof.context -> thm show
+    val tyenv: Proof.context -> Type.tyenv show
+    val typ: Proof.context -> typ show
+    val zip: 'a show -> 'b show -> ('a * 'b) show
+    val zip3: 'a show -> 'b show -> 'c show -> ('a * 'b * 'c) show
+    val zip4:
+       'a show -> 'b show -> 'c show -> 'd show -> ('a * 'b * 'c * 'd) show
+  end
+### theory "SpecCheck.SpecCheck_Show"
+### 0.030s elapsed time, 0.114s cpu time, 0.000s GC time
+Loading theory "HOL-Library.Set_Algebras" (required by "Draft.IML_UTMoreTemplates" via "Draft.ExtrEqs" via "HOL-Library.BigO")
+instantiation
+  fun :: (type, plus) plus
+  plus_fun == plus :: ('a => 'b) => ('a => 'b) => 'a => 'b
+signature SPECCHECK_CONFIGURATION =
+  sig
+    val max_discard_ratio: int Config.T
+    val max_shrinks: int Config.T
+    val max_success: int Config.T
+    val num_counterexamples: int Config.T
+    val show_stats: bool Config.T
+    val sort_counterexamples: bool Config.T
+  end
+structure SpecCheck_Configuration: SPECCHECK_CONFIGURATION
+instantiation
+  fun :: (type, zero) zero
+  zero_fun == zero_class.zero :: 'a => 'b
+signature SPECCHECK_RANDOM =
+  sig
+    val deterministic_seed: int -> rand
+    val new: unit -> rand
+    val next: rand -> rand
+    type rand
+    val real_unit: rand -> real * rand
+    val split: rand -> rand * rand
+  end
+structure SpecCheck_Random: SPECCHECK_RANDOM
+instantiation
+  fun :: (type, times) times
+  times_fun == times :: ('a => 'b) => ('a => 'b) => 'a => 'b
+### theory "SpecCheck.SpecCheck_Base"
+### 0.051s elapsed time, 0.196s cpu time, 0.000s GC time
+Loading theory "SpecCheck.SpecCheck_Generators" (required by "Draft.IML_UTMoreTemplates" via "Draft.IML_UT" via "SpecCheck.SpecCheck")
+signature SPECCHECK_GEN_TYPES =
+  sig
+    type ('a, 'b) cogen = ('a, 'b, SpecCheck_Random.rand) cogen_state
+    type ('a, 'b, 'c) cogen_state =
+       'a -> ('b, 'c) gen_state -> ('b, 'c) gen_state
+    type 'a gen = ('a, SpecCheck_Random.rand) gen_state
+    type ('a, 'b) gen_state = 'b -> 'a * 'b
+  end
+structure SpecCheck_Gen_Types: SPECCHECK_GEN_TYPES
+instantiation
+  fun :: (type, one) one
+  one_fun == one_class.one :: 'a => 'b
+instantiation
+  set :: (plus) plus
+  plus_set == plus :: 'a set => 'a set => 'a set
+instantiation
+  set :: (times) times
+  times_set == times :: 'a set => 'a set => 'a set
+instantiation
+  set :: (zero) zero
+  zero_set == zero_class.zero :: 'a set
+instantiation
+  set :: (one) one
+  one_set == one_class.one :: 'a set
+Found termination order: "(%p. size (snd p)) <*mlex*> {}"
+signature SPECCHECK_GEN_BASE =
+  sig
+    val bernoulli: real -> bool gen
+    val binom_dist: real -> int -> int gen
+    val cobool: (bool, 'a) cogen
+    type ('a, 'b) cogen = ('a, 'b, SpecCheck_Random.rand) cogen_state
+    type ('a, 'b, 'c) cogen_state =
+       'a -> ('b, 'c) gen_state -> ('b, 'c) gen_state
+    val colist: ('a, 'b) cogen -> ('a list, 'b) cogen
+    val cooption: ('a, 'b) cogen -> ('a option, 'b) cogen
+    val elements: 'a vector -> 'a gen
+    val elementsL: 'a list -> 'a gen
+    val elementsW: (int * 'a) vector -> 'a gen
+    val elementsWL: (int * 'a) list -> 'a gen
+    val filter: ('a -> bool) -> ('a, 'b) gen_state -> ('a, 'b) gen_state
+    val filter_bounded:
+       int -> ('a -> bool) -> ('a, 'b) gen_state -> ('a, 'b) gen_state
+    type 'a gen = ('a, SpecCheck_Random.rand) gen_state
+    type ('a, 'b) gen_state = 'b -> 'a * 'b
+    val join: (('a, 'b) gen_state, 'b) gen_state -> ('a, 'b) gen_state
+    val list:
+       (int, 'a) gen_state -> ('b, 'a) gen_state -> ('b list, 'a) gen_state
+    val map: ('a -> 'b) -> ('a, 'c) gen_state -> ('b, 'c) gen_state
+    val map2:
+       ('a -> 'b -> 'c) ->
+         ('a, 'd) gen_state -> ('b, 'd) gen_state -> ('c, 'd) gen_state
+    val map3:
+       ('a -> 'b -> 'c -> 'd) ->
+         ('a, 'e) gen_state ->
+           ('b, 'e) gen_state -> ('c, 'e) gen_state -> ('d, 'e) gen_state
+    val map4:
+       ('a -> 'b -> 'c -> 'd -> 'e) ->
+         ('a, 'f) gen_state ->
+           ('b, 'f) gen_state ->
+             ('c, 'f) gen_state -> ('d, 'f) gen_state -> ('e, 'f) gen_state
+    val of_seq: ('a option, 'a Seq.seq) gen_state
+    val one_of: 'a gen vector -> 'a gen
+    val one_ofL: 'a gen list -> 'a gen
+    val one_ofW: (int * 'a gen) vector -> 'a gen
+    val one_ofWL: (int * 'a gen) list -> 'a gen
+    val option:
+       (bool, 'a) gen_state ->
+         ('b, 'a) gen_state -> ('b option, 'a) gen_state
+    val range_int: int * int -> int gen
+    val ref_gen: ('a, 'b) gen_state -> ('a ref, 'b) gen_state
+    val return: 'a -> ('a, 'b) gen_state
+    val seq:
+       ('a option, 'b * SpecCheck_Random.rand) gen_state ->
+         'b -> 'a Seq.seq gen
+    val shuffle: 'a list -> 'a list gen
+    val unfold_while:
+       ('a -> (bool, 'b) gen_state) ->
+         ('a, 'b) gen_state -> ('a list, 'b) gen_state
+    val unit: (unit, 'a) gen_state
+    val variant: (int, 'a) cogen
+    val vector:
+       (int, 'a) gen_state ->
+         ('b, 'a) gen_state -> ('b vector, 'a) gen_state
+    val zip:
+       ('a, 'b) gen_state -> ('c, 'b) gen_state -> ('a * 'c, 'b) gen_state
+    val zip3:
+       ('a, 'b) gen_state ->
+         ('c, 'b) gen_state ->
+           ('d, 'b) gen_state -> ('a * 'c * 'd, 'b) gen_state
+    val zip4:
+       ('a, 'b) gen_state ->
+         ('c, 'b) gen_state ->
+           ('d, 'b) gen_state ->
+             ('e, 'b) gen_state -> ('a * 'c * 'd * 'e, 'b) gen_state
+  end
+structure SpecCheck_Gen_Base: SPECCHECK_GEN_BASE
+signature SPECCHECK_GEN_TEXT =
+  sig
+    val char: char SpecCheck_Gen_Types.gen
+    val char_of: string -> char SpecCheck_Gen_Types.gen
+    val cochar: (char, 'a) SpecCheck_Gen_Types.cogen
+    val costring: (string, 'a) SpecCheck_Gen_Types.cogen
+    val cosubstring: (substring, 'a) SpecCheck_Gen_Types.cogen
+    val digit: char SpecCheck_Gen_Types.gen
+    val letter: char SpecCheck_Gen_Types.gen
+    val lowercase_letter: char SpecCheck_Gen_Types.gen
+    val range_char: char * char -> char SpecCheck_Gen_Types.gen
+    val string:
+       int SpecCheck_Gen_Types.gen ->
+         char SpecCheck_Gen_Types.gen -> string SpecCheck_Gen_Types.gen
+    val substring:
+       string SpecCheck_Gen_Types.gen -> substring SpecCheck_Gen_Types.gen
+    val uppercase_letter: char SpecCheck_Gen_Types.gen
+  end
+structure SpecCheck_Gen_Text: SPECCHECK_GEN_TEXT
+signature SPECCHECK_GEN_INT =
+  sig
+    val coint: (int, 'a) SpecCheck_Gen_Types.cogen
+    val neg: int -> int SpecCheck_Gen_Types.gen
+    val nonneg: int -> int SpecCheck_Gen_Types.gen
+    val nonpos: int -> int SpecCheck_Gen_Types.gen
+    val pos: int -> int SpecCheck_Gen_Types.gen
+  end
+structure SpecCheck_Gen_Int: SPECCHECK_GEN_INT
+### theory "HOL-Library.Function_Algebras"
+### 0.137s elapsed time, 0.526s cpu time, 0.052s GC time
+Loading theory "SpecCheck.SpecCheck_Output_Style" (required by "Draft.IML_UTMoreTemplates" via "Draft.IML_UT" via "SpecCheck.SpecCheck")
+signature SPECCHECK_OUTPUT_STYLE_TYPES =
+  sig
+    type 'a output_style =
+       'a SpecCheck_Show_Base.show option ->
+         Proof.context ->
+           string -> Timing.timing -> 'a SpecCheck_Base.result -> unit
+  end
+signature SPECCHECK_OUTPUT_STYLE =
+  sig val style: 'a SpecCheck_Output_Style_Types.output_style end
+structure SpecCheck_Output_Style_Types: SPECCHECK_OUTPUT_STYLE_TYPES
+signature SPECCHECK_GEN_REAL =
+  sig
+    val range_real: real * real -> real SpecCheck_Gen_Types.gen
+    val real: real SpecCheck_Gen_Types.gen
+    val real_finite: real SpecCheck_Gen_Types.gen
+    val real_neg: real SpecCheck_Gen_Types.gen
+    val real_nonneg: real SpecCheck_Gen_Types.gen
+    val real_nonpos: real SpecCheck_Gen_Types.gen
+    val real_pos: real SpecCheck_Gen_Types.gen
+  end
+structure SpecCheck_Gen_Real: SPECCHECK_GEN_REAL
+signature SPECCHECK_GEN_FUNCTION =
+  sig
+    val function:
+       ('a, 'b) SpecCheck_Gen_Types.cogen ->
+         'b SpecCheck_Gen_Types.gen -> ('a -> 'b) SpecCheck_Gen_Types.gen
+    val function':
+       'a SpecCheck_Gen_Types.gen -> (''b -> 'a) SpecCheck_Gen_Types.gen
+  end
+structure SpecCheck_Gen_Function: SPECCHECK_GEN_FUNCTION
+### ML warning (line 14 of "$AFP/SpecCheck/Output_Styles/output_style_perl.ML"):
+### Value identifier (timing) has not been referenced.
+structure SpecCheck_Output_Style_Perl: SPECCHECK_OUTPUT_STYLE
+signature SPECCHECK_OUTPUT_STYLE_CUSTOM =
+  sig
+    val style: 'a SpecCheck_Output_Style_Types.output_style
+    val style_custom:
+       (string -> unit) ->
+         (string -> unit) -> 'a SpecCheck_Output_Style_Types.output_style
+  end
+structure SpecCheck_Output_Style_Custom: SPECCHECK_OUTPUT_STYLE_CUSTOM
+signature SPECCHECK_DEFAULT_OUTPUT_STYLE =
+  sig
+    val default: 'a output_style
+    type 'a output_style =
+       'a SpecCheck_Show_Base.show option ->
+         Proof.context ->
+           string -> Timing.timing -> 'a SpecCheck_Base.result -> unit
+  end
+structure SpecCheck_Default_Output_Style: SPECCHECK_DEFAULT_OUTPUT_STYLE
+### theory "SpecCheck.SpecCheck_Output_Style"
+### 0.031s elapsed time, 0.125s cpu time, 0.000s GC time
+Loading theory "HOL-Library.Tree" (required by "Draft.IML_UTMoreTemplates" via "Draft.ExtrEqs" via "Draft.Templates")
+signature SPECCHECK_GEN_TERM =
+  sig
+    val aterm:
+       term SpecCheck_Gen_Types.gen ->
+         term SpecCheck_Gen_Types.gen ->
+           term SpecCheck_Gen_Types.gen ->
+             term SpecCheck_Gen_Types.gen ->
+               int * int * int * int -> term SpecCheck_Gen_Types.gen
+    val aterm':
+       int SpecCheck_Gen_Types.gen ->
+         int SpecCheck_Gen_Types.gen ->
+           int * int * int * int -> term SpecCheck_Gen_Types.gen
+    val atyp:
+       typ SpecCheck_Gen_Types.gen ->
+         typ SpecCheck_Gen_Types.gen ->
+           int * int -> typ SpecCheck_Gen_Types.gen
+    val atyp':
+       int SpecCheck_Gen_Types.gen ->
+         int SpecCheck_Gen_Types.gen ->
+           int * int -> typ SpecCheck_Gen_Types.gen
+    val basic_name:
+       string ->
+         int SpecCheck_Gen_Types.gen -> string SpecCheck_Gen_Types.gen
+    val bound: (int, 'a) gen_state -> (term, 'a) gen_state
+    val const:
+       (string, 'a) gen_state -> (typ, 'a) gen_state -> (term, 'a) gen_state
+    val const': int SpecCheck_Gen_Types.gen -> term SpecCheck_Gen_Types.gen
+    val const_name:
+       int SpecCheck_Gen_Types.gen -> string SpecCheck_Gen_Types.gen
+    val dummyS: (sort, 'a) gen_state
+    val dummyT: (typ, 'a) gen_state
+    val free:
+       (string, 'a) gen_state -> (typ, 'a) gen_state -> (term, 'a) gen_state
+    val free': int SpecCheck_Gen_Types.gen -> term SpecCheck_Gen_Types.gen
+    val free_name:
+       int SpecCheck_Gen_Types.gen -> string SpecCheck_Gen_Types.gen
+    val indexname:
+       (string, 'a) gen_state ->
+         (int, 'a) gen_state -> (indexname, 'a) gen_state
+    val sort:
+       (int, 'a) gen_state -> (class, 'a) gen_state -> (sort, 'a) gen_state
+    val term_tree:
+       (int -> int -> (term * int, 'a) gen_state) -> (term, 'a) gen_state
+    val term_tree_path:
+       ((term * int) list -> (term * int, 'a) gen_state) ->
+         (term, 'a) gen_state
+    val tfree:
+       (string, 'a) gen_state -> (sort, 'a) gen_state -> (typ, 'a) gen_state
+    val tfree': int SpecCheck_Gen_Types.gen -> typ SpecCheck_Gen_Types.gen
+    val tfree_name: (string, 'a) gen_state -> (string, 'a) gen_state
+    val tfree_name':
+       int SpecCheck_Gen_Types.gen -> string SpecCheck_Gen_Types.gen
+    val tvar:
+       (indexname, 'a) gen_state ->
+         (sort, 'a) gen_state -> (typ, 'a) gen_state
+    val tvar':
+       int SpecCheck_Gen_Types.gen ->
+         int SpecCheck_Gen_Types.gen -> typ SpecCheck_Gen_Types.gen
+    val tvar_name: (indexname, 'a) gen_state -> (indexname, 'a) gen_state
+    val tvar_name':
+       int SpecCheck_Gen_Types.gen ->
+         int SpecCheck_Gen_Types.gen -> indexname SpecCheck_Gen_Types.gen
+    val typ:
+       typ SpecCheck_Gen_Types.gen ->
+         typ SpecCheck_Gen_Types.gen ->
+           typ SpecCheck_Gen_Types.gen ->
+             int * int * int -> typ SpecCheck_Gen_Types.gen
+    val typ':
+       int SpecCheck_Gen_Types.gen ->
+         int SpecCheck_Gen_Types.gen ->
+           typ SpecCheck_Gen_Types.gen ->
+             typ SpecCheck_Gen_Types.gen ->
+               int * int * int -> typ SpecCheck_Gen_Types.gen
+    val typ'':
+       int SpecCheck_Gen_Types.gen ->
+         int SpecCheck_Gen_Types.gen ->
+           int SpecCheck_Gen_Types.gen ->
+             int * int * int -> typ SpecCheck_Gen_Types.gen
+    val type':
+       string SpecCheck_Gen_Types.gen ->
+         int SpecCheck_Gen_Types.gen ->
+           typ SpecCheck_Gen_Types.gen ->
+             typ SpecCheck_Gen_Types.gen ->
+               int * int * int -> typ SpecCheck_Gen_Types.gen
+    val type'':
+       int SpecCheck_Gen_Types.gen ->
+         int SpecCheck_Gen_Types.gen ->
+           typ SpecCheck_Gen_Types.gen ->
+             typ SpecCheck_Gen_Types.gen ->
+               int * int * int -> typ SpecCheck_Gen_Types.gen
+    val type_name:
+       int SpecCheck_Gen_Types.gen -> string SpecCheck_Gen_Types.gen
+    val var:
+       (indexname, 'a) gen_state ->
+         (typ, 'a) gen_state -> (term, 'a) gen_state
+    val var':
+       int SpecCheck_Gen_Types.gen ->
+         int SpecCheck_Gen_Types.gen -> term SpecCheck_Gen_Types.gen
+    val var_name:
+       int SpecCheck_Gen_Types.gen ->
+         int SpecCheck_Gen_Types.gen -> indexname SpecCheck_Gen_Types.gen
+  end
+structure SpecCheck_Gen_Term: SPECCHECK_GEN_TERM
+structure SpecCheck_Generator:
+  sig
+    val aterm:
+       term gen ->
+         term gen ->
+           term gen -> term gen -> int * int * int * int -> term gen
+    val aterm': int gen -> int gen -> int * int * int * int -> term gen
+    val atyp: typ gen -> typ gen -> int * int -> typ gen
+    val atyp': int gen -> int gen -> int * int -> typ gen
+    val basic_name: string -> int gen -> string gen
+    val bernoulli: real -> bool gen
+    val binom_dist: real -> int -> int gen
+    val bound: (int, 'a) gen_state -> (term, 'a) gen_state
+    val char: char gen
+    val char_of: string -> char gen
+    val cobool: (bool, 'a) cogen
+    val cochar: (char, 'a) cogen
+    type ('a, 'b) cogen = ('a, 'b, SpecCheck_Random.rand) cogen_state
+    type ('a, 'b, 'c) cogen_state =
+       'a -> ('b, 'c) gen_state -> ('b, 'c) gen_state
+    val coint: (int, 'a) cogen
+    val colist: ('a, 'b) cogen -> ('a list, 'b) cogen
+    val const:
+       (string, 'a) gen_state -> (typ, 'a) gen_state -> (term, 'a) gen_state
+    val const': int gen -> term gen
+    val const_name: int gen -> string gen
+    val cooption: ('a, 'b) cogen -> ('a option, 'b) cogen
+    val costring: (string, 'a) cogen
+    val cosubstring: (substring, 'a) cogen
+    val digit: char gen
+    val dummyS: (sort, 'a) gen_state
+    val dummyT: (typ, 'a) gen_state
+    val elements: 'a vector -> 'a gen
+    val elementsL: 'a list -> 'a gen
+    val elementsW: (int * 'a) vector -> 'a gen
+    val elementsWL: (int * 'a) list -> 'a gen
+    val filter: ('a -> bool) -> ('a, 'b) gen_state -> ('a, 'b) gen_state
+    val filter_bounded:
+       int -> ('a -> bool) -> ('a, 'b) gen_state -> ('a, 'b) gen_state
+    val free:
+       (string, 'a) gen_state -> (typ, 'a) gen_state -> (term, 'a) gen_state
+    val free': int gen -> term gen
+    val free_name: int gen -> string gen
+    val function: ('a, 'b) cogen -> 'b gen -> ('a -> 'b) gen
+    val function': 'a gen -> (''b -> 'a) gen
+    type 'a gen = ('a, SpecCheck_Random.rand) gen_state
+    type ('a, 'b) gen_state = 'b -> 'a * 'b
+    val indexname:
+       (string, 'a) gen_state ->
+         (int, 'a) gen_state -> (indexname, 'a) gen_state
+    val join: (('a, 'b) gen_state, 'b) gen_state -> ('a, 'b) gen_state
+    val letter: char gen
+    val list:
+       (int, 'a) gen_state -> ('b, 'a) gen_state -> ('b list, 'a) gen_state
+    val lowercase_letter: char gen
+    val map: ('a -> 'b) -> ('a, 'c) gen_state -> ('b, 'c) gen_state
+    val map2:
+       ('a -> 'b -> 'c) ->
+         ('a, 'd) gen_state -> ('b, 'd) gen_state -> ('c, 'd) gen_state
+    val map3:
+       ('a -> 'b -> 'c -> 'd) ->
+         ('a, 'e) gen_state ->
+           ('b, 'e) gen_state -> ('c, 'e) gen_state -> ('d, 'e) gen_state
+    val map4:
+       ('a -> 'b -> 'c -> 'd -> 'e) ->
+         ('a, 'f) gen_state ->
+           ('b, 'f) gen_state ->
+             ('c, 'f) gen_state -> ('d, 'f) gen_state -> ('e, 'f) gen_state
+    val neg: int -> int gen
+    val nonneg: int -> int gen
+    val nonpos: int -> int gen
+    val of_seq: ('a option, 'a Seq.seq) gen_state
+    val one_of: 'a gen vector -> 'a gen
+    val one_ofL: 'a gen list -> 'a gen
+    val one_ofW: (int * 'a gen) vector -> 'a gen
+    val one_ofWL: (int * 'a gen) list -> 'a gen
+    val option:
+       (bool, 'a) gen_state ->
+         ('b, 'a) gen_state -> ('b option, 'a) gen_state
+    val pos: int -> int gen
+    val range_char: char * char -> char gen
+    val range_int: int * int -> int gen
+    val range_real: real * real -> real gen
+    val real: real gen
+    val real_finite: real gen
+    val real_neg: real gen
+    val real_nonneg: real gen
+    val real_nonpos: real gen
+    val real_pos: real gen
+    val ref_gen: ('a, 'b) gen_state -> ('a ref, 'b) gen_state
+    val return: 'a -> ('a, 'b) gen_state
+    val seq:
+       ('a option, 'b * SpecCheck_Random.rand) gen_state ->
+         'b -> 'a Seq.seq gen
+    val shuffle: 'a list -> 'a list gen
+    val sort:
+       (int, 'a) gen_state -> (class, 'a) gen_state -> (sort, 'a) gen_state
+    val string: int gen -> char gen -> string gen
+    val substring: string gen -> substring gen
+    val term_tree:
+       (int -> int -> (term * int, 'a) gen_state) -> (term, 'a) gen_state
+    val term_tree_path:
+       ((term * int) list -> (term * int, 'a) gen_state) ->
+         (term, 'a) gen_state
+    val tfree:
+       (string, 'a) gen_state -> (sort, 'a) gen_state -> (typ, 'a) gen_state
+    val tfree': int gen -> typ gen
+    val tfree_name: (string, 'a) gen_state -> (string, 'a) gen_state
+    val tfree_name': int gen -> string gen
+    val tvar:
+       (indexname, 'a) gen_state ->
+         (sort, 'a) gen_state -> (typ, 'a) gen_state
+    val tvar': int gen -> int gen -> typ gen
+    val tvar_name: (indexname, 'a) gen_state -> (indexname, 'a) gen_state
+    val tvar_name': int gen -> int gen -> indexname gen
+    val typ: typ gen -> typ gen -> typ gen -> int * int * int -> typ gen
+    val typ':
+       int gen ->
+         int gen -> typ gen -> typ gen -> int * int * int -> typ gen
+    val typ'': int gen -> int gen -> int gen -> int * int * int -> typ gen
+    val type':
+       string gen ->
+         int gen -> typ gen -> typ gen -> int * int * int -> typ gen
+    val type'':
+       int gen ->
+         int gen -> typ gen -> typ gen -> int * int * int -> typ gen
+    val type_name: int gen -> string gen
+    val unfold_while:
+       ('a -> (bool, 'b) gen_state) ->
+         ('a, 'b) gen_state -> ('a list, 'b) gen_state
+    val unit: (unit, 'a) gen_state
+    val uppercase_letter: char gen
+    val var:
+       (indexname, 'a) gen_state ->
+         (typ, 'a) gen_state -> (term, 'a) gen_state
+    val var': int gen -> int gen -> term gen
+    val var_name: int gen -> int gen -> indexname gen
+    val variant: (int, 'a) cogen
+    val vector:
+       (int, 'a) gen_state ->
+         ('b, 'a) gen_state -> ('b vector, 'a) gen_state
+    val zip:
+       ('a, 'b) gen_state -> ('c, 'b) gen_state -> ('a * 'c, 'b) gen_state
+    val zip3:
+       ('a, 'b) gen_state ->
+         ('c, 'b) gen_state ->
+           ('d, 'b) gen_state -> ('a * 'c * 'd, 'b) gen_state
+    val zip4:
+       ('a, 'b) gen_state ->
+         ('c, 'b) gen_state ->
+           ('d, 'b) gen_state ->
+             ('e, 'b) gen_state -> ('a * 'c * 'd * 'e, 'b) gen_state
+  end
+### theory "SpecCheck.SpecCheck_Generators"
+### 0.144s elapsed time, 0.568s cpu time, 0.052s GC time
+Loading theory "SpecCheck.SpecCheck_Shrink" (required by "Draft.IML_UTMoreTemplates" via "Draft.IML_UT" via "SpecCheck.SpecCheck")
+signature SPECCHECK_SHRINK_TYPES = sig type 'a shrink = 'a -> 'a Seq.seq end
+structure SpecCheck_Shrink_Types: SPECCHECK_SHRINK_TYPES
+signature SPECCHECK_SHRINK_BASE =
+  sig
+    val int: int shrink
+    val list: 'a shrink -> 'a list shrink
+    val list': 'a list shrink
+    val none: 'a shrink
+    val product: 'a shrink -> 'b shrink -> ('a * 'b) shrink
+    val product3:
+       'a shrink -> 'b shrink -> 'c shrink -> ('a * 'b * 'c) shrink
+    val product4:
+       'a shrink ->
+         'b shrink -> 'c shrink -> 'd shrink -> ('a * 'b * 'c * 'd) shrink
+    type 'a shrink = 'a -> 'a Seq.seq
+    val term: term shrink
+  end
+structure SpecCheck_Shrink_Base: SPECCHECK_SHRINK_BASE
+structure SpecCheck_Shrink:
+  sig
+    val int: int shrink
+    val list: 'a shrink -> 'a list shrink
+    val list': 'a list shrink
+    val none: 'a shrink
+    val product: 'a shrink -> 'b shrink -> ('a * 'b) shrink
+    val product3:
+       'a shrink -> 'b shrink -> 'c shrink -> ('a * 'b * 'c) shrink
+    val product4:
+       'a shrink ->
+         'b shrink -> 'c shrink -> 'd shrink -> ('a * 'b * 'c * 'd) shrink
+    type 'a shrink = 'a -> 'a Seq.seq
+    val term: term shrink
+  end
+### theory "SpecCheck.SpecCheck_Shrink"
+### 0.022s elapsed time, 0.086s cpu time, 0.000s GC time
+Loading theory "SpecCheck.SpecCheck" (required by "Draft.IML_UTMoreTemplates" via "Draft.IML_UT")
+signature LECKER =
+  sig
+    type 'a test = ('a, SpecCheck_Random.rand) test_state
+    val test_group: 'a -> 'b -> ('a, 'b) test_state list -> 'b
+    type ('a, 'b) test_state = 'a -> 'b -> 'b
+  end
+structure Lecker: LECKER
+Found termination order: "size_list size <*mlex*> {}"
+signature SPECCHECK =
+  sig
+    val check:
+       'a SpecCheck_Show_Base.show ->
+         ('a, 'b) gen_state ->
+           string ->
+             'a SpecCheck_Property.prop -> (Proof.context, 'b) test_state
+    val check_base:
+       ('a, 'b) gen_state ->
+         string ->
+           'a SpecCheck_Property.prop -> (Proof.context, 'b) test_state
+    val check_list:
+       'a SpecCheck_Show_Base.show ->
+         'a list ->
+           string ->
+             'a SpecCheck_Property.prop -> Proof.context -> 'a Seq.seq
+    val check_list_base:
+       'a list ->
+         string -> 'a SpecCheck_Property.prop -> Proof.context -> 'a Seq.seq
+    val check_list_style:
+       'a SpecCheck_Output_Style_Types.output_style ->
+         'a SpecCheck_Show_Base.show option ->
+           'a list ->
+             string ->
+               'a SpecCheck_Property.prop -> Proof.context -> 'a Seq.seq
+    val check_seq:
+       'a SpecCheck_Show_Base.show ->
+         'a Seq.seq ->
+           string ->
+             'a SpecCheck_Property.prop -> Proof.context -> 'a Seq.seq
+    val check_seq_base:
+       'a Seq.seq ->
+         string -> 'a SpecCheck_Property.prop -> Proof.context -> 'a Seq.seq
+    val check_seq_style:
+       'a SpecCheck_Output_Style_Types.output_style ->
+         'a SpecCheck_Show_Base.show option ->
+           'a Seq.seq ->
+             string ->
+               'a SpecCheck_Property.prop -> Proof.context -> 'a Seq.seq
+    val check_shrink:
+       'a SpecCheck_Show_Base.show ->
+         'a SpecCheck_Shrink_Base.shrink ->
+           ('a, 'b) gen_state ->
+             string ->
+               'a SpecCheck_Property.prop -> (Proof.context, 'b) test_state
+    val check_style:
+       'a SpecCheck_Output_Style_Types.output_style ->
+         'a SpecCheck_Show_Base.show option ->
+           'a SpecCheck_Shrink_Base.shrink ->
+             ('a, 'b) gen_state ->
+               string ->
+                 'a SpecCheck_Property.prop ->
+                   (Proof.context, 'b) test_state
+    val check_unit_tests:
+       'a SpecCheck_Show_Base.show ->
+         'a list ->
+           string ->
+             'a SpecCheck_Property.prop -> (Proof.context, 'b) test_state
+    val check_unit_tests_base:
+       'a list ->
+         string ->
+           'a SpecCheck_Property.prop -> (Proof.context, 'b) test_state
+    val check_unit_tests_style:
+       'a SpecCheck_Output_Style_Types.output_style ->
+         'a SpecCheck_Show_Base.show option ->
+           'a list ->
+             string ->
+               'a SpecCheck_Property.prop -> (Proof.context, 'b) test_state
+    val run_a_test:
+       'a SpecCheck_Property.prop ->
+         'a ->
+           SpecCheck_Base.stats ->
+             SpecCheck_Base.result_single * SpecCheck_Base.stats
+    val try_shrink:
+       'a SpecCheck_Property.prop ->
+         'a SpecCheck_Shrink_Base.shrink ->
+           'a -> int -> SpecCheck_Base.stats -> 'a * SpecCheck_Base.stats
+  end
+structure SpecCheck: SPECCHECK
+### theory "SpecCheck.SpecCheck"
+### 0.066s elapsed time, 0.252s cpu time, 0.075s GC time
+Loading theory "Draft.IML_UT" (required by "Draft.IML_UTMoreTemplates")
+val check_seq_base = fn:
+   'a Seq.seq ->
+     string -> 'a SpecCheck_Property.prop -> Proof.context -> 'a Seq.seq
+val check_list_style = fn:
+   'a SpecCheck_Output_Style_Types.output_style ->
+     'a SpecCheck_Show_Base.show option ->
+       'a list ->
+         string -> 'a SpecCheck_Property.prop -> Proof.context -> 'a Seq.seq
+val check_list_base = fn:
+   'a list ->
+     string -> 'a SpecCheck_Property.prop -> Proof.context -> 'a Seq.seq
+val check_list = fn:
+   'a SpecCheck_Show_Base.show ->
+     'a list ->
+       string -> 'a SpecCheck_Property.prop -> Proof.context -> 'a Seq.seq
+val check_base = fn:
+   ('a, 'b) gen_state ->
+     string -> 'a SpecCheck_Property.prop -> (Proof.context, 'b) test_state
+val run_a_test = fn:
+   'a SpecCheck_Property.prop ->
+     'a ->
+       SpecCheck_Base.stats ->
+         SpecCheck_Base.result_single * SpecCheck_Base.stats
+val check_unit_tests_base = fn:
+   'a list ->
+     string -> 'a SpecCheck_Property.prop -> (Proof.context, 'b) test_state
+val check_shrink = fn:
+   'a SpecCheck_Show_Base.show ->
+     'a SpecCheck_Shrink_Base.shrink ->
+       ('a, 'b) gen_state ->
+         string ->
+           'a SpecCheck_Property.prop -> (Proof.context, 'b) test_state
+val check_unit_tests = fn:
+   'a SpecCheck_Show_Base.show ->
+     'a list ->
+       string ->
+         'a SpecCheck_Property.prop -> (Proof.context, 'b) test_state
+val check_style = fn:
+   'a SpecCheck_Output_Style_Types.output_style ->
+     'a SpecCheck_Show_Base.show option ->
+       'a SpecCheck_Shrink_Base.shrink ->
+         ('a, 'b) gen_state ->
+           string ->
+             'a SpecCheck_Property.prop -> (Proof.context, 'b) test_state
+val try_shrink = fn:
+   'a SpecCheck_Property.prop ->
+     'a SpecCheck_Shrink_Base.shrink ->
+       'a -> int -> SpecCheck_Base.stats -> 'a * SpecCheck_Base.stats
+val check_seq = fn:
+   'a SpecCheck_Show_Base.show ->
+     'a Seq.seq ->
+       string -> 'a SpecCheck_Property.prop -> Proof.context -> 'a Seq.seq
+val check_unit_tests_style = fn:
+   'a SpecCheck_Output_Style_Types.output_style ->
+     'a SpecCheck_Show_Base.show option ->
+       'a list ->
+         string ->
+           'a SpecCheck_Property.prop -> (Proof.context, 'b) test_state
+val check_seq_style = fn:
+   'a SpecCheck_Output_Style_Types.output_style ->
+     'a SpecCheck_Show_Base.show option ->
+       'a Seq.seq ->
+         string -> 'a SpecCheck_Property.prop -> Proof.context -> 'a Seq.seq
+val check = fn:
+   'a SpecCheck_Show_Base.show ->
+     ('a, 'b) gen_state ->
+       string ->
+         'a SpecCheck_Property.prop -> (Proof.context, 'b) test_state
+structure Prop: SPECCHECK_PROPERTY
+structure Show:
+  sig
+    val bool: bool show
+    val char: char show
+    val env: Proof.context -> Envir.env show
+    val int: int show
+    val list: 'a show -> 'a list show
+    val none: 'a show
+    val option: 'a show -> 'a option show
+    val real: real show
+    val record: (string * Pretty.T) list show
+    type 'a show = 'a -> Pretty.T
+    val string: string show
+    val tenv: Proof.context -> Envir.tenv show
+    val term: Proof.context -> term show
+    val thm: Proof.context -> thm show
+    val tyenv: Proof.context -> Type.tyenv show
+    val typ: Proof.context -> typ show
+    val zip: 'a show -> 'b show -> ('a * 'b) show
+    val zip3: 'a show -> 'b show -> 'c show -> ('a * 'b * 'c) show
+    val zip4:
+       'a show -> 'b show -> 'c show -> 'd show -> ('a * 'b * 'c * 'd) show
+  end
+val style_error = fn:
+   'a SpecCheck_Show_Base.show option ->
+     Proof.context ->
+       string -> Timing.timing -> 'a SpecCheck_Base.result -> unit
+val check_list_unit = fn:
+   'a SpecCheck_Show_Base.show ->
+     'a list ->
+       string -> 'a SpecCheck_Property.prop -> Proof.context -> 'b -> unit
+### theory "Draft.IML_UT"
+### 0.004s elapsed time, 0.018s cpu time, 0.000s GC time
+### theory "HOL-Library.Set_Algebras"
+### 0.263s elapsed time, 1.017s cpu time, 0.128s GC time
+Loading theory "HOL-Library.BigO" (required by "Draft.IML_UTMoreTemplates" via "Draft.ExtrEqs")
+### theory "HOL-Library.Nat_Bijection"
+### 0.349s elapsed time, 1.323s cpu time, 0.128s GC time
+Loading theory "HOL-Library.Stream" (required by "Draft.IML_UTMoreTemplates" via "Draft.ExtrEqs")
+consts
+  left :: "'a tree => 'a tree"
+consts
+  right :: "'a tree => 'a tree"
+consts
+  shift :: "'a list => 'a stream => 'a stream"
+Proofs for coinductive predicate(s) "streamsp"
+  Proving monotonicity ...
+Found termination order: "size <*mlex*> {}"
+consts
+  snth :: "'a stream => nat => 'a"
+Found termination order: "size <*mlex*> {}"
+consts
+  stake :: "nat => 'a stream => 'a list"
+consts
+  sdrop :: "nat => 'a stream => 'a stream"
+Found termination order: "size <*mlex*> {}"
+consts
+  sfilter :: "('a => bool) => 'a stream => 'a stream"
+class height = type +
+  fixes height :: "'a => nat"
+instantiation
+  tree :: (type) height
+  height_tree == height :: 'a tree => nat
+consts
+  cycle :: "'a list => 'a stream"
+consts
+  siterate :: "('a => 'a) => 'a => 'a stream"
+Found termination order: "size <*mlex*> {}"
+consts
+  flat :: "'a list stream => 'a stream"
+### theory "HOL-Library.BigO"
+### 0.695s elapsed time, 2.146s cpu time, 0.239s GC time
+Found termination order: "size <*mlex*> {}"
+consts
+  sinterleave :: "'a stream => 'a stream => 'a stream"
+consts
+  szip :: "'a stream => 'b stream => ('a * 'b) stream"
+consts
+  smap2 :: "('a => 'b => 'c) => 'a stream => 'b stream => 'c stream"
+Found termination order: "size <*mlex*> {}"
+### theory "HOL-Library.Stream"
+### 0.912s elapsed time, 2.687s cpu time, 0.738s GC time
+Found termination order: "size <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+Found termination order: "(%p. size (fst p)) <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+Found termination order: "(%p. size (snd p)) <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+### theory "HOL-Library.Tree"
+### 1.824s elapsed time, 4.160s cpu time, 0.887s GC time
+Loading theory "Draft.Templates" (required by "Draft.IML_UTMoreTemplates" via "Draft.ExtrEqs")
+datatype template_term
+=
+     t_empty
+   | template_app of template_term * template_term
+   | template_hole of int
+   | template_var of int
+datatype sign
+= equals | greater_equals | greater_than | less_equals | less_than
+datatype template
+=
+     template_bimplication of template * template
+   | template_dunno
+   | template_equation of template_term * template_term
+   | template_implication of template list * template
+   | template_inequation of sign * template_term * template_term
+   | template_negation of template
+   | template_predicate of template_term
+constructor t_empty: template_term
+constructor template_app: template_term * template_term -> template_term
+constructor template_hole: int -> template_term
+constructor template_var: int -> template_term
+constructor equals: sign
+constructor greater_equals: sign
+constructor greater_than: sign
+constructor less_equals: sign
+constructor less_than: sign
+constructor template_bimplication: template * template -> template
+constructor template_dunno: template
+constructor template_equation: template_term * template_term -> template
+constructor template_implication: template list * template -> template
+constructor template_inequation:
+   sign * template_term * template_term -> template
+constructor template_negation: template -> template
+constructor template_predicate: template_term -> template
+val vfs = fn: term -> (indexname * typ) list * (string * typ) list
+val indexOf = fn: ''a list -> ''a -> int -> int
+val has_eq = fn: term -> bool
+val term2template = fn:
+   (indexname * typ) list -> (string * typ) list -> term -> template_term
+val lemma2predicate = fn: term -> term -> template
+val makeTemplatewithContext = fn: term -> term -> template
+val lemma2template = fn: term -> template
+val thm2template = fn: thm -> template
+val tterm2string = fn: template_term -> string
+val template2string = fn: template -> string
+val t = "height ?t <= size ?t": thm
+val th =
+   Const ("HOL.Trueprop", "bool => prop") $
+     (Const ("Orderings.ord_class.less_eq", "nat => nat => bool") $
+       (Const ("Tree.height_class.height", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree")) $
+       (Const ("Nat.size_class.size", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree"))):
+   term
+### theory "Draft.Templates"
+### 0.048s elapsed time, 0.062s cpu time, 0.000s GC time
+Loading theory "Draft.ExtrEqs" (required by "Draft.IML_UTMoreTemplates")
+val eqpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Var (("_dummy_", 2), "?'a"))
+       ):
+   term Find_Theorems.criterion
+val badeqpattern = Pattern (Const ("Pure.eq", "?'a => ?'a => prop")):
+   term Find_Theorems.criterion
+val undefpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Const ("HOL.undefined", "?'a"))
+       ):
+   term Find_Theorems.criterion
+val thmpattern =
+   Pattern
+    (Const ("HOL.Trueprop", "bool => prop") $ Var (("_dummy_", 1), "bool")):
+   term Find_Theorems.criterion
+val badnames =
+   ["*nitpick*", "*Nitpick*", "*full_exhaustive*", "*_def*", "Enum.finite*",
+    "*Quickcheck*", "ATP*", "*Nunchaku*", "*Code*", "*BNF*", "*SMT*",
+    "*.*.*"]:
+   string list
+val unwanted_names =
+   [(false, Name "*nitpick*"), (false, Name "*Nitpick*"),
+    (false, Name "*full_exhaustive*"), (false, Name "*_def*"),
+    (false, Name "Enum.finite*"), (false, Name "*Quickcheck*"),
+    (false, Name "ATP*"), (false, Name "*Nunchaku*"),
+    (false, Name "*Code*"), (false, Name "*BNF*"), (false, Name "*SMT*"),
+    (false, Name "*.*.*")]:
+   (bool * term Find_Theorems.criterion) list
+val has_vars = fn: term -> bool
+val get_all_eqs = fn: string -> Proof.context -> (string * thm) list
+val get_all_thms = fn: string -> Proof.context -> (string * thm) list
+val get_noneq_thms = fn: string -> Proof.context -> (string * thm) list
+val template_eqs = fn:
+   string -> Proof.context -> (string * thm * template) list
+val template_thms = fn:
+   string -> Proof.context -> (string * thm * template) list
+### theory "Draft.ExtrEqs"
+### 0.454s elapsed time, 0.505s cpu time, 0.064s GC time
+Loading theory "Draft.IML_UTMoreTemplates"
+val templateLemmas = []: (string * thm * template) list
+### theory "Draft.IML_UTMoreTemplates"
+### 0.231s elapsed time, 0.331s cpu time, 0.000s GC time
+val it = (): unit

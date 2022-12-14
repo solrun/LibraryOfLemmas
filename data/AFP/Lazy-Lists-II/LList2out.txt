@@ -1,0 +1,3206 @@
+Loading theory "HOL-Library.Case_Converter" (required by "Draft.LList2MoreTemplates" via "Draft.LList2" via "Coinductive.Coinductive_List" via "HOL-Library.Simps_Case_Conv")
+Loading theory "HOL-Library.Infinite_Set" (required by "Draft.LList2MoreTemplates" via "Draft.LList2" via "Coinductive.Coinductive_List")
+Loading theory "HOL-Library.Complete_Partial_Order2" (required by "Draft.LList2MoreTemplates" via "Draft.LList2" via "Coinductive.Coinductive_List" via "Coinductive.Coinductive_Nat")
+Loading theory "HOL-Library.Function_Algebras" (required by "Draft.LList2MoreTemplates" via "Draft.ExtrEqs" via "HOL-Library.BigO")
+instantiation
+  fun :: (type, plus) plus
+  plus_fun == plus :: ('a => 'b) => ('a => 'b) => 'a => 'b
+instantiation
+  fun :: (type, zero) zero
+  zero_fun == zero_class.zero :: 'a => 'b
+instantiation
+  fun :: (type, times) times
+  times_fun == times :: ('a => 'b) => ('a => 'b) => 'a => 'b
+instantiation
+  fun :: (type, one) one
+  one_fun == one_class.one :: 'a => 'b
+class ccpo = Sup + order +
+  assumes
+    "ccpo_Sup_upper":
+      "!!A x.
+          [| Complete_Partial_Order.chain (<=) A; x : A |]
+          ==> x <= \<Squnion> A"
+  assumes
+    "ccpo_Sup_least":
+      "!!A z.
+          [| Complete_Partial_Order.chain (<=) A; !!x. x : A ==> x <= z |]
+          ==> \<Squnion> A <= z"
+### theory "HOL-Library.Function_Algebras"
+### 0.150s elapsed time, 0.618s cpu time, 0.051s GC time
+Loading theory "HOL-Library.Nat_Bijection" (required by "Draft.LList2MoreTemplates" via "Draft.ExtrEqs" via "HOL-Library.Stream")
+consts
+  enumerate :: "'a set => nat => 'a"
+signature CASE_CONVERTER =
+  sig
+    type elimination_strategy
+    val keep_constructor_context: elimination_strategy
+    val replace_by_type:
+       (Proof.context -> string * string -> bool) -> elimination_strategy
+    val to_case:
+       Proof.context ->
+         elimination_strategy ->
+           (string * typ -> int) -> thm list -> thm list option
+  end
+structure Case_Converter: CASE_CONVERTER
+### theory "HOL-Library.Case_Converter"
+### 0.223s elapsed time, 0.913s cpu time, 0.051s GC time
+Loading theory "HOL-Library.Simps_Case_Conv" (required by "Draft.LList2MoreTemplates" via "Draft.LList2" via "Coinductive.Coinductive_List")
+Found termination order: "(%p. size (snd p)) <*mlex*> {}"
+signature SIMPS_CASE_CONV =
+  sig
+    val gen_to_simps: Proof.context -> thm list -> thm -> thm list
+    val to_case: Proof.context -> thm list -> thm
+    val to_simps: Proof.context -> thm -> thm list
+  end
+structure Simps_Case_Conv: SIMPS_CASE_CONV
+### theory "HOL-Library.Simps_Case_Conv"
+### 0.071s elapsed time, 0.275s cpu time, 0.058s GC time
+Loading theory "HOL-Library.Old_Datatype" (required by "Draft.LList2MoreTemplates" via "Draft.LList2" via "Coinductive.Coinductive_List" via "Coinductive.Coinductive_Nat" via "HOL-Library.Extended_Nat" via "HOL-Library.Countable")
+### theory "HOL-Library.Infinite_Set"
+### 0.288s elapsed time, 1.155s cpu time, 0.109s GC time
+Loading theory "HOL-Library.Set_Algebras" (required by "Draft.LList2MoreTemplates" via "Draft.ExtrEqs" via "HOL-Library.BigO")
+instantiation
+  set :: (plus) plus
+  plus_set == plus :: 'a set => 'a set => 'a set
+instantiation
+  set :: (times) times
+  times_set == times :: 'a set => 'a set => 'a set
+instantiation
+  set :: (zero) zero
+  zero_set == zero_class.zero :: 'a set
+val cont_intro_tac = fn: Proof.context -> int -> tactic
+val cont_intro_simproc = fn: Proof.context -> cterm -> thm option
+instantiation
+  set :: (one) one
+  one_set == one_class.one :: 'a set
+Found termination order: "size_list size <*mlex*> {}"
+class preorder = ord +
+  assumes "less_le_not_le": "!!x y. (x < y) = (x <= y & ~ y <= x)"
+    and "order_refl": "!!x. x <= x"
+    and "order_trans": "!!x y z. [| x <= y; y <= z |] ==> x <= z"
+locale partial_function_definitions
+  fixes leq :: "'a => 'a => bool"
+    and lub :: "'a set => 'a"
+  assumes "partial_function_definitions leq lub"
+### theory "HOL-Library.Nat_Bijection"
+### 0.309s elapsed time, 1.214s cpu time, 0.135s GC time
+Loading theory "HOL-Library.Stream" (required by "Draft.LList2MoreTemplates" via "Draft.ExtrEqs")
+### theory "HOL-Library.Set_Algebras"
+### 0.196s elapsed time, 0.772s cpu time, 0.077s GC time
+Loading theory "HOL-Library.Sublist" (required by "Draft.LList2MoreTemplates" via "Draft.LList2" via "Coinductive.Coinductive_List")
+class ccpo = Sup + order +
+  assumes
+    "ccpo_Sup_upper":
+      "!!A x.
+          [| Complete_Partial_Order.chain (<=) A; x : A |]
+          ==> x <= \<Squnion> A"
+  assumes
+    "ccpo_Sup_least":
+      "!!A z.
+          [| Complete_Partial_Order.chain (<=) A; !!x. x : A ==> x <= z |]
+          ==> \<Squnion> A <= z"
+locale partial_function_definitions
+  fixes leq :: "'a => 'a => bool"
+    and lub :: "'a set => 'a"
+  assumes "partial_function_definitions leq lub"
+signature OLD_DATATYPE =
+  sig
+    val check_specs: spec list -> theory -> spec list * Proof.context
+    type config = {quiet: bool, strict: bool}
+    val default_config: config
+    type descr =
+       (int * (string * dtyp list * (string * dtyp list) list)) list
+    val distinct_lemma: thm
+    datatype dtyp
+    = DtRec of int | DtTFree of string * sort | DtType of string * dtyp list
+    type info =
+       {case_cong: thm,
+        case_cong_weak: thm,
+        case_name: string,
+        case_rewrites: thm list,
+        descr: descr,
+        distinct: thm list,
+        exhaust: thm,
+        index: int,
+        induct: thm,
+        inducts: thm list,
+        inject: thm list,
+        nchotomy: thm,
+        rec_names: string list,
+        rec_rewrites: thm list, split: thm, split_asm: thm}
+    val read_specs: spec_cmd list -> theory -> spec list * Proof.context
+    type spec =
+       (binding * (string * sort) list * mixfix) *
+       (binding * typ list * mixfix) list
+    type spec_cmd =
+       (binding * (string * string option) list * mixfix) *
+       (binding * string list * mixfix) list
+  end
+structure Old_Datatype: OLD_DATATYPE
+### theory "HOL-Library.Old_Datatype"
+### 0.432s elapsed time, 1.696s cpu time, 0.242s GC time
+Loading theory "HOL-Library.Tree" (required by "Draft.LList2MoreTemplates" via "Draft.ExtrEqs" via "Draft.Templates")
+consts
+  prefixes :: "'a list => 'a list list"
+class ccpo = Sup + order +
+  assumes
+    "ccpo_Sup_upper":
+      "!!A x.
+          [| Complete_Partial_Order.chain (<=) A; x : A |]
+          ==> x <= \<Squnion> A"
+  assumes
+    "ccpo_Sup_least":
+      "!!A z.
+          [| Complete_Partial_Order.chain (<=) A; !!x. x : A ==> x <= z |]
+          ==> \<Squnion> A <= z"
+class ccpo = Sup + order +
+  assumes
+    "ccpo_Sup_upper":
+      "!!A x.
+          [| Complete_Partial_Order.chain (<=) A; x : A |]
+          ==> x <= \<Squnion> A"
+  assumes
+    "ccpo_Sup_least":
+      "!!A z.
+          [| Complete_Partial_Order.chain (<=) A; !!x. x : A ==> x <= z |]
+          ==> \<Squnion> A <= z"
+consts
+  shift :: "'a list => 'a stream => 'a stream"
+locale partial_function_definitions
+  fixes leq :: "'a => 'a => bool"
+    and lub :: "'a set => 'a"
+  assumes "partial_function_definitions leq lub"
+Proofs for inductive predicate(s) "compact"
+Proofs for coinductive predicate(s) "streamsp"
+  Proving monotonicity ...
+  Proving monotonicity ...
+Found termination order: "(%p. length (snd p)) <*mlex*> {}"
+class ccpo = Sup + order +
+  assumes
+    "ccpo_Sup_upper":
+      "!!A x.
+          [| Complete_Partial_Order.chain (<=) A; x : A |]
+          ==> x <= \<Squnion> A"
+  assumes
+    "ccpo_Sup_least":
+      "!!A z.
+          [| Complete_Partial_Order.chain (<=) A; !!x. x : A ==> x <= z |]
+          ==> \<Squnion> A <= z"
+locale partial_function_definitions
+  fixes leq :: "'a => 'a => bool"
+    and lub :: "'a set => 'a"
+  assumes "partial_function_definitions leq lub"
+consts
+  snth :: "'a stream => nat => 'a"
+consts
+  stake :: "nat => 'a stream => 'a list"
+class ccpo = Sup + order +
+  assumes
+    "ccpo_Sup_upper":
+      "!!A x.
+          [| Complete_Partial_Order.chain (<=) A; x : A |]
+          ==> x <= \<Squnion> A"
+  assumes
+    "ccpo_Sup_least":
+      "!!A z.
+          [| Complete_Partial_Order.chain (<=) A; !!x. x : A ==> x <= z |]
+          ==> \<Squnion> A <= z"
+consts
+  sdrop :: "nat => 'a stream => 'a stream"
+locale partial_function_definitions
+  fixes leq :: "'a => 'a => bool"
+    and lub :: "'a set => 'a"
+  assumes "partial_function_definitions leq lub"
+consts
+  sfilter :: "('a => bool) => 'a stream => 'a stream"
+consts
+  cycle :: "'a list => 'a stream"
+consts
+  siterate :: "('a => 'a) => 'a => 'a stream"
+consts
+  flat :: "'a list stream => 'a stream"
+consts
+  suffixes :: "'a list => 'a list list"
+consts
+  sinterleave :: "'a stream => 'a stream => 'a stream"
+consts
+  left :: "'a tree => 'a tree"
+class ccpo = Sup + order +
+  assumes
+    "ccpo_Sup_upper":
+      "!!A x.
+          [| Complete_Partial_Order.chain (<=) A; x : A |]
+          ==> x <= \<Squnion> A"
+  assumes
+    "ccpo_Sup_least":
+      "!!A z.
+          [| Complete_Partial_Order.chain (<=) A; !!x. x : A ==> x <= z |]
+          ==> \<Squnion> A <= z"
+consts
+  right :: "'a tree => 'a tree"
+consts
+  szip :: "'a stream => 'b stream => ('a * 'b) stream"
+Proofs for inductive predicate(s) "list_emb"
+  Proving monotonicity ...
+locale partial_function_definitions
+  fixes leq :: "'a => 'a => bool"
+    and lub :: "'a set => 'a"
+  assumes "partial_function_definitions leq lub"
+consts
+  smap2 :: "('a => 'b => 'c) => 'a stream => 'b stream => 'c stream"
+Found termination order: "size <*mlex*> {}"
+### theory "HOL-Library.Stream"
+### 1.143s elapsed time, 4.348s cpu time, 0.988s GC time
+Loading theory "HOL-Library.Countable" (required by "Draft.LList2MoreTemplates" via "Draft.LList2" via "Coinductive.Coinductive_List" via "Coinductive.Coinductive_Nat" via "HOL-Library.Extended_Nat")
+Found termination order: "size <*mlex*> {}"
+class complete_lattice = ccpo + conditionally_complete_lattice +
+  bounded_lattice +
+  assumes "Inf_lower": "!!x A. x : A ==> \<Sqinter> A <= x"
+    and
+    "Inf_greatest": "!!A z. (!!x. x : A ==> z <= x) ==> z <= \<Sqinter> A"
+    and "Sup_upper": "!!x A. x : A ==> x <= \<Squnion> A"
+    and "Sup_least": "!!A z. (!!x. x : A ==> x <= z) ==> \<Squnion> A <= z"
+    and "Inf_empty": "\<Sqinter> {} = \<top>"
+    and "Sup_empty": "\<Squnion> {} = \<bottom>"
+Found termination order: "size <*mlex*> {}"
+class height = type +
+  fixes height :: "'a => nat"
+instantiation
+  tree :: (type) height
+  height_tree == height :: 'a tree => nat
+Found termination order: "size <*mlex*> {}"
+class complete_distrib_lattice = complete_lattice + distrib_lattice +
+  assumes
+    "Inf_Sup_le":
+      "!!A. \<Sqinter> (Sup ` A)
+            <= \<Squnion> (Inf ` {f ` A |f. ALL Y:A. f Y : Y})"
+Found termination order: "size <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+class complete_lattice = ccpo + conditionally_complete_lattice +
+  bounded_lattice +
+  assumes "Inf_lower": "!!x A. x : A ==> \<Sqinter> A <= x"
+    and
+    "Inf_greatest": "!!A z. (!!x. x : A ==> z <= x) ==> z <= \<Sqinter> A"
+    and "Sup_upper": "!!x A. x : A ==> x <= \<Squnion> A"
+    and "Sup_least": "!!A z. (!!x. x : A ==> x <= z) ==> \<Squnion> A <= z"
+    and "Inf_empty": "\<Sqinter> {} = \<top>"
+    and "Sup_empty": "\<Squnion> {} = \<bottom>"
+### Additional type variable(s) in locale specification "countable": 'a
+Found termination order: "size <*mlex*> {}"
+consts
+  sublists :: "'a list => 'a list list"
+class countable = type +
+  assumes "ex_inj": "EX to_nat. inj to_nat"
+Found termination order: "size <*mlex*> {}"
+### theory "HOL-Library.Sublist"
+### 1.679s elapsed time, 6.461s cpu time, 1.222s GC time
+Loading theory "HOL-Library.BigO" (required by "Draft.LList2MoreTemplates" via "Draft.ExtrEqs")
+Found termination order: "size <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+Proofs for inductive predicate(s) "finite_item"
+  Proving monotonicity ...
+Found termination order: "(%p. size (fst p)) <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+val old_countable_datatype_tac = fn: Proof.context -> int -> tactic
+Found termination order: "(%p. size (snd p)) <*mlex*> {}"
+### ML warning (line 93 of "~~/src/HOL/Tools/BNF/bnf_lfp_countable.ML"):
+### Pattern is not exhaustive.
+### ML warning (line 139 of "~~/src/HOL/Tools/BNF/bnf_lfp_countable.ML"):
+### Pattern is not exhaustive.
+### ML warning (line 143 of "~~/src/HOL/Tools/BNF/bnf_lfp_countable.ML"):
+### Matches are not exhaustive.
+### ML warning (line 145 of "~~/src/HOL/Tools/BNF/bnf_lfp_countable.ML"):
+### Matches are not exhaustive.
+### ML warning (line 156 of "~~/src/HOL/Tools/BNF/bnf_lfp_countable.ML"):
+### Pattern is not exhaustive.
+signature BNF_LFP_COUNTABLE =
+  sig
+    val countable_datatype_tac: Proof.context -> tactic
+    val derive_encode_injectives_thms:
+       Proof.context -> string list -> thm list
+  end
+structure BNF_LFP_Countable: BNF_LFP_COUNTABLE
+val countable_datatype_tac = fn: Proof.context -> thm -> thm Seq.seq
+val countable_tac = fn: Proof.context -> int -> tactic
+locale partial_function_definitions
+  fixes leq :: "'a => 'a => bool"
+    and lub :: "'a set => 'a"
+  assumes "partial_function_definitions leq lub"
+### theory "HOL-Library.Complete_Partial_Order2"
+### 2.582s elapsed time, 10.010s cpu time, 1.594s GC time
+Found termination order: "size <*mlex*> {}"
+### theory "HOL-Library.Countable"
+### 1.255s elapsed time, 4.904s cpu time, 0.545s GC time
+Loading theory "HOL-Library.Countable_Set" (required by "Draft.LList2MoreTemplates" via "Draft.LList2" via "Coinductive.Coinductive_List" via "Coinductive.Coinductive_Nat" via "HOL-Library.Extended_Nat" via "HOL-Library.Order_Continuity" via "HOL-Library.Countable_Complete_Lattices")
+### theory "HOL-Library.Tree"
+### 2.514s elapsed time, 9.499s cpu time, 2.339s GC time
+Loading theory "Draft.Templates" (required by "Draft.LList2MoreTemplates" via "Draft.ExtrEqs")
+### theory "HOL-Library.BigO"
+### 1.120s elapsed time, 4.103s cpu time, 1.282s GC time
+datatype template_term
+=
+     t_empty
+   | template_app of template_term * template_term
+   | template_hole of int
+   | template_var of int
+datatype sign
+= equals | greater_equals | greater_than | less_equals | less_than
+datatype template
+=
+     template_bimplication of template * template
+   | template_dunno
+   | template_equation of template_term * template_term
+   | template_implication of template list * template
+   | template_inequation of sign * template_term * template_term
+   | template_negation of template
+   | template_predicate of template_term
+constructor t_empty: template_term
+constructor template_app: template_term * template_term -> template_term
+constructor template_hole: int -> template_term
+constructor template_var: int -> template_term
+constructor equals: sign
+constructor greater_equals: sign
+constructor greater_than: sign
+constructor less_equals: sign
+constructor less_than: sign
+constructor template_bimplication: template * template -> template
+constructor template_dunno: template
+constructor template_equation: template_term * template_term -> template
+constructor template_implication: template list * template -> template
+constructor template_inequation:
+   sign * template_term * template_term -> template
+constructor template_negation: template -> template
+constructor template_predicate: template_term -> template
+val vfs = fn: term -> (indexname * typ) list * (string * typ) list
+val indexOf = fn: ''a list -> ''a -> int -> int
+val has_eq = fn: term -> bool
+val term2template = fn:
+   (indexname * typ) list -> (string * typ) list -> term -> template_term
+val lemma2predicate = fn: term -> term -> template
+val makeTemplatewithContext = fn: term -> term -> template
+val lemma2template = fn: term -> template
+val thm2template = fn: thm -> template
+val tterm2string = fn: template_term -> string
+val template2string = fn: template -> string
+val t = "height ?t <= size ?t": thm
+val th =
+   Const ("HOL.Trueprop", "bool => prop") $
+     (Const ("Orderings.ord_class.less_eq", "nat => nat => bool") $
+       (Const ("Tree.height_class.height", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree")) $
+       (Const ("Nat.size_class.size", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree"))):
+   term
+### theory "Draft.Templates"
+### 0.074s elapsed time, 0.238s cpu time, 0.000s GC time
+Loading theory "Draft.ExtrEqs" (required by "Draft.LList2MoreTemplates")
+locale comm_monoid_set
+  fixes f :: "'a => 'a => 'a"  (infixl \<open>\<^bold>*\<close> 70)
+    and z :: "'a"  (\<open>\<^bold>1\<close>)
+  assumes "comm_monoid_set (\<^bold>*) \<^bold>1"
+### theory "HOL-Library.Countable_Set"
+### 0.682s elapsed time, 1.976s cpu time, 0.993s GC time
+Loading theory "HOL-Library.Countable_Complete_Lattices" (required by "Draft.LList2MoreTemplates" via "Draft.LList2" via "Coinductive.Coinductive_List" via "Coinductive.Coinductive_Nat" via "HOL-Library.Extended_Nat" via "HOL-Library.Order_Continuity")
+val eqpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Var (("_dummy_", 2), "?'a"))
+       ):
+   term Find_Theorems.criterion
+val badeqpattern = Pattern (Const ("Pure.eq", "?'a => ?'a => prop")):
+   term Find_Theorems.criterion
+val undefpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Const ("HOL.undefined", "?'a"))
+       ):
+   term Find_Theorems.criterion
+val thmpattern =
+   Pattern
+    (Const ("HOL.Trueprop", "bool => prop") $ Var (("_dummy_", 1), "bool")):
+   term Find_Theorems.criterion
+val badnames =
+   ["*nitpick*", "*Nitpick*", "*full_exhaustive*", "*_def*", "Enum.finite*",
+    "*Quickcheck*", "ATP*", "*Nunchaku*", "*Code*", "*BNF*", "*SMT*",
+    "*.*.*"]:
+   string list
+val unwanted_names =
+   [(false, Name "*nitpick*"), (false, Name "*Nitpick*"),
+    (false, Name "*full_exhaustive*"), (false, Name "*_def*"),
+    (false, Name "Enum.finite*"), (false, Name "*Quickcheck*"),
+    (false, Name "ATP*"), (false, Name "*Nunchaku*"),
+    (false, Name "*Code*"), (false, Name "*BNF*"), (false, Name "*SMT*"),
+    (false, Name "*.*.*")]:
+   (bool * term Find_Theorems.criterion) list
+val has_vars = fn: term -> bool
+val get_all_eqs = fn: string -> Proof.context -> (string * thm) list
+val get_all_thms = fn: string -> Proof.context -> (string * thm) list
+val get_noneq_thms = fn: string -> Proof.context -> (string * thm) list
+val template_eqs = fn:
+   string -> Proof.context -> (string * thm * template) list
+val template_thms = fn:
+   string -> Proof.context -> (string * thm * template) list
+### theory "Draft.ExtrEqs"
+### 0.562s elapsed time, 1.160s cpu time, 0.080s GC time
+class countable_complete_lattice = Inf + Sup + lattice + bot + top +
+  assumes "ccInf_lower": "!!A x. [| countable A; x : A |] ==> Inf A <= x"
+  assumes
+    "ccInf_greatest":
+      "!!A z. [| countable A; !!x. x : A ==> z <= x |] ==> z <= Inf A"
+  assumes "ccSup_upper": "!!A x. [| countable A; x : A |] ==> x <= Sup A"
+  assumes
+    "ccSup_least":
+      "!!A z. [| countable A; !!x. x : A ==> x <= z |] ==> Sup A <= z"
+  assumes "ccInf_empty": "Inf {} = top"
+  assumes "ccSup_empty": "Sup {} = bot"
+class countable_complete_distrib_lattice = countable_complete_lattice +
+  assumes
+    "sup_ccInf": "!!B a. countable B ==> sup a (Inf B) = Inf (sup a ` B)"
+  assumes
+    "inf_ccSup": "!!B a. countable B ==> inf a (Sup B) = Sup (inf a ` B)"
+### theory "HOL-Library.Countable_Complete_Lattices"
+### 1.485s elapsed time, 1.878s cpu time, 0.117s GC time
+Loading theory "HOL-Library.Order_Continuity" (required by "Draft.LList2MoreTemplates" via "Draft.LList2" via "Coinductive.Coinductive_List" via "Coinductive.Coinductive_Nat" via "HOL-Library.Extended_Nat")
+### theory "HOL-Library.Order_Continuity"
+### 0.398s elapsed time, 0.454s cpu time, 0.052s GC time
+Loading theory "HOL-Library.Extended_Nat" (required by "Draft.LList2MoreTemplates" via "Draft.LList2" via "Coinductive.Coinductive_List" via "Coinductive.Coinductive_Nat")
+class infinity = type +
+  fixes infinity :: "'a"
+instantiation
+  enat :: infinity
+  infinity_enat == infinity :: enat
+Proofs for inductive predicate(s) "rec_set_enat"
+### No equation for constructor "Extended_Nat.infinity_class.infinity"
+### in definition of function "the_enat"
+consts
+  the_enat :: "enat => nat"
+instantiation
+  enat :: zero_neq_one
+  one_enat == one_class.one :: enat
+  zero_enat == zero_class.zero :: enat
+instantiation
+  enat :: comm_monoid_add
+  plus_enat == plus :: enat => enat => enat
+instantiation
+  enat :: {comm_semiring_1,semiring_no_zero_divisors}
+  times_enat == times :: enat => enat => enat
+instantiation
+  enat :: minus
+  minus_enat == minus :: enat => enat => enat
+instantiation
+  enat :: linordered_ab_semigroup_add
+  less_eq_enat == less_eq :: enat => enat => bool
+  less_enat == less :: enat => enat => bool
+instantiation
+  enat :: {order_bot,order_top}
+  top_enat == top :: enat
+  bot_enat == bot :: enat
+structure Cancel_Enat_Common:
+  sig
+    val dest_sum: term -> term list
+    val dest_summing: term * term list -> term list
+    val find_first: term -> term list -> term list
+    val find_first_t: term list -> term -> term list -> term list
+    val mk_eq: term * term -> term
+    val mk_sum: typ -> term list -> term
+    val norm_ss: simpset
+    val norm_tac: Proof.context -> tactic
+    val simplify_meta_eq: Proof.context -> thm -> thm -> thm
+    val trans_tac: Proof.context -> thm option -> tactic
+  end
+structure Eq_Enat_Cancel:
+  sig val proc: Proof.context -> term -> thm option end
+structure Le_Enat_Cancel:
+  sig val proc: Proof.context -> term -> thm option end
+structure Less_Enat_Cancel:
+  sig val proc: Proof.context -> term -> thm option end
+instantiation
+  enat :: complete_lattice
+  Inf_enat == Inf :: enat set => enat
+  Sup_enat == Sup :: enat set => enat
+  sup_enat == sup :: enat => enat => enat
+  inf_enat == inf :: enat => enat => enat
+### theory "HOL-Library.Extended_Nat"
+### 0.477s elapsed time, 0.512s cpu time, 0.049s GC time
+Loading theory "Coinductive.Coinductive_Nat" (required by "Draft.LList2MoreTemplates" via "Draft.LList2" via "Coinductive.Coinductive_List")
+Proofs for coinductive predicate(s) "enat_setp"
+  Proving monotonicity ...
+locale co
+Proofs for coinductive predicate(s) "Le_enatp"
+  Proving monotonicity ...
+### theory "Coinductive.Coinductive_Nat"
+### 0.756s elapsed time, 1.463s cpu time, 0.979s GC time
+Loading theory "Coinductive.Coinductive_List" (required by "Draft.LList2MoreTemplates" via "Draft.LList2")
+consts
+  unfold_llist ::
+    "('a => bool) => ('a => 'b) => ('a => 'a) => 'a => 'b llist"
+Proofs for inductive predicate(s) "lsetp"
+  Proving monotonicity ...
+Proofs for inductive predicate(s) "lfinite"
+  Proving monotonicity ...
+consts
+  lappend :: "'a llist => 'a llist => 'a llist"
+### Ignoring duplicate rewrite rule:
+### lnull (lappend ?xs1 ?ys1) == lnull ?xs1 & lnull ?ys1
+Proofs for coinductive predicate(s) "lprefix"
+  Proving monotonicity ...
+consts
+  lSup :: "'a llist set => 'a llist"
+### Cannot skip proof of schematic goal statement
+### Cannot skip proof of schematic goal statement
+consts
+  iterates :: "('a => 'a) => 'a => 'a llist"
+consts
+  llist_of :: "'a list => 'a llist"
+consts
+  ltake :: "enat => 'a llist => 'a llist"
+### Ambiguous input (line 1019 of "$AFP/Coinductive/Coinductive_List.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" ldrop)
+###       ("_cargs" ("_position" n) ("_position" xs)))
+###     ("_case_syntax" ("_position" n)
+###       ("_case2"
+###         ("_case1" ("\<^const>Groups.zero_class.zero") ("_position" xs))
+###         ("_case1" ("_applC" ("_position" eSuc) ("_position" n'))
+###           ("_case_syntax" ("_position" xs)
+###             ("_case2" ("_case1" ("_position" LNil) ("_position" LNil))
+###               ("_case1"
+###                 ("_applC" ("_position" LCons)
+###                   ("_cargs" ("_position" x) ("_position" xs')))
+###                 ("_applC" ("_position" ldrop)
+###                   ("_cargs" ("_position" n') ("_position" xs')))))))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" ldrop)
+###       ("_cargs" ("_position" n) ("_position" xs)))
+###     ("_case_syntax" ("_position" n)
+###       ("_case2"
+###         ("_case1" ("\<^const>Groups.zero_class.zero") ("_position" xs))
+###         ("_case2"
+###           ("_case1" ("_applC" ("_position" eSuc) ("_position" n'))
+###             ("_case_syntax" ("_position" xs)
+###               ("_case1" ("_position" LNil) ("_position" LNil))))
+###           ("_case1"
+###             ("_applC" ("_position" LCons)
+###               ("_cargs" ("_position" x) ("_position" xs')))
+###             ("_applC" ("_position" ldrop)
+###               ("_cargs" ("_position" n') ("_position" xs')))))))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+consts
+  ltakeWhile :: "('a => bool) => 'a llist => 'a llist"
+consts
+  lnth :: "'a llist => nat => 'a"
+consts
+  lzip :: "'a llist => 'b llist => ('a * 'b) llist"
+Proofs for coinductive predicate(s) "ldistinct"
+  Proving monotonicity ...
+Proofs for coinductive predicate(s) "llexord"
+  Proving monotonicity ...
+### Ambiguous input (line 1508 of "$AFP/Coinductive/Coinductive_List.thy") produces 2 parse trees:
+### ("\<^const>Pure.eq" ("_position" F)
+###   ("_lambda"
+###     ("_pttrns" ("_position" ltake)
+###       ("_pttrns" ("_position" n) ("_position" xs)))
+###     ("_case_syntax" ("_position" xs)
+###       ("_case2" ("_case1" ("_position" LNil) ("_position" LNil))
+###         ("_case2"
+###           ("_case1"
+###             ("_applC" ("_position" LCons)
+###               ("_cargs" ("_position" x) ("_position" xs)))
+###             ("_case_syntax" ("_position" n)
+###               ("_case1" ("\<^const>Groups.zero_class.zero")
+###                 ("_position" LNil))))
+###           ("_case1" ("_applC" ("_position" eSuc) ("_position" n))
+###             ("_applC" ("_position" LCons)
+###               ("_cargs" ("_position" x)
+###                 ("_applC" ("_position" ltake)
+###                   ("_cargs" ("_position" n) ("_position" xs)))))))))))
+### ("\<^const>Pure.eq" ("_position" F)
+###   ("_lambda"
+###     ("_pttrns" ("_position" ltake)
+###       ("_pttrns" ("_position" n) ("_position" xs)))
+###     ("_case_syntax" ("_position" xs)
+###       ("_case2" ("_case1" ("_position" LNil) ("_position" LNil))
+###         ("_case1"
+###           ("_applC" ("_position" LCons)
+###             ("_cargs" ("_position" x) ("_position" xs)))
+###           ("_case_syntax" ("_position" n)
+###             ("_case2"
+###               ("_case1" ("\<^const>Groups.zero_class.zero")
+###                 ("_position" LNil))
+###               ("_case1" ("_applC" ("_position" eSuc) ("_position" n))
+###                 ("_applC" ("_position" LCons)
+###                   ("_cargs" ("_position" x)
+###                     ("_applC" ("_position" ltake)
+###                       ("_cargs" ("_position" n) ("_position" xs)))))))))))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ignoring duplicate rewrite rule:
+### lnull (lzip ?xs1 ?ys1) == lnull ?xs1 | lnull ?ys1
+### Ambiguous input (line 2485 of "$AFP/Coinductive/Coinductive_List.thy") produces 2 parse trees:
+### ("\<^const>Pure.eq" ("_position" F)
+###   ("_lambda"
+###     ("_pttrns" ("_position" lzip)
+###       ("_pattern" ("_position" xs) ("_position" ys)))
+###     ("_case_syntax" ("_position" xs)
+###       ("_case2" ("_case1" ("_position" LNil) ("_position" LNil))
+###         ("_case2"
+###           ("_case1"
+###             ("_applC" ("_position" LCons)
+###               ("_cargs" ("_position" x) ("_position" xs')))
+###             ("_case_syntax" ("_position" ys)
+###               ("_case1" ("_position" LNil) ("_position" LNil))))
+###           ("_case1"
+###             ("_applC" ("_position" LCons)
+###               ("_cargs" ("_position" y) ("_position" ys')))
+###             ("_applC" ("_position" LCons)
+###               ("_cargs"
+###                 ("_tuple" ("_position" x) ("_tuple_arg" ("_position" y)))
+###                 ("_applC" ("_position" curry)
+###                   ("_cargs" ("_position" lzip)
+###                     ("_cargs" ("_position" xs') ("_position" ys'))))))))))))
+### ("\<^const>Pure.eq" ("_position" F)
+###   ("_lambda"
+###     ("_pttrns" ("_position" lzip)
+###       ("_pattern" ("_position" xs) ("_position" ys)))
+###     ("_case_syntax" ("_position" xs)
+###       ("_case2" ("_case1" ("_position" LNil) ("_position" LNil))
+###         ("_case1"
+###           ("_applC" ("_position" LCons)
+###             ("_cargs" ("_position" x) ("_position" xs')))
+###           ("_case_syntax" ("_position" ys)
+###             ("_case2" ("_case1" ("_position" LNil) ("_position" LNil))
+###               ("_case1"
+###                 ("_applC" ("_position" LCons)
+###                   ("_cargs" ("_position" y) ("_position" ys')))
+###                 ("_applC" ("_position" LCons)
+###                   ("_cargs"
+###                     ("_tuple" ("_position" x)
+###                       ("_tuple_arg" ("_position" y)))
+###                     ("_applC" ("_position" curry)
+###                       ("_cargs" ("_position" lzip)
+###                         ("_cargs" ("_position" xs')
+###                           ("_position" ys'))))))))))))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+class ord = type +
+  fixes less_eq :: "'a => 'a => bool"
+    and less :: "'a => 'a => bool"
+Proofs for coinductive predicate(s) "lsorted"
+  Proving monotonicity ...
+### Partially applied constant "Sublist.list_emb" on left hand side of equation, in theorem:
+### subseq_order.lsorted LNil == True
+### Partially applied constant "Sublist.list_emb" on left hand side of equation, in theorem:
+### subseq_order.lsorted (LCons ?x LNil) == True
+### Partially applied constant "Sublist.list_emb" on left hand side of equation, in theorem:
+### subseq_order.lsorted (LCons ?x (LCons ?y ?xs)) ==
+### subseq ?x ?y & subseq_order.lsorted (LCons ?y ?xs)
+### Partially applied constant "Sublist.sublist" on left hand side of equation, in theorem:
+### sublist_order.lsorted LNil == True
+### Partially applied constant "Sublist.sublist" on left hand side of equation, in theorem:
+### sublist_order.lsorted (LCons ?x LNil) == True
+### Partially applied constant "Sublist.sublist" on left hand side of equation, in theorem:
+### sublist_order.lsorted (LCons ?x (LCons ?y ?xs)) ==
+### sublist ?x ?y & sublist_order.lsorted (LCons ?y ?xs)
+### Partially applied constant "Sublist.suffix" on left hand side of equation, in theorem:
+### suffix_order.lsorted LNil == True
+### Partially applied constant "Sublist.suffix" on left hand side of equation, in theorem:
+### suffix_order.lsorted (LCons ?x LNil) == True
+### Partially applied constant "Sublist.suffix" on left hand side of equation, in theorem:
+### suffix_order.lsorted (LCons ?x (LCons ?y ?xs)) ==
+### suffix ?x ?y & suffix_order.lsorted (LCons ?y ?xs)
+### Partially applied constant "Sublist.prefix" on left hand side of equation, in theorem:
+### prefix_order.lsorted LNil == True
+### Partially applied constant "Sublist.prefix" on left hand side of equation, in theorem:
+### prefix_order.lsorted (LCons ?x LNil) == True
+### Partially applied constant "Sublist.prefix" on left hand side of equation, in theorem:
+### prefix_order.lsorted (LCons ?x (LCons ?y ?xs)) ==
+### prefix ?x ?y & prefix_order.lsorted (LCons ?y ?xs)
+class preorder = ord +
+  assumes "less_le_not_le": "!!x y. (x < y) = (x <= y & ~ y <= x)"
+    and "order_refl": "!!x. x <= x"
+    and "order_trans": "!!x y z. [| x <= y; y <= z |] ==> x <= z"
+class linorder = order +
+  assumes "linear": "!!x y. x <= y | y <= x"
+### Introduced fixed type variable(s): 'a in "P__" or "xs__"
+### Introduced fixed type variable(s): 'a in "P__" or "xs__"
+### Introduced fixed type variable(s): 'a in "P__" or "Q__"
+### Introduced fixed type variable(s): 'a in "xs__"
+class preorder = ord +
+  assumes "less_le_not_le": "!!x y. (x < y) = (x <= y & ~ y <= x)"
+    and "order_refl": "!!x. x <= x"
+    and "order_trans": "!!x y z. [| x <= y; y <= z |] ==> x <= z"
+class monoid_add = semigroup_add + zero +
+  assumes "add_0_left": "!!a. (0::'a) + a = a"
+    and "add_0_right": "!!a. a + (0::'a) = a"
+### theory "Coinductive.Coinductive_List"
+### 3.414s elapsed time, 4.741s cpu time, 1.812s GC time
+Loading theory "Draft.LList2" (required by "Draft.LList2MoreTemplates")
+Proofs for inductive predicate(s) "finlstsp"
+  Proving monotonicity ...
+Proofs for coinductive predicate(s) "alllstsp"
+  Proving monotonicity ...
+consts
+  ll2f :: "'a llist => nat => 'a option"
+consts
+  ltake :: "'a llist => nat => 'a llist"
+consts
+  ldrop :: "'a llist => nat => 'a llist"
+instantiation
+  llist :: (type) order
+  less_eq_llist == less_eq :: 'a llist => 'a llist => bool
+  less_llist == less :: 'a llist => 'a llist => bool
+### theory "Draft.LList2"
+### 0.516s elapsed time, 0.603s cpu time, 0.079s GC time
+Loading theory "Draft.LList2MoreTemplates"
+val templateLemmas =
+   [("LList2.LNil_le", "LNil <= ?s",
+     template_inequation (less_equals, template_hole 0, template_var 0)),
+    ("LList2.llist_le_refl", "?s <= ?s",
+     template_inequation (less_equals, template_var 0, template_var 0)),
+    ("LList2.not_less_LNil", "~ ?r < LNil",
+     template_negation
+      (template_inequation (less_than, template_var 0, template_hole 0))),
+    ("LList2.alllsts_UNIV", "?s : UNIV\<^sup>\<infinity>",
+     template_predicate
+      (
+         template_app
+          (template_app (template_hole 2, template_var 0),
+           template_app (template_hole 1, template_hole 0))
+         )),
+    ("LList2.lconst_LNil", "lconst ?a ~= LNil",
+     template_negation
+      (
+         template_equation
+          (template_app (template_hole 1, template_var 0), template_hole 0)
+         )),
+    ("LList2.ll2f_LNil", "LNil !! ?x = None",
+     template_equation
+      (template_app
+        (template_app (template_hole 2, template_hole 1), template_var 0),
+       template_hole 0)),
+    ("LList2.ldrop_LNil", "LNil \<up> ?i = LNil",
+     template_equation
+      (template_app
+        (template_app (template_hole 1, template_hole 0), template_var 0),
+       template_hole 0)),
+    ("LList2.ltake_LNil", "LNil \<down> ?i = LNil",
+     template_equation
+      (template_app
+        (template_app (template_hole 1, template_hole 0), template_var 0),
+       template_hole 0)),
+    ("LList2.LNil_less_LCons", "LNil < ?a ## ?t",
+     template_inequation
+      (less_than, template_hole 1,
+       template_app
+        (template_app (template_hole 0, template_var 1), template_var 0))),
+    ("LList2.le_lappend", "?r <= ?r @@ ?s",
+     template_inequation
+      (less_equals, template_var 1,
+       template_app
+        (template_app (template_hole 0, template_var 1), template_var 0))),
+    ("LList2.not_LCons_le_LNil", "~ ?a ## ?l <= LNil",
+     template_negation
+      (
+         template_inequation
+          (less_equals,
+           template_app
+            (template_app (template_hole 1, template_var 1),
+             template_var 0),
+           template_hole 0)
+         )),
+    ("LList2.finlsts_rec_LNil", "finlsts_rec ?c ?d LNil = ?c",
+     template_equation
+      (template_app
+        (template_app
+          (template_app (template_hole 1, template_var 1), template_var 0),
+         template_hole 0),
+       template_var 1)),
+    ("LList2.infsuff_LNil", "infsuff ?A LNil = ?A\<^sup>\<omega>",
+     template_equation
+      (template_app
+        (template_app (template_hole 2, template_var 0), template_hole 1),
+       template_app (template_hole 0, template_var 0))),
+    ("LList2.suff_LNil", "suff ?A LNil = ?A\<^sup>\<infinity>",
+     template_equation
+      (template_app
+        (template_app (template_hole 2, template_var 0), template_hole 1),
+       template_app (template_hole 0, template_var 0))),
+    ("LList2.ltake_fin", "?r \<down> ?i : UNIV\<^sup>\<star>",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_hole 3,
+             template_app
+              (template_app (template_hole 2, template_var 1),
+               template_var 0)),
+           template_app (template_hole 1, template_hole 0))
+         )),
+    ("LList2.finpref_LNil", "finpref ?A LNil = {LNil}",
+     template_equation
+      (template_app
+        (template_app (template_hole 3, template_var 0), template_hole 2),
+       template_app
+        (template_app (template_hole 1, template_hole 2),
+         template_hole 0))),
+    ("LList2.fin_Int_inf", "?A\<^sup>\<star> Int ?A\<^sup>\<omega> = {}",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 3, template_app (template_hole 2, template_var 0)),
+         template_app (template_hole 1, template_var 0)),
+       template_hole 0)),
+    ("LList2.le_LNil", "(?s <= LNil) = (?s = LNil)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 2, template_var 0),
+              template_hole 1)
+            )],
+       template_equation (template_var 0, template_hole 1))),
+    ("LList2.lconst_unfold", "lconst ?a = ?a ## lconst ?a",
+     template_equation
+      (template_app (template_hole 1, template_var 0),
+       template_app
+        (template_app (template_hole 0, template_var 0),
+         template_app (template_hole 1, template_var 0)))),
+    ("LList2.possafety_pprefix_closed",
+     "possafety UNIV ?P ==> pprefix_closed ?P",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 2, template_hole 1),
+              template_var 0)
+            )],
+       template_predicate
+        (template_app (template_hole 0, template_var 0)))),
+    ("LList2.safety_prefix_closed", "safety UNIV ?P ==> prefix_closed ?P",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 2, template_hole 1),
+              template_var 0)
+            )],
+       template_predicate
+        (template_app (template_hole 0, template_var 0)))),
+    ("LList2.fin_Un_inf",
+     "?A\<^sup>\<star> Un ?A\<^sup>\<omega> = ?A\<^sup>\<infinity>",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 3, template_app (template_hole 2, template_var 0)),
+         template_app (template_hole 1, template_var 0)),
+       template_app (template_hole 0, template_var 0))),
+    ("LList2.poslsts_UNIV", "(?s : UNIV\<^sup>\<spadesuit>) = (?s ~= LNil)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 5, template_var 0),
+              template_app (template_hole 4, template_hole 3))
+            )],
+       template_negation
+        (template_equation (template_var 0, template_hole 0)))),
+    ("LList2.LNil_suff", "(LNil : suff ?A ?s) = (?s = LNil)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 3, template_hole 2),
+              template_app
+               (template_app (template_hole 1, template_var 1),
+                template_var 0))
+            )],
+       template_equation (template_var 0, template_hole 2))),
+    ("LList2.ltake_ldrop_id", "?x \<down> ?i @@ ?x \<up> ?i = ?x",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 2,
+           template_app
+            (template_app (template_hole 1, template_var 1),
+             template_var 0)),
+         template_app
+          (template_app (template_hole 0, template_var 1), template_var 0)),
+       template_var 1)),
+    ("LList2.notfin_inf",
+     "(?x ~: UNIV\<^sup>\<star>) = (?x : UNIV\<^sup>\<omega>)",
+     template_equation
+      (template_app
+        (template_hole 4,
+         template_app
+          (template_app (template_hole 3, template_var 0),
+           template_app (template_hole 2, template_hole 1))),
+       template_app
+        (template_app (template_hole 3, template_var 0),
+         template_app (template_hole 0, template_hole 1)))),
+    ("LList2.notinf_fin",
+     "(?x ~: UNIV\<^sup>\<omega>) = (?x : UNIV\<^sup>\<star>)",
+     template_equation
+      (template_app
+        (template_hole 4,
+         template_app
+          (template_app (template_hole 3, template_var 0),
+           template_app (template_hole 2, template_hole 1))),
+       template_app
+        (template_app (template_hole 3, template_var 0),
+         template_app (template_hole 0, template_hole 1)))),
+    ("LList2.alllstsp_mono", "?A <= ?B ==> alllstsp ?A <= alllstsp ?B",
+     template_implication
+      ([template_inequation (less_equals, template_var 1, template_var 0)],
+       template_inequation
+        (less_equals, template_app (template_hole 0, template_var 1),
+         template_app (template_hole 0, template_var 0)))),
+    ("LList2.finlstsp_mono", "?A <= ?B ==> finlstsp ?A <= finlstsp ?B",
+     template_implication
+      ([template_inequation (less_equals, template_var 1, template_var 0)],
+       template_inequation
+        (less_equals, template_app (template_hole 0, template_var 1),
+         template_app (template_hole 0, template_var 0)))),
+    ("LList2.alllsts_mono",
+     "?A <= ?B ==> ?A\<^sup>\<infinity> <= ?B\<^sup>\<infinity>",
+     template_implication
+      ([template_inequation (less_equals, template_var 1, template_var 0)],
+       template_inequation
+        (less_equals, template_app (template_hole 0, template_var 1),
+         template_app (template_hole 0, template_var 0)))),
+    ("LList2.finlsts_mono",
+     "?A <= ?B ==> ?A\<^sup>\<star> <= ?B\<^sup>\<star>",
+     template_implication
+      ([template_inequation (less_equals, template_var 1, template_var 0)],
+       template_inequation
+        (less_equals, template_app (template_hole 0, template_var 1),
+         template_app (template_hole 0, template_var 0)))),
+    ("LList2.fpslsts_mono",
+     "?A <= ?B ==> ?A\<^sup>\<clubsuit> <= ?B\<^sup>\<clubsuit>",
+     template_implication
+      ([template_inequation (less_equals, template_var 1, template_var 0)],
+       template_inequation
+        (less_equals, template_app (template_hole 0, template_var 1),
+         template_app (template_hole 0, template_var 0)))),
+    ("LList2.inflsts_mono",
+     "?A <= ?B ==> ?A\<^sup>\<omega> <= ?B\<^sup>\<omega>",
+     template_implication
+      ([template_inequation (less_equals, template_var 1, template_var 0)],
+       template_inequation
+        (less_equals, template_app (template_hole 0, template_var 1),
+         template_app (template_hole 0, template_var 0)))),
+    ("LList2.poslsts_mono",
+     "?A <= ?B ==> ?A\<^sup>\<spadesuit> <= ?B\<^sup>\<spadesuit>",
+     template_implication
+      ([template_inequation (less_equals, template_var 1, template_var 0)],
+       template_inequation
+        (less_equals, template_app (template_hole 0, template_var 1),
+         template_app (template_hole 0, template_var 0)))),
+    ("LList2.lconstT", "?a : ?A ==> lconst ?a : ?A\<^sup>\<omega>",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 3, template_var 1),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 2,
+               template_app (template_hole 1, template_var 1)),
+             template_app (template_hole 0, template_var 0))
+           ))),
+    ("LList2.finT_simp",
+     "?r : ?A\<^sup>\<star> ==> ?r : UNIV\<^sup>\<star>",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 2, template_var 1),
+              template_app (template_hole 1, template_var 0))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 2, template_var 1),
+             template_app (template_hole 1, template_hole 0))
+           ))),
+    ("LList2.infT_simp",
+     "?r : ?A\<^sup>\<omega> ==> ?r : UNIV\<^sup>\<omega>",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 2, template_var 1),
+              template_app (template_hole 1, template_var 0))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 2, template_var 1),
+             template_app (template_hole 1, template_hole 0))
+           ))),
+    ("LList2.finsubsetall",
+     "?x : ?A\<^sup>\<star> ==> ?x : ?A\<^sup>\<infinity>",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 2, template_var 1),
+              template_app (template_hole 1, template_var 0))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 2, template_var 1),
+             template_app (template_hole 0, template_var 0))
+           ))),
+    ("LList2.infsubsetall",
+     "?x : ?A\<^sup>\<omega> ==> ?x : ?A\<^sup>\<infinity>",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 2, template_var 1),
+              template_app (template_hole 1, template_var 0))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 2, template_var 1),
+             template_app (template_hole 0, template_var 0))
+           ))),
+    ("LList2.alllstsp_alllsts_eq",
+     "alllstsp (%x. x : ?A) = (%x. x : ?A\<^sup>\<infinity>)",
+     template_equation (template_app (template_hole 3, t_empty), t_empty)),
+    ("LList2.finlstsp_finlsts_eq",
+     "finlstsp (%x. x : ?A) = (%x. x : ?A\<^sup>\<star>)",
+     template_equation (template_app (template_hole 3, t_empty), t_empty)),
+    ("LList2.ldrop_fin_iffT",
+     "(?t \<up> ?i : UNIV\<^sup>\<star>) = (?t : UNIV\<^sup>\<star>)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 3,
+           template_app
+            (template_app (template_hole 2, template_var 1),
+             template_var 0)),
+         template_app (template_hole 1, template_hole 0)),
+       template_app
+        (template_app (template_hole 3, template_var 1),
+         template_app (template_hole 1, template_hole 0)))),
+    ("LList2.ldrop_inf_iffT",
+     "(?t \<up> ?i : UNIV\<^sup>\<omega>) = (?t : UNIV\<^sup>\<omega>)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 3,
+           template_app
+            (template_app (template_hole 2, template_var 1),
+             template_var 0)),
+         template_app (template_hole 1, template_hole 0)),
+       template_app
+        (template_app (template_hole 3, template_var 1),
+         template_app (template_hole 1, template_hole 0)))),
+    ("LList2.ldrop_fun", "?t \<up> ?i !! ?j = ?t !! (?i + ?j)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 2,
+           template_app
+            (template_app (template_hole 1, template_var 2),
+             template_var 1)),
+         template_var 0),
+       template_app
+        (template_app (template_hole 2, template_var 2),
+         template_app
+          (template_app (template_hole 0, template_var 1),
+           template_var 0)))),
+    ("LList2.ldrop_add", "?t \<up> (?i + ?k) = ?t \<up> ?i \<up> ?k",
+     template_equation
+      (template_app
+        (template_app (template_hole 1, template_var 2),
+         template_app
+          (template_app (template_hole 0, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 1,
+           template_app
+            (template_app (template_hole 1, template_var 2),
+             template_var 1)),
+         template_var 0))),
+    ("LList2.lapp_inf", "?s : ?A\<^sup>\<omega> ==> ?s @@ ?t = ?s",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 3, template_var 2),
+              template_app (template_hole 2, template_var 1))
+            )],
+       template_equation
+        (template_app
+          (template_app (template_hole 0, template_var 2), template_var 0),
+         template_var 2))),
+    ("LList2.take_inf_less",
+     "?t : UNIV\<^sup>\<omega> ==> ?t \<down> ?i < ?t",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 4, template_var 1),
+              template_app (template_hole 3, template_hole 2))
+            )],
+       template_inequation
+        (less_than,
+         template_app
+          (template_app (template_hole 0, template_var 1), template_var 0),
+         template_var 1))),
+    ("LList2.lrevT",
+     "?xs : ?A\<^sup>\<star> ==> lrev ?xs : ?A\<^sup>\<star>",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 2, template_var 1),
+              template_app (template_hole 1, template_var 0))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 2,
+               template_app (template_hole 0, template_var 1)),
+             template_app (template_hole 1, template_var 0))
+           ))),
+    ("LList2.lrev_lrev_ident",
+     "?xs : UNIV\<^sup>\<star> ==> lrev (lrev ?xs) = ?xs",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 4, template_var 0),
+              template_app (template_hole 3, template_hole 2))
+            )],
+       template_equation
+        (template_app
+          (template_hole 0, template_app (template_hole 0, template_var 0)),
+         template_var 0))),
+    ("LList2.None_lfinite", "?t !! ?i = None ==> ?t : UNIV\<^sup>\<star>",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app (template_hole 4, template_var 1), template_var 0),
+          template_hole 3)],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 2, template_var 1),
+             template_app (template_hole 1, template_hole 0))
+           ))),
+    ("LList2.finpref_fin", "?x : finpref ?A ?s ==> ?x : ?A\<^sup>\<star>",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 2, template_var 2),
+              template_app
+               (template_app (template_hole 1, template_var 1),
+                template_var 0))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 2, template_var 2),
+             template_app (template_hole 0, template_var 1))
+           ))),
+    ("LList2.infsuff_inf", "?x : infsuff ?A ?s ==> ?x : ?A\<^sup>\<omega>",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 2, template_var 2),
+              template_app
+               (template_app (template_hole 1, template_var 1),
+                template_var 0))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 2, template_var 2),
+             template_app (template_hole 0, template_var 1))
+           ))),
+    ("LList2.suff_all", "?x : suff ?A ?s ==> ?x : ?A\<^sup>\<infinity>",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 2, template_var 2),
+              template_app
+               (template_app (template_hole 1, template_var 1),
+                template_var 0))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 2, template_var 2),
+             template_app (template_hole 0, template_var 1))
+           ))),
+    ("LList2.llist_less_le_not_le", "(?s < ?t) = (?s <= ?t & ~ ?t <= ?s)",
+     template_equation
+      (template_app
+        (template_app (template_hole 3, template_var 1), template_var 0),
+       template_app
+        (template_app
+          (template_hole 2,
+           template_app
+            (template_app (template_hole 1, template_var 1),
+             template_var 0)),
+         template_app
+          (template_hole 0,
+           template_app
+            (template_app (template_hole 1, template_var 0),
+             template_var 1))))),
+    ("LList2.ltake_LCons_Suc",
+     "(?a ## ?l) \<down> Suc ?i = ?a ## ?l \<down> ?i",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 2,
+           template_app
+            (template_app (template_hole 1, template_var 2),
+             template_var 1)),
+         template_app (template_hole 0, template_var 0)),
+       template_app
+        (template_app (template_hole 1, template_var 2),
+         template_app
+          (template_app (template_hole 2, template_var 1),
+           template_var 0)))),
+    ("LList2.finpref_mono2", "?s <= ?t ==> finpref ?A ?s <= finpref ?A ?t",
+     template_implication
+      ([template_inequation (less_equals, template_var 2, template_var 1)],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_app (template_hole 0, template_var 0), template_var 2),
+         template_app
+          (template_app (template_hole 0, template_var 0),
+           template_var 1)))),
+    ("LList2.infsuff_mono2", "?s <= ?t ==> infsuff ?A ?t <= infsuff ?A ?s",
+     template_implication
+      ([template_inequation (less_equals, template_var 2, template_var 1)],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_app (template_hole 0, template_var 0), template_var 1),
+         template_app
+          (template_app (template_hole 0, template_var 0),
+           template_var 2)))),
+    ("LList2.suff_mono2", "?s <= ?t ==> suff ?A ?t <= suff ?A ?s",
+     template_implication
+      ([template_inequation (less_equals, template_var 2, template_var 1)],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_app (template_hole 0, template_var 0), template_var 1),
+         template_app
+          (template_app (template_hole 0, template_var 0),
+           template_var 2)))),
+    ("LList2.ll2f_llength",
+     "?r : ?A\<^sup>\<star> ==> ?r !! LList2.llength ?r = None",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 5, template_var 1),
+              template_app (template_hole 4, template_var 0))
+            )],
+       template_equation
+        (template_app
+          (template_app (template_hole 2, template_var 1),
+           template_app (template_hole 1, template_var 1)),
+         template_hole 0))),
+    ("LList2.ldropT",
+     "?t : ?A\<^sup>\<infinity> ==> ?t \<up> ?i : ?A\<^sup>\<infinity>",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 2, template_var 2),
+              template_app (template_hole 1, template_var 1))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 2,
+               template_app
+                (template_app (template_hole 0, template_var 2),
+                 template_var 0)),
+             template_app (template_hole 1, template_var 1))
+           ))),
+    ("LList2.take_fin",
+     "?t : ?A\<^sup>\<infinity> ==> ?t \<down> ?i : ?A\<^sup>\<star>",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 3, template_var 2),
+              template_app (template_hole 2, template_var 1))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 3,
+               template_app
+                (template_app (template_hole 1, template_var 2),
+                 template_var 0)),
+             template_app (template_hole 0, template_var 1))
+           ))),
+    ("LList2.ldrop_finT",
+     "?t : ?A\<^sup>\<star> ==> ?t \<up> ?i : ?A\<^sup>\<star>",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 2, template_var 2),
+              template_app (template_hole 1, template_var 1))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 2,
+               template_app
+                (template_app (template_hole 0, template_var 2),
+                 template_var 0)),
+             template_app (template_hole 1, template_var 1))
+           ))),
+    ("LList2.llength_take",
+     "?t : ?A\<^sup>\<omega> ==> LList2.llength (?t \<down> ?i) = ?i",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 4, template_var 2),
+              template_app (template_hole 3, template_var 1))
+            )],
+       template_equation
+        (template_app
+          (template_hole 1,
+           template_app
+            (template_app (template_hole 0, template_var 2),
+             template_var 0)),
+         template_var 0))),
+    ("LList2.ldrop_infT",
+     "?t : ?A\<^sup>\<omega> ==> ?t \<up> ?i : ?A\<^sup>\<omega>",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 2, template_var 2),
+              template_app (template_hole 1, template_var 1))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 2,
+               template_app
+                (template_app (template_hole 0, template_var 2),
+                 template_var 0)),
+             template_app (template_hole 1, template_var 1))
+           ))),
+    ("LList2.drop_nonLNil", "?t \<up> ?i ~= LNil ==> ?t ~= LNil",
+     template_implication
+      ([template_negation
+         (
+            template_equation
+             (template_app
+               (template_app (template_hole 1, template_var 1),
+                template_var 0),
+              template_hole 0)
+            )],
+       template_negation
+        (template_equation (template_var 1, template_hole 0)))),
+    ("LList2.lapp_all_invT",
+     "?r @@ ?s : ?A\<^sup>\<infinity> ==> ?r : ?A\<^sup>\<infinity>",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 2,
+                template_app
+                 (template_app (template_hole 1, template_var 2),
+                  template_var 1)),
+              template_app (template_hole 0, template_var 0))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 2, template_var 2),
+             template_app (template_hole 0, template_var 0))
+           ))),
+    ("LList2.lapp_fin_fin_lemma",
+     "?r @@ ?s : ?A\<^sup>\<star> ==> ?r : ?A\<^sup>\<star>",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 2,
+                template_app
+                 (template_app (template_hole 1, template_var 2),
+                  template_var 1)),
+              template_app (template_hole 0, template_var 0))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 2, template_var 2),
+             template_app (template_hole 0, template_var 0))
+           ))),
+    ("LList2.LNil_is_lappend_conv",
+     "(LNil = ?s @@ ?t) = (?s = LNil & ?t = LNil)",
+     template_bimplication
+      (template_equation
+        (template_hole 2,
+         template_app
+          (template_app (template_hole 1, template_var 1), template_var 0)),
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 0,
+               template_app
+                (template_app (template_hole 3, template_var 1),
+                 template_hole 2)),
+             template_app
+              (template_app (template_hole 3, template_var 0),
+               template_hole 2))
+           ))),
+    ("LList2.lappend_is_LNil_conv",
+     "(?s @@ ?t = LNil) = (?s = LNil & ?t = LNil)",
+     template_bimplication
+      (template_equation
+        (template_app
+          (template_app (template_hole 2, template_var 1), template_var 0),
+         template_hole 1),
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 0,
+               template_app
+                (template_app (template_hole 3, template_var 1),
+                 template_hole 1)),
+             template_app
+              (template_app (template_hole 3, template_var 0),
+               template_hole 1))
+           ))),
+    ("LList2.ltake_ldrop",
+     "?xs \<up> ?m \<down> ?n = ?xs \<down> (?n + ?m) \<up> ?m",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 2,
+           template_app
+            (template_app (template_hole 1, template_var 2),
+             template_var 1)),
+         template_var 0),
+       template_app
+        (template_app
+          (template_hole 1,
+           template_app
+            (template_app (template_hole 2, template_var 2),
+             template_app
+              (template_app (template_hole 0, template_var 0),
+               template_var 1))),
+         template_var 1))),
+    ("LList2.lapp_take_less",
+     "?i < LList2.llength ?r ==> (?r @@ ?s) \<down> ?i < ?r",
+     template_implication
+      ([template_inequation
+         (less_than, template_var 2,
+          template_app (template_hole 3, template_var 1))],
+       template_inequation
+        (less_than,
+         template_app
+          (template_app
+            (template_hole 1,
+             template_app
+              (template_app (template_hole 0, template_var 1),
+               template_var 0)),
+           template_var 2),
+         template_var 1))),
+    ("LList2.finlsts_predI",
+     "?r : ?A\<^sup>\<star> ==> (?r, ?a ## ?r) : finlsts_pred",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 5, template_var 2),
+              template_app (template_hole 4, template_var 1))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 3,
+               template_app
+                (template_app (template_hole 2, template_var 2),
+                 template_app
+                  (template_app (template_hole 1, template_var 0),
+                   template_var 2))),
+             template_hole 0)
+           ))),
+    ("LList2.llist_inf_le",
+     "?s : ?A\<^sup>\<omega> ==> (?s <= ?t) = (?s = ?t)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 4, template_var 2),
+              template_app (template_hole 3, template_var 1))
+            )],
+       template_implication
+        ([template_predicate
+           (
+              template_app
+               (template_app (template_hole 1, template_var 2),
+                template_var 0)
+              )],
+         template_equation (template_var 2, template_var 0)))),
+    ("LList2.ll2f_None_Suc", "?t !! ?i = None ==> ?t !! Suc ?i = None",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app (template_hole 2, template_var 1), template_var 0),
+          template_hole 1)],
+       template_equation
+        (template_app
+          (template_app (template_hole 2, template_var 1),
+           template_app (template_hole 0, template_var 0)),
+         template_hole 1))),
+    ("LList2.llist_le_trans", "[| ?r <= ?s; ?s <= ?t |] ==> ?r <= ?t",
+     template_implication
+      ([template_inequation (less_equals, template_var 2, template_var 1),
+        template_inequation (less_equals, template_var 1, template_var 0)],
+       template_inequation (less_equals, template_var 2, template_var 0))),
+    ("LList2.llist_le_anti_sym", "[| ?s <= ?t; ?t <= ?s |] ==> ?s = ?t",
+     template_implication
+      ([template_inequation (less_equals, template_var 1, template_var 0),
+        template_inequation (less_equals, template_var 0, template_var 1)],
+       template_equation (template_var 1, template_var 0))),
+    ("LList2.fpslsts_iff",
+     "(?s : ?A\<^sup>\<clubsuit>) = (?s : ?A\<^sup>\<star> & ?s ~= LNil)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 6, template_var 1),
+              template_app (template_hole 5, template_var 0))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 4,
+               template_app
+                (template_app (template_hole 6, template_var 1),
+                 template_app (template_hole 3, template_var 0))),
+             template_app
+              (template_hole 2,
+               template_app
+                (template_app (template_hole 1, template_var 1),
+                 template_hole 0)))
+           ))),
+    ("LList2.poslsts_iff",
+     "(?s : ?A\<^sup>\<spadesuit>) =
+      (?s : ?A\<^sup>\<infinity> & ?s ~= LNil)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 6, template_var 1),
+              template_app (template_hole 5, template_var 0))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 4,
+               template_app
+                (template_app (template_hole 6, template_var 1),
+                 template_app (template_hole 3, template_var 0))),
+             template_app
+              (template_hole 2,
+               template_app
+                (template_app (template_hole 1, template_var 1),
+                 template_hole 0)))
+           ))),
+    ("LList2.llength_LCons",
+     "?r : ?A\<^sup>\<star> ==>
+      LList2.llength (?a ## ?r) = Suc (LList2.llength ?r)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 5, template_var 2),
+              template_app (template_hole 4, template_var 1))
+            )],
+       template_equation
+        (template_app
+          (template_hole 2,
+           template_app
+            (template_app (template_hole 1, template_var 0),
+             template_var 2)),
+         template_app
+          (template_hole 0,
+           template_app (template_hole 2, template_var 2))))),
+    ("LList2.lapp_suff_llength",
+     "?r : ?A\<^sup>\<star> ==> (?r @@ ?s) \<up> LList2.llength ?r = ?s",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 5, template_var 2),
+              template_app (template_hole 4, template_var 1))
+            )],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 2,
+             template_app
+              (template_app (template_hole 1, template_var 2),
+               template_var 0)),
+           template_app (template_hole 0, template_var 2)),
+         template_var 0))),
+    ("LList2.ltake_lappend_llength",
+     "?r : ?A\<^sup>\<star> ==> (?r @@ ?s) \<down> LList2.llength ?r = ?r",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 5, template_var 2),
+              template_app (template_hole 4, template_var 1))
+            )],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 2,
+             template_app
+              (template_app (template_hole 1, template_var 2),
+               template_var 0)),
+           template_app (template_hole 0, template_var 2)),
+         template_var 2))),
+    ("LList2.infinite_Some",
+     "?t : ?A\<^sup>\<omega> ==> EX a. ?t !! ?i = Some a",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 5, template_var 2),
+              template_app (template_hole 4, template_var 1))
+            )],
+       template_predicate (template_app (template_hole 3, t_empty)))),
+    ("LList2.llast_snoc",
+     "?xs : ?A\<^sup>\<star> ==> LList2.llast (?xs @@ ?x ## LNil) = ?x",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 6, template_var 2),
+              template_app (template_hole 5, template_var 1))
+            )],
+       template_equation
+        (template_app
+          (template_hole 3,
+           template_app
+            (template_app (template_hole 2, template_var 2),
+             template_app
+              (template_app (template_hole 1, template_var 0),
+               template_hole 0))),
+         template_var 0))),
+    ("LList2.lbutlast_snoc",
+     "?xs : ?A\<^sup>\<star> ==> lbutlast (?xs @@ ?x ## LNil) = ?xs",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 6, template_var 2),
+              template_app (template_hole 5, template_var 1))
+            )],
+       template_equation
+        (template_app
+          (template_hole 3,
+           template_app
+            (template_app (template_hole 2, template_var 2),
+             template_app
+              (template_app (template_hole 1, template_var 0),
+               template_hole 0))),
+         template_var 2))),
+    ("LList2.LNil_is_lrev_conv",
+     "?xs : UNIV\<^sup>\<star> ==> (LNil = lrev ?xs) = (?xs = LNil)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 6, template_var 0),
+              template_app (template_hole 5, template_hole 4))
+            )],
+       template_bimplication
+        (template_equation
+          (template_hole 1, template_app (template_hole 0, template_var 0)),
+         template_equation (template_var 0, template_hole 1)))),
+    ("LList2.lrev_is_LNil_conv",
+     "?xs : UNIV\<^sup>\<star> ==> (lrev ?xs = LNil) = (?xs = LNil)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 6, template_var 0),
+              template_app (template_hole 5, template_hole 4))
+            )],
+       template_bimplication
+        (template_equation
+          (template_app (template_hole 1, template_var 0), template_hole 0),
+         template_equation (template_var 0, template_hole 0)))),
+    ("LList2.llength_drop_take",
+     "?t \<up> ?i ~= LNil ==> LList2.llength (?t \<down> ?i) = ?i",
+     template_implication
+      ([template_negation
+         (
+            template_equation
+             (template_app
+               (template_app (template_hole 4, template_var 1),
+                template_var 0),
+              template_hole 3)
+            )],
+       template_equation
+        (template_app
+          (template_hole 1,
+           template_app
+            (template_app (template_hole 0, template_var 1),
+             template_var 0)),
+         template_var 0))),
+    ("LList2.fin_finite",
+     "[| ?r : ?A\<^sup>\<star>; ?r ~: UNIV\<^sup>\<star> |] ==> False",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 4, template_var 1),
+              template_app (template_hole 3, template_var 0))
+            ),
+        template_negation
+         (
+            template_predicate
+             (
+                template_app
+                 (template_app (template_hole 4, template_var 1),
+                  template_app (template_hole 3, template_hole 1))
+                )
+            )],
+       template_predicate (template_hole 0))),
+    ("LList2.LConsE",
+     "(?x ## ?xs : ?A\<^sup>\<infinity>) =
+      (?x : ?A & ?xs : ?A\<^sup>\<infinity>)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 4,
+           template_app
+            (template_app (template_hole 3, template_var 2),
+             template_var 1)),
+         template_app (template_hole 2, template_var 0)),
+       template_app
+        (template_app
+          (template_hole 1,
+           template_app
+            (template_app (template_hole 0, template_var 2),
+             template_var 0)),
+         template_app
+          (template_app (template_hole 4, template_var 1),
+           template_app (template_hole 2, template_var 0))))),
+    ("LList2.less_LCons", "(?a ## ?r < ?b ## ?t) = (?a = ?b & ?r < ?t)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 3,
+                template_app
+                 (template_app (template_hole 2, template_var 3),
+                  template_var 2)),
+              template_app
+               (template_app (template_hole 2, template_var 1),
+                template_var 0))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 1,
+               template_app
+                (template_app (template_hole 0, template_var 3),
+                 template_var 1)),
+             template_app
+              (template_app (template_hole 3, template_var 2),
+               template_var 0))
+           ))),
+    ("LList2.le_LCons", "(?x ## ?xs <= ?y ## ?ys) = (?x = ?y & ?xs <= ?ys)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 3,
+                template_app
+                 (template_app (template_hole 2, template_var 3),
+                  template_var 2)),
+              template_app
+               (template_app (template_hole 2, template_var 1),
+                template_var 0))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 1,
+               template_app
+                (template_app (template_hole 0, template_var 3),
+                 template_var 1)),
+             template_app
+              (template_app (template_hole 3, template_var 2),
+               template_var 0))
+           ))),
+    ("LList2.lbutlast_lapp_llast",
+     "?l : ?A\<^sup>\<clubsuit> ==>
+      ?l = lbutlast ?l @@ LList2.llast ?l ## LNil",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 7, template_var 1),
+              template_app (template_hole 6, template_var 0))
+            )],
+       template_equation
+        (template_var 1,
+         template_app
+          (template_app
+            (template_hole 4,
+             template_app (template_hole 3, template_var 1)),
+           template_app
+            (template_app
+              (template_hole 2,
+               template_app (template_hole 1, template_var 1)),
+             template_hole 0))))),
+    ("LList2.llist_less_finT",
+     "[| ?r < ?s; ?s : ?A\<^sup>\<star> |] ==> ?r : ?A\<^sup>\<star>",
+     template_implication
+      ([template_inequation (less_than, template_var 2, template_var 1),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 1, template_var 1),
+              template_app (template_hole 0, template_var 0))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 1, template_var 2),
+             template_app (template_hole 0, template_var 0))
+           ))),
+    ("LList2.llist_le_finT",
+     "[| ?r <= ?s; ?s : ?A\<^sup>\<star> |] ==> ?r : ?A\<^sup>\<star>",
+     template_implication
+      ([template_inequation (less_equals, template_var 2, template_var 1),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 1, template_var 1),
+              template_app (template_hole 0, template_var 0))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 1, template_var 2),
+             template_app (template_hole 0, template_var 0))
+           ))),
+    ("LList2.pfinpref_iff",
+     "(?x : pfinpref ?A ?s) = (?x : finpref ?A ?s & ?x ~= LNil)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 6, template_var 2),
+              template_app
+               (template_app (template_hole 5, template_var 1),
+                template_var 0))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 4,
+               template_app
+                (template_app (template_hole 6, template_var 2),
+                 template_app
+                  (template_app (template_hole 3, template_var 1),
+                   template_var 0))),
+             template_app
+              (template_hole 2,
+               template_app
+                (template_app (template_hole 1, template_var 2),
+                 template_hole 0)))
+           ))),
+    ("LList2.lapp_fin_fin_iff",
+     "(?r @@ ?s : ?A\<^sup>\<star>) =
+      (?r : ?A\<^sup>\<star> & ?s : ?A\<^sup>\<star>)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 3,
+           template_app
+            (template_app (template_hole 2, template_var 2),
+             template_var 1)),
+         template_app (template_hole 1, template_var 0)),
+       template_app
+        (template_app
+          (template_hole 0,
+           template_app
+            (template_app (template_hole 3, template_var 2),
+             template_app (template_hole 1, template_var 0))),
+         template_app
+          (template_app (template_hole 3, template_var 1),
+           template_app (template_hole 1, template_var 0))))),
+    ("LList2.llength_least_None",
+     "?r : ?A\<^sup>\<star> ==>
+      LList2.llength ?r = (LEAST i. ?r !! i = None)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 7, template_var 1),
+              template_app (template_hole 6, template_var 0))
+            )],
+       template_equation
+        (template_app (template_hole 4, template_var 1),
+         template_app (template_hole 3, t_empty)))),
+    ("LList2.llength_mono",
+     "[| ?r : ?A\<^sup>\<star>; ?s < ?r |]
+      ==> LList2.llength ?s < LList2.llength ?r",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 4, template_var 2),
+              template_app (template_hole 3, template_var 1))
+            ),
+        template_inequation (less_than, template_var 0, template_var 2)],
+       template_inequation
+        (less_than, template_app (template_hole 0, template_var 0),
+         template_app (template_hole 0, template_var 2)))),
+    ("LList2.finite_lemma",
+     "[| ?x : ?A\<^sup>\<star>; ?x : ?B\<^sup>\<infinity> |]
+      ==> ?x : ?B\<^sup>\<star>",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 2, template_var 2),
+              template_app (template_hole 1, template_var 1))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 2, template_var 2),
+              template_app (template_hole 0, template_var 0))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 2, template_var 2),
+             template_app (template_hole 1, template_var 0))
+           ))),
+    ("LList2.same_lappend_eq",
+     "?r : ?A\<^sup>\<star> ==> (?r @@ ?s = ?r @@ ?t) = (?s = ?t)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 4, template_var 3),
+              template_app (template_hole 3, template_var 2))
+            )],
+       template_bimplication
+        (template_equation
+          (template_app
+            (template_app (template_hole 0, template_var 3),
+             template_var 1),
+           template_app
+            (template_app (template_hole 0, template_var 3),
+             template_var 0)),
+         template_equation (template_var 1, template_var 0)))),
+    ("LList2.lrev_LCons",
+     "?r : ?A\<^sup>\<star> ==> lrev (?a ## ?r) = lrev ?r @@ ?a ## LNil",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 6, template_var 2),
+              template_app (template_hole 5, template_var 1))
+            )],
+       template_equation
+        (template_app
+          (template_hole 3,
+           template_app
+            (template_app (template_hole 2, template_var 0),
+             template_var 2)),
+         template_app
+          (template_app
+            (template_hole 1,
+             template_app (template_hole 3, template_var 2)),
+           template_app
+            (template_app (template_hole 2, template_var 0),
+             template_hole 0))))),
+    ("LList2.ll2f_lem1",
+     "?t !! Suc ?i = Some ?x ==> EX y. ?t !! ?i = Some y",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app (template_hole 3, template_var 2),
+            template_app (template_hole 2, template_var 1)),
+          template_app (template_hole 1, template_var 0))],
+       template_predicate (template_app (template_hole 0, t_empty)))),
+    ("LList2.ldrop_LNil_less",
+     "[| ?j <= ?i; ?t \<up> ?j = LNil |] ==> ?t \<up> ?i = LNil",
+     template_implication
+      ([template_inequation (less_equals, template_var 2, template_var 1),
+        template_equation
+         (template_app
+           (template_app (template_hole 1, template_var 0), template_var 2),
+          template_hole 0)],
+       template_equation
+        (template_app
+          (template_app (template_hole 1, template_var 0), template_var 1),
+         template_hole 0))),
+    ("LList2.pref_locally_linear",
+     "[| ?s <= ?x; ?t <= ?x |] ==> ?s <= ?t | ?t <= ?s",
+     template_implication
+      ([template_inequation (less_equals, template_var 2, template_var 1),
+        template_inequation (less_equals, template_var 0, template_var 1)],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 0,
+               template_app
+                (template_app (template_hole 1, template_var 2),
+                 template_var 0)),
+             template_app
+              (template_app (template_hole 1, template_var 0),
+               template_var 2))
+           ))),
+    ("LList2.inflstsI2",
+     "[| ?a : ?A; ?t : ?A\<^sup>\<omega> |]
+      ==> ?a ## ?t : ?A\<^sup>\<omega>",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 3, template_var 2),
+              template_var 1)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 2, template_var 0),
+              template_app (template_hole 1, template_var 1))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 2,
+               template_app
+                (template_app (template_hole 0, template_var 2),
+                 template_var 0)),
+             template_app (template_hole 1, template_var 1))
+           ))),
+    ("LList2.ll2f_None_le",
+     "[| ?t !! ?j = None; ?j <= ?i |] ==> ?t !! ?i = None",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app (template_hole 2, template_var 2), template_var 1),
+          template_hole 1),
+        template_inequation (less_equals, template_var 1, template_var 0)],
+       template_equation
+        (template_app
+          (template_app (template_hole 2, template_var 2), template_var 0),
+         template_hole 1))),
+    ("LList2.llast_LCons",
+     "?r : ?A\<^sup>\<star> ==>
+      LList2.llast (?a ## ?r) =
+      (if ?r = LNil then ?a else LList2.llast ?r)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 7, template_var 2),
+              template_app (template_hole 6, template_var 1))
+            )],
+       template_implication
+        ([template_predicate
+           (
+              template_app
+               (template_hole 4,
+                template_app
+                 (template_app (template_hole 3, template_var 0),
+                  template_var 2))
+              )],
+         template_predicate
+          (
+             template_app
+              (template_app
+                (template_app
+                  (template_hole 2,
+                   template_app
+                    (template_app (template_hole 1, template_var 2),
+                     template_hole 0)),
+                 template_var 0),
+               template_app (template_hole 4, template_var 2))
+             )))),
+    ("LList2.app_invT",
+     "[| ?r : ?A\<^sup>\<star>; ?r @@ ?s : ?A\<^sup>\<omega> |]
+      ==> ?s : ?A\<^sup>\<omega>",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 3, template_var 2),
+              template_app (template_hole 2, template_var 1))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 3,
+                template_app
+                 (template_app (template_hole 1, template_var 2),
+                  template_var 0)),
+              template_app (template_hole 0, template_var 1))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 3, template_var 0),
+             template_app (template_hole 0, template_var 1))
+           ))),
+    ("LList2.lappT",
+     "[| ?s : ?A\<^sup>\<infinity>; ?t : ?A\<^sup>\<infinity> |]
+      ==> ?s @@ ?t : ?A\<^sup>\<infinity>",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 2, template_var 2),
+              template_app (template_hole 1, template_var 1))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 2, template_var 0),
+              template_app (template_hole 1, template_var 1))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 2,
+               template_app
+                (template_app (template_hole 0, template_var 2),
+                 template_var 0)),
+             template_app (template_hole 1, template_var 1))
+           ))),
+    ("LList2.lappfin_finT",
+     "[| ?s : ?A\<^sup>\<star>; ?t : ?A\<^sup>\<star> |]
+      ==> ?s @@ ?t : ?A\<^sup>\<star>",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 2, template_var 2),
+              template_app (template_hole 1, template_var 1))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 2, template_var 0),
+              template_app (template_hole 1, template_var 1))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 2,
+               template_app
+                (template_app (template_hole 0, template_var 2),
+                 template_var 0)),
+             template_app (template_hole 1, template_var 1))
+           ))),
+    ("LList2.lapp_fin_infT",
+     "[| ?s : ?A\<^sup>\<star>; ?t : ?A\<^sup>\<omega> |]
+      ==> ?s @@ ?t : ?A\<^sup>\<omega>",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 3, template_var 2),
+              template_app (template_hole 2, template_var 1))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 3, template_var 0),
+              template_app (template_hole 1, template_var 1))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 3,
+               template_app
+                (template_app (template_hole 0, template_var 2),
+                 template_var 0)),
+             template_app (template_hole 1, template_var 1))
+           ))),
+    ("LList2.finpref_suff",
+     "[| ?r : finpref ?A ?t; ?t : ?A\<^sup>\<infinity> |]
+      ==> ?t : suff ?A ?r",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 3, template_var 2),
+              template_app
+               (template_app (template_hole 2, template_var 1),
+                template_var 0))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 3, template_var 0),
+              template_app (template_hole 1, template_var 1))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 3, template_var 0),
+             template_app
+              (template_app (template_hole 0, template_var 1),
+               template_var 2))
+           ))),
+    ("LList2.finpref_infsuff",
+     "[| ?r : finpref ?A ?t; ?t : ?A\<^sup>\<omega> |]
+      ==> ?t : infsuff ?A ?r",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 3, template_var 2),
+              template_app
+               (template_app (template_hole 2, template_var 1),
+                template_var 0))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 3, template_var 0),
+              template_app (template_hole 1, template_var 1))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 3, template_var 0),
+             template_app
+              (template_app (template_hole 0, template_var 1),
+               template_var 2))
+           ))),
+    ("LList2.infsuff_finpref",
+     "[| ?t : infsuff ?A ?r; ?r : ?A\<^sup>\<star> |]
+      ==> ?r : finpref ?A ?t",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 3, template_var 2),
+              template_app
+               (template_app (template_hole 2, template_var 1),
+                template_var 0))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 3, template_var 0),
+              template_app (template_hole 1, template_var 1))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 3, template_var 0),
+             template_app
+              (template_app (template_hole 0, template_var 1),
+               template_var 2))
+           ))),
+    ("LList2.suff_finpref",
+     "[| ?t : suff ?A ?r; ?r : ?A\<^sup>\<star> |] ==> ?r : finpref ?A ?t",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 3, template_var 2),
+              template_app
+               (template_app (template_hole 2, template_var 1),
+                template_var 0))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 3, template_var 0),
+              template_app (template_hole 1, template_var 1))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 3, template_var 0),
+             template_app
+              (template_app (template_hole 0, template_var 1),
+               template_var 2))
+           ))),
+    ("LList2.inflstsI",
+     "[| ?x : ?A\<^sup>\<infinity>; ?x : UNIV\<^sup>\<star> ==> False |]
+      ==> ?x : ?A\<^sup>\<omega>",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 5, template_var 1),
+              template_app (template_hole 4, template_var 0))
+            ),
+        template_implication
+         ([template_predicate
+            (
+               template_app
+                (template_app (template_hole 5, template_var 1),
+                 template_app (template_hole 3, template_hole 2))
+               )],
+          template_predicate (template_hole 1))],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 5, template_var 1),
+             template_app (template_hole 0, template_var 0))
+           ))),
+    ("LList2.fin_inf_cases",
+     "[| ?r : UNIV\<^sup>\<star> ==> ?P; ?r : UNIV\<^sup>\<omega> ==> ?P |]
+      ==> ?P",
+     template_implication
+      ([template_implication
+         ([template_predicate
+            (
+               template_app
+                (template_app (template_hole 3, template_var 1),
+                 template_app (template_hole 2, template_hole 1))
+               )],
+          template_predicate (template_var 0)),
+        template_implication
+         ([template_predicate
+            (
+               template_app
+                (template_app (template_hole 3, template_var 1),
+                 template_app (template_hole 0, template_hole 1))
+               )],
+          template_predicate (template_var 0))],
+       template_predicate (template_var 0))),
+    ("LList2.finlsts_rec_LCons",
+     "?r : ?A\<^sup>\<star> ==>
+      finlsts_rec ?c ?d (?a ## ?r) = ?d ?a ?r (finlsts_rec ?c ?d ?r)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 4, template_var 4),
+              template_app (template_hole 3, template_var 3))
+            )],
+       template_equation
+        (template_app
+          (template_app
+            (template_app (template_hole 1, template_var 2),
+             template_var 1),
+           template_app
+            (template_app (template_hole 0, template_var 0),
+             template_var 4)),
+         template_app
+          (template_app
+            (template_app (template_var 1, template_var 0), template_var 4),
+           template_app
+            (template_app
+              (template_app (template_hole 1, template_var 2),
+               template_var 1),
+             template_var 4))))),
+    ("LList2.lbutlast_LCons",
+     "?r : ?A\<^sup>\<star> ==>
+      lbutlast (?a ## ?r) =
+      (if ?r = LNil then LNil else ?a ## lbutlast ?r)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 6, template_var 2),
+              template_app (template_hole 5, template_var 1))
+            )],
+       template_implication
+        ([template_predicate
+           (
+              template_app
+               (template_hole 3,
+                template_app
+                 (template_app (template_hole 2, template_var 0),
+                  template_var 2))
+              )],
+         template_predicate
+          (
+             template_app
+              (template_app
+                (template_app
+                  (template_hole 1,
+                   template_app
+                    (template_app (template_hole 4, template_var 2),
+                     template_hole 0)),
+                 template_hole 0),
+               template_app
+                (template_app (template_hole 2, template_var 0),
+                 template_app (template_hole 3, template_var 2)))
+             )))),
+    ("LList2.infinite_idx_SomeE",
+     "[| ?t : ?A\<^sup>\<omega>; !!x. ?t !! ?i = Some x ==> ?Q |] ==> ?Q",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 5, template_var 3),
+              template_app (template_hole 4, template_var 2))
+            ),
+        template_predicate (template_app (template_hole 3, t_empty))],
+       template_predicate (template_var 0))),
+    ("LList2.lapp_allT_iff",
+     "(?r @@ ?s : ?A\<^sup>\<infinity>) =
+      (?r : ?A\<^sup>\<star> & ?s : ?A\<^sup>\<infinity> |
+       ?r : ?A\<^sup>\<omega>)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 6,
+           template_app
+            (template_app (template_hole 5, template_var 2),
+             template_var 1)),
+         template_app (template_hole 4, template_var 0)),
+       template_app
+        (template_app
+          (template_hole 3,
+           template_app
+            (template_app
+              (template_hole 2,
+               template_app
+                (template_app (template_hole 6, template_var 2),
+                 template_app (template_hole 1, template_var 0))),
+             template_app
+              (template_app (template_hole 6, template_var 1),
+               template_app (template_hole 4, template_var 0)))),
+         template_app
+          (template_app (template_hole 6, template_var 2),
+           template_app (template_hole 0, template_var 0))))),
+    ("LList2.lapp_infT",
+     "(?r @@ ?s : ?A\<^sup>\<omega>) =
+      (?r : ?A\<^sup>\<star> & ?s : ?A\<^sup>\<omega> |
+       ?r : ?A\<^sup>\<omega>)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 5,
+           template_app
+            (template_app (template_hole 4, template_var 2),
+             template_var 1)),
+         template_app (template_hole 3, template_var 0)),
+       template_app
+        (template_app
+          (template_hole 2,
+           template_app
+            (template_app
+              (template_hole 1,
+               template_app
+                (template_app (template_hole 5, template_var 2),
+                 template_app (template_hole 0, template_var 0))),
+             template_app
+              (template_app (template_hole 5, template_var 1),
+               template_app (template_hole 3, template_var 0)))),
+         template_app
+          (template_app (template_hole 5, template_var 2),
+           template_app (template_hole 3, template_var 0))))),
+    ("LList2.lrev_is_lrev_conv",
+     "[| ?xs : UNIV\<^sup>\<star>; ?ys : UNIV\<^sup>\<star> |]
+      ==> (lrev ?xs = lrev ?ys) = (?xs = ?ys)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 5, template_var 1),
+              template_app (template_hole 4, template_hole 3))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 5, template_var 0),
+              template_app (template_hole 4, template_hole 3))
+            )],
+       template_bimplication
+        (template_equation
+          (template_app (template_hole 0, template_var 1),
+           template_app (template_hole 0, template_var 0)),
+         template_equation (template_var 1, template_var 0)))),
+    ("LList2.lapp_inv2T",
+     "?r @@ ?s : ?A\<^sup>\<omega> ==>
+      ?r : ?A\<^sup>\<star> & ?s : ?A\<^sup>\<omega> |
+      ?r : ?A\<^sup>\<omega>",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 5,
+                template_app
+                 (template_app (template_hole 4, template_var 2),
+                  template_var 1)),
+              template_app (template_hole 3, template_var 0))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 2,
+               template_app
+                (template_app
+                  (template_hole 1,
+                   template_app
+                    (template_app (template_hole 5, template_var 2),
+                     template_app (template_hole 0, template_var 0))),
+                 template_app
+                  (template_app (template_hole 5, template_var 1),
+                   template_app (template_hole 3, template_var 0)))),
+             template_app
+              (template_app (template_hole 5, template_var 2),
+               template_app (template_hole 3, template_var 0)))
+           ))),
+    ("LList2.livenessI",
+     "(!!s. s : ?A\<^sup>\<star> ==>
+            EX t:?A\<^sup>\<infinity>. s @@ t : ?P) ==>
+      liveness ?A ?P",
+     template_implication
+      ([template_predicate (template_app (template_hole 7, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 0, template_var 1), template_var 0)
+           ))),
+    ("LList2.poslivenessI",
+     "(!!s. s : ?A\<^sup>\<clubsuit> ==>
+            EX t:?A\<^sup>\<infinity>. s @@ t : ?P) ==>
+      posliveness ?A ?P",
+     template_implication
+      ([template_predicate (template_app (template_hole 7, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 0, template_var 1), template_var 0)
+           ))),
+    ("LList2.lrev_lappend",
+     "[| ?xs : UNIV\<^sup>\<star>; ?ys : UNIV\<^sup>\<star> |]
+      ==> lrev (?xs @@ ?ys) = lrev ?ys @@ lrev ?xs",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 5, template_var 1),
+              template_app (template_hole 4, template_hole 3))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 5, template_var 0),
+              template_app (template_hole 4, template_hole 3))
+            )],
+       template_equation
+        (template_app
+          (template_hole 1,
+           template_app
+            (template_app (template_hole 0, template_var 1),
+             template_var 0)),
+         template_app
+          (template_app
+            (template_hole 0,
+             template_app (template_hole 1, template_var 0)),
+           template_app (template_hole 1, template_var 1))))),
+    ("LList2.suff_finpref_iff",
+     "[| ?r : ?A\<^sup>\<star>; ?t : ?A\<^sup>\<infinity> |]
+      ==> (?r : finpref ?A ?t) = (?t : suff ?A ?r)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 5, template_var 2),
+              template_app (template_hole 4, template_var 1))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 5, template_var 0),
+              template_app (template_hole 3, template_var 1))
+            )],
+       template_equation
+        (template_app
+          (template_app (template_hole 5, template_var 2),
+           template_app
+            (template_app (template_hole 1, template_var 1),
+             template_var 0)),
+         template_app
+          (template_app (template_hole 5, template_var 0),
+           template_app
+            (template_app (template_hole 0, template_var 1),
+             template_var 2))))),
+    ("LList2.infsuff_finpref_iff",
+     "[| ?r : ?A\<^sup>\<star>; ?t : ?A\<^sup>\<omega> |]
+      ==> (?t : finpref ?A ?r) = (?r : infsuff ?A ?t)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 5, template_var 2),
+              template_app (template_hole 4, template_var 1))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 5, template_var 0),
+              template_app (template_hole 3, template_var 1))
+            )],
+       template_equation
+        (template_app
+          (template_app (template_hole 5, template_var 0),
+           template_app
+            (template_app (template_hole 1, template_var 1),
+             template_var 2)),
+         template_app
+          (template_app (template_hole 5, template_var 2),
+           template_app
+            (template_app (template_hole 0, template_var 1),
+             template_var 0))))),
+    ("LList2.llast_llength",
+     "[| ?t : UNIV\<^sup>\<star>; ?t ~= LNil |]
+      ==> ?t !! (LList2.llength ?t - Suc 0) = Some (LList2.llast ?t)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 13, template_var 0),
+              template_app (template_hole 12, template_hole 11))
+            ),
+        template_negation
+         (template_equation (template_var 0, template_hole 8))],
+       template_equation
+        (template_app
+          (template_app (template_hole 6, template_var 0),
+           template_app
+            (template_app
+              (template_hole 5,
+               template_app (template_hole 4, template_var 0)),
+             template_app (template_hole 3, template_hole 2))),
+         template_app
+          (template_hole 1,
+           template_app (template_hole 0, template_var 0))))),
+    ("LList2.llast_lappend",
+     "[| ?x : UNIV\<^sup>\<star>; ?y : UNIV\<^sup>\<star> |]
+      ==> LList2.llast (?x @@ ?a ## ?y) = LList2.llast (?a ## ?y)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 6, template_var 2),
+              template_app (template_hole 5, template_hole 4))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 6, template_var 1),
+              template_app (template_hole 5, template_hole 4))
+            )],
+       template_equation
+        (template_app
+          (template_hole 2,
+           template_app
+            (template_app (template_hole 1, template_var 2),
+             template_app
+              (template_app (template_hole 0, template_var 0),
+               template_var 1))),
+         template_app
+          (template_hole 2,
+           template_app
+            (template_app (template_hole 0, template_var 0),
+             template_var 1))))),
+    ("LList2.inflstsE",
+     "[| ?x : ?A\<^sup>\<omega>;
+         [| ?x : ?A\<^sup>\<infinity>; ?x ~: UNIV\<^sup>\<star> |] ==> ?R |]
+      ==> ?R",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 5, template_var 2),
+              template_app (template_hole 4, template_var 1))
+            ),
+        template_implication
+         ([template_predicate
+            (
+               template_app
+                (template_app (template_hole 5, template_var 2),
+                 template_app (template_hole 3, template_var 1))
+               )],
+          template_implication
+           ([template_negation
+              (
+                 template_predicate
+                  (
+                     template_app
+                      (template_app (template_hole 5, template_var 2),
+                       template_app (template_hole 1, template_hole 0))
+                     )
+                 )],
+            template_predicate (template_var 0)))],
+       template_predicate (template_var 0))),
+    ("LList2.llistE",
+     "[| ?y = LNil ==> ?P; !!x21 x22. ?y = x21 ## x22 ==> ?P |] ==> ?P",
+     template_implication
+      ([template_implication
+         ([template_equation (template_var 1, template_hole 3)],
+          template_predicate (template_var 0)),
+        template_predicate (template_app (template_hole 2, t_empty))],
+       template_predicate (template_var 0))),
+    ("LList2.ll2f_Suc_Some",
+     "[| ?t !! Suc ?i = Some ?x; !!x. ?t !! ?i = Some x ==> ?Q |] ==> ?Q",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app (template_hole 3, template_var 3),
+            template_app (template_hole 2, template_var 2)),
+          template_app (template_hole 1, template_var 1)),
+        template_predicate (template_app (template_hole 0, t_empty))],
+       template_predicate (template_var 0))),
+    ("LList2.alllstsE",
+     "[| ?x : ?A\<^sup>\<infinity>; ?x : ?A\<^sup>\<star> ==> ?P;
+         ?x : ?A\<^sup>\<omega> ==> ?P |]
+      ==> ?P",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 3, template_var 2),
+              template_app (template_hole 2, template_var 1))
+            ),
+        template_implication
+         ([template_predicate
+            (
+               template_app
+                (template_app (template_hole 3, template_var 2),
+                 template_app (template_hole 1, template_var 1))
+               )],
+          template_predicate (template_var 0)),
+        template_implication
+         ([template_predicate
+            (
+               template_app
+                (template_app (template_hole 3, template_var 2),
+                 template_app (template_hole 0, template_var 1))
+               )],
+          template_predicate (template_var 0))],
+       template_predicate (template_var 0))),
+    ("LList2.ll2f_Some_le",
+     "[| ?j <= ?i; ?t !! ?i = Some ?x; !!y. ?t !! ?j = Some y ==> ?Q |]
+      ==> ?Q",
+     template_implication
+      ([template_inequation (less_equals, template_var 4, template_var 3),
+        template_equation
+         (template_app
+           (template_app (template_hole 2, template_var 2), template_var 3),
+          template_app (template_hole 1, template_var 1)),
+        template_predicate (template_app (template_hole 0, t_empty))],
+       template_predicate (template_var 0))),
+    ("LList2.safetyI",
+     "(!!t. [| t : ?A\<^sup>\<infinity>;
+               ALL r:finpref ?A t. EX s:?A\<^sup>\<infinity>. r @@ s : ?P |]
+            ==> t : ?P) ==>
+      safety ?A ?P",
+     template_implication
+      ([template_predicate (template_app (template_hole 8, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 0, template_var 1), template_var 0)
+           ))),
+    ("LList2.possafetyI",
+     "(!!t. [| t : ?A\<^sup>\<spadesuit>;
+               ALL r:pfinpref ?A t.
+                  EX s:?A\<^sup>\<infinity>. r @@ s : ?P |]
+            ==> t : ?P) ==>
+      possafety ?A ?P",
+     template_implication
+      ([template_predicate (template_app (template_hole 9, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 0, template_var 1), template_var 0)
+           ))),
+    ("LList2.fpslsts_cases",
+     "[| ?r : ?A\<^sup>\<clubsuit>;
+         !!a rs. [| ?r = a ## rs; a : ?A; rs : ?A\<^sup>\<star> |] ==> ?R |]
+      ==> ?R",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 7, template_var 2),
+              template_app (template_hole 6, template_var 1))
+            ),
+        template_predicate (template_app (template_hole 5, t_empty))],
+       template_predicate (template_var 0))),
+    ("LList2.inflsts_cases",
+     "[| ?s : ?A\<^sup>\<omega>;
+         !!a l. [| l : ?A\<^sup>\<omega>; a : ?A; ?s = a ## l |] ==> ?R |]
+      ==> ?R",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 6, template_var 2),
+              template_app (template_hole 5, template_var 1))
+            ),
+        template_predicate (template_app (template_hole 4, t_empty))],
+       template_predicate (template_var 0))),
+    ("LList2.infsuff_appE",
+     "[| ?r : ?A\<^sup>\<star>; ?t : infsuff ?A ?r;
+         !!s. [| s : ?A\<^sup>\<omega>; ?t = ?r @@ s |] ==> ?thesis |]
+      ==> ?thesis",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 6, template_var 3),
+              template_app (template_hole 5, template_var 2))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 6, template_var 1),
+              template_app
+               (template_app (template_hole 4, template_var 2),
+                template_var 3))
+            ),
+        template_predicate (template_app (template_hole 3, t_empty))],
+       template_predicate (template_var 0))),
+    ("LList2.suff_appE",
+     "[| ?r : ?A\<^sup>\<star>; ?t : suff ?A ?r;
+         !!s. [| s : ?A\<^sup>\<infinity>; ?t = ?r @@ s |] ==> ?thesis |]
+      ==> ?thesis",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 6, template_var 3),
+              template_app (template_hole 5, template_var 2))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 6, template_var 1),
+              template_app
+               (template_app (template_hole 4, template_var 2),
+                template_var 3))
+            ),
+        template_predicate (template_app (template_hole 3, t_empty))],
+       template_predicate (template_var 0))),
+    ("LList2.possafetyE",
+     "[| possafety ?A ?P;
+         ALL t:?A\<^sup>\<spadesuit>.
+            (ALL r:pfinpref ?A t.
+                EX s:?A\<^sup>\<infinity>. r @@ s : ?P) -->
+            t : ?P ==>
+         ?R |]
+      ==> ?R",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 8, template_var 2),
+              template_var 1)
+            ),
+        template_implication
+         ([template_predicate
+            (
+               template_app
+                (template_app
+                  (template_hole 7,
+                   template_app (template_hole 6, template_var 2)),
+                 t_empty)
+               )],
+          template_predicate (template_var 0))],
+       template_predicate (template_var 0))),
+    ("LList2.safetyE",
+     "[| safety ?A ?P;
+         ALL t:?A\<^sup>\<infinity>.
+            (ALL r:finpref ?A t. EX s:?A\<^sup>\<infinity>. r @@ s : ?P) -->
+            t : ?P ==>
+         ?R |]
+      ==> ?R",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 7, template_var 2),
+              template_var 1)
+            ),
+        template_implication
+         ([template_predicate
+            (
+               template_app
+                (template_app
+                  (template_hole 6,
+                   template_app (template_hole 5, template_var 2)),
+                 t_empty)
+               )],
+          template_predicate (template_var 0))],
+       template_predicate (template_var 0))),
+    ("LList2.prefix_lemma",
+     "[| ?x : ?A\<^sup>\<omega>; ?y : ?A\<^sup>\<omega>;
+         !!s. [| s : ?A\<^sup>\<star>; s <= ?x |] ==> s <= ?y |]
+      ==> ?x = ?y",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 5, template_var 2),
+              template_app (template_hole 4, template_var 1))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 5, template_var 0),
+              template_app (template_hole 4, template_var 1))
+            ),
+        template_predicate (template_app (template_hole 3, t_empty))],
+       template_equation (template_var 2, template_var 0))),
+    ("LList2.livenessE",
+     "[| liveness ?A ?P;
+         !!t. [| t : ?A\<^sup>\<infinity>; ?s @@ t : ?P |] ==> ?R;
+         ?s ~: ?A\<^sup>\<star> ==> ?R |]
+      ==> ?R",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 6, template_var 3),
+              template_var 2)
+            ),
+        template_predicate (template_app (template_hole 5, t_empty)),
+        template_implication
+         ([template_negation
+            (
+               template_predicate
+                (
+                   template_app
+                    (template_app (template_hole 4, template_var 1),
+                     template_app (template_hole 0, template_var 3))
+                   )
+               )],
+          template_predicate (template_var 0))],
+       template_predicate (template_var 0))),
+    ("LList2.poslivenessE",
+     "[| posliveness ?A ?P;
+         !!t. [| t : ?A\<^sup>\<infinity>; ?s @@ t : ?P |] ==> ?R;
+         ?s ~: ?A\<^sup>\<clubsuit> ==> ?R |]
+      ==> ?R",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 6, template_var 3),
+              template_var 2)
+            ),
+        template_predicate (template_app (template_hole 5, t_empty)),
+        template_implication
+         ([template_negation
+            (
+               template_predicate
+                (
+                   template_app
+                    (template_app (template_hole 4, template_var 1),
+                     template_app (template_hole 0, template_var 3))
+                   )
+               )],
+          template_predicate (template_var 0))],
+       template_predicate (template_var 0))),
+    ("LList2.possafetyD",
+     "[| possafety ?A ?P; ?t : ?A\<^sup>\<spadesuit>;
+         !!r. r : pfinpref ?A ?t ==>
+              EX s:?A\<^sup>\<infinity>. r @@ s : ?P |]
+      ==> ?t : ?P",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 7, template_var 2),
+              template_var 1)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 6, template_var 0),
+              template_app (template_hole 5, template_var 2))
+            ),
+        template_predicate (template_app (template_hole 4, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 6, template_var 0), template_var 1)
+           ))),
+    ("LList2.safetyD",
+     "[| safety ?A ?P; ?t : ?A\<^sup>\<infinity>;
+         !!r. r : finpref ?A ?t ==>
+              EX s:?A\<^sup>\<infinity>. r @@ s : ?P |]
+      ==> ?t : ?P",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 6, template_var 2),
+              template_var 1)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 5, template_var 0),
+              template_app (template_hole 4, template_var 2))
+            ),
+        template_predicate (template_app (template_hole 3, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 5, template_var 0), template_var 1)
+           ))),
+    ("LList2.lrev_induct",
+     "[| ?xs : ?A\<^sup>\<star>; ?P LNil;
+         !!x xs.
+            [| xs : ?A\<^sup>\<star>; ?P xs; x : ?A |]
+            ==> ?P (xs @@ x ## LNil) |]
+      ==> ?P ?xs",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 7, template_var 2),
+              template_app (template_hole 6, template_var 1))
+            ),
+        template_predicate (template_app (template_var 0, template_hole 5)),
+        template_predicate (template_app (template_hole 4, t_empty))],
+       template_predicate (template_app (template_var 0, template_var 2)))),
+    ("LList2.inf_neqE",
+     "[| ?x : ?A\<^sup>\<omega>; ?y : ?A\<^sup>\<omega>; ?x ~= ?y;
+         !!s. [| s : ?A\<^sup>\<star>; s <= ?x; ~ s <= ?y |] ==> ?R |]
+      ==> ?R",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 6, template_var 3),
+              template_app (template_hole 5, template_var 2))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 6, template_var 1),
+              template_app (template_hole 5, template_var 2))
+            ),
+        template_negation
+         (template_equation (template_var 3, template_var 1)),
+        template_predicate (template_app (template_hole 2, t_empty))],
+       template_predicate (template_var 0))),
+    ("LList2.finlsts_rev_cases",
+     "[| ?t : ?A\<^sup>\<star>; ?t = LNil ==> ?thesis;
+         !!a l.
+            [| l : ?A\<^sup>\<star>; a : ?A; ?t = l @@ a ## LNil |]
+            ==> ?thesis |]
+      ==> ?thesis",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 8, template_var 2),
+              template_app (template_hole 7, template_var 1))
+            ),
+        template_implication
+         ([template_equation (template_var 2, template_hole 5)],
+          template_predicate (template_var 0)),
+        template_predicate (template_app (template_hole 4, t_empty))],
+       template_predicate (template_var 0))),
+    ("LList2.finlsts_induct",
+     "[| ?x : ?A\<^sup>\<star>; !!l. l = LNil ==> ?P l;
+         !!a l. [| l : ?A\<^sup>\<star>; ?P l; a : ?A |] ==> ?P (a ## l) |]
+      ==> ?P ?x",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 7, template_var 2),
+              template_app (template_hole 6, template_var 1))
+            ),
+        template_predicate (template_app (template_hole 5, t_empty)),
+        template_predicate (template_app (template_hole 2, t_empty))],
+       template_predicate (template_app (template_var 0, template_var 2)))),
+    ("LList2.fps_induct",
+     "[| ?l : ?A\<^sup>\<clubsuit>; !!a. a : ?A ==> ?P (a ## LNil);
+         !!a l.
+            [| l : ?A\<^sup>\<clubsuit>; ?P l; a : ?A |] ==> ?P (a ## l) |]
+      ==> ?P ?l",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 6, template_var 2),
+              template_app (template_hole 5, template_var 1))
+            ),
+        template_predicate (template_app (template_hole 4, t_empty)),
+        template_predicate (template_app (template_hole 4, t_empty))],
+       template_predicate
+        (template_app (template_var 0, template_var 2))))]:
+   (string * thm * template) list
+### theory "Draft.LList2MoreTemplates"
+### 0.457s elapsed time, 0.710s cpu time, 0.105s GC time
+val it = (): unit

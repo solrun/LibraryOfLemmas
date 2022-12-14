@@ -1,0 +1,239 @@
+Loading theory "Draft.Applicative" (required by "Draft.Applicative_VectorTemplates" via "Draft.Applicative_Vector")
+Loading theory "HOL-Library.BigO" (required by "Draft.Applicative_VectorTemplates" via "Draft.ExtrEqs")
+Loading theory "Draft.Templates" (required by "Draft.Applicative_VectorTemplates" via "Draft.ExtrEqs")
+datatype template_term
+=
+     t_empty
+   | template_app of template_term * template_term
+   | template_hole of int
+   | template_var of int
+datatype sign
+= equals | greater_equals | greater_than | less_equals | less_than
+datatype template
+=
+     template_bimplication of template * template
+   | template_dunno
+   | template_equation of template_term * template_term
+   | template_implication of template list * template
+   | template_inequation of sign * template_term * template_term
+   | template_negation of template
+   | template_predicate of template_term
+constructor t_empty: template_term
+constructor template_app: template_term * template_term -> template_term
+constructor template_hole: int -> template_term
+constructor template_var: int -> template_term
+constructor equals: sign
+constructor greater_equals: sign
+constructor greater_than: sign
+constructor less_equals: sign
+constructor less_than: sign
+constructor template_bimplication: template * template -> template
+constructor template_dunno: template
+constructor template_equation: template_term * template_term -> template
+constructor template_implication: template list * template -> template
+constructor template_inequation:
+   sign * template_term * template_term -> template
+constructor template_negation: template -> template
+constructor template_predicate: template_term -> template
+val vfs = fn: term -> (indexname * typ) list * (string * typ) list
+val indexOf = fn: ''a list -> ''a -> int -> int
+val has_eq = fn: term -> bool
+val term2template = fn:
+   (indexname * typ) list -> (string * typ) list -> term -> template_term
+val lemma2predicate = fn: term -> term -> template
+val makeTemplatewithContext = fn: term -> term -> template
+val lemma2template = fn: term -> template
+val thm2template = fn: thm -> template
+val tterm2string = fn: template_term -> string
+val template2string = fn: template -> string
+val t = "height ?t <= size ?t": thm
+val th =
+   Const ("HOL.Trueprop", "bool => prop") $
+     (Const ("Orderings.ord_class.less_eq", "nat => nat => bool") $
+       (Const ("Tree.height_class.height", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree")) $
+       (Const ("Nat.size_class.size", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree"))):
+   term
+### theory "Draft.Templates"
+### 0.104s elapsed time, 0.321s cpu time, 0.000s GC time
+### ML warning (line 241 of "$AFP/Applicative_Lifting/applicative.ML"):
+### Pattern is not exhaustive.
+### ML warning (line 369 of "$AFP/Applicative_Lifting/applicative.ML"):
+### Matches are not exhaustive.
+### ML warning (line 483 of "$AFP/Applicative_Lifting/applicative.ML"):
+### Pattern is not exhaustive.
+### ML warning (line 495 of "$AFP/Applicative_Lifting/applicative.ML"):
+### Pattern is not exhaustive.
+### ML warning (line 677 of "$AFP/Applicative_Lifting/applicative.ML"):
+### Pattern is not exhaustive.
+### ML warning (line 687 of "$AFP/Applicative_Lifting/applicative.ML"):
+### Pattern is not exhaustive.
+### ML warning (line 789 of "$AFP/Applicative_Lifting/applicative.ML"):
+### Pattern is not exhaustive.
+### ML warning (line 900 of "$AFP/Applicative_Lifting/applicative.ML"):
+### Pattern is not exhaustive.
+### ML warning (line 999 of "$AFP/Applicative_Lifting/applicative.ML"):
+### Pattern is not exhaustive.
+### ML warning (line 1061 of "$AFP/Applicative_Lifting/applicative.ML"):
+### Pattern is not exhaustive.
+### ML warning (line 1084 of "$AFP/Applicative_Lifting/applicative.ML"):
+### Pattern is not exhaustive.
+### ML warning (line 1137 of "$AFP/Applicative_Lifting/applicative.ML"):
+### Pattern is not exhaustive.
+### ML warning (line 1148 of "$AFP/Applicative_Lifting/applicative.ML"):
+### Pattern is not exhaustive.
+### ML warning (line 1164 of "$AFP/Applicative_Lifting/applicative.ML"):
+### Pattern is not exhaustive.
+### ML warning (line 1225 of "$AFP/Applicative_Lifting/applicative.ML"):
+### Matches are not exhaustive.
+### ML warning (line 1313 of "$AFP/Applicative_Lifting/applicative.ML"):
+### Pattern is not exhaustive.
+### ML warning (line 1317 of "$AFP/Applicative_Lifting/applicative.ML"):
+### Matches are not exhaustive.
+### ML warning (line 1336 of "$AFP/Applicative_Lifting/applicative.ML"):
+### Pattern is not exhaustive.
+### ML warning (line 1337 of "$AFP/Applicative_Lifting/applicative.ML"):
+### Pattern is not exhaustive.
+signature APPLICATIVE =
+  sig
+    val add_unfold_attrib: xstring option -> attribute
+    type afun
+    val afun_fold_tac: Proof.context -> afun -> int -> tactic
+    type afun_inst
+    val afun_of: Proof.context -> string -> afun
+    val afun_of_generic: Context.generic -> string -> afun
+    val afun_unfold_tac: Proof.context -> afun -> int -> tactic
+    val afuns_of_term: Proof.context -> term -> afun list
+    val afuns_of_term_generic: Context.generic -> term -> afun list
+    val afuns_of_typ: Proof.context -> typ -> afun list
+    val afuns_of_typ_generic: Context.generic -> typ -> afun list
+    val applicative_cmd:
+       ((((binding * string list) * string) * string) * string option) *
+       string option
+         -> local_theory -> Proof.state
+    val combinator_rule_attrib: string list option -> attribute
+    val dest_comb: Proof.context -> afun_inst -> term -> term * term
+    val dest_pure: Proof.context -> afun_inst -> term -> term
+    val dest_type: Proof.context -> afun_inst -> typ -> typ option
+    val dest_type': Proof.context -> afun_inst -> typ -> typ
+    val extern: Context.generic -> string -> xstring
+    val fold_wrapper_tac: Proof.context -> afun option -> int -> tactic
+    val forward_lift_attrib: xstring -> attribute
+    val forward_lift_rule: Proof.context -> afun -> thm -> thm
+    val general_normalform_conv:
+       Proof.context -> afun -> cterm * cterm -> thm * thm
+    val general_normalize_rel_tac: Proof.context -> afun -> int -> tactic
+    val generalize_lift_terms:
+       afun_inst -> term list -> Proof.context -> term list * Proof.context
+    val import_afun_inst: afun -> Proof.context -> afun_inst * Proof.context
+    val infer_comb: Proof.context -> afun_inst -> term * term -> term
+    val inner_sort_of: afun_inst -> sort
+    val intern: Context.generic -> xstring -> string
+    val lift_term: afun_inst -> term -> term
+    val lifting_wrapper_tac: Proof.context -> afun option -> int -> tactic
+    val match_afun_inst: Proof.context -> afun -> term * int -> afun_inst
+    val mk_ap: afun_inst -> typ * typ -> term
+    val mk_comb: afun_inst -> typ -> term * term -> term
+    val mk_pure: afun_inst -> typ -> term
+    val mk_set: afun_inst -> typ -> term
+    val mk_type: afun_inst -> typ -> typ
+    val name_of_afun: afun -> binding
+    val normalform_conv: Proof.context -> afun -> conv
+    val normalize_rel_tac: Proof.context -> afun -> int -> tactic
+    val normalize_wrapper_tac: Proof.context -> afun option -> int -> tactic
+    val parse_opt_afun: afun option context_parser
+    val print_afuns: Proof.context -> unit
+    val setup_combinators:
+       (string * thm) list -> local_theory -> local_theory
+    val subst_lift_term: afun_inst -> (term * term) list -> term -> term
+    val unfold_all_tac: Proof.context -> int -> tactic
+    val unfold_wrapper_tac: Proof.context -> afun option -> int -> tactic
+    val unfolds_of_afun: afun -> thm list
+  end
+structure Applicative: APPLICATIVE
+### theory "HOL-Library.BigO"
+### 0.841s elapsed time, 1.792s cpu time, 0.118s GC time
+Loading theory "Draft.ExtrEqs" (required by "Draft.Applicative_VectorTemplates")
+val it = (): unit
+val it = (): unit
+bundle applicative_syntax
+### theory "Draft.Applicative"
+### 0.970s elapsed time, 2.070s cpu time, 0.186s GC time
+Loading theory "Draft.Applicative_Vector" (required by "Draft.Applicative_VectorTemplates")
+val eqpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Var (("_dummy_", 2), "?'a"))
+       ):
+   term Find_Theorems.criterion
+val badeqpattern = Pattern (Const ("Pure.eq", "?'a => ?'a => prop")):
+   term Find_Theorems.criterion
+val undefpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Const ("HOL.undefined", "?'a"))
+       ):
+   term Find_Theorems.criterion
+val thmpattern =
+   Pattern
+    (Const ("HOL.Trueprop", "bool => prop") $ Var (("_dummy_", 1), "bool")):
+   term Find_Theorems.criterion
+val badnames =
+   ["*nitpick*", "*Nitpick*", "*full_exhaustive*", "*_def*", "Enum.finite*",
+    "*Quickcheck*", "ATP*", "*Nunchaku*", "*Code*", "*BNF*", "*SMT*",
+    "*.*.*"]:
+   string list
+val unwanted_names =
+   [(false, Name "*nitpick*"), (false, Name "*Nitpick*"),
+    (false, Name "*full_exhaustive*"), (false, Name "*_def*"),
+    (false, Name "Enum.finite*"), (false, Name "*Quickcheck*"),
+    (false, Name "ATP*"), (false, Name "*Nunchaku*"),
+    (false, Name "*Code*"), (false, Name "*BNF*"), (false, Name "*SMT*"),
+    (false, Name "*.*.*")]:
+   (bool * term Find_Theorems.criterion) list
+val has_vars = fn: term -> bool
+val get_all_eqs = fn: string -> Proof.context -> (string * thm) list
+val get_all_thms = fn: string -> Proof.context -> (string * thm) list
+val get_noneq_thms = fn: string -> Proof.context -> (string * thm) list
+val template_eqs = fn:
+   string -> Proof.context -> (string * thm * template) list
+val template_thms = fn:
+   string -> Proof.context -> (string * thm * template) list
+### theory "Draft.ExtrEqs"
+### 0.692s elapsed time, 1.421s cpu time, 0.150s GC time
+### theory "Draft.Applicative_Vector"
+### 0.695s elapsed time, 1.307s cpu time, 0.082s GC time
+Loading theory "Draft.Applicative_VectorTemplates"
+val templateLemmas =
+   [("Applicative_Vector.pure_vec_nth", "pure_vec ?x $ ?i = ?x",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 1, template_app (template_hole 0, template_var 1)),
+         template_var 0),
+       template_var 1)),
+    ("Applicative_Vector.ap_vec_nth",
+     "Applicative.ap ?f ?x $ ?i = (?f $ ?i) (?x $ ?i)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 3,
+           template_app
+            (template_app (template_hole 2, template_var 2),
+             template_var 1)),
+         template_var 0),
+       template_app
+        (template_app
+          (template_app (template_hole 1, template_var 2), template_var 0),
+         template_app
+          (template_app (template_hole 0, template_var 1),
+           template_var 0))))]:
+   (string * thm * template) list
+### theory "Draft.Applicative_VectorTemplates"
+### 0.430s elapsed time, 0.563s cpu time, 0.064s GC time
+val it = (): unit

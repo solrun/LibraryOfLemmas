@@ -1,0 +1,1153 @@
+Loading theory "HOL-Library.Function_Algebras" (required by "Draft.Lazy_LListMoreTemplates" via "Draft.ExtrEqs" via "HOL-Library.BigO")
+Loading theory "HOL-Library.Complete_Partial_Order2" (required by "Draft.Lazy_LListMoreTemplates" via "Draft.Lazy_LList" via "Draft.Coinductive_List" via "Draft.Coinductive_Nat")
+Loading theory "HOL-Library.Case_Converter" (required by "Draft.Lazy_LListMoreTemplates" via "Draft.Lazy_LList" via "Draft.Coinductive_List" via "HOL-Library.Simps_Case_Conv")
+Loading theory "HOL-Library.Infinite_Set" (required by "Draft.Lazy_LListMoreTemplates" via "Draft.Lazy_LList" via "Draft.Coinductive_List")
+instantiation
+  fun :: (type, plus) plus
+  plus_fun == plus :: ('a => 'b) => ('a => 'b) => 'a => 'b
+instantiation
+  fun :: (type, zero) zero
+  zero_fun == zero_class.zero :: 'a => 'b
+instantiation
+  fun :: (type, times) times
+  times_fun == times :: ('a => 'b) => ('a => 'b) => 'a => 'b
+instantiation
+  fun :: (type, one) one
+  one_fun == one_class.one :: 'a => 'b
+### theory "HOL-Library.Function_Algebras"
+### 0.126s elapsed time, 0.523s cpu time, 0.050s GC time
+Loading theory "HOL-Library.Nat_Bijection" (required by "Draft.Lazy_LListMoreTemplates" via "Draft.ExtrEqs" via "HOL-Library.Stream")
+class ccpo = Sup + order +
+  assumes
+    "ccpo_Sup_upper":
+      "!!A x.
+          [| Complete_Partial_Order.chain (<=) A; x : A |]
+          ==> x <= \<Squnion> A"
+  assumes
+    "ccpo_Sup_least":
+      "!!A z.
+          [| Complete_Partial_Order.chain (<=) A; !!x. x : A ==> x <= z |]
+          ==> \<Squnion> A <= z"
+signature CASE_CONVERTER =
+  sig
+    type elimination_strategy
+    val keep_constructor_context: elimination_strategy
+    val replace_by_type:
+       (Proof.context -> string * string -> bool) -> elimination_strategy
+    val to_case:
+       Proof.context ->
+         elimination_strategy ->
+           (string * typ -> int) -> thm list -> thm list option
+  end
+structure Case_Converter: CASE_CONVERTER
+### theory "HOL-Library.Case_Converter"
+### 0.187s elapsed time, 0.767s cpu time, 0.050s GC time
+Loading theory "HOL-Library.Simps_Case_Conv" (required by "Draft.Lazy_LListMoreTemplates" via "Draft.Lazy_LList" via "Draft.Coinductive_List")
+Found termination order: "(%p. size (snd p)) <*mlex*> {}"
+consts
+  enumerate :: "'a set => nat => 'a"
+signature SIMPS_CASE_CONV =
+  sig
+    val gen_to_simps: Proof.context -> thm list -> thm -> thm list
+    val to_case: Proof.context -> thm list -> thm
+    val to_simps: Proof.context -> thm -> thm list
+  end
+structure Simps_Case_Conv: SIMPS_CASE_CONV
+### theory "HOL-Library.Simps_Case_Conv"
+### 0.089s elapsed time, 0.346s cpu time, 0.053s GC time
+Loading theory "HOL-Library.Old_Datatype" (required by "Draft.Lazy_LListMoreTemplates" via "Draft.Lazy_LList" via "Draft.Coinductive_List" via "Draft.Coinductive_Nat" via "HOL-Library.Extended_Nat" via "HOL-Library.Countable")
+Found termination order: "size_list size <*mlex*> {}"
+### theory "HOL-Library.Infinite_Set"
+### 0.367s elapsed time, 1.469s cpu time, 0.103s GC time
+Loading theory "HOL-Library.Set_Algebras" (required by "Draft.Lazy_LListMoreTemplates" via "Draft.ExtrEqs" via "HOL-Library.BigO")
+instantiation
+  set :: (plus) plus
+  plus_set == plus :: 'a set => 'a set => 'a set
+instantiation
+  set :: (times) times
+  times_set == times :: 'a set => 'a set => 'a set
+val cont_intro_tac = fn: Proof.context -> int -> tactic
+val cont_intro_simproc = fn: Proof.context -> cterm -> thm option
+instantiation
+  set :: (zero) zero
+  zero_set == zero_class.zero :: 'a set
+instantiation
+  set :: (one) one
+  one_set == one_class.one :: 'a set
+### theory "HOL-Library.Nat_Bijection"
+### 0.330s elapsed time, 1.293s cpu time, 0.142s GC time
+Loading theory "HOL-Library.Stream" (required by "Draft.Lazy_LListMoreTemplates" via "Draft.ExtrEqs")
+class preorder = ord +
+  assumes "less_le_not_le": "!!x y. (x < y) = (x <= y & ~ y <= x)"
+    and "order_refl": "!!x. x <= x"
+    and "order_trans": "!!x y z. [| x <= y; y <= z |] ==> x <= z"
+locale partial_function_definitions
+  fixes leq :: "'a => 'a => bool"
+    and lub :: "'a set => 'a"
+  assumes "partial_function_definitions leq lub"
+### theory "HOL-Library.Set_Algebras"
+### 0.240s elapsed time, 0.937s cpu time, 0.186s GC time
+Loading theory "HOL-Library.Sublist" (required by "Draft.Lazy_LListMoreTemplates" via "Draft.Lazy_LList" via "Draft.Coinductive_List")
+class ccpo = Sup + order +
+  assumes
+    "ccpo_Sup_upper":
+      "!!A x.
+          [| Complete_Partial_Order.chain (<=) A; x : A |]
+          ==> x <= \<Squnion> A"
+  assumes
+    "ccpo_Sup_least":
+      "!!A z.
+          [| Complete_Partial_Order.chain (<=) A; !!x. x : A ==> x <= z |]
+          ==> \<Squnion> A <= z"
+signature OLD_DATATYPE =
+  sig
+    val check_specs: spec list -> theory -> spec list * Proof.context
+    type config = {quiet: bool, strict: bool}
+    val default_config: config
+    type descr =
+       (int * (string * dtyp list * (string * dtyp list) list)) list
+    val distinct_lemma: thm
+    datatype dtyp
+    = DtRec of int | DtTFree of string * sort | DtType of string * dtyp list
+    type info =
+       {case_cong: thm,
+        case_cong_weak: thm,
+        case_name: string,
+        case_rewrites: thm list,
+        descr: descr,
+        distinct: thm list,
+        exhaust: thm,
+        index: int,
+        induct: thm,
+        inducts: thm list,
+        inject: thm list,
+        nchotomy: thm,
+        rec_names: string list,
+        rec_rewrites: thm list, split: thm, split_asm: thm}
+    val read_specs: spec_cmd list -> theory -> spec list * Proof.context
+    type spec =
+       (binding * (string * sort) list * mixfix) *
+       (binding * typ list * mixfix) list
+    type spec_cmd =
+       (binding * (string * string option) list * mixfix) *
+       (binding * string list * mixfix) list
+  end
+structure Old_Datatype: OLD_DATATYPE
+### theory "HOL-Library.Old_Datatype"
+### 0.410s elapsed time, 1.609s cpu time, 0.186s GC time
+Loading theory "HOL-Library.Tree" (required by "Draft.Lazy_LListMoreTemplates" via "Draft.ExtrEqs" via "Draft.Templates")
+locale partial_function_definitions
+  fixes leq :: "'a => 'a => bool"
+    and lub :: "'a set => 'a"
+  assumes "partial_function_definitions leq lub"
+consts
+  prefixes :: "'a list => 'a list list"
+consts
+  shift :: "'a list => 'a stream => 'a stream"
+class ccpo = Sup + order +
+  assumes
+    "ccpo_Sup_upper":
+      "!!A x.
+          [| Complete_Partial_Order.chain (<=) A; x : A |]
+          ==> x <= \<Squnion> A"
+  assumes
+    "ccpo_Sup_least":
+      "!!A z.
+          [| Complete_Partial_Order.chain (<=) A; !!x. x : A ==> x <= z |]
+          ==> \<Squnion> A <= z"
+Proofs for coinductive predicate(s) "streamsp"
+  Proving monotonicity ...
+class ccpo = Sup + order +
+  assumes
+    "ccpo_Sup_upper":
+      "!!A x.
+          [| Complete_Partial_Order.chain (<=) A; x : A |]
+          ==> x <= \<Squnion> A"
+  assumes
+    "ccpo_Sup_least":
+      "!!A z.
+          [| Complete_Partial_Order.chain (<=) A; !!x. x : A ==> x <= z |]
+          ==> \<Squnion> A <= z"
+locale partial_function_definitions
+  fixes leq :: "'a => 'a => bool"
+    and lub :: "'a set => 'a"
+  assumes "partial_function_definitions leq lub"
+Proofs for inductive predicate(s) "compact"
+  Proving monotonicity ...
+consts
+  snth :: "'a stream => nat => 'a"
+consts
+  stake :: "nat => 'a stream => 'a list"
+Found termination order: "(%p. length (snd p)) <*mlex*> {}"
+consts
+  sdrop :: "nat => 'a stream => 'a stream"
+class ccpo = Sup + order +
+  assumes
+    "ccpo_Sup_upper":
+      "!!A x.
+          [| Complete_Partial_Order.chain (<=) A; x : A |]
+          ==> x <= \<Squnion> A"
+  assumes
+    "ccpo_Sup_least":
+      "!!A z.
+          [| Complete_Partial_Order.chain (<=) A; !!x. x : A ==> x <= z |]
+          ==> \<Squnion> A <= z"
+locale partial_function_definitions
+  fixes leq :: "'a => 'a => bool"
+    and lub :: "'a set => 'a"
+  assumes "partial_function_definitions leq lub"
+consts
+  sfilter :: "('a => bool) => 'a stream => 'a stream"
+class ccpo = Sup + order +
+  assumes
+    "ccpo_Sup_upper":
+      "!!A x.
+          [| Complete_Partial_Order.chain (<=) A; x : A |]
+          ==> x <= \<Squnion> A"
+  assumes
+    "ccpo_Sup_least":
+      "!!A z.
+          [| Complete_Partial_Order.chain (<=) A; !!x. x : A ==> x <= z |]
+          ==> \<Squnion> A <= z"
+locale partial_function_definitions
+  fixes leq :: "'a => 'a => bool"
+    and lub :: "'a set => 'a"
+  assumes "partial_function_definitions leq lub"
+consts
+  cycle :: "'a list => 'a stream"
+consts
+  siterate :: "('a => 'a) => 'a => 'a stream"
+consts
+  flat :: "'a list stream => 'a stream"
+consts
+  sinterleave :: "'a stream => 'a stream => 'a stream"
+consts
+  left :: "'a tree => 'a tree"
+consts
+  right :: "'a tree => 'a tree"
+consts
+  szip :: "'a stream => 'b stream => ('a * 'b) stream"
+consts
+  smap2 :: "('a => 'b => 'c) => 'a stream => 'b stream => 'c stream"
+class ccpo = Sup + order +
+  assumes
+    "ccpo_Sup_upper":
+      "!!A x.
+          [| Complete_Partial_Order.chain (<=) A; x : A |]
+          ==> x <= \<Squnion> A"
+  assumes
+    "ccpo_Sup_least":
+      "!!A z.
+          [| Complete_Partial_Order.chain (<=) A; !!x. x : A ==> x <= z |]
+          ==> \<Squnion> A <= z"
+### theory "HOL-Library.Stream"
+### 1.174s elapsed time, 4.461s cpu time, 0.908s GC time
+Loading theory "HOL-Library.Countable" (required by "Draft.Lazy_LListMoreTemplates" via "Draft.Lazy_LList" via "Draft.Coinductive_List" via "Draft.Coinductive_Nat" via "HOL-Library.Extended_Nat")
+Found termination order: "size <*mlex*> {}"
+locale partial_function_definitions
+  fixes leq :: "'a => 'a => bool"
+    and lub :: "'a set => 'a"
+  assumes "partial_function_definitions leq lub"
+consts
+  suffixes :: "'a list => 'a list list"
+Found termination order: "size <*mlex*> {}"
+class complete_lattice = ccpo + conditionally_complete_lattice +
+  bounded_lattice +
+  assumes "Inf_lower": "!!x A. x : A ==> \<Sqinter> A <= x"
+    and
+    "Inf_greatest": "!!A z. (!!x. x : A ==> z <= x) ==> z <= \<Sqinter> A"
+    and "Sup_upper": "!!x A. x : A ==> x <= \<Squnion> A"
+    and "Sup_least": "!!A z. (!!x. x : A ==> x <= z) ==> \<Squnion> A <= z"
+    and "Inf_empty": "\<Sqinter> {} = \<top>"
+    and "Sup_empty": "\<Squnion> {} = \<bottom>"
+Proofs for inductive predicate(s) "list_emb"
+  Proving monotonicity ...
+Found termination order: "size <*mlex*> {}"
+class height = type +
+  fixes height :: "'a => nat"
+instantiation
+  tree :: (type) height
+  height_tree == height :: 'a tree => nat
+class complete_distrib_lattice = complete_lattice + distrib_lattice +
+  assumes
+    "Inf_Sup_le":
+      "!!A. \<Sqinter> (Sup ` A)
+            <= \<Squnion> (Inf ` {f ` A |f. ALL Y:A. f Y : Y})"
+Found termination order: "size <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+### Additional type variable(s) in locale specification "countable": 'a
+Found termination order: "size <*mlex*> {}"
+class countable = type +
+  assumes "ex_inj": "EX to_nat. inj to_nat"
+class complete_lattice = ccpo + conditionally_complete_lattice +
+  bounded_lattice +
+  assumes "Inf_lower": "!!x A. x : A ==> \<Sqinter> A <= x"
+    and
+    "Inf_greatest": "!!A z. (!!x. x : A ==> z <= x) ==> z <= \<Sqinter> A"
+    and "Sup_upper": "!!x A. x : A ==> x <= \<Squnion> A"
+    and "Sup_least": "!!A z. (!!x. x : A ==> x <= z) ==> \<Squnion> A <= z"
+    and "Inf_empty": "\<Sqinter> {} = \<top>"
+    and "Sup_empty": "\<Squnion> {} = \<bottom>"
+Found termination order: "size <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+Proofs for inductive predicate(s) "finite_item"
+Found termination order: "size <*mlex*> {}"
+  Proving monotonicity ...
+consts
+  sublists :: "'a list => 'a list list"
+Found termination order: "size <*mlex*> {}"
+Found termination order: "(%p. size (fst p)) <*mlex*> {}"
+### theory "HOL-Library.Sublist"
+### 1.864s elapsed time, 7.176s cpu time, 1.152s GC time
+Loading theory "HOL-Library.BigO" (required by "Draft.Lazy_LListMoreTemplates" via "Draft.ExtrEqs")
+val old_countable_datatype_tac = fn: Proof.context -> int -> tactic
+Found termination order: "size <*mlex*> {}"
+### ML warning (line 93 of "~~/src/HOL/Tools/BNF/bnf_lfp_countable.ML"):
+### Pattern is not exhaustive.
+### ML warning (line 139 of "~~/src/HOL/Tools/BNF/bnf_lfp_countable.ML"):
+### Pattern is not exhaustive.
+### ML warning (line 143 of "~~/src/HOL/Tools/BNF/bnf_lfp_countable.ML"):
+### Matches are not exhaustive.
+### ML warning (line 145 of "~~/src/HOL/Tools/BNF/bnf_lfp_countable.ML"):
+### Matches are not exhaustive.
+### ML warning (line 156 of "~~/src/HOL/Tools/BNF/bnf_lfp_countable.ML"):
+### Pattern is not exhaustive.
+signature BNF_LFP_COUNTABLE =
+  sig
+    val countable_datatype_tac: Proof.context -> tactic
+    val derive_encode_injectives_thms:
+       Proof.context -> string list -> thm list
+  end
+structure BNF_LFP_Countable: BNF_LFP_COUNTABLE
+val countable_datatype_tac = fn: Proof.context -> thm -> thm Seq.seq
+val countable_tac = fn: Proof.context -> int -> tactic
+Found termination order: "(%p. size (snd p)) <*mlex*> {}"
+locale partial_function_definitions
+  fixes leq :: "'a => 'a => bool"
+    and lub :: "'a set => 'a"
+  assumes "partial_function_definitions leq lub"
+### theory "HOL-Library.Complete_Partial_Order2"
+### 2.695s elapsed time, 10.428s cpu time, 1.567s GC time
+### theory "HOL-Library.Countable"
+### 1.214s elapsed time, 4.767s cpu time, 0.528s GC time
+Loading theory "HOL-Library.Countable_Set" (required by "Draft.Lazy_LListMoreTemplates" via "Draft.Lazy_LList" via "Draft.Coinductive_List" via "Draft.Coinductive_Nat" via "HOL-Library.Extended_Nat" via "HOL-Library.Order_Continuity" via "HOL-Library.Countable_Complete_Lattices")
+Found termination order: "size <*mlex*> {}"
+### theory "HOL-Library.Tree"
+### 2.421s elapsed time, 9.162s cpu time, 1.397s GC time
+Loading theory "Draft.Templates" (required by "Draft.Lazy_LListMoreTemplates" via "Draft.ExtrEqs")
+locale comm_monoid_set
+  fixes f :: "'a => 'a => 'a"  (infixl \<open>\<^bold>*\<close> 70)
+    and z :: "'a"  (\<open>\<^bold>1\<close>)
+  assumes "comm_monoid_set (\<^bold>*) \<^bold>1"
+datatype template_term
+=
+     t_empty
+   | template_app of template_term * template_term
+   | template_hole of int
+   | template_var of int
+datatype sign
+= equals | greater_equals | greater_than | less_equals | less_than
+datatype template
+=
+     template_bimplication of template * template
+   | template_dunno
+   | template_equation of template_term * template_term
+   | template_implication of template list * template
+   | template_inequation of sign * template_term * template_term
+   | template_negation of template
+   | template_predicate of template_term
+constructor t_empty: template_term
+constructor template_app: template_term * template_term -> template_term
+constructor template_hole: int -> template_term
+constructor template_var: int -> template_term
+constructor equals: sign
+constructor greater_equals: sign
+constructor greater_than: sign
+constructor less_equals: sign
+constructor less_than: sign
+constructor template_bimplication: template * template -> template
+constructor template_dunno: template
+constructor template_equation: template_term * template_term -> template
+constructor template_implication: template list * template -> template
+constructor template_inequation:
+   sign * template_term * template_term -> template
+constructor template_negation: template -> template
+constructor template_predicate: template_term -> template
+val vfs = fn: term -> (indexname * typ) list * (string * typ) list
+val indexOf = fn: ''a list -> ''a -> int -> int
+val has_eq = fn: term -> bool
+val term2template = fn:
+   (indexname * typ) list -> (string * typ) list -> term -> template_term
+val lemma2predicate = fn: term -> term -> template
+val makeTemplatewithContext = fn: term -> term -> template
+val lemma2template = fn: term -> template
+val thm2template = fn: thm -> template
+val tterm2string = fn: template_term -> string
+val template2string = fn: template -> string
+val t = "height ?t <= size ?t": thm
+val th =
+   Const ("HOL.Trueprop", "bool => prop") $
+     (Const ("Orderings.ord_class.less_eq", "nat => nat => bool") $
+       (Const ("Tree.height_class.height", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree")) $
+       (Const ("Nat.size_class.size", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree"))):
+   term
+### theory "Draft.Templates"
+### 0.084s elapsed time, 0.290s cpu time, 0.076s GC time
+### theory "HOL-Library.Countable_Set"
+### 0.449s elapsed time, 1.341s cpu time, 0.195s GC time
+Loading theory "HOL-Library.Countable_Complete_Lattices" (required by "Draft.Lazy_LListMoreTemplates" via "Draft.Lazy_LList" via "Draft.Coinductive_List" via "Draft.Coinductive_Nat" via "HOL-Library.Extended_Nat" via "HOL-Library.Order_Continuity")
+### theory "HOL-Library.BigO"
+### 0.849s elapsed time, 2.821s cpu time, 0.382s GC time
+Loading theory "Draft.ExtrEqs" (required by "Draft.Lazy_LListMoreTemplates")
+class countable_complete_lattice = Inf + Sup + lattice + bot + top +
+  assumes "ccInf_lower": "!!A x. [| countable A; x : A |] ==> Inf A <= x"
+  assumes
+    "ccInf_greatest":
+      "!!A z. [| countable A; !!x. x : A ==> z <= x |] ==> z <= Inf A"
+  assumes "ccSup_upper": "!!A x. [| countable A; x : A |] ==> x <= Sup A"
+  assumes
+    "ccSup_least":
+      "!!A z. [| countable A; !!x. x : A ==> x <= z |] ==> Sup A <= z"
+  assumes "ccInf_empty": "Inf {} = top"
+  assumes "ccSup_empty": "Sup {} = bot"
+val eqpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Var (("_dummy_", 2), "?'a"))
+       ):
+   term Find_Theorems.criterion
+val badeqpattern = Pattern (Const ("Pure.eq", "?'a => ?'a => prop")):
+   term Find_Theorems.criterion
+val undefpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Const ("HOL.undefined", "?'a"))
+       ):
+   term Find_Theorems.criterion
+val thmpattern =
+   Pattern
+    (Const ("HOL.Trueprop", "bool => prop") $ Var (("_dummy_", 1), "bool")):
+   term Find_Theorems.criterion
+val badnames =
+   ["*nitpick*", "*Nitpick*", "*full_exhaustive*", "*_def*", "Enum.finite*",
+    "*Quickcheck*", "ATP*", "*Nunchaku*", "*Code*", "*BNF*", "*SMT*",
+    "*.*.*"]:
+   string list
+val unwanted_names =
+   [(false, Name "*nitpick*"), (false, Name "*Nitpick*"),
+    (false, Name "*full_exhaustive*"), (false, Name "*_def*"),
+    (false, Name "Enum.finite*"), (false, Name "*Quickcheck*"),
+    (false, Name "ATP*"), (false, Name "*Nunchaku*"),
+    (false, Name "*Code*"), (false, Name "*BNF*"), (false, Name "*SMT*"),
+    (false, Name "*.*.*")]:
+   (bool * term Find_Theorems.criterion) list
+val has_vars = fn: term -> bool
+val get_all_eqs = fn: string -> Proof.context -> (string * thm) list
+val get_all_thms = fn: string -> Proof.context -> (string * thm) list
+val get_noneq_thms = fn: string -> Proof.context -> (string * thm) list
+val template_eqs = fn:
+   string -> Proof.context -> (string * thm * template) list
+val template_thms = fn:
+   string -> Proof.context -> (string * thm * template) list
+### theory "Draft.ExtrEqs"
+### 0.819s elapsed time, 2.042s cpu time, 0.988s GC time
+class countable_complete_distrib_lattice = countable_complete_lattice +
+  assumes
+    "sup_ccInf": "!!B a. countable B ==> sup a (Inf B) = Inf (sup a ` B)"
+  assumes
+    "inf_ccSup": "!!B a. countable B ==> inf a (Sup B) = Sup (inf a ` B)"
+### theory "HOL-Library.Countable_Complete_Lattices"
+### 1.873s elapsed time, 3.185s cpu time, 1.053s GC time
+Loading theory "HOL-Library.Order_Continuity" (required by "Draft.Lazy_LListMoreTemplates" via "Draft.Lazy_LList" via "Draft.Coinductive_List" via "Draft.Coinductive_Nat" via "HOL-Library.Extended_Nat")
+### theory "HOL-Library.Order_Continuity"
+### 0.394s elapsed time, 0.410s cpu time, 0.000s GC time
+Loading theory "HOL-Library.Extended_Nat" (required by "Draft.Lazy_LListMoreTemplates" via "Draft.Lazy_LList" via "Draft.Coinductive_List" via "Draft.Coinductive_Nat")
+class infinity = type +
+  fixes infinity :: "'a"
+instantiation
+  enat :: infinity
+  infinity_enat == infinity :: enat
+Proofs for inductive predicate(s) "rec_set_enat"
+### No equation for constructor "Extended_Nat.infinity_class.infinity"
+### in definition of function "the_enat"
+consts
+  the_enat :: "enat => nat"
+instantiation
+  enat :: zero_neq_one
+  one_enat == one_class.one :: enat
+  zero_enat == zero_class.zero :: enat
+instantiation
+  enat :: comm_monoid_add
+  plus_enat == plus :: enat => enat => enat
+instantiation
+  enat :: {comm_semiring_1,semiring_no_zero_divisors}
+  times_enat == times :: enat => enat => enat
+instantiation
+  enat :: minus
+  minus_enat == minus :: enat => enat => enat
+instantiation
+  enat :: linordered_ab_semigroup_add
+  less_eq_enat == less_eq :: enat => enat => bool
+  less_enat == less :: enat => enat => bool
+instantiation
+  enat :: {order_bot,order_top}
+  top_enat == top :: enat
+  bot_enat == bot :: enat
+structure Cancel_Enat_Common:
+  sig
+    val dest_sum: term -> term list
+    val dest_summing: term * term list -> term list
+    val find_first: term -> term list -> term list
+    val find_first_t: term list -> term -> term list -> term list
+    val mk_eq: term * term -> term
+    val mk_sum: typ -> term list -> term
+    val norm_ss: simpset
+    val norm_tac: Proof.context -> tactic
+    val simplify_meta_eq: Proof.context -> thm -> thm -> thm
+    val trans_tac: Proof.context -> thm option -> tactic
+  end
+structure Eq_Enat_Cancel:
+  sig val proc: Proof.context -> term -> thm option end
+structure Le_Enat_Cancel:
+  sig val proc: Proof.context -> term -> thm option end
+structure Less_Enat_Cancel:
+  sig val proc: Proof.context -> term -> thm option end
+instantiation
+  enat :: complete_lattice
+  Inf_enat == Inf :: enat set => enat
+  Sup_enat == Sup :: enat set => enat
+  sup_enat == sup :: enat => enat => enat
+  inf_enat == inf :: enat => enat => enat
+### theory "HOL-Library.Extended_Nat"
+### 0.490s elapsed time, 0.542s cpu time, 0.072s GC time
+Loading theory "Draft.Coinductive_Nat" (required by "Draft.Lazy_LListMoreTemplates" via "Draft.Lazy_LList" via "Draft.Coinductive_List")
+Proofs for coinductive predicate(s) "enat_setp"
+  Proving monotonicity ...
+locale co
+Proofs for coinductive predicate(s) "Le_enatp"
+  Proving monotonicity ...
+### theory "Draft.Coinductive_Nat"
+### 0.835s elapsed time, 1.577s cpu time, 1.040s GC time
+Loading theory "Draft.Coinductive_List" (required by "Draft.Lazy_LListMoreTemplates" via "Draft.Lazy_LList")
+consts
+  unfold_llist ::
+    "('a => bool) => ('a => 'b) => ('a => 'a) => 'a => 'b llist"
+Proofs for inductive predicate(s) "lsetp"
+  Proving monotonicity ...
+Proofs for inductive predicate(s) "lfinite"
+  Proving monotonicity ...
+consts
+  lappend :: "'a llist => 'a llist => 'a llist"
+### Ignoring duplicate rewrite rule:
+### lnull (lappend ?xs1 ?ys1) == lnull ?xs1 & lnull ?ys1
+Proofs for coinductive predicate(s) "lprefix"
+  Proving monotonicity ...
+consts
+  lSup :: "'a llist set => 'a llist"
+### Cannot skip proof of schematic goal statement
+### Cannot skip proof of schematic goal statement
+consts
+  iterates :: "('a => 'a) => 'a => 'a llist"
+consts
+  llist_of :: "'a list => 'a llist"
+consts
+  ltake :: "enat => 'a llist => 'a llist"
+### Ambiguous input (line 1019 of "$AFP/Coinductive/Coinductive_List.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" ldrop)
+###       ("_cargs" ("_position" n) ("_position" xs)))
+###     ("_case_syntax" ("_position" n)
+###       ("_case2"
+###         ("_case1" ("\<^const>Groups.zero_class.zero") ("_position" xs))
+###         ("_case1" ("_applC" ("_position" eSuc) ("_position" n'))
+###           ("_case_syntax" ("_position" xs)
+###             ("_case2" ("_case1" ("_position" LNil) ("_position" LNil))
+###               ("_case1"
+###                 ("_applC" ("_position" LCons)
+###                   ("_cargs" ("_position" x) ("_position" xs')))
+###                 ("_applC" ("_position" ldrop)
+###                   ("_cargs" ("_position" n') ("_position" xs')))))))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" ldrop)
+###       ("_cargs" ("_position" n) ("_position" xs)))
+###     ("_case_syntax" ("_position" n)
+###       ("_case2"
+###         ("_case1" ("\<^const>Groups.zero_class.zero") ("_position" xs))
+###         ("_case2"
+###           ("_case1" ("_applC" ("_position" eSuc) ("_position" n'))
+###             ("_case_syntax" ("_position" xs)
+###               ("_case1" ("_position" LNil) ("_position" LNil))))
+###           ("_case1"
+###             ("_applC" ("_position" LCons)
+###               ("_cargs" ("_position" x) ("_position" xs')))
+###             ("_applC" ("_position" ldrop)
+###               ("_cargs" ("_position" n') ("_position" xs')))))))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+consts
+  ltakeWhile :: "('a => bool) => 'a llist => 'a llist"
+consts
+  lnth :: "'a llist => nat => 'a"
+consts
+  lzip :: "'a llist => 'b llist => ('a * 'b) llist"
+Proofs for coinductive predicate(s) "ldistinct"
+  Proving monotonicity ...
+Proofs for coinductive predicate(s) "llexord"
+  Proving monotonicity ...
+### Ambiguous input (line 1508 of "$AFP/Coinductive/Coinductive_List.thy") produces 2 parse trees:
+### ("\<^const>Pure.eq" ("_position" F)
+###   ("_lambda"
+###     ("_pttrns" ("_position" ltake)
+###       ("_pttrns" ("_position" n) ("_position" xs)))
+###     ("_case_syntax" ("_position" xs)
+###       ("_case2" ("_case1" ("_position" LNil) ("_position" LNil))
+###         ("_case2"
+###           ("_case1"
+###             ("_applC" ("_position" LCons)
+###               ("_cargs" ("_position" x) ("_position" xs)))
+###             ("_case_syntax" ("_position" n)
+###               ("_case1" ("\<^const>Groups.zero_class.zero")
+###                 ("_position" LNil))))
+###           ("_case1" ("_applC" ("_position" eSuc) ("_position" n))
+###             ("_applC" ("_position" LCons)
+###               ("_cargs" ("_position" x)
+###                 ("_applC" ("_position" ltake)
+###                   ("_cargs" ("_position" n) ("_position" xs)))))))))))
+### ("\<^const>Pure.eq" ("_position" F)
+###   ("_lambda"
+###     ("_pttrns" ("_position" ltake)
+###       ("_pttrns" ("_position" n) ("_position" xs)))
+###     ("_case_syntax" ("_position" xs)
+###       ("_case2" ("_case1" ("_position" LNil) ("_position" LNil))
+###         ("_case1"
+###           ("_applC" ("_position" LCons)
+###             ("_cargs" ("_position" x) ("_position" xs)))
+###           ("_case_syntax" ("_position" n)
+###             ("_case2"
+###               ("_case1" ("\<^const>Groups.zero_class.zero")
+###                 ("_position" LNil))
+###               ("_case1" ("_applC" ("_position" eSuc) ("_position" n))
+###                 ("_applC" ("_position" LCons)
+###                   ("_cargs" ("_position" x)
+###                     ("_applC" ("_position" ltake)
+###                       ("_cargs" ("_position" n) ("_position" xs)))))))))))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ignoring duplicate rewrite rule:
+### lnull (lzip ?xs1 ?ys1) == lnull ?xs1 | lnull ?ys1
+### Ambiguous input (line 2485 of "$AFP/Coinductive/Coinductive_List.thy") produces 2 parse trees:
+### ("\<^const>Pure.eq" ("_position" F)
+###   ("_lambda"
+###     ("_pttrns" ("_position" lzip)
+###       ("_pattern" ("_position" xs) ("_position" ys)))
+###     ("_case_syntax" ("_position" xs)
+###       ("_case2" ("_case1" ("_position" LNil) ("_position" LNil))
+###         ("_case2"
+###           ("_case1"
+###             ("_applC" ("_position" LCons)
+###               ("_cargs" ("_position" x) ("_position" xs')))
+###             ("_case_syntax" ("_position" ys)
+###               ("_case1" ("_position" LNil) ("_position" LNil))))
+###           ("_case1"
+###             ("_applC" ("_position" LCons)
+###               ("_cargs" ("_position" y) ("_position" ys')))
+###             ("_applC" ("_position" LCons)
+###               ("_cargs"
+###                 ("_tuple" ("_position" x) ("_tuple_arg" ("_position" y)))
+###                 ("_applC" ("_position" curry)
+###                   ("_cargs" ("_position" lzip)
+###                     ("_cargs" ("_position" xs') ("_position" ys'))))))))))))
+### ("\<^const>Pure.eq" ("_position" F)
+###   ("_lambda"
+###     ("_pttrns" ("_position" lzip)
+###       ("_pattern" ("_position" xs) ("_position" ys)))
+###     ("_case_syntax" ("_position" xs)
+###       ("_case2" ("_case1" ("_position" LNil) ("_position" LNil))
+###         ("_case1"
+###           ("_applC" ("_position" LCons)
+###             ("_cargs" ("_position" x) ("_position" xs')))
+###           ("_case_syntax" ("_position" ys)
+###             ("_case2" ("_case1" ("_position" LNil) ("_position" LNil))
+###               ("_case1"
+###                 ("_applC" ("_position" LCons)
+###                   ("_cargs" ("_position" y) ("_position" ys')))
+###                 ("_applC" ("_position" LCons)
+###                   ("_cargs"
+###                     ("_tuple" ("_position" x)
+###                       ("_tuple_arg" ("_position" y)))
+###                     ("_applC" ("_position" curry)
+###                       ("_cargs" ("_position" lzip)
+###                         ("_cargs" ("_position" xs')
+###                           ("_position" ys'))))))))))))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+class ord = type +
+  fixes less_eq :: "'a => 'a => bool"
+    and less :: "'a => 'a => bool"
+Proofs for coinductive predicate(s) "lsorted"
+  Proving monotonicity ...
+### Partially applied constant "Sublist.list_emb" on left hand side of equation, in theorem:
+### subseq_order.lsorted LNil == True
+### Partially applied constant "Sublist.list_emb" on left hand side of equation, in theorem:
+### subseq_order.lsorted (LCons ?x LNil) == True
+### Partially applied constant "Sublist.list_emb" on left hand side of equation, in theorem:
+### subseq_order.lsorted (LCons ?x (LCons ?y ?xs)) ==
+### subseq ?x ?y & subseq_order.lsorted (LCons ?y ?xs)
+### Partially applied constant "Sublist.sublist" on left hand side of equation, in theorem:
+### sublist_order.lsorted LNil == True
+### Partially applied constant "Sublist.sublist" on left hand side of equation, in theorem:
+### sublist_order.lsorted (LCons ?x LNil) == True
+### Partially applied constant "Sublist.sublist" on left hand side of equation, in theorem:
+### sublist_order.lsorted (LCons ?x (LCons ?y ?xs)) ==
+### sublist ?x ?y & sublist_order.lsorted (LCons ?y ?xs)
+### Partially applied constant "Sublist.suffix" on left hand side of equation, in theorem:
+### suffix_order.lsorted LNil == True
+### Partially applied constant "Sublist.suffix" on left hand side of equation, in theorem:
+### suffix_order.lsorted (LCons ?x LNil) == True
+### Partially applied constant "Sublist.suffix" on left hand side of equation, in theorem:
+### suffix_order.lsorted (LCons ?x (LCons ?y ?xs)) ==
+### suffix ?x ?y & suffix_order.lsorted (LCons ?y ?xs)
+### Partially applied constant "Sublist.prefix" on left hand side of equation, in theorem:
+### prefix_order.lsorted LNil == True
+### Partially applied constant "Sublist.prefix" on left hand side of equation, in theorem:
+### prefix_order.lsorted (LCons ?x LNil) == True
+### Partially applied constant "Sublist.prefix" on left hand side of equation, in theorem:
+### prefix_order.lsorted (LCons ?x (LCons ?y ?xs)) ==
+### prefix ?x ?y & prefix_order.lsorted (LCons ?y ?xs)
+class preorder = ord +
+  assumes "less_le_not_le": "!!x y. (x < y) = (x <= y & ~ y <= x)"
+    and "order_refl": "!!x. x <= x"
+    and "order_trans": "!!x y z. [| x <= y; y <= z |] ==> x <= z"
+class linorder = order +
+  assumes "linear": "!!x y. x <= y | y <= x"
+### Introduced fixed type variable(s): 'a in "P__" or "xs__"
+### Introduced fixed type variable(s): 'a in "P__" or "xs__"
+### Introduced fixed type variable(s): 'a in "P__" or "Q__"
+### Introduced fixed type variable(s): 'a in "xs__"
+class preorder = ord +
+  assumes "less_le_not_le": "!!x y. (x < y) = (x <= y & ~ y <= x)"
+    and "order_refl": "!!x. x <= x"
+    and "order_trans": "!!x y z. [| x <= y; y <= z |] ==> x <= z"
+class monoid_add = semigroup_add + zero +
+  assumes "add_0_left": "!!a. (0::'a) + a = a"
+    and "add_0_right": "!!a. a + (0::'a) = a"
+### theory "Draft.Coinductive_List"
+### 3.064s elapsed time, 3.480s cpu time, 0.572s GC time
+Loading theory "Draft.Lazy_LList" (required by "Draft.Lazy_LListMoreTemplates")
+### theory "Draft.Lazy_LList"
+### 0.171s elapsed time, 0.201s cpu time, 0.000s GC time
+Loading theory "Draft.Lazy_LListMoreTemplates"
+val zeros = Lazy_llist fn: int Isabelle5646056.Generated_Code.llist
+val lhd = 0: int
+val ltl = Lazy_llist fn: int Isabelle5646056.Generated_Code.llist
+val ltl' = SOME (1, Lazy_llist fn):
+   (int * int Isabelle5646056.Generated_Code.llist) option
+val ltake = Lazy_llist fn: int Isabelle5646056.Generated_Code.llist
+val ldrop = Lazy_llist fn: int Isabelle5646056.Generated_Code.llist
+val list_of = [0, 1]: int list
+val ltakeWhile = Lazy_llist fn: int Isabelle5646056.Generated_Code.llist
+val ldropWhile = Lazy_llist fn: int Isabelle5646056.Generated_Code.llist
+val hd = 0: int
+val lfilter = Lazy_llist fn: int Isabelle5646056.Generated_Code.llist
+val templateLemmas =
+   [("Lazy_LList.Lazy_llist_inverse",
+     "Lazy_LList.force (Lazy_llist ?xs) = ?xs ()",
+     template_equation
+      (template_app
+        (template_hole 2, template_app (template_hole 1, template_var 0)),
+       template_app (template_var 0, template_hole 0))),
+    ("Lazy_LList.force_inverse",
+     "Lazy_llist (%_. Lazy_LList.force ?xs) = ?xs",
+     template_equation
+      (template_app (template_hole 1, t_empty), template_var 0)),
+    ("Lazy_LList.Lazy_llist_inject",
+     "(Lazy_llist ?xs = Lazy_llist ?ys) = (?xs = ?ys)",
+     template_bimplication
+      (template_equation
+        (template_app (template_hole 1, template_var 1),
+         template_app (template_hole 1, template_var 0)),
+       template_equation (template_var 1, template_var 0))),
+    ("Lazy_LList.LCons_Lazy_llist",
+     "LCons ?x ?xs = Lazy_llist (%_. Some (?x, ?xs))",
+     template_equation
+      (template_app
+        (template_app (template_hole 3, template_var 1), template_var 0),
+       template_app (template_hole 2, t_empty))),
+    ("Lazy_LList.lhd_Lazy_llist",
+     "lhd (Lazy_llist ?xs) = (case ?xs () of Some (x, xs') => x)",
+     template_equation
+      (template_app
+        (template_hole 5, template_app (template_hole 4, template_var 0)),
+       template_app
+        (template_app
+          (template_app (template_hole 3, template_hole 2), t_empty),
+         template_app (template_var 0, template_hole 0)))),
+    ("Lazy_LList.lmap_Lazy_llist",
+     "lmap ?f (Lazy_llist ?xs) =
+      Lazy_llist (%_. map_option (map_prod ?f (lmap ?f)) (?xs ()))",
+     template_equation
+      (template_app
+        (template_app (template_hole 5, template_var 1),
+         template_app (template_hole 4, template_var 0)),
+       template_app (template_hole 3, t_empty))),
+    ("Lazy_LList.lfinite_Lazy_llist",
+     "lfinite (Lazy_llist ?xs) =
+      (case ?xs () of None => True | Some (x, ys) => lfinite ys)",
+     template_equation
+      (template_app
+        (template_hole 5, template_app (template_hole 4, template_var 0)),
+       template_app
+        (template_app
+          (template_app (template_hole 3, template_hole 2), t_empty),
+         template_app (template_var 0, template_hole 0)))),
+    ("Lazy_LList.ltl_Lazy_llist",
+     "ltl (Lazy_llist ?xs) =
+      Lazy_llist
+       (%_. case ?xs () of None => None
+            | Some (x, ys) => Lazy_LList.force ys)",
+     template_equation
+      (template_app
+        (template_hole 6, template_app (template_hole 5, template_var 0)),
+       template_app (template_hole 5, t_empty))),
+    ("Lazy_LList.case_llist_Lazy_llist",
+     "(case Lazy_llist ?xs of LNil => ?n | LCons x xa => ?c x xa) =
+      (case ?xs () of None => ?n | Some (x, ys) => ?c x ys)",
+     template_equation
+      (template_app
+        (template_app
+          (template_app (template_hole 4, template_var 2), template_var 1),
+         template_app (template_hole 3, template_var 0)),
+       template_app
+        (template_app
+          (template_app (template_hole 2, template_var 2), t_empty),
+         template_app (template_var 0, template_hole 0)))),
+    ("Lazy_LList.lset_Lazy_llist",
+     "gen_lset ?A (Lazy_llist ?xs) =
+      (case ?xs () of None => ?A
+       | Some (y, ys) => gen_lset (insert y ?A) ys)",
+     template_equation
+      (template_app
+        (template_app (template_hole 5, template_var 1),
+         template_app (template_hole 4, template_var 0)),
+       template_app
+        (template_app
+          (template_app (template_hole 3, template_var 1), t_empty),
+         template_app (template_var 0, template_hole 0)))),
+    ("Lazy_LList.list_of_aux_Lazy_llist",
+     "list_of_aux ?xs (Lazy_llist ?ys) =
+      (case ?ys () of None => rev ?xs
+       | Some (y, ys) => list_of_aux (y # ?xs) ys)",
+     template_equation
+      (template_app
+        (template_app (template_hole 6, template_var 1),
+         template_app (template_hole 5, template_var 0)),
+       template_app
+        (template_app
+          (template_app
+            (template_hole 4,
+             template_app (template_hole 3, template_var 1)),
+           t_empty),
+         template_app (template_var 0, template_hole 0)))),
+    ("Lazy_LList.gen_llength_Lazy_llist",
+     "gen_llength ?n (Lazy_llist ?xs) =
+      (case ?xs () of None => enat ?n
+       | Some (x, ys) => gen_llength (?n + 1) ys)",
+     template_equation
+      (template_app
+        (template_app (template_hole 7, template_var 1),
+         template_app (template_hole 6, template_var 0)),
+       template_app
+        (template_app
+          (template_app
+            (template_hole 5,
+             template_app (template_hole 4, template_var 1)),
+           t_empty),
+         template_app (template_var 0, template_hole 0)))),
+    ("Lazy_LList.lconcat_Lazy_llist",
+     "lconcat (Lazy_llist ?xss) =
+      Lazy_llist
+       (%_. case ?xss () of None => None
+            | Some (xs, xss') =>
+                Lazy_LList.force (lappend xs (lconcat xss')))",
+     template_equation
+      (template_app
+        (template_hole 8, template_app (template_hole 7, template_var 0)),
+       template_app (template_hole 6, t_empty))),
+    ("Lazy_LList.ldistinct_Lazy_llist",
+     "ldistinct (Lazy_llist ?xs) =
+      (case ?xs () of None => True
+       | Some (x, ys) => x ~: lset ys & ldistinct ys)",
+     template_equation
+      (template_app
+        (template_hole 9, template_app (template_hole 8, template_var 0)),
+       template_app
+        (template_app
+          (template_app (template_hole 7, template_hole 6), t_empty),
+         template_app (template_var 0, template_hole 0)))),
+    ("Lazy_LList.lmember_Lazy_llist",
+     "lmember ?x (Lazy_llist ?xs) =
+      (case ?xs () of None => False
+       | Some (y, ys) => ?x = y | lmember ?x ys)",
+     template_equation
+      (template_app
+        (template_app (template_hole 7, template_var 1),
+         template_app (template_hole 6, template_var 0)),
+       template_app
+        (template_app
+          (template_app (template_hole 5, template_hole 4), t_empty),
+         template_app (template_var 0, template_hole 0)))),
+    ("Lazy_LList.unfold_llist_Lazy_llist",
+     "unfold_llist ?IS_LNIL ?LHD ?LTL ?b =
+      Lazy_llist
+       (%_. if ?IS_LNIL ?b then None
+            else Some
+                  (?LHD ?b, unfold_llist ?IS_LNIL ?LHD ?LTL (?LTL ?b)))",
+     template_equation
+      (template_app
+        (template_app
+          (template_app
+            (template_app (template_hole 5, template_var 3),
+             template_var 2),
+           template_var 1),
+         template_var 0),
+       template_app (template_hole 4, t_empty))),
+    ("Lazy_LList.lappend_Lazy_llist",
+     "lappend (Lazy_llist ?xs) ?ys =
+      Lazy_llist
+       (%_. case ?xs () of None => Lazy_LList.force ?ys
+            | Some (x, xs') => Some (x, lappend xs' ?ys))",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 7, template_app (template_hole 6, template_var 1)),
+         template_var 0),
+       template_app (template_hole 6, t_empty))),
+    ("Lazy_LList.llast_Lazy_llist",
+     "llast (Lazy_llist ?xs) =
+      (case ?xs () of
+       Some (x, xs') =>
+         case Lazy_LList.force xs' of None => x
+         | Some (x', xs'') => llast (LCons x' xs''))",
+     template_equation
+      (template_app
+        (template_hole 7, template_app (template_hole 6, template_var 0)),
+       template_app
+        (template_app
+          (template_app (template_hole 5, template_hole 4), t_empty),
+         template_app (template_var 0, template_hole 0)))),
+    ("Lazy_LList.ltakeWhile_Lazy_llist",
+     "ltakeWhile ?P (Lazy_llist ?xs) =
+      Lazy_llist
+       (%_. case ?xs () of None => None
+            | Some (x, ys) =>
+                if ?P x then Some (x, ltakeWhile ?P ys) else None)",
+     template_equation
+      (template_app
+        (template_app (template_hole 8, template_var 1),
+         template_app (template_hole 7, template_var 0)),
+       template_app (template_hole 7, t_empty))),
+    ("Lazy_LList.ldropWhile_Lazy_llist",
+     "ldropWhile ?P (Lazy_llist ?xs) =
+      Lazy_llist
+       (%_. case ?xs () of None => None
+            | Some (x, ys) =>
+                if ?P x then Lazy_LList.force (ldropWhile ?P ys)
+                else Some (x, ys))",
+     template_equation
+      (template_app
+        (template_app (template_hole 9, template_var 1),
+         template_app (template_hole 8, template_var 0)),
+       template_app (template_hole 8, t_empty))),
+    ("Lazy_LList.lzip_Lazy_llist",
+     "lzip (Lazy_llist ?xs) (Lazy_llist ?ys) =
+      Lazy_llist
+       (%_. Option.bind (?xs ())
+             (%(x, xs').
+                 map_option (%(y, ys'). ((x, y), lzip xs' ys')) (?ys ())))",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 10,
+           template_app (template_hole 9, template_var 1)),
+         template_app (template_hole 8, template_var 0)),
+       template_app (template_hole 7, t_empty))),
+    ("Lazy_LList.ldropn_Lazy_llist",
+     "ldropn ?n (Lazy_llist ?xs) =
+      Lazy_llist
+       (%_. if ?n = 0 then ?xs ()
+            else case ?xs () of None => None
+                 | Some (x, ys) => Lazy_LList.force (ldropn (?n - 1) ys))",
+     template_equation
+      (template_app
+        (template_app (template_hole 11, template_var 1),
+         template_app (template_hole 10, template_var 0)),
+       template_app (template_hole 10, t_empty))),
+    ("Lazy_LList.lfilter_Lazy_llist",
+     "lfilter ?P (Lazy_llist ?xs) =
+      Lazy_llist
+       (%_. case ?xs () of None => None
+            | Some (x, ys) =>
+                if ?P x then Some (x, lfilter ?P ys)
+                else Lazy_LList.force (lfilter ?P ys))",
+     template_equation
+      (template_app
+        (template_app (template_hole 9, template_var 1),
+         template_app (template_hole 8, template_var 0)),
+       template_app (template_hole 8, t_empty))),
+    ("Lazy_LList.ltake_Lazy_llist",
+     "ltake ?n (Lazy_llist ?xs) =
+      Lazy_llist
+       (%_. if ?n = 0 then None
+            else case ?xs () of None => None
+                 | Some (x, ys) => Some (x, ltake (?n - 1) ys))",
+     template_equation
+      (template_app
+        (template_app (template_hole 12, template_var 1),
+         template_app (template_hole 11, template_var 0)),
+       template_app (template_hole 11, t_empty))),
+    ("Lazy_LList.lprefix_Lazy_llist",
+     "lprefix (Lazy_llist ?xs) (Lazy_llist ?ys) =
+      (case ?xs () of None => True
+       | Some (x, xs') =>
+           case ?ys () of None => False
+           | Some (y, ys') => x = y & lprefix xs' ys')",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 8, template_app (template_hole 7, template_var 1)),
+         template_app (template_hole 7, template_var 0)),
+       template_app
+        (template_app
+          (template_app (template_hole 6, template_hole 5), t_empty),
+         template_app (template_var 1, template_hole 0)))),
+    ("Lazy_LList.lstrict_prefix_Lazy_llist",
+     "lstrict_prefix (Lazy_llist ?xs) (Lazy_llist ?ys) =
+      (case ?ys () of None => False
+       | Some (y, ys') =>
+           case ?xs () of None => True
+           | Some (x, xs') => x = y & lstrict_prefix xs' ys')",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 8, template_app (template_hole 7, template_var 1)),
+         template_app (template_hole 7, template_var 0)),
+       template_app
+        (template_app
+          (template_app (template_hole 6, template_hole 5), t_empty),
+         template_app (template_var 0, template_hole 0)))),
+    ("Lazy_LList.corec_llist_Lazy_llist",
+     "corec_llist ?IS_LNIL ?LHD ?endORmore ?LTL_end ?LTL_more ?b =
+      Lazy_llist
+       (%_. if ?IS_LNIL ?b then None
+            else Some
+                  (?LHD ?b,
+                   if ?endORmore ?b then ?LTL_end ?b
+                   else corec_llist ?IS_LNIL ?LHD ?endORmore ?LTL_end
+                         ?LTL_more (?LTL_more ?b)))",
+     template_equation
+      (template_app
+        (template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 6, template_var 5),
+                 template_var 4),
+               template_var 3),
+             template_var 2),
+           template_var 1),
+         template_var 0),
+       template_app (template_hole 5, t_empty))),
+    ("Lazy_LList.llcp_Lazy_llist",
+     "llcp (Lazy_llist ?xs) (Lazy_llist ?ys) =
+      (case ?xs () of None => 0
+       | Some (x, xs') =>
+           case ?ys () of None => 0
+           | Some (y, ys') => if x = y then eSuc (llcp xs' ys') else 0)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 8, template_app (template_hole 7, template_var 1)),
+         template_app (template_hole 7, template_var 0)),
+       template_app
+        (template_app
+          (template_app (template_hole 6, template_hole 5), t_empty),
+         template_app (template_var 1, template_hole 0)))),
+    ("Lazy_LList.llist_all2_Lazy_llist",
+     "llist_all2 ?P (Lazy_llist ?xs) (Lazy_llist ?ys) =
+      (case ?xs () of None => ?ys () = None
+       | Some (x, xs') =>
+           case ?ys () of None => False
+           | Some (y, ys') => ?P x y & llist_all2 ?P xs' ys')",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 11, template_var 2),
+                template_app (template_hole 10, template_var 1)),
+              template_app (template_hole 9, template_var 0))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_hole 8,
+                 template_app
+                  (template_app
+                    (template_hole 7,
+                     template_app (template_var 0, template_hole 6)),
+                   template_hole 5)),
+               t_empty),
+             template_app (template_var 1, template_hole 6))
+           ))),
+    ("Lazy_LList.equal_llist_Lazy_llist",
+     "equal_class.equal (Lazy_llist ?xs) (Lazy_llist ?ys) =
+      (case ?xs () of None => case ?ys () of None => True | Some a => False
+       | Some (x, xs') =>
+           case ?ys () of None => False
+           | Some (y, ys') =>
+               if x = y then equal_class.equal xs' ys' else False)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 8, template_app (template_hole 7, template_var 1)),
+         template_app (template_hole 7, template_var 0)),
+       template_app
+        (template_app
+          (template_app
+            (template_hole 6,
+             template_app
+              (template_app
+                (template_app (template_hole 6, template_hole 5), t_empty),
+               template_app (template_var 0, template_hole 3))),
+           t_empty),
+         template_app (template_var 1, template_hole 3)))),
+    ("Lazy_LList.llexord_Lazy_llist",
+     "llexord ?r (Lazy_llist ?xs) (Lazy_llist ?ys) =
+      (case ?xs () of None => True
+       | Some (x, xs') =>
+           case ?ys () of None => False
+           | Some (y, ys') => ?r x y | x = y & llexord ?r xs' ys')",
+     template_equation
+      (template_app
+        (template_app
+          (template_app (template_hole 9, template_var 2),
+           template_app (template_hole 8, template_var 1)),
+         template_app (template_hole 8, template_var 0)),
+       template_app
+        (template_app
+          (template_app (template_hole 7, template_hole 6), t_empty),
+         template_app (template_var 1, template_hole 0))))]:
+   (string * thm * template) list
+### theory "Draft.Lazy_LListMoreTemplates"
+### 0.427s elapsed time, 0.699s cpu time, 0.049s GC time
+val it = (): unit

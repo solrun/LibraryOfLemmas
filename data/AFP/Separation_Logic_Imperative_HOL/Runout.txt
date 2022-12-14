@@ -1,0 +1,1141 @@
+Loading theory "Draft.Run" (required by "Draft.RunTemplates")
+Loading theory "Draft.Templates" (required by "Draft.RunTemplates" via "Draft.ExtrEqs")
+consts
+  is_exn :: "'a option => bool"
+### No equation for constructor "None"
+consts
+  the_state :: "'a option => 'a"
+Proofs for inductive predicate(s) "run"
+  Proving monotonicity ...
+datatype template_term
+=
+     t_empty
+   | template_app of template_term * template_term
+   | template_hole of int
+   | template_var of int
+datatype sign
+= equals | greater_equals | greater_than | less_equals | less_than
+datatype template
+=
+     template_bimplication of template * template
+   | template_dunno
+   | template_equation of template_term * template_term
+   | template_implication of template list * template
+   | template_inequation of sign * template_term * template_term
+   | template_negation of template
+   | template_predicate of template_term
+constructor t_empty: template_term
+constructor template_app: template_term * template_term -> template_term
+constructor template_hole: int -> template_term
+constructor template_var: int -> template_term
+constructor equals: sign
+constructor greater_equals: sign
+constructor greater_than: sign
+constructor less_equals: sign
+constructor less_than: sign
+constructor template_bimplication: template * template -> template
+constructor template_dunno: template
+constructor template_equation: template_term * template_term -> template
+constructor template_implication: template list * template -> template
+constructor template_inequation:
+   sign * template_term * template_term -> template
+constructor template_negation: template -> template
+constructor template_predicate: template_term -> template
+val vfs = fn: term -> (indexname * typ) list * (string * typ) list
+val indexOf = fn: ''a list -> ''a -> int -> int
+val has_eq = fn: term -> bool
+val term2template = fn:
+   (indexname * typ) list -> (string * typ) list -> term -> template_term
+val lemma2predicate = fn: term -> term -> template
+val makeTemplatewithContext = fn: term -> term -> template
+val lemma2template = fn: term -> template
+val thm2template = fn: thm -> template
+val tterm2string = fn: template_term -> string
+val template2string = fn: template -> string
+val t = "height ?t <= size ?t": thm
+val th =
+   Const ("HOL.Trueprop", "bool => prop") $
+     (Const ("Orderings.ord_class.less_eq", "nat => nat => bool") $
+       (Const ("Tree.height_class.height", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree")) $
+       (Const ("Nat.size_class.size", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree"))):
+   term
+### theory "Draft.Templates"
+### 0.073s elapsed time, 0.183s cpu time, 0.000s GC time
+Loading theory "Draft.ExtrEqs" (required by "Draft.RunTemplates")
+### theory "Draft.Run"
+### 0.238s elapsed time, 0.520s cpu time, 0.029s GC time
+val eqpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Var (("_dummy_", 2), "?'a"))
+       ):
+   term Find_Theorems.criterion
+val badeqpattern = Pattern (Const ("Pure.eq", "?'a => ?'a => prop")):
+   term Find_Theorems.criterion
+val undefpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Const ("HOL.undefined", "?'a"))
+       ):
+   term Find_Theorems.criterion
+val thmpattern =
+   Pattern
+    (Const ("HOL.Trueprop", "bool => prop") $ Var (("_dummy_", 1), "bool")):
+   term Find_Theorems.criterion
+val badnames =
+   ["*nitpick*", "*Nitpick*", "*full_exhaustive*", "*_def*", "Enum.finite*",
+    "*Quickcheck*", "ATP*", "*Nunchaku*", "*Code*", "*BNF*", "*SMT*",
+    "*.*.*"]:
+   string list
+val unwanted_names =
+   [(false, Name "*nitpick*"), (false, Name "*Nitpick*"),
+    (false, Name "*full_exhaustive*"), (false, Name "*_def*"),
+    (false, Name "Enum.finite*"), (false, Name "*Quickcheck*"),
+    (false, Name "ATP*"), (false, Name "*Nunchaku*"),
+    (false, Name "*Code*"), (false, Name "*BNF*"), (false, Name "*SMT*"),
+    (false, Name "*.*.*")]:
+   (bool * term Find_Theorems.criterion) list
+val has_vars = fn: term -> bool
+val get_all_eqs = fn: string -> Proof.context -> (string * thm) list
+val get_all_thms = fn: string -> Proof.context -> (string * thm) list
+val get_noneq_thms = fn: string -> Proof.context -> (string * thm) list
+val template_eqs = fn:
+   string -> Proof.context -> (string * thm * template) list
+val template_thms = fn:
+   string -> Proof.context -> (string * thm * template) list
+### theory "Draft.ExtrEqs"
+### 0.482s elapsed time, 0.659s cpu time, 0.029s GC time
+Loading theory "Draft.RunTemplates"
+val templateLemmas =
+   [("Run.run_raiseI", "run (raise ?s) ?\<sigma> None ?r",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_hole 2,
+                 template_app (template_hole 1, template_var 2)),
+               template_var 1),
+             template_hole 0),
+           template_var 0)
+         )),
+    ("Run.run_raise_iff",
+     "run (raise ?s) ?\<sigma> ?\<sigma>' ?r = (?\<sigma>' = None)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_hole 3,
+                    template_app (template_hole 2, template_var 3)),
+                  template_var 2),
+                template_var 1),
+              template_var 0)
+            )],
+       template_equation (template_var 1, template_hole 0))),
+    ("Run.effect_run",
+     "effect ?c ?h ?h' ?r ==> run ?c (Some ?h) (Some ?h') ?r",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 2, template_var 3),
+                  template_var 2),
+                template_var 1),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 1, template_var 3),
+                 template_app (template_hole 0, template_var 2)),
+               template_app (template_hole 0, template_var 1)),
+             template_var 0)
+           ))),
+    ("Run.run_effectI",
+     "run ?c (Some ?h) (Some ?h') ?r ==> effect ?c ?h ?h' ?r",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 2, template_var 3),
+                  template_app (template_hole 1, template_var 2)),
+                template_app (template_hole 1, template_var 1)),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 0, template_var 3),
+                 template_var 2),
+               template_var 1),
+             template_var 0)
+           ))),
+    ("Run.run_complete",
+     "(!!\<sigma>' r. run ?c ?\<sigma> \<sigma>' r ==> ?thesis) ==>
+      ?thesis",
+     template_implication
+      ([template_predicate (template_app (template_hole 3, t_empty))],
+       template_predicate (template_var 0))),
+    ("Run.run_raise",
+     "[| run (raise ?s) ?\<sigma> ?\<sigma>' ?r;
+         ?\<sigma>' = None ==> ?thesis |]
+      ==> ?thesis",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_hole 3,
+                    template_app (template_hole 2, template_var 4)),
+                  template_var 3),
+                template_var 2),
+              template_var 1)
+            ),
+        template_implication
+         ([template_equation (template_var 2, template_hole 0)],
+          template_predicate (template_var 0))],
+       template_predicate (template_var 0))),
+    ("Run.run_exn",
+     "[| run ?f ?\<sigma> ?\<sigma>' ?r; is_exn ?\<sigma>;
+         ?\<sigma>' = ?\<sigma> ==> ?thesis |]
+      ==> ?thesis",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 2, template_var 4),
+                  template_var 3),
+                template_var 2),
+              template_var 1)
+            ),
+        template_predicate (template_app (template_hole 1, template_var 3)),
+        template_implication
+         ([template_equation (template_var 2, template_var 3)],
+          template_predicate (template_var 0))],
+       template_predicate (template_var 0))),
+    ("Run.success_run",
+     "[| success ?f ?h; !!h' r. run ?f (Some ?h) (Some h') r ==> ?thesis |]
+      ==> ?thesis",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 4, template_var 2),
+              template_var 1)
+            ),
+        template_predicate (template_app (template_hole 3, t_empty))],
+       template_predicate (template_var 0))),
+    ("Run.run_detI",
+     "[| run ?c (Some ?h) (Some ?h') ?r; run ?c (Some ?h) ?\<sigma> ?s |]
+      ==> ?\<sigma> = Some ?h' & ?r = ?s",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 4, template_var 5),
+                  template_app (template_hole 3, template_var 4)),
+                template_app (template_hole 3, template_var 3)),
+              template_var 2)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 4, template_var 5),
+                  template_app (template_hole 3, template_var 4)),
+                template_var 1),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 2,
+               template_app
+                (template_app (template_hole 1, template_var 1),
+                 template_app (template_hole 3, template_var 3))),
+             template_app
+              (template_app (template_hole 0, template_var 2),
+               template_var 0))
+           ))),
+    ("Run.run_freeze",
+     "[| run (Array.freeze ?a) ?\<sigma> ?\<sigma>' ?r; ~ is_exn ?\<sigma>;
+         [| ?\<sigma>' = ?\<sigma>;
+            ?r = Array.get (the_state ?\<sigma>) ?a |]
+         ==> ?thesis |]
+      ==> ?thesis",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_hole 7,
+                    template_app (template_hole 6, template_var 4)),
+                  template_var 3),
+                template_var 2),
+              template_var 1)
+            ),
+        template_negation
+         (
+            template_predicate
+             (template_app (template_hole 4, template_var 3))
+            ),
+        template_implication
+         ([template_equation (template_var 2, template_var 3)],
+          template_implication
+           ([template_equation
+              (template_var 1,
+               template_app
+                (template_app
+                  (template_hole 1,
+                   template_app (template_hole 0, template_var 3)),
+                 template_var 4))],
+            template_predicate (template_var 0)))],
+       template_predicate (template_var 0))),
+    ("Run.runE",
+     "[| run (?f >>= ?g) ?\<sigma> ?\<sigma>'' ?r;
+         !!\<sigma>' r'.
+            [| run ?f ?\<sigma> \<sigma>' r';
+               run (?g r') \<sigma>' ?\<sigma>'' ?r |]
+            ==> ?thesis |]
+      ==> ?thesis",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_hole 4,
+                    template_app
+                     (template_app (template_hole 3, template_var 5),
+                      template_var 4)),
+                  template_var 3),
+                template_var 2),
+              template_var 1)
+            ),
+        template_predicate (template_app (template_hole 2, t_empty))],
+       template_predicate (template_var 0))),
+    ("Run.runE'",
+     "[| run (?f >>= (%_. ?g)) ?\<sigma> ?\<sigma>'' ?res;
+         !!\<sigma>t rt.
+            [| run ?f ?\<sigma> \<sigma>t rt;
+               run ?g \<sigma>t ?\<sigma>'' ?res |]
+            ==> ?thesis |]
+      ==> ?thesis",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_hole 4,
+                    template_app
+                     (template_app (template_hole 3, template_var 5),
+                      t_empty)),
+                  template_var 3),
+                template_var 2),
+              template_var 1)
+            ),
+        template_predicate (template_app (template_hole 2, t_empty))],
+       template_predicate (template_var 0))),
+    ("Run.run_update",
+     "[| run (?p := ?x) ?\<sigma> ?\<sigma>' ?r; ~ is_exn ?\<sigma>;
+         [| ?\<sigma>' = Some (Ref.set ?p ?x (the_state ?\<sigma>));
+            ?r = () |]
+         ==> ?thesis |]
+      ==> ?thesis",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_hole 9,
+                    template_app
+                     (template_app (template_hole 8, template_var 5),
+                      template_var 4)),
+                  template_var 3),
+                template_var 2),
+              template_var 1)
+            ),
+        template_negation
+         (
+            template_predicate
+             (template_app (template_hole 6, template_var 3))
+            ),
+        template_implication
+         ([template_equation
+            (template_var 2,
+             template_app
+              (template_hole 4,
+               template_app
+                (template_app
+                  (template_app (template_hole 3, template_var 5),
+                   template_var 4),
+                 template_app (template_hole 2, template_var 3))))],
+          template_implication
+           ([template_equation (template_var 1, template_hole 0)],
+            template_predicate (template_var 0)))],
+       template_predicate (template_var 0))),
+    ("Run.run_heap",
+     "[| run (Heap_Monad.heap ?f) ?\<sigma> ?\<sigma>' ?res;
+         ~ is_exn ?\<sigma>;
+         [| ?\<sigma>' = Some (snd (?f (the_state ?\<sigma>)));
+            ?res = fst (?f (the_state ?\<sigma>)) |]
+         ==> ?thesis |]
+      ==> ?thesis",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_hole 9,
+                    template_app (template_hole 8, template_var 4)),
+                  template_var 3),
+                template_var 2),
+              template_var 1)
+            ),
+        template_negation
+         (
+            template_predicate
+             (template_app (template_hole 6, template_var 3))
+            ),
+        template_implication
+         ([template_equation
+            (template_var 2,
+             template_app
+              (template_hole 4,
+               template_app
+                (template_hole 3,
+                 template_app
+                  (template_var 4,
+                   template_app (template_hole 2, template_var 3)))))],
+          template_implication
+           ([template_equation
+              (template_var 1,
+               template_app
+                (template_hole 0,
+                 template_app
+                  (template_var 4,
+                   template_app (template_hole 2, template_var 3))))],
+            template_predicate (template_var 0)))],
+       template_predicate (template_var 0))),
+    ("Run.run_return",
+     "[| run (return ?x) ?\<sigma> ?\<sigma>' ?r;
+         [| ?r = ?x; ?\<sigma>' = ?\<sigma>; ~ is_exn ?\<sigma> |]
+         ==> ?thesis;
+         ?\<sigma> = None ==> ?thesis |]
+      ==> ?thesis",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_hole 6,
+                    template_app (template_hole 5, template_var 4)),
+                  template_var 3),
+                template_var 2),
+              template_var 1)
+            ),
+        template_implication
+         ([template_equation (template_var 1, template_var 4)],
+          template_implication
+           ([template_equation (template_var 2, template_var 3)],
+            template_implication
+             ([template_negation
+                (
+                   template_predicate
+                    (template_app (template_hole 1, template_var 3))
+                   )],
+              template_predicate (template_var 0)))),
+        template_implication
+         ([template_equation (template_var 3, template_hole 0)],
+          template_predicate (template_var 0))],
+       template_predicate (template_var 0))),
+    ("Run.run_lookup",
+     "[| run (!?p) ?\<sigma> ?\<sigma>' ?r; ~ is_exn ?\<sigma>;
+         [| ~ is_exn ?\<sigma>; ?\<sigma>' = ?\<sigma>;
+            ?r = Ref.get (the_state ?\<sigma>) ?p |]
+         ==> ?thesis |]
+      ==> ?thesis",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_hole 7,
+                    template_app (template_hole 6, template_var 4)),
+                  template_var 3),
+                template_var 2),
+              template_var 1)
+            ),
+        template_negation
+         (
+            template_predicate
+             (template_app (template_hole 4, template_var 3))
+            ),
+        template_implication
+         ([template_negation
+            (
+               template_predicate
+                (template_app (template_hole 4, template_var 3))
+               )],
+          template_implication
+           ([template_equation (template_var 2, template_var 3)],
+            template_implication
+             ([template_equation
+                (template_var 1,
+                 template_app
+                  (template_app
+                    (template_hole 1,
+                     template_app (template_hole 0, template_var 3)),
+                   template_var 4))],
+              template_predicate (template_var 0))))],
+       template_predicate (template_var 0))),
+    ("Run.run_length",
+     "[| run (Array.len ?a) ?\<sigma> ?\<sigma>' ?r; ~ is_exn ?\<sigma>;
+         [| ~ is_exn ?\<sigma>; ?\<sigma>' = ?\<sigma>;
+            ?r = Array.length (the_state ?\<sigma>) ?a |]
+         ==> ?thesis |]
+      ==> ?thesis",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_hole 7,
+                    template_app (template_hole 6, template_var 4)),
+                  template_var 3),
+                template_var 2),
+              template_var 1)
+            ),
+        template_negation
+         (
+            template_predicate
+             (template_app (template_hole 4, template_var 3))
+            ),
+        template_implication
+         ([template_negation
+            (
+               template_predicate
+                (template_app (template_hole 4, template_var 3))
+               )],
+          template_implication
+           ([template_equation (template_var 2, template_var 3)],
+            template_implication
+             ([template_equation
+                (template_var 1,
+                 template_app
+                  (template_app
+                    (template_hole 1,
+                     template_app (template_hole 0, template_var 3)),
+                   template_var 4))],
+              template_predicate (template_var 0))))],
+       template_predicate (template_var 0))),
+    ("Run.run_if",
+     "[| run (if ?c then ?t else ?e) ?h ?h' ?r;
+         [| ?c; run ?t ?h ?h' ?r |] ==> ?thesis;
+         [| ~ ?c; run ?e ?h ?h' ?r |] ==> ?thesis |]
+      ==> ?thesis",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_hole 2,
+                    template_app
+                     (template_app
+                       (template_app (template_hole 1, template_var 6),
+                        template_var 5),
+                      template_var 4)),
+                  template_var 3),
+                template_var 2),
+              template_var 1)
+            ),
+        template_implication
+         ([template_predicate (template_var 6)],
+          template_implication
+           ([template_predicate
+              (
+                 template_app
+                  (template_app
+                    (template_app
+                      (template_app (template_hole 2, template_var 5),
+                       template_var 3),
+                     template_var 2),
+                   template_var 1)
+                 )],
+            template_predicate (template_var 0))),
+        template_implication
+         ([template_negation (template_predicate (template_var 6))],
+          template_implication
+           ([template_predicate
+              (
+                 template_app
+                  (template_app
+                    (template_app
+                      (template_app (template_hole 2, template_var 4),
+                       template_var 3),
+                     template_var 2),
+                   template_var 1)
+                 )],
+            template_predicate (template_var 0)))],
+       template_predicate (template_var 0))),
+    ("Run.run_effectE",
+     "[| run ?c ?\<sigma> ?\<sigma>' ?r; ~ is_exn ?\<sigma>';
+         !!h h'.
+            [| ?\<sigma> = Some h; ?\<sigma>' = Some h';
+               effect ?c h h' ?r |]
+            ==> ?thesis |]
+      ==> ?thesis",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 6, template_var 4),
+                  template_var 3),
+                template_var 2),
+              template_var 1)
+            ),
+        template_negation
+         (
+            template_predicate
+             (template_app (template_hole 4, template_var 2))
+            ),
+        template_predicate (template_app (template_hole 3, t_empty))],
+       template_predicate (template_var 0))),
+    ("Run.run_new_ref",
+     "[| run (ref ?x) ?\<sigma> ?\<sigma>' ?r; ~ is_exn ?\<sigma>;
+         [| ?\<sigma>' = Some (snd (Ref.alloc ?x (the_state ?\<sigma>)));
+            ?r = fst (Ref.alloc ?x (the_state ?\<sigma>));
+            Ref.get (the_state ?\<sigma>') ?r = ?x |]
+         ==> ?thesis |]
+      ==> ?thesis",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_hole 12,
+                    template_app (template_hole 11, template_var 4)),
+                  template_var 3),
+                template_var 2),
+              template_var 1)
+            ),
+        template_negation
+         (
+            template_predicate
+             (template_app (template_hole 9, template_var 3))
+            ),
+        template_implication
+         ([template_equation
+            (template_var 2,
+             template_app
+              (template_hole 7,
+               template_app
+                (template_hole 6,
+                 template_app
+                  (template_app (template_hole 5, template_var 4),
+                   template_app (template_hole 4, template_var 3)))))],
+          template_implication
+           ([template_equation
+              (template_var 1,
+               template_app
+                (template_hole 2,
+                 template_app
+                  (template_app (template_hole 5, template_var 4),
+                   template_app (template_hole 4, template_var 3))))],
+            template_implication
+             ([template_equation
+                (template_app
+                  (template_app
+                    (template_hole 0,
+                     template_app (template_hole 4, template_var 2)),
+                   template_var 1),
+                 template_var 4)],
+              template_predicate (template_var 0))))],
+       template_predicate (template_var 0))),
+    ("Run.run_of_list",
+     "[| run (Array.of_list ?xs) ?\<sigma> ?\<sigma>' ?r;
+         ~ is_exn ?\<sigma>;
+         [| ?\<sigma>' = Some (snd (Array.alloc ?xs (the_state ?\<sigma>)));
+            ?r = fst (Array.alloc ?xs (the_state ?\<sigma>));
+            Array.get (the_state ?\<sigma>') ?r = ?xs |]
+         ==> ?thesis |]
+      ==> ?thesis",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_hole 12,
+                    template_app (template_hole 11, template_var 4)),
+                  template_var 3),
+                template_var 2),
+              template_var 1)
+            ),
+        template_negation
+         (
+            template_predicate
+             (template_app (template_hole 9, template_var 3))
+            ),
+        template_implication
+         ([template_equation
+            (template_var 2,
+             template_app
+              (template_hole 7,
+               template_app
+                (template_hole 6,
+                 template_app
+                  (template_app (template_hole 5, template_var 4),
+                   template_app (template_hole 4, template_var 3)))))],
+          template_implication
+           ([template_equation
+              (template_var 1,
+               template_app
+                (template_hole 2,
+                 template_app
+                  (template_app (template_hole 5, template_var 4),
+                   template_app (template_hole 4, template_var 3))))],
+            template_implication
+             ([template_equation
+                (template_app
+                  (template_app
+                    (template_hole 0,
+                     template_app (template_hole 4, template_var 2)),
+                   template_var 1),
+                 template_var 4)],
+              template_predicate (template_var 0))))],
+       template_predicate (template_var 0))),
+    ("Run.run_detE",
+     "[| run ?c ?\<sigma> ?\<sigma>' ?r; run ?c ?\<sigma> ?\<tau> ?s;
+         ~ is_exn ?\<sigma>;
+         [| is_exn ?\<sigma>'; ?\<sigma>' = ?\<tau> |] ==> ?thesis;
+         [| ~ is_exn ?\<sigma>'; ?\<sigma>' = ?\<tau>; ?r = ?s |]
+         ==> ?thesis |]
+      ==> ?thesis",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 4, template_var 6),
+                  template_var 5),
+                template_var 4),
+              template_var 3)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 4, template_var 6),
+                  template_var 5),
+                template_var 2),
+              template_var 1)
+            ),
+        template_negation
+         (
+            template_predicate
+             (template_app (template_hole 2, template_var 5))
+            ),
+        template_implication
+         ([template_predicate
+            (template_app (template_hole 2, template_var 4))],
+          template_implication
+           ([template_equation (template_var 4, template_var 2)],
+            template_predicate (template_var 0))),
+        template_implication
+         ([template_negation
+            (
+               template_predicate
+                (template_app (template_hole 2, template_var 4))
+               )],
+          template_implication
+           ([template_equation (template_var 4, template_var 2)],
+            template_implication
+             ([template_equation (template_var 3, template_var 1)],
+              template_predicate (template_var 0))))],
+       template_predicate (template_var 0))),
+    ("Run.run_new_array",
+     "[| run (Array.new ?n ?x) ?\<sigma> ?\<sigma>' ?r; ~ is_exn ?\<sigma>;
+         [| ?\<sigma>' =
+            Some
+             (snd (Array.alloc (replicate ?n ?x) (the_state ?\<sigma>)));
+            ?r = fst (Array.alloc (replicate ?n ?x) (the_state ?\<sigma>));
+            Array.get (the_state ?\<sigma>') ?r = replicate ?n ?x |]
+         ==> ?thesis |]
+      ==> ?thesis",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_hole 13,
+                    template_app
+                     (template_app (template_hole 12, template_var 5),
+                      template_var 4)),
+                  template_var 3),
+                template_var 2),
+              template_var 1)
+            ),
+        template_negation
+         (
+            template_predicate
+             (template_app (template_hole 10, template_var 3))
+            ),
+        template_implication
+         ([template_equation
+            (template_var 2,
+             template_app
+              (template_hole 8,
+               template_app
+                (template_hole 7,
+                 template_app
+                  (template_app
+                    (template_hole 6,
+                     template_app
+                      (template_app (template_hole 5, template_var 5),
+                       template_var 4)),
+                   template_app (template_hole 4, template_var 3)))))],
+          template_implication
+           ([template_equation
+              (template_var 1,
+               template_app
+                (template_hole 2,
+                 template_app
+                  (template_app
+                    (template_hole 6,
+                     template_app
+                      (template_app (template_hole 5, template_var 5),
+                       template_var 4)),
+                   template_app (template_hole 4, template_var 3))))],
+            template_implication
+             ([template_equation
+                (template_app
+                  (template_app
+                    (template_hole 0,
+                     template_app (template_hole 4, template_var 2)),
+                   template_var 1),
+                 template_app
+                  (template_app (template_hole 5, template_var 5),
+                   template_var 4))],
+              template_predicate (template_var 0))))],
+       template_predicate (template_var 0))),
+    ("Run.run_case_option",
+     "[| run (case ?x of None => ?n | Some y => ?s y) ?\<sigma> ?\<sigma>'
+          ?r;
+         ~ is_exn ?\<sigma>;
+         [| ?x = None; run ?n ?\<sigma> ?\<sigma>' ?r |] ==> ?thesis;
+         !!y. [| ?x = Some y; run (?s y) ?\<sigma> ?\<sigma>' ?r |]
+              ==> ?thesis |]
+      ==> ?thesis",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_hole 7,
+                    template_app
+                     (template_app
+                       (template_app (template_hole 6, template_var 6),
+                        t_empty),
+                      template_var 4)),
+                  template_var 3),
+                template_var 2),
+              template_var 1)
+            ),
+        template_negation
+         (
+            template_predicate
+             (template_app (template_hole 4, template_var 3))
+            ),
+        template_implication
+         ([template_equation (template_var 4, template_hole 2)],
+          template_implication
+           ([template_predicate
+              (
+                 template_app
+                  (template_app
+                    (template_app
+                      (template_app (template_hole 7, template_var 6),
+                       template_var 3),
+                     template_var 2),
+                   template_var 1)
+                 )],
+            template_predicate (template_var 0))),
+        template_predicate (template_app (template_hole 1, t_empty))],
+       template_predicate (template_var 0))),
+    ("Run.run_make",
+     "[| run (Array.make ?n ?f) ?\<sigma> ?\<sigma>' ?r; ~ is_exn ?\<sigma>;
+         [| ?\<sigma>' =
+            Some
+             (snd (Array.alloc (map ?f [0..<?n]) (the_state ?\<sigma>)));
+            ?r = fst (Array.alloc (map ?f [0..<?n]) (the_state ?\<sigma>));
+            Array.get (the_state ?\<sigma>') ?r = map ?f [0..<?n] |]
+         ==> ?thesis |]
+      ==> ?thesis",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_hole 15,
+                    template_app
+                     (template_app (template_hole 14, template_var 5),
+                      template_var 4)),
+                  template_var 3),
+                template_var 2),
+              template_var 1)
+            ),
+        template_negation
+         (
+            template_predicate
+             (template_app (template_hole 12, template_var 3))
+            ),
+        template_implication
+         ([template_equation
+            (template_var 2,
+             template_app
+              (template_hole 10,
+               template_app
+                (template_hole 9,
+                 template_app
+                  (template_app
+                    (template_hole 8,
+                     template_app
+                      (template_app (template_hole 7, template_var 4),
+                       template_app
+                        (template_app (template_hole 6, template_hole 5),
+                         template_var 5))),
+                   template_app (template_hole 4, template_var 3)))))],
+          template_implication
+           ([template_equation
+              (template_var 1,
+               template_app
+                (template_hole 2,
+                 template_app
+                  (template_app
+                    (template_hole 8,
+                     template_app
+                      (template_app (template_hole 7, template_var 4),
+                       template_app
+                        (template_app (template_hole 6, template_hole 5),
+                         template_var 5))),
+                   template_app (template_hole 4, template_var 3))))],
+            template_implication
+             ([template_equation
+                (template_app
+                  (template_app
+                    (template_hole 0,
+                     template_app (template_hole 4, template_var 2)),
+                   template_var 1),
+                 template_app
+                  (template_app (template_hole 7, template_var 4),
+                   template_app
+                    (template_app (template_hole 6, template_hole 5),
+                     template_var 5)))],
+              template_predicate (template_var 0))))],
+       template_predicate (template_var 0))),
+    ("Run.run_upd",
+     "[| run (Array.upd ?i ?x ?a) ?\<sigma> ?\<sigma>' ?res;
+         ~ is_exn ?\<sigma>;
+         [| ~ ?i < Array.length (the_state ?\<sigma>) ?a;
+            ?\<sigma>' = None |]
+         ==> ?thesis;
+         [| ?i < Array.length (the_state ?\<sigma>) ?a;
+            ?\<sigma>' = Some (Array.update ?a ?i ?x (the_state ?\<sigma>));
+            ?res = ?a |]
+         ==> ?thesis |]
+      ==> ?thesis",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_hole 11,
+                    template_app
+                     (template_app
+                       (template_app (template_hole 10, template_var 6),
+                        template_var 5),
+                      template_var 4)),
+                  template_var 3),
+                template_var 2),
+              template_var 1)
+            ),
+        template_negation
+         (
+            template_predicate
+             (template_app (template_hole 8, template_var 3))
+            ),
+        template_implication
+         ([template_negation
+            (
+               template_inequation
+                (less_than, template_var 6,
+                 template_app
+                  (template_app
+                    (template_hole 6,
+                     template_app (template_hole 5, template_var 3)),
+                   template_var 4))
+               )],
+          template_implication
+           ([template_equation (template_var 2, template_hole 3)],
+            template_predicate (template_var 0))),
+        template_implication
+         ([template_inequation
+            (less_than, template_var 6,
+             template_app
+              (template_app
+                (template_hole 6,
+                 template_app (template_hole 5, template_var 3)),
+               template_var 4))],
+          template_implication
+           ([template_equation
+              (template_var 2,
+               template_app
+                (template_hole 2,
+                 template_app
+                  (template_app
+                    (template_app
+                      (template_app (template_hole 1, template_var 4),
+                       template_var 6),
+                     template_var 5),
+                   template_app (template_hole 5, template_var 3))))],
+            template_implication
+             ([template_equation (template_var 1, template_var 4)],
+              template_predicate (template_var 0))))],
+       template_predicate (template_var 0))),
+    ("Run.run_nth",
+     "[| run (Array.nth ?a ?i) ?\<sigma> ?\<sigma>' ?r; ~ is_exn ?\<sigma>;
+         [| ~ is_exn ?\<sigma>; ?i < Array.length (the_state ?\<sigma>) ?a;
+            ?r = Array.get (the_state ?\<sigma>) ?a ! ?i;
+            ?\<sigma>' = ?\<sigma> |]
+         ==> ?thesis;
+         [| ~ ?i < Array.length (the_state ?\<sigma>) ?a;
+            ?\<sigma>' = None |]
+         ==> ?thesis |]
+      ==> ?thesis",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_hole 11,
+                    template_app
+                     (template_app (template_hole 10, template_var 5),
+                      template_var 4)),
+                  template_var 3),
+                template_var 2),
+              template_var 1)
+            ),
+        template_negation
+         (
+            template_predicate
+             (template_app (template_hole 8, template_var 3))
+            ),
+        template_implication
+         ([template_negation
+            (
+               template_predicate
+                (template_app (template_hole 8, template_var 3))
+               )],
+          template_implication
+           ([template_inequation
+              (less_than, template_var 4,
+               template_app
+                (template_app
+                  (template_hole 6,
+                   template_app (template_hole 5, template_var 3)),
+                 template_var 5))],
+            template_implication
+             ([template_equation
+                (template_var 1,
+                 template_app
+                  (template_app
+                    (template_hole 3,
+                     template_app
+                      (template_app
+                        (template_hole 2,
+                         template_app (template_hole 5, template_var 3)),
+                       template_var 5)),
+                   template_var 4))],
+              template_implication
+               ([template_equation (template_var 2, template_var 3)],
+                template_predicate (template_var 0))))),
+        template_implication
+         ([template_negation
+            (
+               template_inequation
+                (less_than, template_var 4,
+                 template_app
+                  (template_app
+                    (template_hole 6,
+                     template_app (template_hole 5, template_var 3)),
+                   template_var 5))
+               )],
+          template_implication
+           ([template_equation (template_var 2, template_hole 0)],
+            template_predicate (template_var 0)))],
+       template_predicate (template_var 0)))]:
+   (string * thm * template) list
+### theory "Draft.RunTemplates"
+### 0.391s elapsed time, 0.521s cpu time, 0.062s GC time
+val it = (): unit

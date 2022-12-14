@@ -1,0 +1,4047 @@
+Loading theory "Draft.Resource" (required by "Draft.ConverterTemplates" via "Draft.Converter")
+Loading theory "HOL-Library.BigO" (required by "Draft.ConverterTemplates" via "Draft.ExtrEqs")
+Loading theory "Draft.Templates" (required by "Draft.ConverterTemplates" via "Draft.ExtrEqs")
+datatype template_term
+=
+     t_empty
+   | template_app of template_term * template_term
+   | template_hole of int
+   | template_var of int
+datatype sign
+= equals | greater_equals | greater_than | less_equals | less_than
+datatype template
+=
+     template_bimplication of template * template
+   | template_dunno
+   | template_equation of template_term * template_term
+   | template_implication of template list * template
+   | template_inequation of sign * template_term * template_term
+   | template_negation of template
+   | template_predicate of template_term
+constructor t_empty: template_term
+constructor template_app: template_term * template_term -> template_term
+constructor template_hole: int -> template_term
+constructor template_var: int -> template_term
+constructor equals: sign
+constructor greater_equals: sign
+constructor greater_than: sign
+constructor less_equals: sign
+constructor less_than: sign
+constructor template_bimplication: template * template -> template
+constructor template_dunno: template
+constructor template_equation: template_term * template_term -> template
+constructor template_implication: template list * template -> template
+constructor template_inequation:
+   sign * template_term * template_term -> template
+constructor template_negation: template -> template
+constructor template_predicate: template_term -> template
+val vfs = fn: term -> (indexname * typ) list * (string * typ) list
+val indexOf = fn: ''a list -> ''a -> int -> int
+val has_eq = fn: term -> bool
+val term2template = fn:
+   (indexname * typ) list -> (string * typ) list -> term -> template_term
+val lemma2predicate = fn: term -> term -> template
+val makeTemplatewithContext = fn: term -> term -> template
+val lemma2template = fn: term -> template
+val thm2template = fn: thm -> template
+val tterm2string = fn: template_term -> string
+val template2string = fn: template -> string
+val t = "height ?t <= size ?t": thm
+val th =
+   Const ("HOL.Trueprop", "bool => prop") $
+     (Const ("Orderings.ord_class.less_eq", "nat => nat => bool") $
+       (Const ("Tree.height_class.height", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree")) $
+       (Const ("Nat.size_class.size", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree"))):
+   term
+### theory "Draft.Templates"
+### 0.066s elapsed time, 0.250s cpu time, 0.000s GC time
+### theory "HOL-Library.BigO"
+### 0.649s elapsed time, 1.434s cpu time, 0.104s GC time
+Loading theory "Draft.ExtrEqs" (required by "Draft.ConverterTemplates")
+consts
+  map_resource :: "('a', 'b) resource => ('a, 'b') resource"
+Proofs for coinductive predicate(s) "rel_resource"
+  Proving monotonicity ...
+Proofs for coinductive predicate(s) "lossless_resource"
+  Proving monotonicity ...
+consts
+  resource_of_oracle :: "'s => ('a, 'b) resource"
+consts
+  parallel_resource ::
+    "('a, 'b) resource => ('c, 'd) resource => ('a + 'c, 'b + 'd) resource"
+Proofs for coinductive predicate(s) "WT_resource"
+  Proving monotonicity ...
+val eqpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Var (("_dummy_", 2), "?'a"))
+       ):
+   term Find_Theorems.criterion
+val badeqpattern = Pattern (Const ("Pure.eq", "?'a => ?'a => prop")):
+   term Find_Theorems.criterion
+val undefpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Const ("HOL.undefined", "?'a"))
+       ):
+   term Find_Theorems.criterion
+val thmpattern =
+   Pattern
+    (Const ("HOL.Trueprop", "bool => prop") $ Var (("_dummy_", 1), "bool")):
+   term Find_Theorems.criterion
+val badnames =
+   ["*nitpick*", "*Nitpick*", "*full_exhaustive*", "*_def*", "Enum.finite*",
+    "*Quickcheck*", "ATP*", "*Nunchaku*", "*Code*", "*BNF*", "*SMT*",
+    "*.*.*"]:
+   string list
+val unwanted_names =
+   [(false, Name "*nitpick*"), (false, Name "*Nitpick*"),
+    (false, Name "*full_exhaustive*"), (false, Name "*_def*"),
+    (false, Name "Enum.finite*"), (false, Name "*Quickcheck*"),
+    (false, Name "ATP*"), (false, Name "*Nunchaku*"),
+    (false, Name "*Code*"), (false, Name "*BNF*"), (false, Name "*SMT*"),
+    (false, Name "*.*.*")]:
+   (bool * term Find_Theorems.criterion) list
+val has_vars = fn: term -> bool
+val get_all_eqs = fn: string -> Proof.context -> (string * thm) list
+val get_all_thms = fn: string -> Proof.context -> (string * thm) list
+val get_noneq_thms = fn: string -> Proof.context -> (string * thm) list
+val template_eqs = fn:
+   string -> Proof.context -> (string * thm * template) list
+val template_thms = fn:
+   string -> Proof.context -> (string * thm * template) list
+### theory "Draft.ExtrEqs"
+### 0.502s elapsed time, 1.038s cpu time, 0.112s GC time
+### theory "Draft.Resource"
+### 1.379s elapsed time, 2.747s cpu time, 0.216s GC time
+Loading theory "Draft.Converter" (required by "Draft.ConverterTemplates")
+consts
+  map_converter ::
+    "('a', 'b, 'out, 'in') converter => ('a, 'b', 'out', 'in) converter"
+Proofs for inductive predicate(s) "outsp_converter"
+  Proving monotonicity ...
+Proofs for inductive predicate(s) "resultsp_converter"
+  Proving monotonicity ...
+Proofs for coinductive predicate(s) "rel_converter"
+  Proving monotonicity ...
+Proofs for inductive predicate(s) "pred_converter"
+  Proving monotonicity ...
+Proofs for coinductive predicate(s) "WT_converter"
+  Proving monotonicity ...
+Proofs for coinductive predicate(s) "plossless_converter"
+  Proving monotonicity ...
+consts
+  converter_of_callee :: "'s => ('a, 'b, 'out, 'in) converter"
+consts
+  parallel_converter ::
+    "('a, 'b, 'out, 'in) converter
+     => ('c, 'd, 'out, 'in) converter
+        => ('a + 'c, 'b + 'd, 'out, 'in) converter"
+consts
+  id_converter :: "('a, 'b, 'a, 'b) converter"
+consts
+  parallel_converter2 ::
+    "('a, 'b, 'out, 'in) converter
+     => ('c, 'd, 'out', 'in') converter
+        => ('a + 'c, 'b + 'd, 'out + 'out', 'in + 'in') converter"
+consts
+  left_interface ::
+    "('a, 'b, 'out, 'in) converter
+     => ('a, 'b, 'out + 'out', 'in + 'in') converter"
+consts
+  right_interface ::
+    "('a, 'b, 'out, 'in) converter
+     => ('a, 'b, 'out' + 'out, 'in' + 'in) converter"
+consts
+  converter_of_resource :: "('a, 'b) resource => ('a, 'b, 'c, 'd) converter"
+consts
+  restrict_converter ::
+    "('a, 'b, 'c, 'd) converter => ('a, 'b, 'c, 'd) converter"
+consts
+  attach ::
+    "('a, 'b, 'out, 'in) converter
+     => ('out, 'in) resource => ('a, 'b) resource"
+consts
+  comp_converter ::
+    "('a, 'b, 'out, 'in) converter
+     => ('out, 'in, 'out', 'in') converter
+        => ('a, 'b, 'out', 'in') converter"
+Proofs for coinductive predicate(s) "interaction_any_bounded_converter"
+  Proving monotonicity ...
+### theory "Draft.Converter"
+### 3.704s elapsed time, 4.100s cpu time, 0.611s GC time
+Loading theory "Draft.ConverterTemplates"
+val templateLemmas =
+   [("Converter.interaction_any_bounded_converter_trivial",
+     "interaction_any_bounded_converter ?conv \<infinity>",
+     template_predicate
+      (
+         template_app
+          (template_app (template_hole 1, template_var 0), template_hole 0)
+         )),
+    ("Converter.WT_converter_id",
+     "?\<I>, ?\<I> \<turnstile>\<^sub>C id_converter \<surd>",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_app (template_hole 1, template_var 0),
+             template_var 0),
+           template_hole 0)
+         )),
+    ("Converter.WT_converter_\<I>_full",
+     "\<I>_full, \<I>_full \<turnstile>\<^sub>C ?conv \<surd>",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_app (template_hole 2, template_hole 1),
+             template_hole 0),
+           template_var 0)
+         )),
+    ("Converter.WT_converter_bot1",
+     "\<bottom>, ?\<I> \<turnstile>\<^sub>C ?conv \<surd>",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_app (template_hole 1, template_hole 0),
+             template_var 1),
+           template_var 0)
+         )),
+    ("Converter.WT_fail_converter",
+     "?\<I>, ?\<I>' \<turnstile>\<^sub>C fail_converter \<surd>",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_app (template_hole 1, template_var 1),
+             template_var 0),
+           template_hole 0)
+         )),
+    ("Converter.interaction_any_bounded_converter_converter_of_resource'",
+     "interaction_any_bounded_converter (converter_of_resource ?res) 0",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_hole 2,
+             template_app (template_hole 1, template_var 0)),
+           template_hole 0)
+         )),
+    ("Converter.interaction_any_bounded_converter_converter_of_resource",
+     "interaction_any_bounded_converter (converter_of_resource ?res) ?n",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_hole 1,
+             template_app (template_hole 0, template_var 1)),
+           template_var 0)
+         )),
+    ("Converter.plossless_id_converter",
+     "plossless_converter ?\<I> ?\<I> id_converter",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_app (template_hole 1, template_var 0),
+             template_var 0),
+           template_hole 0)
+         )),
+    ("Converter.plossless_converter_bot1",
+     "plossless_converter \<bottom> ?\<I> ?conv",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_app (template_hole 1, template_hole 0),
+             template_var 1),
+           template_var 0)
+         )),
+    ("Converter.plossless_fail_converterI",
+     "plossless_converter \<bottom> ?\<I>' fail_converter",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_app (template_hole 2, template_hole 1),
+             template_var 0),
+           template_hole 0)
+         )),
+    ("Converter.callee_invariant_on_run_resource",
+     "callee_invariant_on run_resource (WT_resource ?\<I>) ?\<I>",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_app (template_hole 2, template_hole 1),
+             template_app (template_hole 0, template_var 0)),
+           template_var 0)
+         )),
+    ("Converter.attach_id_converter", "attach id_converter ?res = ?res",
+     template_equation
+      (template_app
+        (template_app (template_hole 1, template_hole 0), template_var 0),
+       template_var 0)),
+    ("Converter.converter_of_callee_id_oracle",
+     "converter_of_callee id_oracle ?s = id_converter",
+     template_equation
+      (template_app
+        (template_app (template_hole 2, template_hole 1), template_var 0),
+       template_hole 0)),
+    ("Converter.comp_converter_id_left",
+     "comp_converter id_converter ?conv = ?conv",
+     template_equation
+      (template_app
+        (template_app (template_hole 1, template_hole 0), template_var 0),
+       template_var 0)),
+    ("Converter.comp_converter_id_right",
+     "comp_converter ?conv id_converter = ?conv",
+     template_equation
+      (template_app
+        (template_app (template_hole 1, template_var 0), template_hole 0),
+       template_var 0)),
+    ("Converter.fail_converter_sel",
+     "run_converter fail_converter ?a = Fail",
+     template_equation
+      (template_app
+        (template_app (template_hole 2, template_hole 1), template_var 0),
+       template_hole 0)),
+    ("Converter.attach_callee_id_oracle",
+     "attach_callee id_oracle ?oracle = \<dagger>?oracle",
+     template_equation
+      (template_app
+        (template_app (template_hole 2, template_hole 1), template_var 0),
+       template_app (template_hole 0, template_var 0))),
+    ("Converter.id_converter_parametric",
+     "rel_converter ?A ?B ?A ?B id_converter id_converter",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_app (template_hole 2, template_var 1),
+                   template_var 0),
+                 template_var 1),
+               template_var 0),
+             template_hole 1),
+           template_hole 0)
+         )),
+    ("Converter.fail_converter_parametric",
+     "rel_converter ?A ?B ?C ?R fail_converter fail_converter",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_app (template_hole 2, template_var 3),
+                   template_var 2),
+                 template_var 1),
+               template_var 0),
+             template_hole 1),
+           template_hole 0)
+         )),
+    ("Converter.raw_converter_invariant_run_converter",
+     "raw_converter_invariant ?\<I> ?\<I>' run_converter
+       (WT_converter ?\<I> ?\<I>')",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 2, template_var 1),
+               template_var 0),
+             template_hole 1),
+           template_app
+            (template_app (template_hole 0, template_var 1),
+             template_var 0))
+         )),
+    ("Converter.case_converter_conv_run_converter",
+     "(case ?conv of Converter x => ?f x) = ?f (run_converter ?conv)",
+     template_equation
+      (template_app
+        (template_app (template_hole 1, template_var 1), template_var 0),
+       template_app
+        (template_var 1, template_app (template_hole 0, template_var 0)))),
+    ("Converter.raw_converter_invariant_interaction_any_bounded_converter",
+     "raw_converter_invariant \<I>_full \<I>_full run_converter
+       (%conv. interaction_any_bounded_converter conv ?n)",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 4, template_hole 3),
+               template_hole 2),
+             template_hole 1),
+           t_empty)
+         )),
+    ("Converter.plossless_fail_converter",
+     "plossless_converter ?\<I> ?\<I>' fail_converter =
+      (?\<I> = \<bottom>)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 3, template_var 1),
+                template_var 0),
+              template_hole 2)
+            )],
+       template_equation (template_var 1, template_hole 0))),
+    ("Converter.map_converter_id",
+     "map_converter id id id id ?conv = ?conv",
+     template_equation
+      (template_app
+        (template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 4, template_hole 3),
+               template_hole 2),
+             template_hole 1),
+           template_hole 0),
+         template_var 0),
+       template_var 0)),
+    ("Converter.comp_converter_eqs", "?x = ?y ==> ?x = ?y",
+     template_implication
+      ([template_equation (template_var 1, template_var 0)],
+       template_equation (template_var 1, template_var 0))),
+    ("Converter.rel_converter_eq14",
+     "rel_converter (=) ?B ?C (=) = rel_converter' ?B ?C",
+     template_equation
+      (template_app
+        (template_app
+          (template_app
+            (template_app (template_hole 3, template_hole 2),
+             template_var 1),
+           template_var 0),
+         template_hole 1),
+       template_app
+        (template_app (template_hole 0, template_var 1), template_var 0))),
+    ("Converter.WT_converter_of_resource",
+     "?\<I> \<turnstile>res ?res \<surd> ==>
+      ?\<I>, ?\<I>' \<turnstile>\<^sub>C
+      converter_of_resource ?res \<surd>",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 2, template_var 2),
+              template_var 1)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app (template_hole 1, template_var 2),
+               template_var 0),
+             template_app (template_hole 0, template_var 1))
+           ))),
+    ("Converter.plossless_converter_of_resource",
+     "lossless_resource ?\<I> ?res ==>
+      plossless_converter ?\<I> ?\<I>' (converter_of_resource ?res)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 2, template_var 2),
+              template_var 1)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app (template_hole 1, template_var 2),
+               template_var 0),
+             template_app (template_hole 0, template_var 1))
+           ))),
+    ("Converter.attach_compose",
+     "attach (comp_converter ?conv1.0 ?conv2.0) ?res =
+      attach ?conv1.0 (attach ?conv2.0 ?res)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 3,
+           template_app
+            (template_app (template_hole 2, template_var 2),
+             template_var 1)),
+         template_var 0),
+       template_app
+        (template_app (template_hole 1, template_var 2),
+         template_app
+          (template_app (template_hole 0, template_var 1),
+           template_var 0)))),
+    ("Converter.comp_converter_assoc",
+     "comp_converter (comp_converter ?conv1.0 ?conv2.0) ?conv3.0 =
+      comp_converter ?conv1.0 (comp_converter ?conv2.0 ?conv3.0)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 3,
+           template_app
+            (template_app (template_hole 2, template_var 2),
+             template_var 1)),
+         template_var 0),
+       template_app
+        (template_app (template_hole 1, template_var 2),
+         template_app
+          (template_app (template_hole 0, template_var 1),
+           template_var 0)))),
+    ("Converter.map_converter_id14",
+     "map_converter id ?b ?out id ?res = map_converter' ?b ?out ?res",
+     template_equation
+      (template_app
+        (template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 3, template_hole 2),
+               template_var 2),
+             template_var 1),
+           template_hole 1),
+         template_var 0),
+       template_app
+        (template_app
+          (template_app (template_hole 0, template_var 2), template_var 1),
+         template_var 0))),
+    ("Converter.conv_callee_plus_id_left",
+     "converter_of_callee (plus_intercept id_oracle ?callee) ?s =
+      parallel_converter id_converter (converter_of_callee ?callee ?s)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 5,
+           template_app
+            (template_app (template_hole 4, template_hole 3),
+             template_var 1)),
+         template_var 0),
+       template_app
+        (template_app (template_hole 2, template_hole 1),
+         template_app
+          (template_app (template_hole 0, template_var 1),
+           template_var 0)))),
+    ("Converter.conv_callee_plus_id_right",
+     "converter_of_callee (plus_intercept ?callee id_oracle) ?s =
+      parallel_converter (converter_of_callee ?callee ?s) id_converter",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 5,
+           template_app
+            (template_app (template_hole 4, template_var 1),
+             template_hole 3)),
+         template_var 0),
+       template_app
+        (template_app
+          (template_hole 2,
+           template_app
+            (template_app (template_hole 1, template_var 1),
+             template_var 0)),
+         template_hole 0))),
+    ("Converter.interaction_any_bounded_converter_restrict_converter",
+     "interaction_any_bounded_converter ?cnv ?bound ==>
+      interaction_any_bounded_converter (restrict_converter ?A ?\<I> ?cnv)
+       ?bound",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 1, template_var 3),
+              template_var 2)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 1,
+               template_app
+                (template_app
+                  (template_app (template_hole 0, template_var 1),
+                   template_var 0),
+                 template_var 3)),
+             template_var 2)
+           ))),
+    ("Converter.outsp_converter_outs_converter_eq",
+     "Converter.outsp_converter ?\<I> ?\<I>' ?x =
+      (%conv. ?x : outs_converter ?\<I> ?\<I>' conv)",
+     template_equation
+      (template_app
+        (template_app
+          (template_app (template_hole 2, template_var 2), template_var 1),
+         template_var 0),
+       t_empty)),
+    ("Converter.resultsp_converter_results_converter_eq",
+     "Converter.resultsp_converter ?\<I> ?\<I>' ?x =
+      (%conv. ?x : results_converter ?\<I> ?\<I>' conv)",
+     template_equation
+      (template_app
+        (template_app
+          (template_app (template_hole 2, template_var 2), template_var 1),
+         template_var 0),
+       t_empty)),
+    ("Case_Converter.missing_pattern_match_cong",
+     "?m = ?m' ==>
+      missing_pattern_match ?m ?f = missing_pattern_match ?m' ?f",
+     template_implication
+      ([template_equation (template_var 2, template_var 1)],
+       template_equation
+        (template_app
+          (template_app (template_hole 0, template_var 2), template_var 0),
+         template_app
+          (template_app (template_hole 0, template_var 1),
+           template_var 0)))),
+    ("Converter.attach_stateless_callee",
+     "attach_callee (stateless_callee ?callee) ?oracle =
+      \<dagger>(%s q. exec_gpv ?oracle (?callee q) s)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 3, template_app (template_hole 2, template_var 1)),
+         template_var 0),
+       template_app (template_hole 1, t_empty))),
+    ("Converter.conv_callee_parallel_id_left",
+     "converter_of_callee (parallel_intercept id_oracle ?callee) (?s, ?s') =
+      parallel_converter2 id_converter (converter_of_callee ?callee ?s')",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 6,
+           template_app
+            (template_app (template_hole 5, template_hole 4),
+             template_var 2)),
+         template_app
+          (template_app (template_hole 3, template_var 1), template_var 0)),
+       template_app
+        (template_app (template_hole 2, template_hole 1),
+         template_app
+          (template_app (template_hole 0, template_var 2),
+           template_var 0)))),
+    ("Converter.conv_callee_parallel_id_right",
+     "converter_of_callee (parallel_intercept ?callee id_oracle) (?s, ?s') =
+      parallel_converter2 (converter_of_callee ?callee ?s) id_converter",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 6,
+           template_app
+            (template_app (template_hole 5, template_var 2),
+             template_hole 4)),
+         template_app
+          (template_app (template_hole 3, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 2,
+           template_app
+            (template_app (template_hole 1, template_var 2),
+             template_var 1)),
+         template_hole 0))),
+    ("Converter.parallel_converter2_comp2_out",
+     "parallel_converter2 ?conv'' (comp_converter ?conv ?conv') =
+      comp_converter (parallel_converter2 id_converter ?conv)
+       (parallel_converter2 ?conv'' ?conv')",
+     template_equation
+      (template_app
+        (template_app (template_hole 5, template_var 2),
+         template_app
+          (template_app (template_hole 4, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 3,
+           template_app
+            (template_app (template_hole 2, template_hole 1),
+             template_var 1)),
+         template_app
+          (template_app (template_hole 0, template_var 2),
+           template_var 0)))),
+    ("Converter.parallel_converter2_comp1_out",
+     "parallel_converter2 (comp_converter ?conv ?conv') ?conv'' =
+      comp_converter (parallel_converter2 ?conv id_converter)
+       (parallel_converter2 ?conv' ?conv'')",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 5,
+           template_app
+            (template_app (template_hole 4, template_var 2),
+             template_var 1)),
+         template_var 0),
+       template_app
+        (template_app
+          (template_hole 3,
+           template_app
+            (template_app (template_hole 2, template_var 2),
+             template_hole 1)),
+         template_app
+          (template_app (template_hole 0, template_var 1),
+           template_var 0)))),
+    ("Converter.WT_restrict_converter",
+     "?\<I>, ?\<I>' \<turnstile>\<^sub>C ?cnv \<surd> ==>
+      ?\<I>, ?\<I>' \<turnstile>\<^sub>C
+      restrict_converter ?A ?\<I>' ?cnv \<surd>",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 1, template_var 3),
+                template_var 2),
+              template_var 1)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app (template_hole 1, template_var 3),
+               template_var 2),
+             template_app
+              (template_app
+                (template_app (template_hole 0, template_var 0),
+                 template_var 2),
+               template_var 1))
+           ))),
+    ("Converter.interaction_any_bounded_converter_mono",
+     "[| interaction_any_bounded_converter ?conv ?n; ?n <= ?m |]
+      ==> interaction_any_bounded_converter ?conv ?m",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 1, template_var 2),
+              template_var 1)
+            ),
+        template_inequation (less_equals, template_var 1, template_var 0)],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 1, template_var 2), template_var 0)
+           ))),
+    ("Converter.raw_converter_invariant_run_plossless_converter",
+     "raw_converter_invariant ?\<I> ?\<I>' run_converter
+       (%conv.
+           plossless_converter ?\<I> ?\<I>' conv & ?\<I>,
+           ?\<I>' \<turnstile>\<^sub>C conv \<surd>)",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 4, template_var 1),
+               template_var 0),
+             template_hole 3),
+           t_empty)
+         )),
+    ("Converter.attach_parametric",
+     "rel_fun (rel_converter ?A ?B ?C ?R)
+       (rel_fun (rel_resource ?C ?R) (rel_resource ?A ?B)) attach attach",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_hole 6,
+                 template_app
+                  (template_app
+                    (template_app
+                      (template_app (template_hole 5, template_var 3),
+                       template_var 2),
+                     template_var 1),
+                   template_var 0)),
+               template_app
+                (template_app
+                  (template_hole 4,
+                   template_app
+                    (template_app (template_hole 3, template_var 1),
+                     template_var 0)),
+                 template_app
+                  (template_app (template_hole 2, template_var 3),
+                   template_var 2))),
+             template_hole 1),
+           template_hole 0)
+         )),
+    ("Converter.attach_CNV_RES",
+     "attach (converter_of_callee ?callee ?s)
+       (resource_of_oracle ?res ?s') =
+      resource_of_oracle (attach_callee ?callee ?res) (?s, ?s')",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 5,
+           template_app
+            (template_app (template_hole 4, template_var 3),
+             template_var 2)),
+         template_app
+          (template_app (template_hole 3, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 2,
+           template_app
+            (template_app (template_hole 1, template_var 3),
+             template_var 1)),
+         template_app
+          (template_app (template_hole 0, template_var 2),
+           template_var 0)))),
+    ("Converter.attach_parallel2",
+     "attach (parallel_converter2 ?conv1.0 ?conv2.0)
+       (parallel_resource ?res1.0 ?res2.0) =
+      parallel_resource (attach ?conv1.0 ?res1.0)
+       (attach ?conv2.0 ?res2.0)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 5,
+           template_app
+            (template_app (template_hole 4, template_var 3),
+             template_var 2)),
+         template_app
+          (template_app (template_hole 3, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 2,
+           template_app
+            (template_app (template_hole 1, template_var 3),
+             template_var 1)),
+         template_app
+          (template_app (template_hole 0, template_var 2),
+           template_var 0)))),
+    ("Converter.comp_converter_parallel2",
+     "comp_converter (parallel_converter2 ?conv1l ?conv1r)
+       (parallel_converter2 ?conv2l ?conv2r) =
+      parallel_converter2 (comp_converter ?conv1l ?conv2l)
+       (comp_converter ?conv1r ?conv2r)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 5,
+           template_app
+            (template_app (template_hole 4, template_var 3),
+             template_var 2)),
+         template_app
+          (template_app (template_hole 3, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 2,
+           template_app
+            (template_app (template_hole 1, template_var 3),
+             template_var 1)),
+         template_app
+          (template_app (template_hole 0, template_var 2),
+           template_var 0)))),
+    ("Converter.conv_callee_parallel",
+     "converter_of_callee (parallel_intercept ?callee1.0 ?callee2.0)
+       (?s, ?s') =
+      parallel_converter2 (converter_of_callee ?callee1.0 ?s)
+       (converter_of_callee ?callee2.0 ?s')",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 5,
+           template_app
+            (template_app (template_hole 4, template_var 3),
+             template_var 2)),
+         template_app
+          (template_app (template_hole 3, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 2,
+           template_app
+            (template_app (template_hole 1, template_var 3),
+             template_var 1)),
+         template_app
+          (template_app (template_hole 0, template_var 2),
+           template_var 0)))),
+    ("Converter.interaction_any_bounded_converter_parallel_converter",
+     "[| interaction_any_bounded_converter ?conv1.0 ?n;
+         interaction_any_bounded_converter ?conv2.0 ?n |]
+      ==> interaction_any_bounded_converter
+           (parallel_converter ?conv1.0 ?conv2.0) ?n",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 3, template_var 2),
+              template_var 1)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 2, template_var 0),
+              template_var 1)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 1,
+               template_app
+                (template_app (template_hole 0, template_var 2),
+                 template_var 0)),
+             template_var 1)
+           ))),
+    ("Converter.interaction_any_bounded_converter_parallel_converter2",
+     "[| interaction_any_bounded_converter ?conv1.0 ?n;
+         interaction_any_bounded_converter ?conv2.0 ?n |]
+      ==> interaction_any_bounded_converter
+           (parallel_converter2 ?conv1.0 ?conv2.0) ?n",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 3, template_var 2),
+              template_var 1)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 2, template_var 0),
+              template_var 1)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 1,
+               template_app
+                (template_app (template_hole 0, template_var 2),
+                 template_var 0)),
+             template_var 1)
+           ))),
+    ("Converter.interaction_any_bounded_converter_start",
+     "[| interaction_bounded_by ?consider ?gpv ?n; ?n <= ?m |]
+      ==> interaction_bounded_by ?consider ?gpv ?m",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 1, template_var 3),
+                template_var 2),
+              template_var 1)
+            ),
+        template_inequation (less_equals, template_var 1, template_var 0)],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app (template_hole 1, template_var 3),
+               template_var 2),
+             template_var 0)
+           ))),
+    ("Converter.rel_converter_conversep",
+     "rel_converter ?A^--1 ?B^--1 ?C^--1 ?R^--1 =
+      (rel_converter ?A ?B ?C ?R)^--1",
+     template_equation
+      (template_app
+        (template_app
+          (template_app
+            (template_app
+              (template_hole 6,
+               template_app (template_hole 5, template_var 3)),
+             template_app (template_hole 4, template_var 2)),
+           template_app (template_hole 3, template_var 1)),
+         template_app (template_hole 2, template_var 0)),
+       template_app
+        (template_hole 1,
+         template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 0, template_var 3),
+               template_var 2),
+             template_var 1),
+           template_var 0)))),
+    ("Converter.parallel_converter_assoc",
+     "parallel_converter (parallel_converter ?conv1.0 ?conv2.0) ?conv3.0 =
+      map_converter rsuml lsumr id id
+       (parallel_converter ?conv1.0
+         (parallel_converter ?conv2.0 ?conv3.0))",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 8,
+           template_app
+            (template_app (template_hole 7, template_var 2),
+             template_var 1)),
+         template_var 0),
+       template_app
+        (template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 6, template_hole 5),
+               template_hole 4),
+             template_hole 3),
+           template_hole 2),
+         template_app
+          (template_app (template_hole 1, template_var 2),
+           template_app
+            (template_app (template_hole 0, template_var 1),
+             template_var 0))))),
+    ("Converter.pgen_lossless_restrict_gpv",
+     "?\<I> \<turnstile>g ?gpv \<surd> ==>
+      pgen_lossless_gpv ?b ?\<I> (restrict_gpv ?\<I> ?gpv) =
+      pgen_lossless_gpv ?b ?\<I> ?gpv",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 3, template_var 2),
+              template_var 1)
+            )],
+       template_equation
+        (template_app
+          (template_app
+            (template_app (template_hole 1, template_var 0),
+             template_var 2),
+           template_app
+            (template_app (template_hole 0, template_var 2),
+             template_var 1)),
+         template_app
+          (template_app
+            (template_app (template_hole 1, template_var 0),
+             template_var 2),
+           template_var 1)))),
+    ("Converter.comp_converter_attach_left",
+     "comp_converter ?conv1.0 ?conv2.0 = ?conv3.0 ==>
+      attach ?conv1.0 (attach ?conv2.0 ?res) = attach ?conv3.0 ?res",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app (template_hole 4, template_var 3), template_var 2),
+          template_var 1)],
+       template_equation
+        (template_app
+          (template_app (template_hole 2, template_var 3),
+           template_app
+            (template_app (template_hole 1, template_var 2),
+             template_var 0)),
+         template_app
+          (template_app (template_hole 0, template_var 1),
+           template_var 0)))),
+    ("Converter.comp_converter_assoc_left",
+     "comp_converter ?conv1.0 ?conv2.0 = ?conv3.0 ==>
+      comp_converter ?conv1.0 (comp_converter ?conv2.0 ?conv) =
+      comp_converter ?conv3.0 ?conv",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app (template_hole 4, template_var 3), template_var 2),
+          template_var 1)],
+       template_equation
+        (template_app
+          (template_app (template_hole 2, template_var 3),
+           template_app
+            (template_app (template_hole 1, template_var 2),
+             template_var 0)),
+         template_app
+          (template_app (template_hole 0, template_var 1),
+           template_var 0)))),
+    ("Converter.WT_resource_attach",
+     "[| ?\<I>, ?\<I>' \<turnstile>\<^sub>C ?conv \<surd>;
+         ?\<I>' \<turnstile>res ?res \<surd> |]
+      ==> ?\<I> \<turnstile>res attach ?conv ?res \<surd>",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 3, template_var 3),
+                template_var 2),
+              template_var 1)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 2, template_var 2),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 1, template_var 3),
+             template_app
+              (template_app (template_hole 0, template_var 1),
+               template_var 0))
+           ))),
+    ("Converter.left_interface_parametric",
+     "rel_fun (rel_converter ?A ?B ?C ?R)
+       (rel_converter ?A ?B (rel_sum ?C ?C') (rel_sum ?R ?R'))
+       left_interface left_interface",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_hole 6,
+                 template_app
+                  (template_app
+                    (template_app
+                      (template_app (template_hole 5, template_var 5),
+                       template_var 4),
+                     template_var 3),
+                   template_var 2)),
+               template_app
+                (template_app
+                  (template_app
+                    (template_app (template_hole 4, template_var 5),
+                     template_var 4),
+                   template_app
+                    (template_app (template_hole 3, template_var 3),
+                     template_var 1)),
+                 template_app
+                  (template_app (template_hole 2, template_var 2),
+                   template_var 0))),
+             template_hole 1),
+           template_hole 0)
+         )),
+    ("Converter.right_interface_parametric",
+     "rel_fun (rel_converter ?A ?B ?C' ?R')
+       (rel_converter ?A ?B (rel_sum ?C ?C') (rel_sum ?R ?R'))
+       right_interface right_interface",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_hole 6,
+                 template_app
+                  (template_app
+                    (template_app
+                      (template_app (template_hole 5, template_var 5),
+                       template_var 4),
+                     template_var 3),
+                   template_var 2)),
+               template_app
+                (template_app
+                  (template_app
+                    (template_app (template_hole 4, template_var 5),
+                     template_var 4),
+                   template_app
+                    (template_app (template_hole 3, template_var 1),
+                     template_var 3)),
+                 template_app
+                  (template_app (template_hole 2, template_var 0),
+                   template_var 2))),
+             template_hole 1),
+           template_hole 0)
+         )),
+    ("Converter.map_converter_id_move_right",
+     "map_converter ?f ?g ?f' ?g' id_converter =
+      map_converter id id (?f' o ?f) (?g o ?g') id_converter",
+     template_equation
+      (template_app
+        (template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 7, template_var 3),
+               template_var 2),
+             template_var 1),
+           template_var 0),
+         template_hole 6),
+       template_app
+        (template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 5, template_hole 4),
+               template_hole 3),
+             template_app
+              (template_app (template_hole 2, template_var 1),
+               template_var 3)),
+           template_app
+            (template_app (template_hole 1, template_var 2),
+             template_var 0)),
+         template_hole 0))),
+    ("Converter.map_converter_id_move_left",
+     "map_converter ?f ?g ?f' ?g' id_converter =
+      map_converter (?f' o ?f) (?g o ?g') id id id_converter",
+     template_equation
+      (template_app
+        (template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 7, template_var 3),
+               template_var 2),
+             template_var 1),
+           template_var 0),
+         template_hole 6),
+       template_app
+        (template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_hole 5,
+                 template_app
+                  (template_app (template_hole 4, template_var 1),
+                   template_var 3)),
+               template_app
+                (template_app (template_hole 3, template_var 2),
+                 template_var 0)),
+             template_hole 2),
+           template_hole 1),
+         template_hole 0))),
+    ("Converter.comp_converter_map1_out",
+     "comp_converter (map_converter ?f ?g id id ?conv) ?conv' =
+      map_converter ?f ?g id id (comp_converter ?conv ?conv')",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 7,
+           template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_app (template_hole 6, template_var 3),
+                   template_var 2),
+                 template_hole 5),
+               template_hole 4),
+             template_var 1)),
+         template_var 0),
+       template_app
+        (template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 3, template_var 3),
+               template_var 2),
+             template_hole 2),
+           template_hole 1),
+         template_app
+          (template_app (template_hole 0, template_var 1),
+           template_var 0)))),
+    ("Converter.attach_callee_simps",
+     "attach_callee ?callee ?oracle (?s, ?s') ?q =
+      map_spmf rprodl (exec_gpv ?oracle (?callee ?s ?q) ?s')",
+     template_equation
+      (template_app
+        (template_app
+          (template_app
+            (template_app (template_hole 5, template_var 4),
+             template_var 3),
+           template_app
+            (template_app (template_hole 4, template_var 2),
+             template_var 1)),
+         template_var 0),
+       template_app
+        (template_app
+          (template_hole 3,
+           template_app (template_hole 2, template_hole 1)),
+         template_app
+          (template_app
+            (template_app (template_hole 0, template_var 3),
+             template_app
+              (template_app (template_var 4, template_var 2),
+               template_var 0)),
+           template_var 1)))),
+    ("Converter.WT_map_converter_idD",
+     "?\<I>, ?\<I>' \<turnstile>\<^sub>C
+      map_converter id id ?f ?g id_converter \<surd> ==>
+      ?\<I> <= map_\<I> ?f ?g ?\<I>'",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 6, template_var 3),
+                template_var 2),
+              template_app
+               (template_app
+                 (template_app
+                   (template_app
+                     (template_app (template_hole 5, template_hole 4),
+                      template_hole 3),
+                    template_var 1),
+                  template_var 0),
+                template_hole 2))
+            )],
+       template_inequation
+        (less_equals, template_var 3,
+         template_app
+          (template_app
+            (template_app (template_hole 0, template_var 1),
+             template_var 0),
+           template_var 2)))),
+    ("Converter.interaction_any_bounded_converter_compose",
+     "[| interaction_any_bounded_converter ?conv1.0 ?n;
+         interaction_any_bounded_converter ?conv2.0 ?m |]
+      ==> interaction_any_bounded_converter
+           (comp_converter ?conv1.0 ?conv2.0) (?n * ?m)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 4, template_var 3),
+              template_var 2)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 3, template_var 1),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 2,
+               template_app
+                (template_app (template_hole 1, template_var 3),
+                 template_var 1)),
+             template_app
+              (template_app (template_hole 0, template_var 2),
+               template_var 0))
+           ))),
+    ("Converter.interaction_any_bounded_converter_parallel_converter'",
+     "[| interaction_any_bounded_converter ?conv1.0 ?n;
+         interaction_any_bounded_converter ?conv2.0 ?m |]
+      ==> interaction_any_bounded_converter
+           (parallel_converter ?conv1.0 ?conv2.0) (max ?n ?m)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 4, template_var 3),
+              template_var 2)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 3, template_var 1),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 2,
+               template_app
+                (template_app (template_hole 1, template_var 3),
+                 template_var 1)),
+             template_app
+              (template_app (template_hole 0, template_var 2),
+               template_var 0))
+           ))),
+    ("Converter.interaction_any_bounded_converter_parallel_converter2'",
+     "[| interaction_any_bounded_converter ?conv1.0 ?n;
+         interaction_any_bounded_converter ?conv2.0 ?m |]
+      ==> interaction_any_bounded_converter
+           (parallel_converter2 ?conv1.0 ?conv2.0) (max ?n ?m)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 4, template_var 3),
+              template_var 2)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 3, template_var 1),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 2,
+               template_app
+                (template_app (template_hole 1, template_var 3),
+                 template_var 1)),
+             template_app
+              (template_app (template_hole 0, template_var 2),
+               template_var 0))
+           ))),
+    ("Converter.WT_converterD_WT",
+     "[| ?\<I>, ?\<I>' \<turnstile>\<^sub>C ?conv \<surd>;
+         ?q : outs_\<I> ?\<I> |]
+      ==> ?\<I>' \<turnstile>g run_converter ?conv ?q \<surd>",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 4, template_var 3),
+                template_var 2),
+              template_var 1)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 3, template_var 0),
+              template_app (template_hole 2, template_var 3))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 1, template_var 2),
+             template_app
+              (template_app (template_hole 0, template_var 1),
+               template_var 0))
+           ))),
+    ("Converter.attach_map_converter",
+     "attach (map_converter ?f ?g ?h ?k ?conv) ?res =
+      map_resource ?f ?g (attach ?conv (map_resource ?h ?k ?res))",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 4,
+           template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_app (template_hole 3, template_var 5),
+                   template_var 4),
+                 template_var 3),
+               template_var 2),
+             template_var 1)),
+         template_var 0),
+       template_app
+        (template_app
+          (template_app (template_hole 2, template_var 5), template_var 4),
+         template_app
+          (template_app (template_hole 1, template_var 1),
+           template_app
+            (template_app
+              (template_app (template_hole 0, template_var 3),
+               template_var 2),
+             template_var 0))))),
+    ("Converter.Domainp_rel_converter_le",
+     "Domainp (rel_converter ?A ?B ?C ?R)
+      <= pred_converter (Collect (Domainp ?A)) (Domainp ?B) (Domainp ?C)
+          (Collect (Domainp ?R))",
+     template_inequation
+      (less_equals,
+       template_app
+        (template_hole 8,
+         template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 7, template_var 3),
+               template_var 2),
+             template_var 1),
+           template_var 0)),
+       template_app
+        (template_app
+          (template_app
+            (template_app
+              (template_hole 6,
+               template_app
+                (template_hole 5,
+                 template_app (template_hole 4, template_var 3))),
+             template_app (template_hole 3, template_var 2)),
+           template_app (template_hole 2, template_var 1)),
+         template_app
+          (template_hole 1,
+           template_app (template_hole 0, template_var 0))))),
+    ("Converter.interaction_any_bounded_converter_of_callee",
+     "(!!s x. interaction_any_bounded_by (?conv s x) ?n) ==>
+      interaction_any_bounded_converter (converter_of_callee ?conv ?s) ?n",
+     template_implication
+      ([template_predicate (template_app (template_hole 6, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 1,
+               template_app
+                (template_app (template_hole 0, template_var 2),
+                 template_var 0)),
+             template_var 1)
+           ))),
+    ("Converter.WT_converter_comp",
+     "[| ?\<I>, ?\<I>' \<turnstile>\<^sub>C ?conv \<surd>;
+         ?\<I>', ?\<I>'' \<turnstile>\<^sub>C ?conv' \<surd> |]
+      ==> ?\<I>, ?\<I>'' \<turnstile>\<^sub>C
+          comp_converter ?conv ?conv' \<surd>",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 3, template_var 4),
+                template_var 3),
+              template_var 2)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 2, template_var 3),
+                template_var 1),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app (template_hole 1, template_var 4),
+               template_var 1),
+             template_app
+              (template_app (template_hole 0, template_var 2),
+               template_var 0))
+           ))),
+    ("Converter.comp_converter_parametric",
+     "rel_fun (rel_converter ?A ?B ?C ?R)
+       (rel_fun (rel_converter ?C ?R ?C' ?R') (rel_converter ?A ?B ?C' ?R'))
+       comp_converter comp_converter",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_hole 6,
+                 template_app
+                  (template_app
+                    (template_app
+                      (template_app (template_hole 5, template_var 5),
+                       template_var 4),
+                     template_var 3),
+                   template_var 2)),
+               template_app
+                (template_app
+                  (template_hole 4,
+                   template_app
+                    (template_app
+                      (template_app
+                        (template_app (template_hole 3, template_var 3),
+                         template_var 2),
+                       template_var 1),
+                     template_var 0)),
+                 template_app
+                  (template_app
+                    (template_app
+                      (template_app (template_hole 2, template_var 5),
+                       template_var 4),
+                     template_var 1),
+                   template_var 0))),
+             template_hole 1),
+           template_hole 0)
+         )),
+    ("Converter.comp_converter_parallel2'",
+     "attach (parallel_converter2 ?conv1l ?conv1r)
+       (attach (parallel_converter2 ?conv2l ?conv2r) ?res) =
+      attach
+       (parallel_converter2 (comp_converter ?conv1l ?conv2l)
+         (comp_converter ?conv1r ?conv2r))
+       ?res",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 7,
+           template_app
+            (template_app (template_hole 6, template_var 4),
+             template_var 3)),
+         template_app
+          (template_app
+            (template_hole 5,
+             template_app
+              (template_app (template_hole 4, template_var 2),
+               template_var 1)),
+           template_var 0)),
+       template_app
+        (template_app
+          (template_hole 3,
+           template_app
+            (template_app
+              (template_hole 2,
+               template_app
+                (template_app (template_hole 1, template_var 4),
+                 template_var 2)),
+             template_app
+              (template_app (template_hole 0, template_var 3),
+               template_var 1))),
+         template_var 0))),
+    ("Converter.comp_converter_parallel2'",
+     "comp_converter (parallel_converter2 ?conv1l ?conv1r)
+       (comp_converter (parallel_converter2 ?conv2l ?conv2r) ?conv) =
+      comp_converter
+       (parallel_converter2 (comp_converter ?conv1l ?conv2l)
+         (comp_converter ?conv1r ?conv2r))
+       ?conv",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 7,
+           template_app
+            (template_app (template_hole 6, template_var 4),
+             template_var 3)),
+         template_app
+          (template_app
+            (template_hole 5,
+             template_app
+              (template_app (template_hole 4, template_var 2),
+               template_var 1)),
+           template_var 0)),
+       template_app
+        (template_app
+          (template_hole 3,
+           template_app
+            (template_app
+              (template_hole 2,
+               template_app
+                (template_app (template_hole 1, template_var 4),
+                 template_var 2)),
+             template_app
+              (template_app (template_hole 0, template_var 3),
+               template_var 1))),
+         template_var 0))),
+    ("Converter.pred_gpv'_mono_weak",
+     "[| ?A <= ?A'; ?C <= ?C' |]
+      ==> pred_gpv' ?A ?C ?R <= pred_gpv' ?A' ?C' ?R",
+     template_implication
+      ([template_inequation (less_equals, template_var 4, template_var 3),
+        template_inequation (less_equals, template_var 2, template_var 1)],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_app
+            (template_app (template_hole 0, template_var 4),
+             template_var 2),
+           template_var 0),
+         template_app
+          (template_app
+            (template_app (template_hole 0, template_var 3),
+             template_var 1),
+           template_var 0)))),
+    ("Converter.converter_of_callee_parametric",
+     "rel_fun (rel_fun ?S (rel_fun ?A (rel_gpv'' (rel_prod ?B ?S) ?C ?R)))
+       (rel_fun ?S (rel_converter ?A ?B ?C ?R)) converter_of_callee
+       converter_of_callee",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_hole 8,
+                 template_app
+                  (template_app (template_hole 7, template_var 4),
+                   template_app
+                    (template_app (template_hole 6, template_var 3),
+                     template_app
+                      (template_app
+                        (template_app
+                          (template_hole 5,
+                           template_app
+                            (template_app (template_hole 4, template_var 2),
+                             template_var 4)),
+                         template_var 1),
+                       template_var 0)))),
+               template_app
+                (template_app (template_hole 3, template_var 4),
+                 template_app
+                  (template_app
+                    (template_app
+                      (template_app (template_hole 2, template_var 3),
+                       template_var 2),
+                     template_var 1),
+                   template_var 0))),
+             template_hole 1),
+           template_hole 0)
+         )),
+    ("Converter.Converter_parametric",
+     "rel_fun
+       (rel_fun ?A
+         (rel_gpv'' (rel_prod ?B (rel_converter ?A ?B ?C ?R)) ?C ?R))
+       (rel_converter ?A ?B ?C ?R) Converter Converter",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_hole 6,
+                 template_app
+                  (template_app (template_hole 5, template_var 3),
+                   template_app
+                    (template_app
+                      (template_app
+                        (template_hole 4,
+                         template_app
+                          (template_app (template_hole 3, template_var 2),
+                           template_app
+                            (template_app
+                              (template_app
+                                (template_app
+                                  (template_hole 2, template_var 3),
+                                 template_var 2),
+                               template_var 1),
+                             template_var 0))),
+                       template_var 1),
+                     template_var 0))),
+               template_app
+                (template_app
+                  (template_app
+                    (template_app (template_hole 2, template_var 3),
+                     template_var 2),
+                   template_var 1),
+                 template_var 0)),
+             template_hole 1),
+           template_hole 0)
+         )),
+    ("Converter.run_converter_parametric",
+     "rel_fun (rel_converter ?A ?B ?C ?R)
+       (rel_fun ?A
+         (rel_gpv'' (rel_prod ?B (rel_converter ?A ?B ?C ?R)) ?C ?R))
+       run_converter run_converter",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_hole 6,
+                 template_app
+                  (template_app
+                    (template_app
+                      (template_app (template_hole 5, template_var 3),
+                       template_var 2),
+                     template_var 1),
+                   template_var 0)),
+               template_app
+                (template_app (template_hole 4, template_var 3),
+                 template_app
+                  (template_app
+                    (template_app
+                      (template_hole 3,
+                       template_app
+                        (template_app (template_hole 2, template_var 2),
+                         template_app
+                          (template_app
+                            (template_app
+                              (template_app
+                                (template_hole 5, template_var 3),
+                               template_var 2),
+                             template_var 1),
+                           template_var 0))),
+                     template_var 1),
+                   template_var 0))),
+             template_hole 1),
+           template_hole 0)
+         )),
+    ("Converter.interaction_any_bounded_converter_map_converter",
+     "[| interaction_any_bounded_converter ?conv ?n; surj ?k |]
+      ==> interaction_any_bounded_converter
+           (map_converter ?f ?g ?h ?k ?conv) ?n",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 6, template_var 5),
+              template_var 4)
+            ),
+        template_equation
+         (template_app
+           (template_app (template_hole 4, template_var 3),
+            template_hole 3),
+          template_hole 2)],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 1,
+               template_app
+                (template_app
+                  (template_app
+                    (template_app
+                      (template_app (template_hole 0, template_var 2),
+                       template_var 1),
+                     template_var 0),
+                   template_var 3),
+                 template_var 5)),
+             template_var 4)
+           ))),
+    ("Converter.WT_converter_parallel_converter",
+     "[| ?\<I>1.0, ?\<I> \<turnstile>\<^sub>C ?conv1.0 \<surd>;
+         ?\<I>2.0, ?\<I> \<turnstile>\<^sub>C ?conv2.0 \<surd> |]
+      ==> ?\<I>1.0 \<oplus>\<^sub>\<I> ?\<I>2.0, ?\<I> \<turnstile>\<^sub>C
+          parallel_converter ?conv1.0 ?conv2.0 \<surd>",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 4, template_var 4),
+                template_var 3),
+              template_var 2)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 3, template_var 1),
+                template_var 3),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_hole 2,
+                 template_app
+                  (template_app (template_hole 1, template_var 4),
+                   template_var 1)),
+               template_var 3),
+             template_app
+              (template_app (template_hole 0, template_var 2),
+               template_var 0))
+           ))),
+    ("Converter.WT_converter_mono",
+     "[| ?\<I>1.0, ?\<I>2.0 \<turnstile>\<^sub>C ?conv \<surd>;
+         ?\<I>1' <= ?\<I>1.0; ?\<I>2.0 <= ?\<I>2' |]
+      ==> ?\<I>1', ?\<I>2' \<turnstile>\<^sub>C ?conv \<surd>",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 2, template_var 4),
+                template_var 3),
+              template_var 2)
+            ),
+        template_inequation (less_equals, template_var 1, template_var 4),
+        template_inequation (less_equals, template_var 3, template_var 0)],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app (template_hole 2, template_var 1),
+               template_var 0),
+             template_var 2)
+           ))),
+    ("Converter.map_converter'_parametric",
+     "rel_fun (rel_fun ?B ?B')
+       (rel_fun (rel_fun ?C ?C')
+         (rel_fun (rel_converter (=) ?B ?C (=))
+           (rel_converter (=) ?B' ?C' (=))))
+       map_converter' map_converter'",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_hole 10,
+                 template_app
+                  (template_app (template_hole 9, template_var 3),
+                   template_var 2)),
+               template_app
+                (template_app
+                  (template_hole 8,
+                   template_app
+                    (template_app (template_hole 7, template_var 1),
+                     template_var 0)),
+                 template_app
+                  (template_app
+                    (template_hole 6,
+                     template_app
+                      (template_app
+                        (template_app
+                          (template_app (template_hole 5, template_hole 4),
+                           template_var 3),
+                         template_var 1),
+                       template_hole 3)),
+                   template_app
+                    (template_app
+                      (template_app
+                        (template_app (template_hole 2, template_hole 4),
+                         template_var 2),
+                       template_var 0),
+                     template_hole 3)))),
+             template_hole 1),
+           template_hole 0)
+         )),
+    ("Converter.comp_converter_map_converter2",
+     "comp_converter ?conv (map_converter ?f ?g ?h ?k ?conv') =
+      map_converter id id ?h ?k
+       (comp_converter (map_converter id id ?f ?g ?conv) ?conv')",
+     template_equation
+      (template_app
+        (template_app (template_hole 6, template_var 5),
+         template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 5, template_var 4),
+                 template_var 3),
+               template_var 2),
+             template_var 1),
+           template_var 0)),
+       template_app
+        (template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 4, template_hole 3),
+               template_hole 2),
+             template_var 2),
+           template_var 1),
+         template_app
+          (template_app
+            (template_hole 1,
+             template_app
+              (template_app
+                (template_app
+                  (template_app
+                    (template_app (template_hole 0, template_hole 3),
+                     template_hole 2),
+                   template_var 4),
+                 template_var 3),
+               template_var 5)),
+           template_var 0)))),
+    ("Converter.map_converter_of_callee",
+     "map_converter ?f ?g ?h ?k (converter_of_callee ?callee ?s) =
+      converter_of_callee
+       (map_fun id (map_fun ?f (map_gpv' (map_prod ?g id) ?h ?k)) ?callee)
+       ?s",
+     template_equation
+      (template_app
+        (template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 7, template_var 5),
+               template_var 4),
+             template_var 3),
+           template_var 2),
+         template_app
+          (template_app (template_hole 6, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 5,
+           template_app
+            (template_app
+              (template_app (template_hole 4, template_hole 3),
+               template_app
+                (template_app (template_hole 2, template_var 5),
+                 template_app
+                  (template_app
+                    (template_app
+                      (template_hole 1,
+                       template_app
+                        (template_app (template_hole 0, template_var 4),
+                         template_hole 3)),
+                     template_var 3),
+                   template_var 2))),
+             template_var 1)),
+         template_var 0))),
+    ("Converter.map_converter_ctr",
+     "map_converter ?a ?b ?out ?inn (Converter ?f) =
+      Converter
+       (map_fun ?a
+         (map_gpv' (map_prod ?b (map_converter ?a ?b ?out ?inn)) ?out ?inn)
+         ?f)",
+     template_equation
+      (template_app
+        (template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 5, template_var 4),
+               template_var 3),
+             template_var 2),
+           template_var 1),
+         template_app (template_hole 4, template_var 0)),
+       template_app
+        (template_hole 3,
+         template_app
+          (template_app
+            (template_app (template_hole 2, template_var 4),
+             template_app
+              (template_app
+                (template_app
+                  (template_hole 1,
+                   template_app
+                    (template_app (template_hole 0, template_var 3),
+                     template_app
+                      (template_app
+                        (template_app
+                          (template_app (template_hole 5, template_var 4),
+                           template_var 3),
+                         template_var 2),
+                       template_var 1))),
+                 template_var 2),
+               template_var 1)),
+           template_var 0)))),
+    ("Converter.comp_converter_map_converter1",
+     "comp_converter (map_converter ?f ?g ?h ?k ?conv) ?conv' =
+      map_converter ?f ?g id id
+       (comp_converter ?conv (map_converter ?h ?k id id ?conv'))",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 6,
+           template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_app (template_hole 5, template_var 5),
+                   template_var 4),
+                 template_var 3),
+               template_var 2),
+             template_var 1)),
+         template_var 0),
+       template_app
+        (template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 4, template_var 5),
+               template_var 4),
+             template_hole 3),
+           template_hole 2),
+         template_app
+          (template_app (template_hole 1, template_var 1),
+           template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_app (template_hole 0, template_var 3),
+                   template_var 2),
+                 template_hole 3),
+               template_hole 2),
+             template_var 0))))),
+    ("Converter.WT_converter_parallel_converter2",
+     "[| ?\<I>1.0, ?\<I>2.0 \<turnstile>\<^sub>C ?conv1.0 \<surd>;
+         ?\<I>1', ?\<I>2' \<turnstile>\<^sub>C ?conv2.0 \<surd> |]
+      ==> ?\<I>1.0 \<oplus>\<^sub>\<I> ?\<I>1',
+          ?\<I>2.0 \<oplus>\<^sub>\<I> ?\<I>2' \<turnstile>\<^sub>C
+          parallel_converter2 ?conv1.0 ?conv2.0 \<surd>",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 5, template_var 5),
+                template_var 4),
+              template_var 3)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 4, template_var 2),
+                template_var 1),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_hole 3,
+                 template_app
+                  (template_app (template_hole 2, template_var 5),
+                   template_var 2)),
+               template_app
+                (template_app (template_hole 1, template_var 4),
+                 template_var 1)),
+             template_app
+              (template_app (template_hole 0, template_var 3),
+               template_var 0))
+           ))),
+    ("Converter.plossless_parallel_converter2",
+     "[| plossless_converter ?\<I>1.0 ?\<I>1' ?conv1.0;
+         plossless_converter ?\<I>2.0 ?\<I>2' ?conv2.0 |]
+      ==> plossless_converter (?\<I>1.0 \<oplus>\<^sub>\<I> ?\<I>2.0)
+           (?\<I>1' \<oplus>\<^sub>\<I> ?\<I>2')
+           (parallel_converter2 ?conv1.0 ?conv2.0)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 5, template_var 5),
+                template_var 4),
+              template_var 3)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 4, template_var 2),
+                template_var 1),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_hole 3,
+                 template_app
+                  (template_app (template_hole 2, template_var 5),
+                   template_var 2)),
+               template_app
+                (template_app (template_hole 1, template_var 4),
+                 template_var 1)),
+             template_app
+              (template_app (template_hole 0, template_var 3),
+               template_var 0))
+           ))),
+    ("Converter.interaction_bounded_by_left_gpv",
+     "[| interaction_bounded_by ?consider ?gpv ?n;
+         !!x. ?consider' (Inl x) ==> ?consider x |]
+      ==> interaction_bounded_by ?consider' (left_gpv ?gpv) ?n",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 4, template_var 3),
+                template_var 2),
+              template_var 1)
+            ),
+        template_predicate (template_app (template_hole 3, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app (template_hole 1, template_var 0),
+               template_app (template_hole 0, template_var 2)),
+             template_var 1)
+           ))),
+    ("Converter.interaction_bounded_by_right_gpv",
+     "[| interaction_bounded_by ?consider ?gpv ?n;
+         !!x. ?consider' (Inr x) ==> ?consider x |]
+      ==> interaction_bounded_by ?consider' (right_gpv ?gpv) ?n",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 4, template_var 3),
+                template_var 2),
+              template_var 1)
+            ),
+        template_predicate (template_app (template_hole 3, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app (template_hole 1, template_var 0),
+               template_app (template_hole 0, template_var 2)),
+             template_var 1)
+           ))),
+    ("Converter.bi_unique_rel_converter",
+     "[| bi_total ?A; bi_unique ?B; bi_unique ?C; bi_total ?R |]
+      ==> bi_unique (rel_converter ?A ?B ?C ?R)",
+     template_implication
+      ([template_predicate (template_app (template_hole 5, template_var 3)),
+        template_predicate (template_app (template_hole 4, template_var 2)),
+        template_predicate (template_app (template_hole 3, template_var 1)),
+        template_predicate
+         (template_app (template_hole 2, template_var 0))],
+       template_predicate
+        (
+           template_app
+            (template_hole 1,
+             template_app
+              (template_app
+                (template_app
+                  (template_app (template_hole 0, template_var 3),
+                   template_var 2),
+                 template_var 1),
+               template_var 0))
+           ))),
+    ("Converter.left_unique_rel_converter",
+     "[| left_total ?A; left_unique ?B; left_unique ?C; left_total ?R |]
+      ==> left_unique (rel_converter ?A ?B ?C ?R)",
+     template_implication
+      ([template_predicate (template_app (template_hole 5, template_var 3)),
+        template_predicate (template_app (template_hole 4, template_var 2)),
+        template_predicate (template_app (template_hole 3, template_var 1)),
+        template_predicate
+         (template_app (template_hole 2, template_var 0))],
+       template_predicate
+        (
+           template_app
+            (template_hole 1,
+             template_app
+              (template_app
+                (template_app
+                  (template_app (template_hole 0, template_var 3),
+                   template_var 2),
+                 template_var 1),
+               template_var 0))
+           ))),
+    ("Converter.right_unique_rel_converter",
+     "[| right_total ?A; right_unique ?B; right_unique ?C; right_total ?R |]
+      ==> right_unique (rel_converter ?A ?B ?C ?R)",
+     template_implication
+      ([template_predicate (template_app (template_hole 5, template_var 3)),
+        template_predicate (template_app (template_hole 4, template_var 2)),
+        template_predicate (template_app (template_hole 3, template_var 1)),
+        template_predicate
+         (template_app (template_hole 2, template_var 0))],
+       template_predicate
+        (
+           template_app
+            (template_hole 1,
+             template_app
+              (template_app
+                (template_app
+                  (template_app (template_hole 0, template_var 3),
+                   template_var 2),
+                 template_var 1),
+               template_var 0))
+           ))),
+    ("Converter.parallel_callee_parametric",
+     "rel_fun (rel_converter ?A ?B ?C ?R)
+       (rel_fun (rel_converter ?A' ?B' ?C ?R)
+         (rel_converter (rel_sum ?A ?A') (rel_sum ?B ?B') ?C ?R))
+       parallel_converter parallel_converter",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_hole 8,
+                 template_app
+                  (template_app
+                    (template_app
+                      (template_app (template_hole 7, template_var 5),
+                       template_var 4),
+                     template_var 3),
+                   template_var 2)),
+               template_app
+                (template_app
+                  (template_hole 6,
+                   template_app
+                    (template_app
+                      (template_app
+                        (template_app (template_hole 5, template_var 1),
+                         template_var 0),
+                       template_var 3),
+                     template_var 2)),
+                 template_app
+                  (template_app
+                    (template_app
+                      (template_app
+                        (template_hole 4,
+                         template_app
+                          (template_app (template_hole 3, template_var 5),
+                           template_var 1)),
+                       template_app
+                        (template_app (template_hole 2, template_var 4),
+                         template_var 0)),
+                     template_var 3),
+                   template_var 2))),
+             template_hole 1),
+           template_hole 0)
+         )),
+    ("Converter.map_converter_sel",
+     "run_converter (map_converter ?a ?b ?out ?inn ?conv) ?a' =
+      map_gpv' (map_prod ?b (map_converter ?a ?b ?out ?inn)) ?out ?inn
+       (run_converter ?conv (?a ?a'))",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 4,
+           template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_app (template_hole 3, template_var 5),
+                   template_var 4),
+                 template_var 3),
+               template_var 2),
+             template_var 1)),
+         template_var 0),
+       template_app
+        (template_app
+          (template_app
+            (template_app
+              (template_hole 2,
+               template_app
+                (template_app (template_hole 1, template_var 4),
+                 template_app
+                  (template_app
+                    (template_app
+                      (template_app (template_hole 3, template_var 5),
+                       template_var 4),
+                     template_var 3),
+                   template_var 2))),
+             template_var 3),
+           template_var 2),
+         template_app
+          (template_app (template_hole 0, template_var 1),
+           template_app (template_var 5, template_var 0))))),
+    ("Converter.case_converter_parametric",
+     "rel_fun
+       (rel_fun
+         (rel_fun ?A
+           (rel_gpv'' (rel_prod ?B (rel_converter ?A ?B ?C ?R)) ?C ?R))
+         ?X)
+       (rel_fun (rel_converter ?A ?B ?C ?R) ?X) case_converter
+       case_converter",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_hole 8,
+                 template_app
+                  (template_app
+                    (template_hole 7,
+                     template_app
+                      (template_app (template_hole 6, template_var 4),
+                       template_app
+                        (template_app
+                          (template_app
+                            (template_hole 5,
+                             template_app
+                              (template_app
+                                (template_hole 4, template_var 3),
+                               template_app
+                                (template_app
+                                  (template_app
+                                    (template_app
+(template_hole 3, template_var 4),
+                                     template_var 3),
+                                   template_var 2),
+                                 template_var 1))),
+                           template_var 2),
+                         template_var 1))),
+                   template_var 0)),
+               template_app
+                (template_app
+                  (template_hole 2,
+                   template_app
+                    (template_app
+                      (template_app
+                        (template_app (template_hole 3, template_var 4),
+                         template_var 3),
+                       template_var 2),
+                     template_var 1)),
+                 template_var 0)),
+             template_hole 1),
+           template_hole 0)
+         )),
+    ("Converter.rel_converter_simps",
+     "rel_converter ?A ?B ?C ?R (Converter ?f) (Converter ?g) =
+      rel_fun ?A (rel_gpv'' (rel_prod ?B (rel_converter ?A ?B ?C ?R)) ?C ?R)
+       ?f ?g",
+     template_equation
+      (template_app
+        (template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 5, template_var 5),
+                 template_var 4),
+               template_var 3),
+             template_var 2),
+           template_app (template_hole 4, template_var 1)),
+         template_app (template_hole 3, template_var 0)),
+       template_app
+        (template_app
+          (template_app
+            (template_app (template_hole 2, template_var 5),
+             template_app
+              (template_app
+                (template_app
+                  (template_hole 1,
+                   template_app
+                    (template_app (template_hole 0, template_var 4),
+                     template_app
+                      (template_app
+                        (template_app
+                          (template_app (template_hole 5, template_var 5),
+                           template_var 4),
+                         template_var 3),
+                       template_var 2))),
+                 template_var 3),
+               template_var 2)),
+           template_var 1),
+         template_var 0))),
+    ("Converter.rel_converter_map_converter'1",
+     "rel_converter ?A ?B ?C ?R (map_converter' ?f ?g ?conv1.0) ?conv2.0 =
+      rel_converter ?A (%x. ?B (?f x)) (%x. ?C (?g x)) ?R ?conv1.0
+       ?conv2.0",
+     template_equation
+      (template_app
+        (template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 2, template_var 7),
+                 template_var 6),
+               template_var 5),
+             template_var 4),
+           template_app
+            (template_app
+              (template_app (template_hole 1, template_var 3),
+               template_var 2),
+             template_var 1)),
+         template_var 0),
+       template_app
+        (template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 0, template_var 7), t_empty),
+               t_empty),
+             template_var 4),
+           template_var 1),
+         template_var 0))),
+    ("Converter.interaction_any_bounded_converterD",
+     "interaction_any_bounded_converter ?conv ?n ==>
+      interaction_any_bounded_by (run_converter ?conv ?a) ?n &
+      (ALL (b, conv'):results'_gpv (run_converter ?conv ?a).
+          interaction_any_bounded_converter conv' ?n)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 7, template_var 2),
+              template_var 1)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 6,
+               template_app
+                (template_app
+                  (template_app (template_hole 5, t_empty),
+                   template_app
+                    (template_app (template_hole 3, template_var 2),
+                     template_var 0)),
+                 template_var 1)),
+             template_app
+              (template_app
+                (template_hole 2,
+                 template_app
+                  (template_hole 1,
+                   template_app
+                    (template_app (template_hole 3, template_var 2),
+                     template_var 0))),
+               template_app (template_hole 0, t_empty)))
+           ))),
+    ("Converter.comp_coverter_of_callee",
+     "comp_converter (converter_of_callee ?callee1.0 ?s1.0)
+       (converter_of_callee ?callee2.0 ?s2.0) =
+      converter_of_callee
+       (%(s1, s2) q.
+           map_gpv rprodl id (inline ?callee2.0 (?callee1.0 s1 q) s2))
+       (?s1.0, ?s2.0)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 9,
+           template_app
+            (template_app (template_hole 8, template_var 3),
+             template_var 2)),
+         template_app
+          (template_app (template_hole 7, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 6, template_app (template_hole 5, t_empty)),
+         template_app
+          (template_app (template_hole 0, template_var 2),
+           template_var 0)))),
+    ("Converter.parallel_converter2_map2_out",
+     "parallel_converter2 ?conv1.0 (map_converter ?f ?g ?h ?k ?conv2.0) =
+      map_converter (map_sum id ?f) (map_sum id ?g) (map_sum id ?h)
+       (map_sum id ?k) (parallel_converter2 ?conv1.0 ?conv2.0)",
+     template_equation
+      (template_app
+        (template_app (template_hole 11, template_var 5),
+         template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 10, template_var 4),
+                 template_var 3),
+               template_var 2),
+             template_var 1),
+           template_var 0)),
+       template_app
+        (template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_hole 9,
+                 template_app
+                  (template_app (template_hole 8, template_hole 7),
+                   template_var 4)),
+               template_app
+                (template_app (template_hole 6, template_hole 5),
+                 template_var 3)),
+             template_app
+              (template_app (template_hole 4, template_hole 3),
+               template_var 2)),
+           template_app
+            (template_app (template_hole 2, template_hole 1),
+             template_var 1)),
+         template_app
+          (template_app (template_hole 0, template_var 5),
+           template_var 0)))),
+    ("Converter.parallel_converter2_map1_out",
+     "parallel_converter2 (map_converter ?f ?g ?h ?k ?conv1.0) ?conv2.0 =
+      map_converter (map_sum ?f id) (map_sum ?g id) (map_sum ?h id)
+       (map_sum ?k id) (parallel_converter2 ?conv1.0 ?conv2.0)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 11,
+           template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_app (template_hole 10, template_var 5),
+                   template_var 4),
+                 template_var 3),
+               template_var 2),
+             template_var 1)),
+         template_var 0),
+       template_app
+        (template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_hole 9,
+                 template_app
+                  (template_app (template_hole 8, template_var 5),
+                   template_hole 7)),
+               template_app
+                (template_app (template_hole 6, template_var 4),
+                 template_hole 5)),
+             template_app
+              (template_app (template_hole 4, template_var 3),
+               template_hole 3)),
+           template_app
+            (template_app (template_hole 2, template_var 2),
+             template_hole 1)),
+         template_app
+          (template_app (template_hole 0, template_var 1),
+           template_var 0)))),
+    ("Converter.rel_converter_pos_distr",
+     "rel_converter ?A ?B ?C ?R OO rel_converter ?A' ?B' ?C' ?R'
+      <= rel_converter (?A OO ?A') (?B OO ?B') (?C OO ?C') (?R OO ?R')",
+     template_inequation
+      (less_equals,
+       template_app
+        (template_app
+          (template_hole 7,
+           template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 6, template_var 7),
+                 template_var 6),
+               template_var 5),
+             template_var 4)),
+         template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 5, template_var 3),
+               template_var 2),
+             template_var 1),
+           template_var 0)),
+       template_app
+        (template_app
+          (template_app
+            (template_app
+              (template_hole 4,
+               template_app
+                (template_app (template_hole 3, template_var 7),
+                 template_var 3)),
+             template_app
+              (template_app (template_hole 2, template_var 6),
+               template_var 2)),
+           template_app
+            (template_app (template_hole 1, template_var 5),
+             template_var 1)),
+         template_app
+          (template_app (template_hole 0, template_var 4),
+           template_var 0)))),
+    ("Converter.rel_converterD",
+     "rel_converter ?A ?B ?C ?R ?conv1.0 ?conv2.0 ==>
+      rel_fun ?A (rel_gpv'' (rel_prod ?B (rel_converter ?A ?B ?C ?R)) ?C ?R)
+       (run_converter ?conv1.0) (run_converter ?conv2.0)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app
+                     (template_app (template_hole 5, template_var 5),
+                      template_var 4),
+                    template_var 3),
+                  template_var 2),
+                template_var 1),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 4, template_var 5),
+                 template_app
+                  (template_app
+                    (template_app
+                      (template_hole 3,
+                       template_app
+                        (template_app (template_hole 2, template_var 4),
+                         template_app
+                          (template_app
+                            (template_app
+                              (template_app
+                                (template_hole 5, template_var 5),
+                               template_var 4),
+                             template_var 3),
+                           template_var 2))),
+                     template_var 3),
+                   template_var 2)),
+               template_app (template_hole 1, template_var 1)),
+             template_app (template_hole 0, template_var 0))
+           ))),
+    ("Converter.plossless_restrict_converter",
+     "[| plossless_converter ?\<I> ?\<I>' ?conv;
+         ?\<I>, ?\<I>' \<turnstile>\<^sub>C ?conv \<surd>;
+         outs_\<I> ?\<I> <= ?A |]
+      ==> plossless_converter ?\<I> ?\<I>'
+           (restrict_converter ?A ?\<I>' ?conv)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 4, template_var 3),
+                template_var 2),
+              template_var 1)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 3, template_var 3),
+                template_var 2),
+              template_var 1)
+            ),
+        template_inequation
+         (less_equals, template_app (template_hole 1, template_var 3),
+          template_var 0)],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app (template_hole 4, template_var 3),
+               template_var 2),
+             template_app
+              (template_app
+                (template_app (template_hole 0, template_var 0),
+                 template_var 2),
+               template_var 1))
+           ))),
+    ("Converter.corec_converter_parametric",
+     "rel_fun
+       (rel_fun ?S
+         (rel_fun ?A
+           (rel_gpv'' (rel_prod ?B (rel_sum (rel_converter ?A ?B ?C ?R) ?S))
+             ?C ?R)))
+       (rel_fun ?S (rel_converter ?A ?B ?C ?R)) corec_converter
+       corec_converter",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_hole 9,
+                 template_app
+                  (template_app (template_hole 8, template_var 4),
+                   template_app
+                    (template_app (template_hole 7, template_var 3),
+                     template_app
+                      (template_app
+                        (template_app
+                          (template_hole 6,
+                           template_app
+                            (template_app (template_hole 5, template_var 2),
+                             template_app
+                              (template_app
+                                (template_hole 4,
+                                 template_app
+                                  (template_app
+                                    (template_app
+(template_app (template_hole 3, template_var 3), template_var 2),
+                                     template_var 1),
+                                   template_var 0)),
+                               template_var 4))),
+                         template_var 1),
+                       template_var 0)))),
+               template_app
+                (template_app (template_hole 2, template_var 4),
+                 template_app
+                  (template_app
+                    (template_app
+                      (template_app (template_hole 3, template_var 3),
+                       template_var 2),
+                     template_var 1),
+                   template_var 0))),
+             template_hole 1),
+           template_hole 0)
+         )),
+    ("Converter.map_converter_compose",
+     "map_converter ?a ?b ?f ?g (map_converter ?a' ?b' ?f' ?g' ?conv) =
+      map_converter (?a' o ?a) (?b o ?b') (?f o ?f') (?g' o ?g) ?conv",
+     template_equation
+      (template_app
+        (template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 6, template_var 8),
+               template_var 7),
+             template_var 6),
+           template_var 5),
+         template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 5, template_var 4),
+                 template_var 3),
+               template_var 2),
+             template_var 1),
+           template_var 0)),
+       template_app
+        (template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_hole 4,
+                 template_app
+                  (template_app (template_hole 3, template_var 4),
+                   template_var 8)),
+               template_app
+                (template_app (template_hole 2, template_var 7),
+                 template_var 3)),
+             template_app
+              (template_app (template_hole 1, template_var 6),
+               template_var 2)),
+           template_app
+            (template_app (template_hole 0, template_var 1),
+             template_var 5)),
+         template_var 0))),
+    ("Converter.parallel_converter2_parametric",
+     "rel_fun (rel_converter ?A ?B ?C ?R)
+       (rel_fun (rel_converter ?A' ?B' ?C' ?R')
+         (rel_converter (rel_sum ?A ?A') (rel_sum ?B ?B') (rel_sum ?C ?C')
+           (rel_sum ?R ?R')))
+       parallel_converter2 parallel_converter2",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_hole 10,
+                 template_app
+                  (template_app
+                    (template_app
+                      (template_app (template_hole 9, template_var 7),
+                       template_var 6),
+                     template_var 5),
+                   template_var 4)),
+               template_app
+                (template_app
+                  (template_hole 8,
+                   template_app
+                    (template_app
+                      (template_app
+                        (template_app (template_hole 7, template_var 3),
+                         template_var 2),
+                       template_var 1),
+                     template_var 0)),
+                 template_app
+                  (template_app
+                    (template_app
+                      (template_app
+                        (template_hole 6,
+                         template_app
+                          (template_app (template_hole 5, template_var 7),
+                           template_var 3)),
+                       template_app
+                        (template_app (template_hole 4, template_var 6),
+                         template_var 2)),
+                     template_app
+                      (template_app (template_hole 3, template_var 5),
+                       template_var 1)),
+                   template_app
+                    (template_app (template_hole 2, template_var 4),
+                     template_var 0)))),
+             template_hole 1),
+           template_hole 0)
+         )),
+    ("Converter.attach_callee_parallel_intercept",
+     "attach_callee (parallel_intercept ?callee1.0 ?callee2.0)
+       (?oracle1.0 \<oplus>\<^sub>O ?oracle2.0) =
+      map_fun rprodl (map_fun id (map_spmf (map_prod id lprodr)))
+       (lift_state_oracle extend_state_oracle
+         (attach_callee ?callee1.0 ?oracle1.0) \<oplus>\<^sub>O
+        \<dagger>(attach_callee ?callee2.0 ?oracle2.0))",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 17,
+           template_app
+            (template_app (template_hole 16, template_var 3),
+             template_var 2)),
+         template_app
+          (template_app (template_hole 15, template_var 1),
+           template_var 0)),
+       template_app
+        (template_app
+          (template_app (template_hole 14, template_hole 13),
+           template_app
+            (template_app (template_hole 12, template_hole 11),
+             template_app
+              (template_hole 10,
+               template_app
+                (template_hole 9,
+                 template_app
+                  (template_app (template_hole 8, template_hole 7),
+                   template_hole 6))))),
+         template_app
+          (template_app
+            (template_hole 5,
+             template_app
+              (template_app (template_hole 4, template_hole 3),
+               template_app
+                (template_app (template_hole 2, template_var 3),
+                 template_var 1))),
+           template_app
+            (template_hole 1,
+             template_app
+              (template_app (template_hole 0, template_var 2),
+               template_var 0)))))),
+    ("Converter.lossless_attach",
+     "[| plossless_converter ?\<I> ?\<I>' ?conv;
+         lossless_resource ?\<I>' ?res;
+         ?\<I>, ?\<I>' \<turnstile>\<^sub>C ?conv \<surd>;
+         ?\<I>' \<turnstile>res ?res \<surd> |]
+      ==> lossless_resource ?\<I> (attach ?conv ?res)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 5, template_var 3),
+                template_var 2),
+              template_var 1)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 4, template_var 2),
+              template_var 0)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 3, template_var 3),
+                template_var 2),
+              template_var 1)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 2, template_var 2),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 1, template_var 3),
+             template_app
+              (template_app (template_hole 0, template_var 1),
+               template_var 0))
+           ))),
+    ("Converter.rel_converter_map_converter'2",
+     "rel_converter ?A ?B ?C ?R ?conv1.0 (map_converter' ?f ?g ?conv2.0) =
+      rel_converter ?A (%x y. ?B x (?f y)) (%x y. ?C x (?g y)) ?R ?conv1.0
+       ?conv2.0",
+     template_equation
+      (template_app
+        (template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 2, template_var 7),
+                 template_var 6),
+               template_var 5),
+             template_var 4),
+           template_var 3),
+         template_app
+          (template_app
+            (template_app (template_hole 1, template_var 2),
+             template_var 1),
+           template_var 0)),
+       template_app
+        (template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 0, template_var 7), t_empty),
+               t_empty),
+             template_var 4),
+           template_var 3),
+         template_var 0))),
+    ("Converter.plossless_converter_mono",
+     "[| plossless_converter ?\<I>1.0 ?\<I>2.0 ?conv;
+         outs_\<I> ?\<I>1' <= outs_\<I> ?\<I>1.0; ?\<I>2.0 <= ?\<I>2';
+         ?\<I>1.0, ?\<I>2.0 \<turnstile>\<^sub>C ?conv \<surd> |]
+      ==> plossless_converter ?\<I>1' ?\<I>2' ?conv",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 4, template_var 4),
+                template_var 3),
+              template_var 2)
+            ),
+        template_inequation
+         (less_equals, template_app (template_hole 2, template_var 1),
+          template_app (template_hole 2, template_var 4)),
+        template_inequation (less_equals, template_var 3, template_var 0),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 0, template_var 4),
+                template_var 3),
+              template_var 2)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app (template_hole 4, template_var 1),
+               template_var 0),
+             template_var 2)
+           ))),
+    ("Converter.map_converter_parametric",
+     "rel_fun (rel_fun ?A' ?A)
+       (rel_fun (rel_fun ?B ?B')
+         (rel_fun (rel_fun ?C ?C')
+           (rel_fun (rel_fun ?R' ?R)
+             (rel_fun (rel_converter ?A ?B ?C ?R)
+               (rel_converter ?A' ?B' ?C' ?R')))))
+       map_converter map_converter",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_hole 12,
+                 template_app
+                  (template_app (template_hole 11, template_var 7),
+                   template_var 6)),
+               template_app
+                (template_app
+                  (template_hole 10,
+                   template_app
+                    (template_app (template_hole 9, template_var 5),
+                     template_var 4)),
+                 template_app
+                  (template_app
+                    (template_hole 8,
+                     template_app
+                      (template_app (template_hole 7, template_var 3),
+                       template_var 2)),
+                   template_app
+                    (template_app
+                      (template_hole 6,
+                       template_app
+                        (template_app (template_hole 5, template_var 1),
+                         template_var 0)),
+                     template_app
+                      (template_app
+                        (template_hole 4,
+                         template_app
+                          (template_app
+                            (template_app
+                              (template_app
+                                (template_hole 3, template_var 6),
+                               template_var 5),
+                             template_var 3),
+                           template_var 0)),
+                       template_app
+                        (template_app
+                          (template_app
+                            (template_app (template_hole 2, template_var 7),
+                             template_var 4),
+                           template_var 2),
+                         template_var 1)))))),
+             template_hole 1),
+           template_hole 0)
+         )),
+    ("Converter.comp_converter_of_callee'",
+     "attach (converter_of_callee ?callee1.0 ?s1.0)
+       (attach (converter_of_callee ?callee2.0 ?s2.0) ?res) =
+      attach
+       (converter_of_callee
+         (%(s1, s2) q.
+             map_gpv rprodl id (inline ?callee2.0 (?callee1.0 s1 q) s2))
+         (?s1.0, ?s2.0))
+       ?res",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 11,
+           template_app
+            (template_app (template_hole 10, template_var 4),
+             template_var 3)),
+         template_app
+          (template_app
+            (template_hole 9,
+             template_app
+              (template_app (template_hole 8, template_var 2),
+               template_var 1)),
+           template_var 0)),
+       template_app
+        (template_app
+          (template_hole 7,
+           template_app
+            (template_app
+              (template_hole 6, template_app (template_hole 5, t_empty)),
+             template_app
+              (template_app (template_hole 0, template_var 3),
+               template_var 1))),
+         template_var 0))),
+    ("Converter.comp_converter_of_callee'",
+     "comp_converter (converter_of_callee ?callee1.0 ?s1.0)
+       (comp_converter (converter_of_callee ?callee2.0 ?s2.0) ?conv) =
+      comp_converter
+       (converter_of_callee
+         (%(s1, s2) q.
+             map_gpv rprodl id (inline ?callee2.0 (?callee1.0 s1 q) s2))
+         (?s1.0, ?s2.0))
+       ?conv",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 11,
+           template_app
+            (template_app (template_hole 10, template_var 4),
+             template_var 3)),
+         template_app
+          (template_app
+            (template_hole 9,
+             template_app
+              (template_app (template_hole 8, template_var 2),
+               template_var 1)),
+           template_var 0)),
+       template_app
+        (template_app
+          (template_hole 7,
+           template_app
+            (template_app
+              (template_hole 6, template_app (template_hole 5, t_empty)),
+             template_app
+              (template_app (template_hole 0, template_var 3),
+               template_var 1))),
+         template_var 0))),
+    ("Converter.map_converter_parallel_converter2",
+     "map_converter (map_sum ?f ?f') (map_sum ?g ?g') (map_sum ?h ?h')
+       (map_sum ?k ?k') (parallel_converter2 ?conv1.0 ?conv2.0) =
+      parallel_converter2 (map_converter ?f ?g ?h ?k ?conv1.0)
+       (map_converter ?f' ?g' ?h' ?k' ?conv2.0)",
+     template_equation
+      (template_app
+        (template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_hole 8,
+                 template_app
+                  (template_app (template_hole 7, template_var 9),
+                   template_var 8)),
+               template_app
+                (template_app (template_hole 6, template_var 7),
+                 template_var 6)),
+             template_app
+              (template_app (template_hole 5, template_var 5),
+               template_var 4)),
+           template_app
+            (template_app (template_hole 4, template_var 3),
+             template_var 2)),
+         template_app
+          (template_app (template_hole 3, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 2,
+           template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_app (template_hole 1, template_var 9),
+                   template_var 7),
+                 template_var 5),
+               template_var 3),
+             template_var 1)),
+         template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 0, template_var 8),
+                 template_var 6),
+               template_var 4),
+             template_var 2),
+           template_var 0)))),
+    ("Converter.plossless_map_converter",
+     "[| plossless_converter (map_\<I> (inv ?f) (inv ?g) ?\<I>)
+          (map_\<I> ?h ?k ?\<I>') ?conv;
+         inj ?f |]
+      ==> plossless_converter ?\<I> ?\<I>'
+           (map_converter ?f ?g ?h ?k ?conv)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_hole 9,
+                  template_app
+                   (template_app
+                     (template_app
+                       (template_hole 8,
+                        template_app
+                         (template_app (template_hole 7, template_hole 6),
+                          template_var 6)),
+                      template_app
+                       (template_app (template_hole 5, template_hole 4),
+                        template_var 5)),
+                    template_var 4)),
+                template_app
+                 (template_app
+                   (template_app (template_hole 3, template_var 3),
+                    template_var 2),
+                  template_var 1)),
+              template_var 0)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 2, template_var 6),
+              template_hole 6)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app (template_hole 1, template_var 4),
+               template_var 1),
+             template_app
+              (template_app
+                (template_app
+                  (template_app
+                    (template_app (template_hole 0, template_var 6),
+                     template_var 5),
+                   template_var 3),
+                 template_var 2),
+               template_var 0))
+           ))),
+    ("Converter.plossless_comp_converter",
+     "[| plossless_converter ?\<I> ?\<I>' ?conv;
+         plossless_converter ?\<I>' ?\<I>'' ?conv';
+         ?\<I>, ?\<I>' \<turnstile>\<^sub>C ?conv \<surd>;
+         ?\<I>', ?\<I>'' \<turnstile>\<^sub>C ?conv' \<surd> |]
+      ==> plossless_converter ?\<I> ?\<I>'' (comp_converter ?conv ?conv')",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 5, template_var 4),
+                template_var 3),
+              template_var 2)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 4, template_var 3),
+                template_var 1),
+              template_var 0)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 3, template_var 4),
+                template_var 3),
+              template_var 2)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 2, template_var 3),
+                template_var 1),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app (template_hole 1, template_var 4),
+               template_var 1),
+             template_app
+              (template_app (template_hole 0, template_var 2),
+               template_var 0))
+           ))),
+    ("Converter.bi_total_rel_converter",
+     "[| bi_total ?A; bi_unique ?A; bi_total ?B; bi_total ?C; bi_total ?R;
+         bi_unique ?R |]
+      ==> bi_total (rel_converter ?A ?B ?C ?R)",
+     template_implication
+      ([template_predicate (template_app (template_hole 7, template_var 3)),
+        template_predicate (template_app (template_hole 6, template_var 3)),
+        template_predicate (template_app (template_hole 5, template_var 2)),
+        template_predicate (template_app (template_hole 4, template_var 1)),
+        template_predicate (template_app (template_hole 3, template_var 0)),
+        template_predicate
+         (template_app (template_hole 2, template_var 0))],
+       template_predicate
+        (
+           template_app
+            (template_hole 1,
+             template_app
+              (template_app
+                (template_app
+                  (template_app (template_hole 0, template_var 3),
+                   template_var 2),
+                 template_var 1),
+               template_var 0))
+           ))),
+    ("Converter.left_total_rel_converter",
+     "[| left_unique ?A; right_total ?A; left_total ?B; left_total ?C;
+         left_unique ?R; right_total ?R |]
+      ==> left_total (rel_converter ?A ?B ?C ?R)",
+     template_implication
+      ([template_predicate (template_app (template_hole 7, template_var 3)),
+        template_predicate (template_app (template_hole 6, template_var 3)),
+        template_predicate (template_app (template_hole 5, template_var 2)),
+        template_predicate (template_app (template_hole 4, template_var 1)),
+        template_predicate (template_app (template_hole 3, template_var 0)),
+        template_predicate
+         (template_app (template_hole 2, template_var 0))],
+       template_predicate
+        (
+           template_app
+            (template_hole 1,
+             template_app
+              (template_app
+                (template_app
+                  (template_app (template_hole 0, template_var 3),
+                   template_var 2),
+                 template_var 1),
+               template_var 0))
+           ))),
+    ("Converter.right_total_rel_converter",
+     "[| right_unique ?A; left_total ?A; right_total ?B; right_total ?C;
+         right_unique ?R; left_total ?R |]
+      ==> right_total (rel_converter ?A ?B ?C ?R)",
+     template_implication
+      ([template_predicate (template_app (template_hole 7, template_var 3)),
+        template_predicate (template_app (template_hole 6, template_var 3)),
+        template_predicate (template_app (template_hole 5, template_var 2)),
+        template_predicate (template_app (template_hole 4, template_var 1)),
+        template_predicate (template_app (template_hole 3, template_var 0)),
+        template_predicate
+         (template_app (template_hole 2, template_var 0))],
+       template_predicate
+        (
+           template_app
+            (template_hole 1,
+             template_app
+              (template_app
+                (template_app
+                  (template_app (template_hole 0, template_var 3),
+                   template_var 2),
+                 template_var 1),
+               template_var 0))
+           ))),
+    ("Converter.rel_converter_mono",
+     "[| ?A' <= ?A; ?B <= ?B'; ?C <= ?C'; ?R' <= ?R |]
+      ==> rel_converter ?A ?B ?C ?R <= rel_converter ?A' ?B' ?C' ?R'",
+     template_implication
+      ([template_inequation (less_equals, template_var 7, template_var 6),
+        template_inequation (less_equals, template_var 5, template_var 4),
+        template_inequation (less_equals, template_var 3, template_var 2),
+        template_inequation (less_equals, template_var 1, template_var 0)],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 0, template_var 6),
+               template_var 5),
+             template_var 3),
+           template_var 0),
+         template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 0, template_var 7),
+               template_var 4),
+             template_var 2),
+           template_var 1)))),
+    ("Converter.plossless_converterD",
+     "[| plossless_converter ?\<I> ?\<I>' ?conv; ?a : outs_\<I> ?\<I> |]
+      ==> plossless_gpv ?\<I>' (run_converter ?conv ?a) &
+          (ALL (b, conv'):results_gpv ?\<I>' (run_converter ?conv ?a).
+              plossless_converter ?\<I> ?\<I>' conv')",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 9, template_var 3),
+                template_var 2),
+              template_var 1)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 8, template_var 0),
+              template_app (template_hole 7, template_var 3))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 6,
+               template_app
+                (template_app
+                  (template_app (template_hole 5, template_hole 4),
+                   template_var 2),
+                 template_app
+                  (template_app (template_hole 3, template_var 1),
+                   template_var 0))),
+             template_app
+              (template_app
+                (template_hole 2,
+                 template_app
+                  (template_app (template_hole 1, template_var 2),
+                   template_app
+                    (template_app (template_hole 3, template_var 1),
+                     template_var 0))),
+               template_app (template_hole 0, t_empty)))
+           ))),
+    ("Converter.plossless_parallel_converter",
+     "[| plossless_converter ?\<I>1.0 ?\<I> ?conv1.0;
+         plossless_converter ?\<I>2.0 ?\<I> ?conv2.0;
+         ?\<I>1.0, ?\<I> \<turnstile>\<^sub>C ?conv1.0 \<surd>;
+         ?\<I>2.0, ?\<I> \<turnstile>\<^sub>C ?conv2.0 \<surd> |]
+      ==> plossless_converter (?\<I>1.0 \<oplus>\<^sub>\<I> ?\<I>2.0) ?\<I>
+           (parallel_converter ?conv1.0 ?conv2.0)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 6, template_var 4),
+                template_var 3),
+              template_var 2)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 5, template_var 1),
+                template_var 3),
+              template_var 0)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 4, template_var 4),
+                template_var 3),
+              template_var 2)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 3, template_var 1),
+                template_var 3),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_hole 2,
+                 template_app
+                  (template_app (template_hole 1, template_var 4),
+                   template_var 1)),
+               template_var 3),
+             template_app
+              (template_app (template_hole 0, template_var 2),
+               template_var 0))
+           ))),
+    ("Converter.WT_converterD_results",
+     "[| ?\<I>, ?\<I>' \<turnstile>\<^sub>C ?conv \<surd>;
+         ?q : outs_\<I> ?\<I>;
+         (?r, ?conv') : results_gpv ?\<I>' (run_converter ?conv ?q) |]
+      ==> ?r : responses_\<I> ?\<I> ?q & ?\<I>, ?\<I>' \<turnstile>\<^sub>C
+          ?conv' \<surd>",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 9, template_var 5),
+                template_var 4),
+              template_var 3)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 8, template_var 2),
+              template_app (template_hole 7, template_var 5))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 6,
+                template_app
+                 (template_app (template_hole 5, template_var 1),
+                  template_var 0)),
+              template_app
+               (template_app (template_hole 4, template_var 4),
+                template_app
+                 (template_app (template_hole 3, template_var 3),
+                  template_var 2)))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 2,
+               template_app
+                (template_app (template_hole 1, template_var 1),
+                 template_app
+                  (template_app (template_hole 0, template_var 5),
+                   template_var 2))),
+             template_app
+              (template_app
+                (template_app (template_hole 9, template_var 5),
+                 template_var 4),
+               template_var 0))
+           ))),
+    ("Converter.WT_converterD'",
+     "[| ?\<I>, ?\<I>' \<turnstile>\<^sub>C ?conv \<surd>;
+         ?q : outs_\<I> ?\<I> |]
+      ==> ?\<I>' \<turnstile>g run_converter ?conv ?q \<surd> &
+          (ALL (r, conv'):results_gpv ?\<I>' (run_converter ?conv ?q).
+              r : responses_\<I> ?\<I> ?q & ?\<I>,
+              ?\<I>' \<turnstile>\<^sub>C conv' \<surd>)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 10, template_var 3),
+                template_var 2),
+              template_var 1)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 9, template_var 0),
+              template_app (template_hole 8, template_var 3))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 7,
+               template_app
+                (template_app (template_hole 6, template_var 2),
+                 template_app
+                  (template_app (template_hole 5, template_var 1),
+                   template_var 0))),
+             template_app
+              (template_app
+                (template_hole 4,
+                 template_app
+                  (template_app (template_hole 3, template_var 2),
+                   template_app
+                    (template_app (template_hole 5, template_var 1),
+                     template_var 0))),
+               template_app (template_hole 2, t_empty)))
+           ))),
+    ("Converter.WT_converter_map_converter",
+     "[| map_\<I> (inv ?f) (inv ?g) ?\<I>,
+         map_\<I> ?f' ?g' ?\<I>' \<turnstile>\<^sub>C ?conv \<surd>;
+         inj ?f; surj ?g |]
+      ==> ?\<I>, ?\<I>' \<turnstile>\<^sub>C
+          map_converter ?f ?g ?f' ?g' ?conv \<surd>",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_hole 12,
+                  template_app
+                   (template_app
+                     (template_app
+                       (template_hole 11,
+                        template_app
+                         (template_app (template_hole 10, template_hole 9),
+                          template_var 6)),
+                      template_app
+                       (template_app (template_hole 8, template_hole 7),
+                        template_var 5)),
+                    template_var 4)),
+                template_app
+                 (template_app
+                   (template_app (template_hole 6, template_var 3),
+                    template_var 2),
+                  template_var 1)),
+              template_var 0)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 5, template_var 6),
+              template_hole 9)
+            ),
+        template_equation
+         (template_app
+           (template_app (template_hole 3, template_var 5),
+            template_hole 7),
+          template_hole 2)],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app (template_hole 1, template_var 4),
+               template_var 1),
+             template_app
+              (template_app
+                (template_app
+                  (template_app
+                    (template_app (template_hole 0, template_var 6),
+                     template_var 5),
+                   template_var 3),
+                 template_var 2),
+               template_var 0))
+           ))),
+    ("Converter.plossless_converter_of_callee",
+     "(!!s x.
+          x : outs_\<I> ?\<I>1.0 ==>
+          plossless_gpv ?\<I>2.0 (?callee s x) &
+          (ALL (y, s'):results_gpv ?\<I>2.0 (?callee s x).
+              y : responses_\<I> ?\<I>1.0 x)) ==>
+      plossless_converter ?\<I>1.0 ?\<I>2.0
+       (converter_of_callee ?callee ?s)",
+     template_implication
+      ([template_predicate (template_app (template_hole 14, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app (template_hole 1, template_var 3),
+               template_var 2),
+             template_app
+              (template_app (template_hole 0, template_var 1),
+               template_var 0))
+           ))),
+    ("Converter.plossless_converter_coinduct",
+     "[| ?X ?conv;
+         !!conv a.
+            [| ?X conv; a : outs_\<I> ?\<I> |]
+            ==> plossless_gpv ?\<I>' (run_converter conv a) &
+                (ALL (b, conv'):results_gpv ?\<I>' (run_converter conv a).
+                    ?X conv' | plossless_converter ?\<I> ?\<I>' conv') |]
+      ==> plossless_converter ?\<I> ?\<I>' ?conv",
+     template_implication
+      ([template_predicate (template_app (template_var 3, template_var 2)),
+        template_predicate (template_app (template_hole 12, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app (template_hole 0, template_var 1),
+               template_var 0),
+             template_var 2)
+           ))),
+    ("Converter.rel_converter_coinduct",
+     "[| ?X ?conv1.0 ?conv2.0;
+         !!conv1 conv2.
+            ?X conv1 conv2 ==>
+            rel_fun ?A
+             (rel_gpv''
+               (rel_prod ?B
+                 (%conv1 conv2.
+                     ?X conv1 conv2 |
+                     rel_converter ?A ?B ?C ?R conv1 conv2))
+               ?C ?R)
+             (run_converter conv1) (run_converter conv2) |]
+      ==> rel_converter ?A ?B ?C ?R ?conv1.0 ?conv2.0",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_var 6, template_var 5), template_var 4)
+            ),
+        template_predicate (template_app (template_hole 8, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_app
+                    (template_app (template_hole 2, template_var 3),
+                     template_var 2),
+                   template_var 1),
+                 template_var 0),
+               template_var 5),
+             template_var 4)
+           ))),
+    ("Converter.outs_converter_Converter",
+     "(?x : outs_converter ?\<I> ?\<I>' (Converter ?conv)) =
+      ((EX a. ?x : outs_gpv ?\<I>' (?conv a) & a : outs_\<I> ?\<I>) |
+       (EX b conv' a.
+           (b, conv') : results_gpv ?\<I>' (?conv a) &
+           ?x : outs_converter ?\<I> ?\<I>' conv' & a : outs_\<I> ?\<I>))",
+     template_equation
+      (template_app
+        (template_app (template_hole 13, template_var 3),
+         template_app
+          (template_app
+            (template_app (template_hole 12, template_var 2),
+             template_var 1),
+           template_app (template_hole 11, template_var 0))),
+       template_app
+        (template_app
+          (template_hole 10, template_app (template_hole 9, t_empty)),
+         template_app (template_hole 4, t_empty)))),
+    ("Converter.rel_witness_converter_sel",
+     "run_converter
+       (rel_witness_converter ?A ?A' ?B ?C ?R ?R' (?conv1.0, ?conv2.0)) =
+      map_gpv
+       (map_prod id (rel_witness_converter ?A ?A' ?B ?C ?R ?R') o
+        rel_witness_prod)
+       id o
+      rel_witness_gpv
+       (rel_prod ?B (rel_converter (?A OO ?A') ?B ?C (?R OO ?R'))) ?C ?R
+       ?R' o
+      rel_witness_fun ?A ?A'
+       (run_converter ?conv1.0, run_converter ?conv2.0)",
+     template_equation
+      (template_app
+        (template_hole 19,
+         template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_app
+                    (template_app (template_hole 18, template_var 7),
+                     template_var 6),
+                   template_var 5),
+                 template_var 4),
+               template_var 3),
+             template_var 2),
+           template_app
+            (template_app (template_hole 17, template_var 1),
+             template_var 0))),
+       template_app
+        (template_app
+          (template_hole 16,
+           template_app
+            (template_app
+              (template_hole 15,
+               template_app
+                (template_app
+                  (template_hole 14,
+                   template_app
+                    (template_app
+                      (template_hole 13,
+                       template_app
+                        (template_app (template_hole 12, template_hole 11),
+                         template_app
+                          (template_app
+                            (template_app
+                              (template_app
+                                (template_app
+                                  (template_app
+                                    (template_hole 18, template_var 7),
+                                   template_var 6),
+                                 template_var 5),
+                               template_var 4),
+                             template_var 3),
+                           template_var 2))),
+                     template_hole 10)),
+                 template_hole 9)),
+             template_app
+              (template_app
+                (template_app
+                  (template_app
+                    (template_hole 8,
+                     template_app
+                      (template_app (template_hole 7, template_var 5),
+                       template_app
+                        (template_app
+                          (template_app
+                            (template_app
+                              (template_hole 6,
+                               template_app
+                                (template_app
+                                  (template_hole 5, template_var 7),
+                                 template_var 6)),
+                             template_var 5),
+                           template_var 4),
+                         template_app
+                          (template_app (template_hole 4, template_var 3),
+                           template_var 2)))),
+                   template_var 4),
+                 template_var 3),
+               template_var 2))),
+         template_app
+          (template_app
+            (template_app (template_hole 3, template_var 7),
+             template_var 6),
+           template_app
+            (template_app
+              (template_hole 2,
+               template_app (template_hole 1, template_var 1)),
+             template_app (template_hole 0, template_var 0)))))),
+    ("Converter.results_converter_Converter",
+     "(?x : results_converter ?\<I> ?\<I>' (Converter ?conv)) =
+      ((EX conv' a.
+           (?x, conv') : results_gpv ?\<I>' (?conv a) &
+           a : outs_\<I> ?\<I>) |
+       (EX b' conv' a.
+           (b', conv') : results_gpv ?\<I>' (?conv a) &
+           ?x : results_converter ?\<I> ?\<I>' conv' &
+           a : outs_\<I> ?\<I>))",
+     template_equation
+      (template_app
+        (template_app (template_hole 12, template_var 3),
+         template_app
+          (template_app
+            (template_app (template_hole 11, template_var 2),
+             template_var 1),
+           template_app (template_hole 10, template_var 0))),
+       template_app
+        (template_app
+          (template_hole 9, template_app (template_hole 8, t_empty)),
+         template_app (template_hole 0, t_empty)))),
+    ("Converter.rel_converter_Grp",
+     "rel_converter (BNF_Def.Grp UNIV ?f)^--1 (BNF_Def.Grp ?B ?g)
+       (BNF_Def.Grp ?C ?h) (BNF_Def.Grp UNIV ?k)^--1 =
+      BNF_Def.Grp
+       {conv.
+        results_converter (\<I>_uniform (range ?f) UNIV)
+         (\<I>_uniform UNIV (range ?k)) conv
+        <= ?B &
+        outs_converter (\<I>_uniform (range ?f) UNIV)
+         (\<I>_uniform UNIV (range ?k)) conv
+        <= ?C}
+       (map_converter ?f ?g ?h ?k)",
+     template_equation
+      (template_app
+        (template_app
+          (template_app
+            (template_app
+              (template_hole 22,
+               template_app
+                (template_hole 21,
+                 template_app
+                  (template_app (template_hole 20, template_hole 19),
+                   template_var 5))),
+             template_app
+              (template_app (template_hole 18, template_var 4),
+               template_var 3)),
+           template_app
+            (template_app (template_hole 17, template_var 2),
+             template_var 1)),
+         template_app
+          (template_hole 16,
+           template_app
+            (template_app (template_hole 15, template_hole 14),
+             template_var 0))),
+       template_app
+        (template_app
+          (template_hole 13, template_app (template_hole 12, t_empty)),
+         template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 0, template_var 5),
+               template_var 3),
+             template_var 1),
+           template_var 0)))),
+    ("Converter.WT_converter_of_callee",
+     "[| !!s q.
+            q : outs_\<I> ?\<I> ==>
+            ?\<I>' \<turnstile>g ?callee s q \<surd>;
+         !!s q r s'.
+            [| q : outs_\<I> ?\<I>;
+               (r, s') : results_gpv ?\<I>' (?callee s q) |]
+            ==> r : responses_\<I> ?\<I> q |]
+      ==> ?\<I>, ?\<I>' \<turnstile>\<^sub>C
+          converter_of_callee ?callee ?s \<surd>",
+     template_implication
+      ([template_predicate (template_app (template_hole 13, t_empty)),
+        template_predicate (template_app (template_hole 13, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app (template_hole 1, template_var 3),
+               template_var 2),
+             template_app
+              (template_app (template_hole 0, template_var 1),
+               template_var 0))
+           ))),
+    ("Converter.WT_converter_coinduct",
+     "[| ?X ?conv;
+         !!conv q r conv'.
+            [| ?X conv; q : outs_\<I> ?\<I> |]
+            ==> ?\<I>' \<turnstile>g run_converter conv q \<surd> &
+                ((r, conv') : results_gpv ?\<I>' (run_converter conv q) -->
+                 r : responses_\<I> ?\<I> q &
+                 (?X conv' | ?\<I>, ?\<I>' \<turnstile>\<^sub>C
+                  conv' \<surd>)) |]
+      ==> ?\<I>, ?\<I>' \<turnstile>\<^sub>C ?conv \<surd>",
+     template_implication
+      ([template_predicate (template_app (template_var 3, template_var 2)),
+        template_predicate (template_app (template_hole 15, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app (template_hole 0, template_var 1),
+               template_var 0),
+             template_var 2)
+           ))),
+    ("Converter.rel_converter_neg_distr",
+     "[| left_unique ?A; right_total ?A; right_unique ?A'; left_total ?A';
+         left_unique ?R; right_total ?R; right_unique ?R'; left_total ?R' |]
+      ==> rel_converter (?A OO ?A') (?B OO ?B') (?C OO ?C') (?R OO ?R')
+          <= rel_converter ?A ?B ?C ?R OO rel_converter ?A' ?B' ?C' ?R'",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 16, template_var 7)),
+        template_predicate
+         (template_app (template_hole 15, template_var 7)),
+        template_predicate
+         (template_app (template_hole 14, template_var 6)),
+        template_predicate
+         (template_app (template_hole 13, template_var 6)),
+        template_predicate
+         (template_app (template_hole 12, template_var 5)),
+        template_predicate
+         (template_app (template_hole 11, template_var 5)),
+        template_predicate
+         (template_app (template_hole 10, template_var 4)),
+        template_predicate
+         (template_app (template_hole 9, template_var 4))],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_hole 7,
+                 template_app
+                  (template_app (template_hole 6, template_var 7),
+                   template_var 6)),
+               template_app
+                (template_app (template_hole 5, template_var 3),
+                 template_var 2)),
+             template_app
+              (template_app (template_hole 4, template_var 1),
+               template_var 0)),
+           template_app
+            (template_app (template_hole 3, template_var 5),
+             template_var 4)),
+         template_app
+          (template_app
+            (template_hole 2,
+             template_app
+              (template_app
+                (template_app
+                  (template_app (template_hole 1, template_var 7),
+                   template_var 3),
+                 template_var 1),
+               template_var 5)),
+           template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 0, template_var 6),
+                 template_var 2),
+               template_var 0),
+             template_var 4))))),
+    ("Converter.rel_witness_converter1",
+     "[| rel_converter (?A OO ?A') ?B ?C (?R OO ?R') ?conv ?conv';
+         left_unique ?A; right_total ?A; right_unique ?A'; left_total ?A';
+         left_unique ?R; right_total ?R; right_unique ?R'; left_total ?R' |]
+      ==> rel_converter ?A (%b (b', c). b = b' & ?B b' c)
+           (%c (c', d). c = c' & ?C c' d) ?R ?conv
+           (rel_witness_converter ?A ?A' ?B ?C ?R ?R' (?conv, ?conv'))",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app
+                     (template_app
+                       (template_hole 18,
+                        template_app
+                         (template_app (template_hole 17, template_var 7),
+                          template_var 6)),
+                      template_var 5),
+                    template_var 4),
+                  template_app
+                   (template_app (template_hole 16, template_var 3),
+                    template_var 2)),
+                template_var 1),
+              template_var 0)
+            ),
+        template_predicate
+         (template_app (template_hole 15, template_var 7)),
+        template_predicate
+         (template_app (template_hole 14, template_var 7)),
+        template_predicate
+         (template_app (template_hole 13, template_var 6)),
+        template_predicate
+         (template_app (template_hole 12, template_var 6)),
+        template_predicate
+         (template_app (template_hole 11, template_var 3)),
+        template_predicate
+         (template_app (template_hole 10, template_var 3)),
+        template_predicate (template_app (template_hole 9, template_var 2)),
+        template_predicate
+         (template_app (template_hole 8, template_var 2))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_app
+                    (template_app (template_hole 7, template_var 7),
+                     t_empty),
+                   t_empty),
+                 template_var 3),
+               template_var 1),
+             template_app
+              (template_app
+                (template_app
+                  (template_app
+                    (template_app
+                      (template_app
+                        (template_app (template_hole 1, template_var 7),
+                         template_var 6),
+                       template_var 5),
+                     template_var 4),
+                   template_var 3),
+                 template_var 2),
+               template_app
+                (template_app (template_hole 0, template_var 1),
+                 template_var 0)))
+           ))),
+    ("Converter.rel_witness_converter2",
+     "[| rel_converter (?A OO ?A') ?B ?C (?R OO ?R') ?conv ?conv';
+         left_unique ?A; right_total ?A; right_unique ?A'; left_total ?A';
+         left_unique ?R; right_total ?R; right_unique ?R'; left_total ?R' |]
+      ==> rel_converter ?A' (%(b, c') c. c = c' & ?B b c')
+           (%(c, d') d. d = d' & ?C c d') ?R'
+           (rel_witness_converter ?A ?A' ?B ?C ?R ?R' (?conv, ?conv'))
+           ?conv'",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app
+                     (template_app
+                       (template_hole 18,
+                        template_app
+                         (template_app (template_hole 17, template_var 7),
+                          template_var 6)),
+                      template_var 5),
+                    template_var 4),
+                  template_app
+                   (template_app (template_hole 16, template_var 3),
+                    template_var 2)),
+                template_var 1),
+              template_var 0)
+            ),
+        template_predicate
+         (template_app (template_hole 15, template_var 7)),
+        template_predicate
+         (template_app (template_hole 14, template_var 7)),
+        template_predicate
+         (template_app (template_hole 13, template_var 6)),
+        template_predicate
+         (template_app (template_hole 12, template_var 6)),
+        template_predicate
+         (template_app (template_hole 11, template_var 3)),
+        template_predicate
+         (template_app (template_hole 10, template_var 3)),
+        template_predicate (template_app (template_hole 9, template_var 2)),
+        template_predicate
+         (template_app (template_hole 8, template_var 2))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_app
+                    (template_app (template_hole 7, template_var 6),
+                     template_app (template_hole 6, t_empty)),
+                   template_app (template_hole 3, t_empty)),
+                 template_var 2),
+               template_app
+                (template_app
+                  (template_app
+                    (template_app
+                      (template_app
+                        (template_app
+                          (template_app (template_hole 1, template_var 7),
+                           template_var 6),
+                         template_var 5),
+                       template_var 4),
+                     template_var 3),
+                   template_var 2),
+                 template_app
+                  (template_app (template_hole 0, template_var 1),
+                   template_var 0))),
+             template_var 0)
+           )))]:
+   (string * thm * template) list
+### theory "Draft.ConverterTemplates"
+### 2.100s elapsed time, 3.047s cpu time, 0.955s GC time
+val it = (): unit

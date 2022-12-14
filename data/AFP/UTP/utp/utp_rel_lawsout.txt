@@ -1,0 +1,3976 @@
+Loading theory "Draft.utp_parser_utils" (required by "Draft.utp_rel_lawsTemplates" via "Draft.utp_rel_laws" via "Draft.utp_rel" via "Draft.utp_pred_laws" via "Draft.utp_pred" via "Draft.utp_expr_funcs" via "Draft.utp_expr_insts" via "Draft.utp_expr" via "Draft.utp_var")
+Loading theory "Draft.Templates" (required by "Draft.utp_rel_lawsTemplates" via "Draft.ExtrEqs")
+signature UTP_PARSER_UTILS =
+  sig
+    val mk_char: string -> Ast.ast
+    val mk_nib: int -> Ast.ast
+    val mk_string: string list -> Ast.ast
+    val string_ast_tr: Ast.ast list -> Ast.ast
+  end
+signature NAME_UTILS =
+  sig
+    val deep_unmark_const: term -> term
+    val last_char_str: string -> string
+    val mk_id: string -> term
+    val repeat_char: char -> int -> string
+    val right_crop_by: int -> string -> string
+  end
+structure Utp_Parser_Utils: UTP_PARSER_UTILS
+structure Name_Utils: NAME_UTILS
+### theory "Draft.utp_parser_utils"
+### 0.040s elapsed time, 0.117s cpu time, 0.000s GC time
+Loading theory "Draft.utp_var" (required by "Draft.utp_rel_lawsTemplates" via "Draft.utp_rel_laws" via "Draft.utp_rel" via "Draft.utp_pred_laws" via "Draft.utp_pred" via "Draft.utp_expr_funcs" via "Draft.utp_expr_insts" via "Draft.utp_expr")
+datatype template_term
+=
+     t_empty
+   | template_app of template_term * template_term
+   | template_hole of int
+   | template_var of int
+datatype sign
+= equals | greater_equals | greater_than | less_equals | less_than
+datatype template
+=
+     template_bimplication of template * template
+   | template_dunno
+   | template_equation of template_term * template_term
+   | template_implication of template list * template
+   | template_inequation of sign * template_term * template_term
+   | template_negation of template
+   | template_predicate of template_term
+constructor t_empty: template_term
+constructor template_app: template_term * template_term -> template_term
+constructor template_hole: int -> template_term
+constructor template_var: int -> template_term
+constructor equals: sign
+constructor greater_equals: sign
+constructor greater_than: sign
+constructor less_equals: sign
+constructor less_than: sign
+constructor template_bimplication: template * template -> template
+constructor template_dunno: template
+constructor template_equation: template_term * template_term -> template
+constructor template_implication: template list * template -> template
+constructor template_inequation:
+   sign * template_term * template_term -> template
+constructor template_negation: template -> template
+constructor template_predicate: template_term -> template
+val vfs = fn: term -> (indexname * typ) list * (string * typ) list
+val indexOf = fn: ''a list -> ''a -> int -> int
+val has_eq = fn: term -> bool
+val term2template = fn:
+   (indexname * typ) list -> (string * typ) list -> term -> template_term
+val lemma2predicate = fn: term -> term -> template
+val makeTemplatewithContext = fn: term -> term -> template
+val lemma2template = fn: term -> template
+val thm2template = fn: thm -> template
+val tterm2string = fn: template_term -> string
+val template2string = fn: template -> string
+val t = "height ?t <= size ?t": thm
+val th =
+   Const ("HOL.Trueprop", "bool => prop") $
+     (Const ("Orderings.ord_class.less_eq", "nat => nat => bool") $
+       (Const ("Tree.height_class.height", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree")) $
+       (Const ("Nat.size_class.size", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree"))):
+   term
+### theory "Draft.Templates"
+### 0.077s elapsed time, 0.198s cpu time, 0.000s GC time
+Loading theory "Draft.ExtrEqs" (required by "Draft.utp_rel_lawsTemplates")
+val eqpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Var (("_dummy_", 2), "?'a"))
+       ):
+   term Find_Theorems.criterion
+val badeqpattern = Pattern (Const ("Pure.eq", "?'a => ?'a => prop")):
+   term Find_Theorems.criterion
+val undefpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Const ("HOL.undefined", "?'a"))
+       ):
+   term Find_Theorems.criterion
+val thmpattern =
+   Pattern
+    (Const ("HOL.Trueprop", "bool => prop") $ Var (("_dummy_", 1), "bool")):
+   term Find_Theorems.criterion
+val badnames =
+   ["*nitpick*", "*Nitpick*", "*full_exhaustive*", "*_def*", "Enum.finite*",
+    "*Quickcheck*", "ATP*", "*Nunchaku*", "*Code*", "*BNF*", "*SMT*",
+    "*.*.*"]:
+   string list
+val unwanted_names =
+   [(false, Name "*nitpick*"), (false, Name "*Nitpick*"),
+    (false, Name "*full_exhaustive*"), (false, Name "*_def*"),
+    (false, Name "Enum.finite*"), (false, Name "*Quickcheck*"),
+    (false, Name "ATP*"), (false, Name "*Nunchaku*"),
+    (false, Name "*Code*"), (false, Name "*BNF*"), (false, Name "*SMT*"),
+    (false, Name "*.*.*")]:
+   (bool * term Find_Theorems.criterion) list
+val has_vars = fn: term -> bool
+val get_all_eqs = fn: string -> Proof.context -> (string * thm) list
+val get_all_thms = fn: string -> Proof.context -> (string * thm) list
+val get_noneq_thms = fn: string -> Proof.context -> (string * thm) list
+val template_eqs = fn:
+   string -> Proof.context -> (string * thm * template) list
+val template_thms = fn:
+   string -> Proof.context -> (string * thm * template) list
+### theory "Draft.ExtrEqs"
+### 0.555s elapsed time, 1.127s cpu time, 0.107s GC time
+### theory "Draft.utp_var"
+### 0.653s elapsed time, 1.264s cpu time, 0.107s GC time
+Loading theory "Draft.utp_expr" (required by "Draft.utp_rel_lawsTemplates" via "Draft.utp_rel_laws" via "Draft.utp_rel" via "Draft.utp_pred_laws" via "Draft.utp_pred" via "Draft.utp_expr_funcs" via "Draft.utp_expr_insts")
+instantiation
+  uexpr :: (zero, type) zero
+  zero_uexpr == zero_class.zero :: ('a, 'b) uexpr
+instantiation
+  uexpr :: (one, type) one
+  one_uexpr == one_class.one :: ('a, 'b) uexpr
+instantiation
+  uexpr :: (plus, type) plus
+  plus_uexpr == plus :: ('a, 'b) uexpr => ('a, 'b) uexpr => ('a, 'b) uexpr
+instantiation
+  uexpr :: (ord, type) ord
+  less_eq_uexpr == less_eq :: ('a, 'b) uexpr => ('a, 'b) uexpr => bool
+  less_uexpr == less :: ('a, 'b) uexpr => ('a, 'b) uexpr => bool
+### theory "Draft.utp_expr"
+### 0.752s elapsed time, 0.788s cpu time, 0.061s GC time
+Loading theory "Draft.utp_expr_insts" (required by "Draft.utp_rel_lawsTemplates" via "Draft.utp_rel_laws" via "Draft.utp_rel" via "Draft.utp_pred_laws" via "Draft.utp_pred" via "Draft.utp_expr_funcs")
+instantiation
+  uexpr :: (uminus, type) uminus
+  uminus_uexpr == uminus :: ('a, 'b) uexpr => ('a, 'b) uexpr
+instantiation
+  uexpr :: (minus, type) minus
+  minus_uexpr == minus :: ('a, 'b) uexpr => ('a, 'b) uexpr => ('a, 'b) uexpr
+instantiation
+  uexpr :: (times, type) times
+  times_uexpr == times :: ('a, 'b) uexpr => ('a, 'b) uexpr => ('a, 'b) uexpr
+instantiation
+  uexpr :: (divide, type) divide
+  divide_uexpr == divide ::
+    ('a, 'b) uexpr => ('a, 'b) uexpr => ('a, 'b) uexpr
+instantiation
+  uexpr :: (inverse, type) inverse
+  inverse_uexpr == inverse :: ('a, 'b) uexpr => ('a, 'b) uexpr
+instantiation
+  uexpr :: (modulo, type) modulo
+  modulo_uexpr == modulo ::
+    ('a, 'b) uexpr => ('a, 'b) uexpr => ('a, 'b) uexpr
+instantiation
+  uexpr :: (sgn, type) sgn
+  sgn_uexpr == sgn :: ('a, 'b) uexpr => ('a, 'b) uexpr
+instantiation
+  uexpr :: (abs, type) abs
+  abs_uexpr == abs :: ('a, 'b) uexpr => ('a, 'b) uexpr
+### theory "Draft.utp_expr_insts"
+### 0.218s elapsed time, 0.218s cpu time, 0.000s GC time
+Loading theory "Draft.utp_expr_funcs" (required by "Draft.utp_rel_lawsTemplates" via "Draft.utp_rel_laws" via "Draft.utp_rel" via "Draft.utp_pred_laws" via "Draft.utp_pred")
+Loading theory "Draft.utp_unrest" (required by "Draft.utp_rel_lawsTemplates" via "Draft.utp_rel_laws" via "Draft.utp_rel" via "Draft.utp_pred_laws" via "Draft.utp_pred" via "Draft.utp_subst")
+### theory "Draft.utp_expr_funcs"
+### 0.173s elapsed time, 0.354s cpu time, 0.057s GC time
+### theory "Draft.utp_unrest"
+### 0.250s elapsed time, 0.430s cpu time, 0.057s GC time
+Loading theory "Draft.utp_usedby" (required by "Draft.utp_rel_lawsTemplates" via "Draft.utp_rel_laws" via "Draft.utp_rel" via "Draft.utp_pred_laws" via "Draft.utp_pred" via "Draft.utp_meta_subst" via "Draft.utp_tactics")
+Loading theory "Draft.utp_subst" (required by "Draft.utp_rel_lawsTemplates" via "Draft.utp_rel_laws" via "Draft.utp_rel" via "Draft.utp_pred_laws" via "Draft.utp_pred")
+### theory "Draft.utp_usedby"
+### 0.079s elapsed time, 0.157s cpu time, 0.000s GC time
+Loading theory "Draft.utp_tactics" (required by "Draft.utp_rel_lawsTemplates" via "Draft.utp_rel_laws" via "Draft.utp_rel" via "Draft.utp_pred_laws" via "Draft.utp_pred" via "Draft.utp_meta_subst")
+signature UEXPR_REP_EQ =
+  sig
+    val get_uexpr_rep_eq_thms: theory -> thm list
+    val read_uexpr_rep_eq_thms: theory -> theory
+  end
+structure uexpr_rep_eq: UEXPR_REP_EQ
+val it = (): unit
+### theory "Draft.utp_subst"
+### 0.424s elapsed time, 0.863s cpu time, 0.048s GC time
+structure List_Extra: sig val contains: ''a -> ''a list -> bool end
+signature BASIC_TACTICS =
+  sig
+    val fast_transfer: Proof.context -> thm list -> context_tactic
+    val interp_tac: Proof.context -> thm list -> context_tactic
+    val slow_transfer: Proof.context -> thm list -> context_tactic
+    val utp_auto_tac: Proof.context -> thm list -> context_tactic
+    val utp_blast_tac: Proof.context -> thm list -> context_tactic
+    val utp_simp_tac: Proof.context -> thm list -> context_tactic
+  end
+structure Basic_Tactics: BASIC_TACTICS
+signature UTP_TACTICS =
+  sig
+    val inst_gen_pred_tac:
+       utp_tac_args ->
+         (Proof.context -> thm list -> context_tactic) ->
+           Proof.context -> thm list -> context_tactic
+    val inst_gen_rel_tac:
+       utp_tac_args ->
+         (Proof.context -> thm list -> context_tactic) ->
+           Proof.context -> thm list -> context_tactic
+    val no_interpN: string
+    val robustN: string
+    val scan_args: utp_tac_args parser
+    type utp_tac_args
+  end
+structure UTP_Tactics: UTP_TACTICS
+### theory "Draft.utp_tactics"
+### 1.428s elapsed time, 1.852s cpu time, 0.089s GC time
+Loading theory "Draft.utp_meta_subst" (required by "Draft.utp_rel_lawsTemplates" via "Draft.utp_rel_laws" via "Draft.utp_rel" via "Draft.utp_pred_laws" via "Draft.utp_pred")
+### theory "Draft.utp_meta_subst"
+### 0.376s elapsed time, 0.437s cpu time, 0.030s GC time
+Loading theory "Draft.utp_pred" (required by "Draft.utp_rel_lawsTemplates" via "Draft.utp_rel_laws" via "Draft.utp_rel" via "Draft.utp_pred_laws")
+instantiation
+  uexpr :: (lattice, type) lattice
+  inf_uexpr == inf :: ('a, 'b) uexpr => ('a, 'b) uexpr => ('a, 'b) uexpr
+  sup_uexpr == sup :: ('a, 'b) uexpr => ('a, 'b) uexpr => ('a, 'b) uexpr
+instantiation
+  uexpr :: (bounded_lattice, type) bounded_lattice
+  bot_uexpr == bot :: ('a, 'b) uexpr
+  top_uexpr == top_class.top :: ('a, 'b) uexpr
+instantiation
+  uexpr :: (complete_lattice, type) complete_lattice
+  Inf_uexpr == Inf :: ('a, 'b) uexpr set => ('a, 'b) uexpr
+  Sup_uexpr == Sup :: ('a, 'b) uexpr set => ('a, 'b) uexpr
+### Ignoring duplicate rewrite rule:
+### ?X1 \<subseteq>\<^sub>L ?X1 == True
+### Ignoring duplicate rewrite rule:
+### wb_lens ?Y1 ==> ?X1 \<subseteq>\<^sub>L ?X1 +\<^sub>L ?Y1 == True
+### theory "Draft.utp_pred"
+### 1.396s elapsed time, 1.782s cpu time, 0.506s GC time
+Loading theory "Draft.utp_alphabet" (required by "Draft.utp_rel_lawsTemplates" via "Draft.utp_rel_laws" via "Draft.utp_rel" via "Draft.utp_lift")
+Loading theory "Draft.utp_pred_laws" (required by "Draft.utp_rel_lawsTemplates" via "Draft.utp_rel_laws" via "Draft.utp_rel")
+### Partially applied constant "utp_pred.conj_upred" on left hand side of equation, in theorem:
+### semilattice_inf.Inf_fin (\<and>) (ran\<^sub>l (?x # ?xs)) ==
+### fold (\<and>) ?xs ?x
+### Partially applied constant "utp_pred.disj_upred" on left hand side of equation, in theorem:
+### semilattice_sup.Sup_fin (\<or>) (ran\<^sub>l (?x # ?xs)) ==
+### fold (\<or>) ?xs ?x
+### theory "Draft.utp_alphabet"
+### 0.580s elapsed time, 1.262s cpu time, 0.118s GC time
+Loading theory "Draft.utp_lift" (required by "Draft.utp_rel_lawsTemplates" via "Draft.utp_rel_laws" via "Draft.utp_rel")
+### theory "Draft.utp_lift"
+### 0.070s elapsed time, 0.140s cpu time, 0.045s GC time
+### theory "Draft.utp_pred_laws"
+### 0.933s elapsed time, 1.685s cpu time, 0.163s GC time
+Loading theory "Draft.utp_healthy" (required by "Draft.utp_rel_lawsTemplates" via "Draft.utp_rel_laws" via "Draft.utp_rel")
+### Ambiguous input (line 129 of "$AFP/UTP/utp/utp_healthy.thy") produces 4 parse trees:
+### ("\<^const>Pure.imp"
+###   ("\<^const>HOL.Trueprop"
+###     ("_applC" ("_position" Idempotent) ("_position" f)))
+###   ("\<^const>HOL.Trueprop"
+###     ("_applC" ("_position" f)
+###       ("_cargs"
+###         ("\<^const>utp_pred.taut"
+###           ("\<^const>HOL.eq"
+###             ("\<^const>Set.image" ("_position" f) ("_position" A))
+###             ("_position" f)))
+###         ("_position" A)))))
+### ("\<^const>Pure.imp"
+###   ("\<^const>HOL.Trueprop"
+###     ("_applC" ("_position" Idempotent) ("_position" f)))
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^const>Set.image" ("_position" f)
+###       ("_applC" ("_position" f)
+###         ("_cargs"
+###           ("\<^const>utp_pred.taut"
+###             ("\<^const>HOL.eq" ("_position" A) ("_position" f)))
+###           ("_position" A))))))
+### ("\<^const>Pure.imp"
+###   ("\<^const>HOL.Trueprop"
+###     ("_applC" ("_position" Idempotent) ("_position" f)))
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^const>HOL.eq"
+###       ("\<^const>Set.image" ("_position" f)
+###         ("\<^const>Set.image" ("_position" f) ("_position" A)))
+###       ("\<^const>Set.image" ("_position" f) ("_position" A)))))
+### ("\<^const>Pure.imp"
+###   ("\<^const>HOL.Trueprop"
+###     ("_applC" ("_position" Idempotent) ("_position" f)))
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^const>HOL.eq"
+###       ("_applC" ("_position" f)
+###         ("_cargs" ("\<^const>utp_pred.taut" ("_position" f))
+###           ("_position" A)))
+###       ("\<^const>Set.image" ("_position" f) ("_position" A)))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### theory "Draft.utp_healthy"
+### 0.533s elapsed time, 0.904s cpu time, 0.513s GC time
+Loading theory "Draft.utp_rel" (required by "Draft.utp_rel_lawsTemplates" via "Draft.utp_rel_laws")
+### theory "Draft.utp_rel"
+### 0.949s elapsed time, 1.067s cpu time, 0.102s GC time
+Loading theory "Draft.utp_recursion" (required by "Draft.utp_rel_lawsTemplates" via "Draft.utp_rel_laws")
+### theory "Draft.utp_recursion"
+### 0.129s elapsed time, 0.130s cpu time, 0.000s GC time
+Loading theory "Draft.utp_rel_laws" (required by "Draft.utp_rel_lawsTemplates")
+### Ambiguous input (line 409 of "$AFP/UTP/utp/utp_rel_laws.thy") produces 2 parse trees:
+### ("_bigimpl"
+###   ("_asms"
+###     ("\<^const>HOL.Trueprop"
+###       ("_applC" ("_position" vwb_lens) ("_position" x)))
+###     ("_asms"
+###       ("\<^const>HOL.Trueprop"
+###         ("_applC" ("_position" vwb_lens) ("_position" y)))
+###       ("_asm"
+###         ("\<^const>HOL.Trueprop"
+###           ("\<^const>Lens_Laws.lens_indep" ("_position" x)
+###             ("_position" y))))))
+###   ("\<^const>HOL.Trueprop"
+###     ("_applC" ("_position" uinj)
+###       ("_assignment" ("_svid_list" ("_svid" x) ("_svid_unit" ("_svid" y)))
+###         ("_uexprs" ("_uexp_l" ("_uuvar" ("_spvar" ("_svid" y))))
+###           ("_uexp_l" ("_uuvar" ("_spvar" ("_svid" x)))))))))
+### ("_bigimpl"
+###   ("_asms"
+###     ("\<^const>HOL.Trueprop"
+###       ("_applC" ("_position" vwb_lens) ("_position" x)))
+###     ("_asms"
+###       ("\<^const>HOL.Trueprop"
+###         ("_applC" ("_position" vwb_lens) ("_position" y)))
+###       ("_asm"
+###         ("\<^const>HOL.Trueprop"
+###           ("\<^const>Lens_Laws.lens_indep" ("_position" x)
+###             ("_position" y))))))
+###   ("\<^const>HOL.Trueprop"
+###     ("_Update" ("_position" uinj)
+###       ("_updbind" ("_tuple" ("_position" x) ("_tuple_arg" ("_position" y)))
+###         ("_tuple" ("_uuvar" ("_spvar" ("_svid" y)))
+###           ("_tuple_arg" ("_uuvar" ("_spvar" ("_svid" x)))))))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Partially applied constant "utp_rel.seqr" on left hand side of equation, in theorem:
+### monoid_mult.prod_list II (;;) ?xs == foldr (;;) ?xs II
+### Partially applied constant "Lattices.sup_class.sup" on left hand side of equation, in theorem:
+### monoid_add.sum_list (\<sqinter>) false ?xs == foldr (\<sqinter>) ?xs false
+### Partially applied constant "Lattices.sup_class.sup" on left hand side of equation, in theorem:
+### comm_monoid_add.sum (\<sqinter>) false ?g (ran\<^sub>l ?xs) ==
+### monoid_add.sum_list (\<sqinter>) false (map ?g (remdups ?xs))
+### Type
+### ?'a::type hrel => ?'a::type hrel => bool => ?'a::type hrel
+### of constant "Rings.zero_neq_one.of_bool"
+### is too specific compared to declared type
+### ?'a::{} => ?'a::{} => bool => ?'a::{}, in theorem:
+### zero_neq_one.of_bool II false False == false
+### Type
+### ?'a::type hrel => ?'a::type hrel => bool => ?'a::type hrel
+### of constant "Rings.zero_neq_one.of_bool"
+### is too specific compared to declared type
+### ?'a::{} => ?'a::{} => bool => ?'a::{}, in theorem:
+### zero_neq_one.of_bool II false True == II
+### Partially applied constant "Lattices.sup_class.sup" on left hand side of equation, in theorem:
+### numeral.numeral II (\<sqinter>) num.One == II
+### Partially applied constant "Lattices.sup_class.sup" on left hand side of equation, in theorem:
+### numeral.numeral II (\<sqinter>) (num.Bit0 ?n) ==
+### let m = numeral.numeral II (\<sqinter>) ?n in m \<sqinter> m
+### Partially applied constant "Lattices.sup_class.sup" on left hand side of equation, in theorem:
+### numeral.numeral II (\<sqinter>) (num.Bit1 ?n) ==
+### let m = numeral.numeral II (\<sqinter>) ?n in m \<sqinter> m \<sqinter> II
+### theory "Draft.utp_rel_laws"
+### 1.709s elapsed time, 2.472s cpu time, 0.920s GC time
+Loading theory "Draft.utp_rel_lawsTemplates"
+val templateLemmas =
+   [("utp_rel_laws.assigns_r_ufunc",
+     "ufunctional \<langle>?f\<rangle>\<^sub>a",
+     template_predicate
+      (
+         template_app
+          (template_hole 1, template_app (template_hole 0, template_var 0))
+         )),
+    ("utp_rel_laws.Dom_assigns",
+     "Dom \<langle>?\<sigma>\<rangle>\<^sub>a = true",
+     template_equation
+      (template_app
+        (template_hole 2, template_app (template_hole 1, template_var 0)),
+       template_hole 0)),
+    ("utp_rel_laws.Dom_assume", "Dom ?[?b] = ?b",
+     template_equation
+      (template_app
+        (template_hole 1, template_app (template_hole 0, template_var 0)),
+       template_var 0)),
+    ("utp_rel_laws.frame_all", "{\<Sigma>}:[?P] = ?P",
+     template_equation
+      (template_app
+        (template_app (template_hole 1, template_hole 0), template_var 0),
+       template_var 0)),
+    ("utp_rel_laws.frame_miracle", "{?x}:[false] = false",
+     template_equation
+      (template_app
+        (template_app (template_hole 1, template_var 0), template_hole 0),
+       template_hole 0)),
+    ("utp_rel_laws.rel_frext_miracle", "?a:[false]\<^sup>+ = false",
+     template_equation
+      (template_app
+        (template_app (template_hole 2, template_var 0), template_hole 1),
+       template_hole 0)),
+    ("utp_rel_laws.while_bot_false",
+     "while\<^sub>\<bottom> false do ?P od = II",
+     template_equation
+      (template_app
+        (template_app (template_hole 2, template_hole 1), template_var 0),
+       template_hole 0)),
+    ("utp_rel_laws.while_false", "while\<^sup>\<top> false do ?P od = II",
+     template_equation
+      (template_app
+        (template_app (template_hole 2, template_hole 1), template_var 0),
+       template_hole 0)),
+    ("utp_rel_laws.while_true", "while\<^sup>\<top> true do ?P od = false",
+     template_equation
+      (template_app
+        (template_app (template_hole 2, template_hole 1), template_var 0),
+       template_hole 0)),
+    ("utp_rel_laws.seqr_left_unit", "II ;; ?P = ?P",
+     template_equation
+      (template_app
+        (template_app (template_hole 1, template_hole 0), template_var 0),
+       template_var 0)),
+    ("utp_rel_laws.seqr_right_unit", "?P ;; II = ?P",
+     template_equation
+      (template_app
+        (template_app (template_hole 1, template_var 0), template_hole 0),
+       template_var 0)),
+    ("utp_rel_laws.seqr_right_zero", "?P ;; false = false",
+     template_equation
+      (template_app
+        (template_app (template_hole 2, template_var 0), template_hole 1),
+       template_hole 0)),
+    ("utp_rel_laws.seqr_left_zero", "false ;; ?P = false",
+     template_equation
+      (template_app
+        (template_app (template_hole 2, template_hole 1), template_var 0),
+       template_hole 0)),
+    ("utp_rel_laws.skip_r_refine", "(?p \<Rightarrow> ?p) \<sqsubseteq> II",
+     template_inequation
+      (less_equals, template_hole 1,
+       template_app
+        (template_app (template_hole 0, template_var 0), template_var 0))),
+    ("utp_rel_laws.assigns_r_feasible",
+     "\<langle>?\<sigma>\<rangle>\<^sub>a ;; true = true",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 2, template_app (template_hole 1, template_var 0)),
+         template_hole 0),
+       template_hole 0)),
+    ("utp_rel_laws.frame_none", "{\<emptyset>}:[?P] = (?P \<and> II)",
+     template_equation
+      (template_app
+        (template_app (template_hole 3, template_hole 2), template_var 0),
+       template_app
+        (template_app (template_hole 1, template_var 0), template_hole 0))),
+    ("utp_rel_laws.assume_Dom", "?[Dom ?P] ;; ?P = ?P",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 2,
+           template_app
+            (template_hole 1,
+             template_app (template_hole 0, template_var 0))),
+         template_var 0),
+       template_var 0)),
+    ("utp_rel_laws.iter_seqr_nil", "seqr_iter [] ?P = II",
+     template_equation
+      (template_app
+        (template_app (template_hole 2, template_hole 1), t_empty),
+       template_hole 0)),
+    ("utp_rel_laws.uomega_induct",
+     "?P ;; ?P\<^sup>\<omega> \<sqsubseteq> ?P\<^sup>\<omega>",
+     template_inequation
+      (less_equals, template_app (template_hole 1, template_var 0),
+       template_app
+        (template_app (template_hole 0, template_var 0),
+         template_app (template_hole 1, template_var 0)))),
+    ("utp_rel_laws.assigns_r_uinj",
+     "inj ?f ==> uinj \<langle>?f\<rangle>\<^sub>a",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 3, template_var 0),
+              template_hole 2)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_hole 1,
+             template_app (template_hole 0, template_var 0))
+           ))),
+    ("utp_rel_laws.postcond_equiv",
+     "(?P = true ;; ?P) = (in\<alpha> \<sharp> ?P)",
+     template_equation
+      (template_app
+        (template_app (template_hole 4, template_var 0),
+         template_app
+          (template_app (template_hole 3, template_hole 2),
+           template_var 0)),
+       template_app
+        (template_app (template_hole 1, template_hole 0), template_var 0))),
+    ("utp_rel_laws.precond_equiv",
+     "(?P = ?P ;; true) = (out\<alpha> \<sharp> ?P)",
+     template_equation
+      (template_app
+        (template_app (template_hole 4, template_var 0),
+         template_app
+          (template_app (template_hole 3, template_var 0),
+           template_hole 2)),
+       template_app
+        (template_app (template_hole 1, template_hole 0), template_var 0))),
+    ("utp_rel_laws.lit_convr",
+     "\<guillemotleft>?v\<guillemotright>\<^sup>- =
+      \<guillemotleft>?v\<guillemotright>",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 5, template_app (template_hole 4, template_var 0)),
+         template_app
+          (template_app (template_hole 3, template_hole 2),
+           template_hole 1)),
+       template_app (template_hole 0, template_var 0))),
+    ("utp_rel_laws.Dom_conv_Ran", "Dom (?P\<^sup>-) = Ran ?P",
+     template_equation
+      (template_app
+        (template_hole 5,
+         template_app
+          (template_app (template_hole 4, template_var 0),
+           template_app
+            (template_app (template_hole 3, template_hole 2),
+             template_hole 1))),
+       template_app (template_hole 0, template_var 0))),
+    ("utp_rel_laws.Ran_conv_Dom", "Ran (?P\<^sup>-) = Dom ?P",
+     template_equation
+      (template_app
+        (template_hole 5,
+         template_app
+          (template_app (template_hole 4, template_var 0),
+           template_app
+            (template_app (template_hole 3, template_hole 2),
+             template_hole 1))),
+       template_app (template_hole 0, template_var 0))),
+    ("utp_rel_laws.ustar_unfoldl",
+     "?P\<^sup>\<star> = II \<sqinter> (?P ;; ?P\<^sup>\<star>)",
+     template_equation
+      (template_app (template_hole 3, template_var 0),
+       template_app
+        (template_app (template_hole 2, template_hole 1),
+         template_app
+          (template_app (template_hole 0, template_var 0),
+           template_app (template_hole 3, template_var 0))))),
+    ("utp_rel_laws.while_bot_true",
+     "while\<^sub>\<bottom> true do ?P od = \<mu> ((;;) ?P)",
+     template_equation
+      (template_app
+        (template_app (template_hole 3, template_hole 2), template_var 0),
+       template_app (template_hole 1, t_empty))),
+    ("utp_rel_laws.ustar_sub_unfoldl",
+     "?P\<^sup>\<star> \<sqsubseteq>
+      II \<sqinter> (?P ;; ?P\<^sup>\<star>)",
+     template_inequation
+      (less_equals,
+       template_app
+        (template_app (template_hole 3, template_hole 2),
+         template_app
+          (template_app (template_hole 1, template_var 0),
+           template_app (template_hole 0, template_var 0))),
+       template_app (template_hole 0, template_var 0))),
+    ("utp_rel_laws.rel_frext_skip", "vwb_lens ?a ==> ?a:[II]\<^sup>+ = II",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 4, template_var 0))],
+       template_equation
+        (template_app
+          (template_app (template_hole 2, template_var 0), template_hole 1),
+         template_hole 0))),
+    ("utp_rel_laws.frame_skip", "vwb_lens ?x ==> {?x}:[II] = II",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 3, template_var 0))],
+       template_equation
+        (template_app
+          (template_app (template_hole 1, template_var 0), template_hole 0),
+         template_hole 0))),
+    ("utp_rel_laws.feasibile_iff_true_right_zero",
+     "(?P ;; true = true) = `\<exists> out\<alpha> \<bullet> ?P`",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 6,
+           template_app
+            (template_app (template_hole 5, template_var 0),
+             template_hole 4)),
+         template_hole 3),
+       template_app
+        (template_hole 2,
+         template_app
+          (template_app (template_hole 1, template_hole 0),
+           template_var 0)))),
+    ("utp_rel_laws.Dom_inf",
+     "Dom (?P \<sqinter> ?Q) = (Dom ?P \<or> Dom ?Q)",
+     template_equation
+      (template_app
+        (template_hole 2,
+         template_app
+          (template_app (template_hole 1, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 0, template_app (template_hole 2, template_var 1)),
+         template_app (template_hole 2, template_var 0)))),
+    ("utp_rel_laws.Dom_disj", "Dom (?P \<or> ?Q) = (Dom ?P \<or> Dom ?Q)",
+     template_equation
+      (template_app
+        (template_hole 2,
+         template_app
+          (template_app (template_hole 1, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 0, template_app (template_hole 2, template_var 1)),
+         template_app (template_hole 2, template_var 0)))),
+    ("utp_rel_laws.ustar_as_nu",
+     "?P\<^sup>\<star> = (\<nu> X \<bullet> (?P ;; X) \<sqinter> II)",
+     template_equation
+      (template_app (template_hole 4, template_var 0),
+       template_app (template_hole 3, t_empty))),
+    ("utp_rel_laws.assigns_comp",
+     "\<langle>?f\<rangle>\<^sub>a ;; \<langle>?g\<rangle>\<^sub>a =
+      \<langle>?g o ?f\<rangle>\<^sub>a",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 2, template_app (template_hole 1, template_var 1)),
+         template_app (template_hole 1, template_var 0)),
+       template_app
+        (template_hole 1,
+         template_app
+          (template_app (template_hole 0, template_var 0),
+           template_var 1)))),
+    ("utp_rel_laws.assert_seq",
+     "{?b}\<^sub>\<bottom> ;; {?c}\<^sub>\<bottom> =
+      {?b \<and> ?c}\<^sub>\<bottom>",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 2, template_app (template_hole 1, template_var 1)),
+         template_app (template_hole 1, template_var 0)),
+       template_app
+        (template_hole 1,
+         template_app
+          (template_app (template_hole 0, template_var 1),
+           template_var 0)))),
+    ("utp_rel_laws.assume_seq", "?[?b] ;; ?[?c] = ?[?b \<and> ?c]",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 2, template_app (template_hole 1, template_var 1)),
+         template_app (template_hole 1, template_var 0)),
+       template_app
+        (template_hole 1,
+         template_app
+          (template_app (template_hole 0, template_var 1),
+           template_var 0)))),
+    ("utp_rel_laws.assigns_r_comp",
+     "\<langle>?\<sigma>\<rangle>\<^sub>a ;; ?P =
+      \<lceil>?\<sigma>\<rceil>\<^sub>s \<dagger> ?P",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 4, template_app (template_hole 3, template_var 1)),
+         template_var 0),
+       template_app
+        (template_app
+          (template_hole 2,
+           template_app
+            (template_app (template_hole 1, template_var 1),
+             template_hole 0)),
+         template_var 0))),
+    ("utp_rel_laws.ustar_refines_nu",
+     "(\<nu> X \<bullet> (?P ;; X) \<sqinter> II) \<sqsubseteq>
+      ?P\<^sup>\<star>",
+     template_inequation
+      (less_equals, template_app (template_hole 4, template_var 0),
+       template_app (template_hole 3, t_empty))),
+    ("utp_rel_laws.nameset_skip",
+     "vwb_lens ?x ==> ns ?x \<bullet> II = II\<^bsub>?x\<^esub>",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 4, template_var 0))],
+       template_equation
+        (template_app
+          (template_app (template_hole 2, template_var 0), template_hole 1),
+         template_app (template_hole 0, template_var 0)))),
+    ("utp_rel_laws.Monotonic_seqr_tail",
+     "Monotonic ?F ==> Monotonic (%X. ?P ;; ?F X)",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 1, template_var 1))],
+       template_predicate (template_app (template_hole 1, t_empty)))),
+    ("utp_rel_laws.postcond_left_unit",
+     "in\<alpha> \<sharp> ?p ==> true ;; ?p = ?p",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 4, template_hole 3),
+              template_var 0)
+            )],
+       template_equation
+        (template_app
+          (template_app (template_hole 1, template_hole 0), template_var 0),
+         template_var 0))),
+    ("utp_rel_laws.precond_right_unit",
+     "out\<alpha> \<sharp> ?p ==> ?p ;; true = ?p",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 4, template_hole 3),
+              template_var 0)
+            )],
+       template_equation
+        (template_app
+          (template_app (template_hole 1, template_var 0), template_hole 0),
+         template_var 0))),
+    ("utp_rel_laws.post_convr",
+     "\<lceil>?p\<rceil>\<^sub>>\<^sup>- = \<lceil>?p\<rceil>\<^sub><",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 6,
+           template_app
+            (template_app (template_hole 5, template_var 0),
+             template_hole 4)),
+         template_app
+          (template_app (template_hole 3, template_hole 2),
+           template_hole 1)),
+       template_app
+        (template_app (template_hole 0, template_var 0), template_hole 1))),
+    ("utp_rel_laws.pre_convr",
+     "\<lceil>?p\<rceil>\<^sub><\<^sup>- = \<lceil>?p\<rceil>\<^sub>>",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 6,
+           template_app
+            (template_app (template_hole 5, template_var 0),
+             template_hole 4)),
+         template_app
+          (template_app (template_hole 3, template_hole 2),
+           template_hole 1)),
+       template_app
+        (template_app (template_hole 0, template_var 0), template_hole 2))),
+    ("utp_rel_laws.RA3", "?P\<^sup>-\<^sup>- = ?P",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 7,
+           template_app
+            (template_app (template_hole 6, template_var 0),
+             template_app
+              (template_app (template_hole 5, template_hole 4),
+               template_hole 3))),
+         template_app
+          (template_app (template_hole 2, template_hole 1),
+           template_hole 0)),
+       template_var 0)),
+    ("utp_rel_laws.convr_invol", "?p\<^sup>-\<^sup>- = ?p",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 7,
+           template_app
+            (template_app (template_hole 6, template_var 0),
+             template_app
+              (template_app (template_hole 5, template_hole 4),
+               template_hole 3))),
+         template_app
+          (template_app (template_hole 2, template_hole 1),
+           template_hole 0)),
+       template_var 0)),
+    ("utp_rel_laws.uivar_convr", "$?x\<^sup>- = $?x\<acute>",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 7,
+           template_app
+            (template_hole 6,
+             template_app (template_hole 5, template_var 0))),
+         template_app
+          (template_app (template_hole 4, template_hole 3),
+           template_hole 2)),
+       template_app
+        (template_hole 1, template_app (template_hole 0, template_var 0)))),
+    ("utp_rel_laws.uovar_convr", "$?x\<acute>\<^sup>- = $?x",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 7,
+           template_app
+            (template_hole 6,
+             template_app (template_hole 5, template_var 0))),
+         template_app
+          (template_app (template_hole 4, template_hole 3),
+           template_hole 2)),
+       template_app
+        (template_hole 1, template_app (template_hole 0, template_var 0)))),
+    ("utp_rel_laws.Dom_seq", "Dom (?P ;; ?Q) = Dom (?P ;; ?[Dom ?Q])",
+     template_equation
+      (template_app
+        (template_hole 2,
+         template_app
+          (template_app (template_hole 1, template_var 1), template_var 0)),
+       template_app
+        (template_hole 2,
+         template_app
+          (template_app (template_hole 1, template_var 1),
+           template_app
+            (template_hole 0,
+             template_app (template_hole 2, template_var 0)))))),
+    ("utp_rel_laws.pre_skip_post",
+     "(\<lceil>?b\<rceil>\<^sub>< \<and> II) =
+      (II \<and> \<lceil>?b\<rceil>\<^sub>>)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 4,
+           template_app
+            (template_app (template_hole 3, template_var 0),
+             template_hole 2)),
+         template_hole 1),
+       template_app
+        (template_app (template_hole 4, template_hole 1),
+         template_app
+          (template_app (template_hole 3, template_var 0),
+           template_hole 0)))),
+    ("utp_rel_laws.assigns_power",
+     "power.power II (;;) \<langle>?f\<rangle>\<^sub>a ?n =
+      \<langle>?f ^^ ?n\<rangle>\<^sub>a",
+     template_equation
+      (template_app
+        (template_app
+          (template_app
+            (template_app (template_hole 4, template_hole 3),
+             template_hole 2),
+           template_app (template_hole 1, template_var 1)),
+         template_var 0),
+       template_app
+        (template_hole 1,
+         template_app
+          (template_app (template_hole 0, template_var 0),
+           template_var 1)))),
+    ("utp_rel_laws.assigns_subst",
+     "\<lceil>?\<sigma>\<rceil>\<^sub>s \<dagger>
+      \<langle>?\<rho>\<rangle>\<^sub>a =
+      \<langle>?\<rho> o ?\<sigma>\<rangle>\<^sub>a",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 4,
+           template_app
+            (template_app (template_hole 3, template_var 1),
+             template_hole 2)),
+         template_app (template_hole 1, template_var 0)),
+       template_app
+        (template_hole 1,
+         template_app
+          (template_app (template_hole 0, template_var 0),
+           template_var 1)))),
+    ("utp_rel_laws.RA1", "?P ;; ?Q ;; ?R = (?P ;; ?Q) ;; ?R",
+     template_equation
+      (template_app
+        (template_app (template_hole 3, template_var 2),
+         template_app
+          (template_app (template_hole 2, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 1,
+           template_app
+            (template_app (template_hole 0, template_var 2),
+             template_var 1)),
+         template_var 0))),
+    ("utp_rel_laws.seqr_assoc", "(?P ;; ?Q) ;; ?R = ?P ;; ?Q ;; ?R",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 3,
+           template_app
+            (template_app (template_hole 2, template_var 2),
+             template_var 1)),
+         template_var 0),
+       template_app
+        (template_app (template_hole 1, template_var 2),
+         template_app
+          (template_app (template_hole 0, template_var 1),
+           template_var 0)))),
+    ("utp_rel_laws.skip_var", "($?x \<and> II) = (II \<and> $?x\<acute>)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 4,
+           template_app
+            (template_hole 3,
+             template_app (template_hole 2, template_var 0))),
+         template_hole 1),
+       template_app
+        (template_app (template_hole 4, template_hole 1),
+         template_app
+          (template_hole 3,
+           template_app (template_hole 0, template_var 0))))),
+    ("utp_rel_laws.nameset_skip_ra",
+     "vwb_lens ?x ==>
+      ns ?x \<bullet> II\<^bsub>?x\<^esub> = II\<^bsub>?x\<^esub>",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 3, template_var 0))],
+       template_equation
+        (template_app
+          (template_app (template_hole 1, template_var 0),
+           template_app (template_hole 0, template_var 0)),
+         template_app (template_hole 0, template_var 0)))),
+    ("utp_rel_laws.upower_seqr_iter",
+     "power.power II (;;) ?P ?n = (;; Q : replicate ?n ?P \<bullet> Q)",
+     template_equation
+      (template_app
+        (template_app
+          (template_app
+            (template_app (template_hole 4, template_hole 3),
+             template_hole 2),
+           template_var 1),
+         template_var 0),
+       template_app
+        (template_app
+          (template_hole 1,
+           template_app
+            (template_app (template_hole 0, template_var 0),
+             template_var 1)),
+         t_empty))),
+    ("utp_rel_laws.seq_Sup_distl", "?P ;; \<Or>?A = \<Or>((;;) ?P ` ?A)",
+     template_equation
+      (template_app
+        (template_app (template_hole 3, template_var 1),
+         template_app (template_hole 2, template_var 0)),
+       template_app
+        (template_hole 1,
+         template_app
+          (template_app (template_hole 0, t_empty), template_var 0)))),
+    ("utp_rel_laws.seq_Sup_distr",
+     "\<Or>?A ;; ?Q = \<Or>((%P. P ;; ?Q) ` ?A)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 3, template_app (template_hole 2, template_var 1)),
+         template_var 0),
+       template_app
+        (template_hole 1,
+         template_app
+          (template_app (template_hole 0, t_empty), template_var 1)))),
+    ("utp_rel_laws.while_infinite",
+     "?P ;; true = true ==> while\<^sub>\<bottom> true do ?P od = true",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app (template_hole 3, template_var 0),
+            template_hole 2),
+          template_hole 2)],
+       template_equation
+        (template_app
+          (template_app (template_hole 1, template_hole 0), template_var 0),
+         template_hole 2))),
+    ("utp_rel_laws.conj_refine_left",
+     "(?Q \<Rightarrow> ?P) \<sqsubseteq> ?R ==>
+      ?P \<sqsubseteq> (?Q \<and> ?R)",
+     template_implication
+      ([template_inequation
+         (less_equals, template_var 2,
+          template_app
+           (template_app (template_hole 1, template_var 1),
+            template_var 0))],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_app (template_hole 0, template_var 1), template_var 2),
+         template_var 0))),
+    ("utp_rel_laws.ustar_rep_eq",
+     "\<lbrakk>?P\<^sup>\<star>\<rbrakk>\<^sub>e =
+      (%b. b : {p. \<lbrakk>?P\<rbrakk>\<^sub>e p}^*)",
+     template_equation
+      (template_app
+        (template_hole 4, template_app (template_hole 3, template_var 0)),
+       t_empty)),
+    ("utp_rel_laws.seqr_true_lemma",
+     "(?P = (\<not> (\<not> ?P) ;; true)) = (?P = ?P ;; true)",
+     template_bimplication
+      (template_equation
+        (template_var 0,
+         template_app
+          (template_hole 2,
+           template_app
+            (template_app
+              (template_hole 1,
+               template_app (template_hole 2, template_var 0)),
+             template_hole 0))),
+       template_equation
+        (template_var 0,
+         template_app
+          (template_app (template_hole 1, template_var 0),
+           template_hole 0)))),
+    ("utp_rel_laws.antiframe_disj",
+     "({?x}:\<lbrakk>?P\<rbrakk> \<or> {?x}:\<lbrakk>?Q\<rbrakk>) =
+      {?x}:\<lbrakk>?P \<or> ?Q\<rbrakk>",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 1,
+           template_app
+            (template_app (template_hole 0, template_var 2),
+             template_var 1)),
+         template_app
+          (template_app (template_hole 0, template_var 2), template_var 0)),
+       template_app
+        (template_app (template_hole 0, template_var 2),
+         template_app
+          (template_app (template_hole 1, template_var 1),
+           template_var 0)))),
+    ("utp_rel_laws.seqr_inf_distr",
+     "?P ;; ?Q \<sqinter> ?R = (?P ;; ?Q) \<sqinter> (?P ;; ?R)",
+     template_equation
+      (template_app
+        (template_app (template_hole 2, template_var 2),
+         template_app
+          (template_app (template_hole 1, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 0,
+           template_app
+            (template_app (template_hole 2, template_var 2),
+             template_var 1)),
+         template_app
+          (template_app (template_hole 2, template_var 2),
+           template_var 0)))),
+    ("utp_rel_laws.seqr_or_distr",
+     "?P ;; (?Q \<or> ?R) = (?P ;; ?Q \<or> ?P ;; ?R)",
+     template_equation
+      (template_app
+        (template_app (template_hole 2, template_var 2),
+         template_app
+          (template_app (template_hole 1, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 0,
+           template_app
+            (template_app (template_hole 2, template_var 2),
+             template_var 1)),
+         template_app
+          (template_app (template_hole 2, template_var 2),
+           template_var 0)))),
+    ("utp_rel_laws.seqr_inf_distl",
+     "?P \<sqinter> ?Q ;; ?R = (?P ;; ?R) \<sqinter> (?Q ;; ?R)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 2,
+           template_app
+            (template_app (template_hole 1, template_var 2),
+             template_var 1)),
+         template_var 0),
+       template_app
+        (template_app
+          (template_hole 0,
+           template_app
+            (template_app (template_hole 2, template_var 2),
+             template_var 0)),
+         template_app
+          (template_app (template_hole 2, template_var 1),
+           template_var 0)))),
+    ("utp_rel_laws.RA6", "(?P \<or> ?Q) ;; ?R = (?P ;; ?R \<or> ?Q ;; ?R)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 2,
+           template_app
+            (template_app (template_hole 1, template_var 2),
+             template_var 1)),
+         template_var 0),
+       template_app
+        (template_app
+          (template_hole 0,
+           template_app
+            (template_app (template_hole 2, template_var 2),
+             template_var 0)),
+         template_app
+          (template_app (template_hole 2, template_var 1),
+           template_var 0)))),
+    ("utp_rel_laws.not_convr", "(\<not> ?p)\<^sup>- = (\<not> ?p\<^sup>-)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 5, template_app (template_hole 4, template_var 0)),
+         template_app
+          (template_app (template_hole 3, template_hole 2),
+           template_hole 1)),
+       template_app
+        (template_hole 0,
+         template_app
+          (template_app (template_hole 5, template_var 0),
+           template_app
+            (template_app (template_hole 3, template_hole 2),
+             template_hole 1))))),
+    ("utp_rel_laws.seqr_exists_right",
+     "?P ;; (\<exists> $?x\<acute> \<bullet> ?Q) =
+      (\<exists> $?x\<acute> \<bullet> ?P ;; ?Q)",
+     template_equation
+      (template_app
+        (template_app (template_hole 4, template_var 2),
+         template_app
+          (template_app
+            (template_hole 3,
+             template_app (template_hole 2, template_var 1)),
+           template_var 0)),
+       template_app
+        (template_app
+          (template_hole 1, template_app (template_hole 0, template_var 1)),
+         template_app
+          (template_app (template_hole 4, template_var 2),
+           template_var 0)))),
+    ("utp_rel_laws.shEx_lift_seq_2",
+     "?P ;; ushEx ?Q = (\<^bold>\<exists> x \<bullet> ?P ;; ?Q x)",
+     template_equation
+      (template_app
+        (template_app (template_hole 2, template_var 1),
+         template_app (template_hole 1, t_empty)),
+       template_app (template_hole 0, t_empty))),
+    ("utp_rel_laws.seqr_exists_left",
+     "(\<exists> $?x \<bullet> ?P) ;; ?Q =
+      (\<exists> $?x \<bullet> ?P ;; ?Q)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 4,
+           template_app
+            (template_app
+              (template_hole 3,
+               template_app (template_hole 2, template_var 2)),
+             template_var 1)),
+         template_var 0),
+       template_app
+        (template_app
+          (template_hole 1, template_app (template_hole 0, template_var 2)),
+         template_app
+          (template_app (template_hole 4, template_var 1),
+           template_var 0)))),
+    ("utp_rel_laws.shEx_lift_seq_1",
+     "ushEx ?P ;; ?Q = (\<^bold>\<exists> x \<bullet> ?P x ;; ?Q)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 2, template_app (template_hole 1, t_empty)),
+         template_var 0),
+       template_app (template_hole 0, t_empty))),
+    ("utp_rel_laws.rel_frext_assigns",
+     "vwb_lens ?a ==>
+      ?a:[\<langle>?\<sigma>\<rangle>\<^sub>a]\<^sup>+ =
+      \<langle>?\<sigma> \<oplus>\<^sub>s ?a\<rangle>\<^sub>a",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 5, template_var 1))],
+       template_equation
+        (template_app
+          (template_app (template_hole 3, template_var 1),
+           template_app (template_hole 2, template_var 0)),
+         template_app
+          (template_hole 1,
+           template_app
+            (template_app (template_hole 0, template_var 0),
+             template_var 1))))),
+    ("utp_rel_laws.while_bot_unfold",
+     "while\<^sub>\<bottom> ?b do ?P od =
+      ?P ;;
+      while\<^sub>\<bottom> ?b do ?P od \<triangleleft> ?b \<triangleright>\<^sub>r
+         II",
+     template_equation
+      (template_app
+        (template_app (template_hole 5, template_var 1), template_var 0),
+       template_app
+        (template_app
+          (template_app
+            (template_app (template_hole 4, template_hole 3),
+             template_app (template_hole 2, template_var 1)),
+           template_app
+            (template_app (template_hole 1, template_var 0),
+             template_app
+              (template_app (template_hole 5, template_var 1),
+               template_var 0))),
+         template_hole 0))),
+    ("utp_rel_laws.while_unfold",
+     "while\<^sup>\<top> ?b do ?P od =
+      ?P ;;
+      while\<^sup>\<top> ?b do ?P od \<triangleleft> ?b \<triangleright>\<^sub>r
+         II",
+     template_equation
+      (template_app
+        (template_app (template_hole 5, template_var 1), template_var 0),
+       template_app
+        (template_app
+          (template_app
+            (template_app (template_hole 4, template_hole 3),
+             template_app (template_hole 2, template_var 1)),
+           template_app
+            (template_app (template_hole 1, template_var 0),
+             template_app
+              (template_app (template_hole 5, template_var 1),
+               template_var 0))),
+         template_hole 0))),
+    ("utp_rel_laws.assigns_cond",
+     "\<langle>?f\<rangle>\<^sub>a \<triangleleft> ?b \<triangleright>\<^sub>r
+         \<langle>?g\<rangle>\<^sub>a =
+      \<langle>?f \<triangleleft> ?b \<triangleright>\<^sub>s
+                  ?g\<rangle>\<^sub>a",
+     template_equation
+      (template_app
+        (template_app
+          (template_app
+            (template_app (template_hole 4, template_hole 3),
+             template_app (template_hole 2, template_var 2)),
+           template_app (template_hole 1, template_var 1)),
+         template_app (template_hole 1, template_var 0)),
+       template_app
+        (template_hole 1,
+         template_app
+          (template_app
+            (template_app (template_hole 0, template_var 1),
+             template_var 2),
+           template_var 0)))),
+    ("utp_rel_laws.assign_vacuous_skip", "vwb_lens ?x ==> ?x := &?x = II",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 7, template_var 0))],
+       template_equation
+        (template_app
+          (template_hole 5,
+           template_app
+            (template_app
+              (template_app (template_hole 4, template_hole 3),
+               template_app (template_hole 2, template_var 0)),
+             template_app
+              (template_hole 1,
+               template_app (template_hole 2, template_var 0)))),
+         template_hole 0))),
+    ("utp_rel_laws.uop_convr", "uop ?f ?u\<^sup>- = uop ?f (?u\<^sup>-)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 6,
+           template_app
+            (template_app (template_hole 5, template_var 1),
+             template_var 0)),
+         template_app
+          (template_app (template_hole 4, template_hole 3),
+           template_hole 2)),
+       template_app
+        (template_app (template_hole 1, template_var 1),
+         template_app
+          (template_app (template_hole 0, template_var 0),
+           template_app
+            (template_app (template_hole 4, template_hole 3),
+             template_hole 2))))),
+    ("utp_rel_laws.while_star_form",
+     "while\<^sup>\<top> ?b do ?P od =
+      (?P \<triangleleft> ?b \<triangleright>\<^sub>r II)\<^sup>\<star> ;;
+      ?[\<not> ?b]",
+     template_equation
+      (template_app
+        (template_app (template_hole 8, template_var 1), template_var 0),
+       template_app
+        (template_app
+          (template_hole 7,
+           template_app
+            (template_hole 6,
+             template_app
+              (template_app
+                (template_app
+                  (template_app (template_hole 5, template_hole 4),
+                   template_app (template_hole 3, template_var 1)),
+                 template_var 0),
+               template_hole 2))),
+         template_app
+          (template_hole 1,
+           template_app (template_hole 0, template_var 1))))),
+    ("utp_rel_laws.skip_ra_unfold",
+     "II\<^bsub>?x +\<^sub>L ?y\<^esub> =
+      ($?x\<acute> =\<^sub>u $?x \<and> II\<^bsub>?y\<^esub>)",
+     template_equation
+      (template_app
+        (template_hole 7,
+         template_app
+          (template_app (template_hole 6, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 5,
+           template_app
+            (template_app
+              (template_hole 4,
+               template_app
+                (template_hole 3,
+                 template_app (template_hole 2, template_var 1))),
+             template_app
+              (template_hole 3,
+               template_app (template_hole 1, template_var 1)))),
+         template_app (template_hole 0, template_var 0)))),
+    ("utp_rel_laws.seqr_pre_transfer'",
+     "(?P \<and> \<lceil>?q\<rceil>\<^sub>>) ;; ?R =
+      ?P ;; (\<lceil>?q\<rceil>\<^sub>< \<and> ?R)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 6,
+           template_app
+            (template_app (template_hole 5, template_var 2),
+             template_app
+              (template_app (template_hole 4, template_var 1),
+               template_hole 3))),
+         template_var 0),
+       template_app
+        (template_app (template_hole 6, template_var 2),
+         template_app
+          (template_app
+            (template_hole 2,
+             template_app
+              (template_app (template_hole 1, template_var 1),
+               template_hole 0)),
+           template_var 0)))),
+    ("utp_rel_laws.seqr_post_var_out",
+     "?P ;; (?Q \<and> $?x\<acute>) = (?P ;; ?Q \<and> $?x\<acute>)",
+     template_equation
+      (template_app
+        (template_app (template_hole 6, template_var 2),
+         template_app
+          (template_app (template_hole 5, template_var 1),
+           template_app
+            (template_hole 4,
+             template_app (template_hole 3, template_var 0)))),
+       template_app
+        (template_app
+          (template_hole 2,
+           template_app
+            (template_app (template_hole 6, template_var 2),
+             template_var 1)),
+         template_app
+          (template_hole 1,
+           template_app (template_hole 0, template_var 0))))),
+    ("utp_rel_laws.seqr_pre_var_out",
+     "($?x \<and> ?P) ;; ?Q = ($?x \<and> ?P ;; ?Q)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 6,
+           template_app
+            (template_app
+              (template_hole 5,
+               template_app
+                (template_hole 4,
+                 template_app (template_hole 3, template_var 2))),
+             template_var 1)),
+         template_var 0),
+       template_app
+        (template_app
+          (template_hole 2,
+           template_app
+            (template_hole 1,
+             template_app (template_hole 0, template_var 2))),
+         template_app
+          (template_app (template_hole 6, template_var 1),
+           template_var 0)))),
+    ("utp_rel_laws.nd_assign_comp",
+     "?x \<bowtie> ?y ==> ?x := * ;; ?y := * = ?x +\<^sub>L ?y := *",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 6, template_var 1),
+              template_var 0)
+            )],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 4,
+             template_app (template_hole 3, template_var 1)),
+           template_app (template_hole 2, template_var 0)),
+         template_app
+          (template_hole 1,
+           template_app
+            (template_app (template_hole 0, template_var 1),
+             template_var 0))))),
+    ("utp_rel_laws.seqr_monotonic",
+     "[| mono ?P; mono ?Q |] ==> mono (%X. ?P X ;; ?Q X)",
+     template_implication
+      ([template_predicate (template_app (template_hole 3, template_var 1)),
+        template_predicate
+         (template_app (template_hole 2, template_var 0))],
+       template_predicate (template_app (template_hole 1, t_empty)))),
+    ("utp_rel_laws.iter_seqr_cons",
+     "seqr_iter (?x # ?xs) ?P = ?P ?x ;; seqr_iter ?xs ?P",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 2,
+           template_app
+            (template_app (template_hole 1, template_var 2),
+             template_var 1)),
+         t_empty),
+       template_app
+        (template_app
+          (template_hole 0, template_app (template_var 0, template_var 2)),
+         template_app
+          (template_app (template_hole 2, template_var 1), t_empty)))),
+    ("utp_rel_laws.RA7",
+     "(?P\<^sup>- ;; (\<not> ?P ;; ?Q) \<or> \<not> ?Q) = (\<not> ?Q)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 8,
+           template_app
+            (template_app
+              (template_hole 7,
+               template_app
+                (template_app (template_hole 6, template_var 1),
+                 template_app
+                  (template_app (template_hole 5, template_hole 4),
+                   template_hole 3))),
+             template_app
+              (template_hole 2,
+               template_app
+                (template_app (template_hole 1, template_var 1),
+                 template_var 0)))),
+         template_app (template_hole 0, template_var 0)),
+       template_app (template_hole 0, template_var 0))),
+    ("utp_rel_laws.cond_skip",
+     "out\<alpha> \<sharp> ?b ==> (?b \<and> II) = (II \<and> ?b\<^sup>-)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 8, template_hole 7),
+              template_var 0)
+            )],
+       template_equation
+        (template_app
+          (template_app (template_hole 5, template_var 0), template_hole 4),
+         template_app
+          (template_app (template_hole 5, template_hole 4),
+           template_app
+            (template_app (template_hole 3, template_var 0),
+             template_app
+              (template_app (template_hole 2, template_hole 1),
+               template_hole 0)))))),
+    ("utp_rel_laws.seqr_post_out",
+     "in\<alpha> \<sharp> ?r ==>
+      ?P ;; (?Q \<and> ?r) = (?P ;; ?Q \<and> ?r)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 4, template_hole 3),
+              template_var 2)
+            )],
+       template_equation
+        (template_app
+          (template_app (template_hole 1, template_var 1),
+           template_app
+            (template_app (template_hole 0, template_var 0),
+             template_var 2)),
+         template_app
+          (template_app
+            (template_hole 0,
+             template_app
+              (template_app (template_hole 1, template_var 1),
+               template_var 0)),
+           template_var 2)))),
+    ("utp_rel_laws.seqr_pre_out",
+     "out\<alpha> \<sharp> ?p ==>
+      (?p \<and> ?Q) ;; ?R = (?p \<and> ?Q ;; ?R)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 4, template_hole 3),
+              template_var 2)
+            )],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 1,
+             template_app
+              (template_app (template_hole 0, template_var 2),
+               template_var 1)),
+           template_var 0),
+         template_app
+          (template_app (template_hole 0, template_var 2),
+           template_app
+            (template_app (template_hole 1, template_var 1),
+             template_var 0))))),
+    ("utp_rel_laws.precond_left_zero",
+     "[| out\<alpha> \<sharp> ?p; \<not> ?p = false |]
+      ==> true ;; ?p = true",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 8, template_hole 7),
+              template_var 0)
+            ),
+        template_negation
+         (template_equation (template_var 0, template_hole 4))],
+       template_equation
+        (template_app
+          (template_app (template_hole 2, template_hole 1), template_var 0),
+         template_hole 0))),
+    ("utp_rel_laws.upower_rep_eq",
+     "\<lbrakk>power.power II (;;) ?P ?i\<rbrakk>\<^sub>e =
+      (%b. b : {p. \<lbrakk>?P\<rbrakk>\<^sub>e p} ^^ ?i)",
+     template_equation
+      (template_app
+        (template_hole 6,
+         template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 5, template_hole 4),
+               template_hole 3),
+             template_var 1),
+           template_var 0)),
+       t_empty)),
+    ("utp_rel_laws.rcond_rassume_expand",
+     "?P \<triangleleft> ?b \<triangleright>\<^sub>r ?Q =
+      (?[?b] ;; ?P) \<sqinter> (?[\<not> ?b] ;; ?Q)",
+     template_equation
+      (template_app
+        (template_app
+          (template_app
+            (template_app (template_hole 6, template_hole 5),
+             template_app (template_hole 4, template_var 2)),
+           template_var 1),
+         template_var 0),
+       template_app
+        (template_app
+          (template_hole 3,
+           template_app
+            (template_app
+              (template_hole 2,
+               template_app (template_hole 1, template_var 2)),
+             template_var 1)),
+         template_app
+          (template_app
+            (template_hole 2,
+             template_app
+              (template_hole 1,
+               template_app (template_hole 0, template_var 2))),
+           template_var 0)))),
+    ("utp_rel_laws.seq_SUP_distl",
+     "?P ;; \<Or>(?Q ` ?A) = \<Or>((%i. ?P ;; ?Q i) ` ?A)",
+     template_equation
+      (template_app
+        (template_app (template_hole 4, template_var 2),
+         template_app
+          (template_hole 3,
+           template_app
+            (template_app (template_hole 2, t_empty), template_var 0))),
+       template_app
+        (template_hole 1,
+         template_app
+          (template_app (template_hole 0, t_empty), template_var 0)))),
+    ("utp_rel_laws.seq_UINF_distl'",
+     "?P ;; (\<Sqinter> Q \<bullet> ?F Q) =
+      (\<Sqinter> Q \<bullet> ?P ;; ?F Q)",
+     template_equation
+      (template_app
+        (template_app (template_hole 4, template_var 1),
+         template_app (template_app (template_hole 3, t_empty), t_empty)),
+       template_app (template_app (template_hole 1, t_empty), t_empty))),
+    ("utp_rel_laws.seq_SUP_distr",
+     "\<Or>(?P ` ?A) ;; ?Q = \<Or>((%i. ?P i ;; ?Q) ` ?A)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 4,
+           template_app
+            (template_hole 3,
+             template_app
+              (template_app (template_hole 2, t_empty), template_var 1))),
+         template_var 0),
+       template_app
+        (template_hole 1,
+         template_app
+          (template_app (template_hole 0, t_empty), template_var 1)))),
+    ("utp_rel_laws.seq_UINF_distr'",
+     "(\<Sqinter> P \<bullet> ?F P) ;; ?Q =
+      (\<Sqinter> P \<bullet> ?F P ;; ?Q)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 4,
+           template_app (template_app (template_hole 3, t_empty), t_empty)),
+         template_var 0),
+       template_app (template_app (template_hole 1, t_empty), t_empty))),
+    ("utp_rel_laws.rel_frext_seq",
+     "vwb_lens ?a ==>
+      ?a:[?P ;; ?Q]\<^sup>+ = ?a:[?P]\<^sup>+ ;; ?a:[?Q]\<^sup>+",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 4, template_var 2))],
+       template_equation
+        (template_app
+          (template_app (template_hole 2, template_var 2),
+           template_app
+            (template_app (template_hole 1, template_var 1),
+             template_var 0)),
+         template_app
+          (template_app
+            (template_hole 0,
+             template_app
+              (template_app (template_hole 2, template_var 2),
+               template_var 1)),
+           template_app
+            (template_app (template_hole 2, template_var 2),
+             template_var 0))))),
+    ("utp_rel_laws.skip_r_unfold",
+     "vwb_lens ?x ==>
+      II =
+      ($?x\<acute> =\<^sub>u $?x \<and>
+       II \<restriction>\<^sub>\<alpha> ?x)",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 8, template_var 0))],
+       template_equation
+        (template_hole 6,
+         template_app
+          (template_app
+            (template_hole 5,
+             template_app
+              (template_app
+                (template_hole 4,
+                 template_app
+                  (template_hole 3,
+                   template_app (template_hole 2, template_var 0))),
+               template_app
+                (template_hole 3,
+                 template_app (template_hole 1, template_var 0)))),
+           template_app
+            (template_app (template_hole 0, template_hole 6),
+             template_var 0))))),
+    ("utp_rel_laws.seqr_and_distr_ufunc",
+     "ufunctional ?P ==> ?P ;; (?Q \<and> ?R) = (?P ;; ?Q \<and> ?P ;; ?R)",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 4, template_var 2))],
+       template_equation
+        (template_app
+          (template_app (template_hole 2, template_var 2),
+           template_app
+            (template_app (template_hole 1, template_var 1),
+             template_var 0)),
+         template_app
+          (template_app
+            (template_hole 0,
+             template_app
+              (template_app (template_hole 2, template_var 2),
+               template_var 1)),
+           template_app
+            (template_app (template_hole 2, template_var 2),
+             template_var 0))))),
+    ("utp_rel_laws.seqr_and_distl_uinj",
+     "uinj ?R ==> (?P \<and> ?Q) ;; ?R = (?P ;; ?R \<and> ?Q ;; ?R)",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 4, template_var 2))],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 2,
+             template_app
+              (template_app (template_hole 1, template_var 1),
+               template_var 0)),
+           template_var 2),
+         template_app
+          (template_app
+            (template_hole 0,
+             template_app
+              (template_app (template_hole 2, template_var 1),
+               template_var 2)),
+           template_app
+            (template_app (template_hole 2, template_var 0),
+             template_var 2))))),
+    ("utp_rel_laws.assigns_r_conv",
+     "bij ?f ==>
+      \<langle>?f\<rangle>\<^sub>a\<^sup>- =
+      \<langle>inv ?f\<rangle>\<^sub>a",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 8, template_var 0),
+                template_hole 7),
+              template_hole 7)
+            )],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 5,
+             template_app (template_hole 4, template_var 0)),
+           template_app
+            (template_app (template_hole 3, template_hole 2),
+             template_hole 1)),
+         template_app
+          (template_hole 4,
+           template_app
+            (template_app (template_hole 0, template_hole 7),
+             template_var 0))))),
+    ("utp_rel_laws.seqr_mono",
+     "[| ?P\<^sub>1 \<sqsubseteq> ?P\<^sub>2;
+         ?Q\<^sub>1 \<sqsubseteq> ?Q\<^sub>2 |]
+      ==> ?P\<^sub>1 ;; ?Q\<^sub>1 \<sqsubseteq> ?P\<^sub>2 ;; ?Q\<^sub>2",
+     template_implication
+      ([template_inequation (less_equals, template_var 3, template_var 2),
+        template_inequation (less_equals, template_var 1, template_var 0)],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_app (template_hole 0, template_var 3), template_var 1),
+         template_app
+          (template_app (template_hole 0, template_var 2),
+           template_var 0)))),
+    ("utp_rel_laws.seqr_to_conj",
+     "[| out\<alpha> \<sharp> ?P; in\<alpha> \<sharp> ?Q |]
+      ==> ?P ;; ?Q = (?P \<and> ?Q)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 5, template_hole 4),
+              template_var 1)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 5, template_hole 3),
+              template_var 0)
+            )],
+       template_equation
+        (template_app
+          (template_app (template_hole 1, template_var 1), template_var 0),
+         template_app
+          (template_app (template_hole 0, template_var 1),
+           template_var 0)))),
+    ("utp_rel_laws.Sup_power_expand",
+     "?P 0 \<sqinter> (\<Sqinter>i. ?P (i + 1)) = \<Sqinter>range ?P",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 6, template_app (template_var 0, template_hole 5)),
+         template_app
+          (template_hole 4,
+           template_app
+            (template_app (template_hole 3, t_empty), template_hole 0))),
+       template_app
+        (template_hole 4,
+         template_app
+          (template_app (template_hole 3, t_empty), template_hole 0)))),
+    ("utp_rel_laws.upower_rep_eq_alt",
+     "\<lbrakk>power.power \<langle>id\<rangle>\<^sub>a (;;) ?P
+                ?i\<rbrakk>\<^sub>e =
+      (%b. b : {p. \<lbrakk>?P\<rbrakk>\<^sub>e p} ^^ ?i)",
+     template_equation
+      (template_app
+        (template_hole 7,
+         template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_hole 6,
+                 template_app (template_hole 5, template_hole 4)),
+               template_hole 3),
+             template_var 1),
+           template_var 0)),
+       t_empty)),
+    ("utp_rel_laws.assign_r_comp",
+     "?x := ?u ;; ?P = ?P\<lbrakk>\<lceil>?u\<rceil>\<^sub></$?x\<rbrakk>",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 10,
+           template_app
+            (template_hole 9,
+             template_app
+              (template_app
+                (template_app (template_hole 8, template_hole 7),
+                 template_app (template_hole 6, template_var 2)),
+               template_var 1))),
+         template_var 0),
+       template_app
+        (template_app
+          (template_hole 5,
+           template_app
+            (template_app
+              (template_app (template_hole 4, template_hole 3),
+               template_app (template_hole 2, template_var 2)),
+             template_app
+              (template_app (template_hole 1, template_var 1),
+               template_hole 0))),
+         template_var 0))),
+    ("utp_rel_laws.upower_inductr",
+     "?Q \<sqsubseteq> ?R \<sqinter> (?Q ;; ?P) ==>
+      ?Q \<sqsubseteq> ?R ;; power.power II (;;) ?P ?n",
+     template_implication
+      ([template_inequation
+         (less_equals,
+          template_app
+           (template_app (template_hole 4, template_var 3),
+            template_app
+             (template_app (template_hole 3, template_var 2),
+              template_var 1)),
+          template_var 2)],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_app (template_hole 3, template_var 3),
+           template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 2, template_hole 1),
+                 template_hole 0),
+               template_var 1),
+             template_var 0)),
+         template_var 2))),
+    ("utp_rel_laws.upower_inductl",
+     "?Q \<sqsubseteq> (?P ;; ?Q) \<sqinter> ?R ==>
+      ?Q \<sqsubseteq> power.power II (;;) ?P ?n ;; ?R",
+     template_implication
+      ([template_inequation
+         (less_equals,
+          template_app
+           (template_app
+             (template_hole 4,
+              template_app
+               (template_app (template_hole 3, template_var 3),
+                template_var 2)),
+            template_var 1),
+          template_var 2)],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_app
+            (template_hole 3,
+             template_app
+              (template_app
+                (template_app
+                  (template_app (template_hole 2, template_hole 1),
+                   template_hole 0),
+                 template_var 3),
+               template_var 0)),
+           template_var 1),
+         template_var 2))),
+    ("utp_rel_laws.ustar_inductl",
+     "[| ?Q \<sqsubseteq> ?R; ?Q \<sqsubseteq> ?P ;; ?Q |]
+      ==> ?Q \<sqsubseteq> ?P\<^sup>\<star> ;; ?R",
+     template_implication
+      ([template_inequation (less_equals, template_var 2, template_var 1),
+        template_inequation
+         (less_equals,
+          template_app
+           (template_app (template_hole 1, template_var 0), template_var 1),
+          template_var 1)],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_app
+            (template_hole 1,
+             template_app (template_hole 0, template_var 0)),
+           template_var 2),
+         template_var 1))),
+    ("utp_rel_laws.ustar_inductr",
+     "[| ?Q \<sqsubseteq> ?R; ?Q \<sqsubseteq> ?Q ;; ?P |]
+      ==> ?Q \<sqsubseteq> ?R ;; ?P\<^sup>\<star>",
+     template_implication
+      ([template_inequation (less_equals, template_var 2, template_var 1),
+        template_inequation
+         (less_equals,
+          template_app
+           (template_app (template_hole 1, template_var 1), template_var 0),
+          template_var 1)],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_app (template_hole 1, template_var 2),
+           template_app (template_hole 0, template_var 0)),
+         template_var 1))),
+    ("utp_rel_laws.pre_weak_rel",
+     "[| `?Pre \<Rightarrow> ?I`;
+         (?I \<Rightarrow> ?Post) \<sqsubseteq> ?P |]
+      ==> (?Pre \<Rightarrow> ?Post) \<sqsubseteq> ?P",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_hole 2,
+              template_app
+               (template_app (template_hole 1, template_var 3),
+                template_var 2))
+            ),
+        template_inequation
+         (less_equals, template_var 1,
+          template_app
+           (template_app (template_hole 1, template_var 2),
+            template_var 0))],
+       template_inequation
+        (less_equals, template_var 1,
+         template_app
+          (template_app (template_hole 1, template_var 3),
+           template_var 0)))),
+    ("utp_rel_laws.eq_convr",
+     "(?p =\<^sub>u ?q)\<^sup>- = (?p\<^sup>- =\<^sub>u ?q\<^sup>-)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 6,
+           template_app
+            (template_app (template_hole 5, template_var 1),
+             template_var 0)),
+         template_app
+          (template_app (template_hole 4, template_hole 3),
+           template_hole 2)),
+       template_app
+        (template_app
+          (template_hole 1,
+           template_app
+            (template_app (template_hole 0, template_var 1),
+             template_app
+              (template_app (template_hole 4, template_hole 3),
+               template_hole 2))),
+         template_app
+          (template_app (template_hole 0, template_var 0),
+           template_app
+            (template_app (template_hole 4, template_hole 3),
+             template_hole 2))))),
+    ("utp_rel_laws.conj_convr",
+     "(?p \<and> ?q)\<^sup>- = (?q\<^sup>- \<and> ?p\<^sup>-)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 5,
+           template_app
+            (template_app (template_hole 4, template_var 1),
+             template_var 0)),
+         template_app
+          (template_app (template_hole 3, template_hole 2),
+           template_hole 1)),
+       template_app
+        (template_app
+          (template_hole 0,
+           template_app
+            (template_app (template_hole 5, template_var 0),
+             template_app
+              (template_app (template_hole 3, template_hole 2),
+               template_hole 1))),
+         template_app
+          (template_app (template_hole 5, template_var 1),
+           template_app
+            (template_app (template_hole 3, template_hole 2),
+             template_hole 1))))),
+    ("utp_rel_laws.RA5",
+     "(?P \<or> ?Q)\<^sup>- = (?P\<^sup>- \<or> ?Q\<^sup>-)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 5,
+           template_app
+            (template_app (template_hole 4, template_var 1),
+             template_var 0)),
+         template_app
+          (template_app (template_hole 3, template_hole 2),
+           template_hole 1)),
+       template_app
+        (template_app
+          (template_hole 0,
+           template_app
+            (template_app (template_hole 5, template_var 1),
+             template_app
+              (template_app (template_hole 3, template_hole 2),
+               template_hole 1))),
+         template_app
+          (template_app (template_hole 5, template_var 0),
+           template_app
+            (template_app (template_hole 3, template_hole 2),
+             template_hole 1))))),
+    ("utp_rel_laws.disj_convr",
+     "(?p \<or> ?q)\<^sup>- = (?q\<^sup>- \<or> ?p\<^sup>-)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 5,
+           template_app
+            (template_app (template_hole 4, template_var 1),
+             template_var 0)),
+         template_app
+          (template_app (template_hole 3, template_hole 2),
+           template_hole 1)),
+       template_app
+        (template_app
+          (template_hole 0,
+           template_app
+            (template_app (template_hole 5, template_var 0),
+             template_app
+              (template_app (template_hole 3, template_hole 2),
+               template_hole 1))),
+         template_app
+          (template_app (template_hole 5, template_var 1),
+           template_app
+            (template_app (template_hole 3, template_hole 2),
+             template_hole 1))))),
+    ("utp_rel_laws.RA4", "(?P ;; ?Q)\<^sup>- = ?Q\<^sup>- ;; ?P\<^sup>-",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 13,
+           template_app
+            (template_app (template_hole 12, template_var 1),
+             template_var 0)),
+         template_app
+          (template_app (template_hole 11, template_hole 10),
+           template_hole 9)),
+       template_app
+        (template_app
+          (template_hole 8,
+           template_app
+            (template_app (template_hole 7, template_var 0),
+             template_app
+              (template_app (template_hole 6, template_hole 5),
+               template_hole 4))),
+         template_app
+          (template_app (template_hole 3, template_var 1),
+           template_app
+            (template_app (template_hole 2, template_hole 1),
+             template_hole 0))))),
+    ("utp_rel_laws.seqr_convr",
+     "(?p ;; ?q)\<^sup>- = ?q\<^sup>- ;; ?p\<^sup>-",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 13,
+           template_app
+            (template_app (template_hole 12, template_var 1),
+             template_var 0)),
+         template_app
+          (template_app (template_hole 11, template_hole 10),
+           template_hole 9)),
+       template_app
+        (template_app
+          (template_hole 8,
+           template_app
+            (template_app (template_hole 7, template_var 0),
+             template_app
+              (template_app (template_hole 6, template_hole 5),
+               template_hole 4))),
+         template_app
+          (template_app (template_hole 3, template_var 1),
+           template_app
+            (template_app (template_hole 2, template_hole 1),
+             template_hole 0))))),
+    ("utp_rel_laws.comp_cond_left_distr",
+     "(?P \<triangleleft> ?b \<triangleright>\<^sub>r ?Q) ;; ?R =
+      ?P ;; ?R \<triangleleft> ?b \<triangleright>\<^sub>r ?Q ;; ?R",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 5,
+           template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 4, template_hole 3),
+                 template_app (template_hole 2, template_var 3)),
+               template_var 2),
+             template_var 1)),
+         template_var 0),
+       template_app
+        (template_app
+          (template_app
+            (template_app (template_hole 1, template_hole 3),
+             template_app (template_hole 0, template_var 3)),
+           template_app
+            (template_app (template_hole 5, template_var 2),
+             template_var 0)),
+         template_app
+          (template_app (template_hole 5, template_var 1),
+           template_var 0)))),
+    ("utp_rel_laws.frame_to_antiframe",
+     "[| ?x \<bowtie> ?y; ?x +\<^sub>L ?y = \<Sigma> |]
+      ==> {?x}:[?P] = {?y}:\<lbrakk>?P\<rbrakk>",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 6, template_var 2),
+              template_var 1)
+            ),
+        template_equation
+         (template_app
+           (template_app (template_hole 4, template_var 2), template_var 1),
+          template_hole 3)],
+       template_equation
+        (template_app
+          (template_app (template_hole 1, template_var 2), template_var 0),
+         template_app
+          (template_app (template_hole 0, template_var 1),
+           template_var 0)))),
+    ("utp_rel_laws.frame_is_assign",
+     "vwb_lens ?x ==>
+      {?x}:[$?x\<acute> =\<^sub>u \<lceil>?v\<rceil>\<^sub><] = ?x := ?v",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 11, template_var 1))],
+       template_equation
+        (template_app
+          (template_app (template_hole 9, template_var 1),
+           template_app
+            (template_app
+              (template_hole 8,
+               template_app
+                (template_hole 7,
+                 template_app (template_hole 6, template_var 1))),
+             template_app
+              (template_app (template_hole 5, template_var 0),
+               template_hole 4))),
+         template_app
+          (template_hole 3,
+           template_app
+            (template_app
+              (template_app (template_hole 2, template_hole 1),
+               template_app (template_hole 0, template_var 1)),
+             template_var 0))))),
+    ("utp_rel_laws.rel_frext_commute",
+     "?x \<bowtie> ?y ==>
+      ?x:[?P]\<^sup>+ ;; ?y:[?Q]\<^sup>+ =
+      ?y:[?Q]\<^sup>+ ;; ?x:[?P]\<^sup>+",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 4, template_var 3),
+              template_var 2)
+            )],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 2,
+             template_app
+              (template_app (template_hole 1, template_var 3),
+               template_var 1)),
+           template_app
+            (template_app (template_hole 0, template_var 2),
+             template_var 0)),
+         template_app
+          (template_app
+            (template_hole 2,
+             template_app
+              (template_app (template_hole 0, template_var 2),
+               template_var 0)),
+           template_app
+            (template_app (template_hole 1, template_var 3),
+             template_var 1))))),
+    ("utp_rel_laws.seqr_pre_transfer",
+     "in\<alpha> \<sharp> ?q ==>
+      (?P \<and> ?q) ;; ?R = ?P ;; (?q\<^sup>- \<and> ?R)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 9, template_hole 8),
+              template_var 2)
+            )],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 6,
+             template_app
+              (template_app (template_hole 5, template_var 1),
+               template_var 2)),
+           template_var 0),
+         template_app
+          (template_app (template_hole 6, template_var 1),
+           template_app
+            (template_app
+              (template_hole 4,
+               template_app
+                (template_app (template_hole 3, template_var 2),
+                 template_app
+                  (template_app (template_hole 2, template_hole 1),
+                   template_hole 0))),
+             template_var 0))))),
+    ("utp_rel_laws.seqr_post_transfer",
+     "out\<alpha> \<sharp> ?q ==>
+      ?P ;; (?q \<and> ?R) = (?P \<and> ?q\<^sup>-) ;; ?R",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 9, template_hole 8),
+              template_var 2)
+            )],
+       template_equation
+        (template_app
+          (template_app (template_hole 6, template_var 1),
+           template_app
+            (template_app (template_hole 5, template_var 2),
+             template_var 0)),
+         template_app
+          (template_app
+            (template_hole 6,
+             template_app
+              (template_app (template_hole 4, template_var 1),
+               template_app
+                (template_app (template_hole 3, template_var 2),
+                 template_app
+                  (template_app (template_hole 2, template_hole 1),
+                   template_hole 0)))),
+           template_var 0)))),
+    ("utp_rel_laws.impl_seqr_mono",
+     "[| `?P \<Rightarrow> ?Q`; `?R \<Rightarrow> ?S` |]
+      ==> `?P ;; ?R \<Rightarrow> ?Q ;; ?S`",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_hole 6,
+              template_app
+               (template_app (template_hole 5, template_var 3),
+                template_var 2))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_hole 4,
+              template_app
+               (template_app (template_hole 3, template_var 1),
+                template_var 0))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_hole 2,
+             template_app
+              (template_app
+                (template_hole 1,
+                 template_app
+                  (template_app (template_hole 0, template_var 3),
+                   template_var 1)),
+               template_app
+                (template_app (template_hole 0, template_var 2),
+                 template_var 0)))
+           ))),
+    ("utp_rel_laws.bop_convr",
+     "bop ?f ?u ?v\<^sup>- = bop ?f (?u\<^sup>-) (?v\<^sup>-)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 7,
+           template_app
+            (template_app
+              (template_app (template_hole 6, template_var 2),
+               template_var 1),
+             template_var 0)),
+         template_app
+          (template_app (template_hole 5, template_hole 4),
+           template_hole 3)),
+       template_app
+        (template_app
+          (template_app (template_hole 2, template_var 2),
+           template_app
+            (template_app (template_hole 1, template_var 1),
+             template_app
+              (template_app (template_hole 5, template_hole 4),
+               template_hole 3))),
+         template_app
+          (template_app (template_hole 0, template_var 0),
+           template_app
+            (template_app (template_hole 5, template_hole 4),
+             template_hole 3))))),
+    ("utp_rel_laws.rel_frext_rcond",
+     "?a:[?P \<triangleleft> ?b \<triangleright>\<^sub>r ?Q]\<^sup>+ =
+      ?a:[?P]\<^sup>+ \<triangleleft> ?b \<oplus>\<^sub>p
+?a \<triangleright>\<^sub>r
+         ?a:[?Q]\<^sup>+",
+     template_equation
+      (template_app
+        (template_app (template_hole 6, template_var 3),
+         template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 5, template_hole 4),
+               template_app (template_hole 3, template_var 2)),
+             template_var 1),
+           template_var 0)),
+       template_app
+        (template_app
+          (template_app
+            (template_app (template_hole 2, template_hole 4),
+             template_app
+              (template_hole 1,
+               template_app
+                (template_app (template_hole 0, template_var 2),
+                 template_var 3))),
+           template_app
+            (template_app (template_hole 6, template_var 3),
+             template_var 1)),
+         template_app
+          (template_app (template_hole 6, template_var 3),
+           template_var 0)))),
+    ("utp_rel_laws.assigns_idem",
+     "mwb_lens ?x ==> ?x, ?x := ?u, ?v = ?x := ?v",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 5, template_var 2))],
+       template_equation
+        (template_app
+          (template_hole 3,
+           template_app
+            (template_app
+              (template_app
+                (template_hole 2,
+                 template_app
+                  (template_app
+                    (template_app (template_hole 2, template_hole 1),
+                     template_app (template_hole 0, template_var 2)),
+                   template_var 1)),
+               template_app (template_hole 0, template_var 2)),
+             template_var 0)),
+         template_app
+          (template_hole 3,
+           template_app
+            (template_app
+              (template_app (template_hole 2, template_hole 1),
+               template_app (template_hole 0, template_var 2)),
+             template_var 0))))),
+    ("utp_rel_laws.assign_unfold",
+     "vwb_lens ?x ==>
+      ?x := ?v =
+      ($?x\<acute> =\<^sub>u \<lceil>?v\<rceil>\<^sub>< \<and>
+       II \<restriction>\<^sub>\<alpha> ?x)",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 13, template_var 1))],
+       template_equation
+        (template_app
+          (template_hole 11,
+           template_app
+            (template_app
+              (template_app (template_hole 10, template_hole 9),
+               template_app (template_hole 8, template_var 1)),
+             template_var 0)),
+         template_app
+          (template_app
+            (template_hole 7,
+             template_app
+              (template_app
+                (template_hole 6,
+                 template_app
+                  (template_hole 5,
+                   template_app (template_hole 4, template_var 1))),
+               template_app
+                (template_app (template_hole 3, template_var 0),
+                 template_hole 2))),
+           template_app
+            (template_app (template_hole 1, template_hole 0),
+             template_var 1))))),
+    ("utp_rel_laws.cond_seq_right_distr",
+     "in\<alpha> \<sharp> ?b ==>
+      ?P ;; (?Q \<triangleleft> ?b \<triangleright> ?R) =
+      ?P ;; ?Q \<triangleleft> ?b \<triangleright> ?P ;; ?R",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 5, template_hole 4),
+              template_var 3)
+            )],
+       template_equation
+        (template_app
+          (template_app (template_hole 2, template_var 2),
+           template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 1, template_hole 0),
+                 template_var 3),
+               template_var 1),
+             template_var 0)),
+         template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 1, template_hole 0),
+               template_var 3),
+             template_app
+              (template_app (template_hole 2, template_var 2),
+               template_var 1)),
+           template_app
+            (template_app (template_hole 2, template_var 2),
+             template_var 0))))),
+    ("utp_rel_laws.cond_seq_left_distr",
+     "out\<alpha> \<sharp> ?b ==>
+      (?P \<triangleleft> ?b \<triangleright> ?Q) ;; ?R =
+      ?P ;; ?R \<triangleleft> ?b \<triangleright> ?Q ;; ?R",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 5, template_hole 4),
+              template_var 3)
+            )],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 2,
+             template_app
+              (template_app
+                (template_app
+                  (template_app (template_hole 1, template_hole 0),
+                   template_var 3),
+                 template_var 2),
+               template_var 1)),
+           template_var 0),
+         template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 1, template_hole 0),
+               template_var 3),
+             template_app
+              (template_app (template_hole 2, template_var 2),
+               template_var 0)),
+           template_app
+            (template_app (template_hole 2, template_var 1),
+             template_var 0))))),
+    ("utp_rel_laws.frame_conj_true",
+     "[| {$?x, $?x\<acute>} \<natural> ?P; vwb_lens ?x |]
+      ==> (?P \<and> {?x}:[true]) = {?x}:[?P]",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 8,
+                template_app
+                 (template_app
+                   (template_hole 7,
+                    template_app (template_hole 6, template_var 1)),
+                  template_app (template_hole 5, template_var 1))),
+              template_var 0)
+            ),
+        template_predicate
+         (template_app (template_hole 4, template_var 1))],
+       template_equation
+        (template_app
+          (template_app (template_hole 2, template_var 0),
+           template_app
+            (template_app (template_hole 1, template_var 1),
+             template_hole 0)),
+         template_app
+          (template_app (template_hole 1, template_var 1),
+           template_var 0)))),
+    ("utp_rel_laws.skip_res_as_ra",
+     "[| vwb_lens ?y; ?x +\<^sub>L ?y \<approx>\<^sub>L \<Sigma>;
+         ?x \<bowtie> ?y |]
+      ==> II \<restriction>\<^sub>\<alpha> ?x = II\<^bsub>?y\<^esub>",
+     template_implication
+      ([template_predicate (template_app (template_hole 8, template_var 1)),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 7,
+                template_app
+                 (template_app (template_hole 6, template_var 0),
+                  template_var 1)),
+              template_hole 5)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 4, template_var 0),
+              template_var 1)
+            )],
+       template_equation
+        (template_app
+          (template_app (template_hole 2, template_hole 1), template_var 0),
+         template_app (template_hole 0, template_var 1)))),
+    ("utp_rel_laws.seqr_unfold",
+     "?P ;; ?Q =
+      (\<^bold>\<exists> v \<bullet> ?P\<lbrakk>\<guillemotleft>v\<guillemotright>/$\<^bold>v\<acute>\<rbrakk> \<and>
+                                     ?Q\<lbrakk>\<guillemotleft>v\<guillemotright>/$\<^bold>v\<rbrakk>)",
+     template_equation
+      (template_app
+        (template_app (template_hole 9, template_var 1), template_var 0),
+       template_app (template_hole 8, t_empty))),
+    ("utp_rel_laws.frame_assign_in",
+     "[| vwb_lens ?a; ?x \<subseteq>\<^sub>L ?a |]
+      ==> {?a}:[?x := ?v] = ?x := ?v",
+     template_implication
+      ([template_predicate (template_app (template_hole 7, template_var 2)),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 6, template_var 1),
+              template_var 2)
+            )],
+       template_equation
+        (template_app
+          (template_app (template_hole 4, template_var 2),
+           template_app
+            (template_hole 3,
+             template_app
+              (template_app
+                (template_app (template_hole 2, template_hole 1),
+                 template_app (template_hole 0, template_var 1)),
+               template_var 0))),
+         template_app
+          (template_hole 3,
+           template_app
+            (template_app
+              (template_app (template_hole 2, template_hole 1),
+               template_app (template_hole 0, template_var 1)),
+             template_var 0))))),
+    ("utp_rel_laws.frame_contract_RID",
+     "[| vwb_lens ?x; ?P is RID ?x; ?x \<bowtie> ?y |]
+      ==> {?x, ?y}:[?P] = {?y}:[?P]",
+     template_implication
+      ([template_predicate (template_app (template_hole 7, template_var 2)),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 6, template_var 1),
+              template_app (template_hole 5, template_var 2))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 4, template_var 2),
+              template_var 0)
+            )],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 2,
+             template_app
+              (template_app (template_hole 1, template_var 2),
+               template_var 0)),
+           template_var 1),
+         template_app
+          (template_app (template_hole 0, template_var 0),
+           template_var 1)))),
+    ("utp_rel_laws.nd_assign_assign",
+     "[| vwb_lens ?x; ?x \<sharp> ?e |] ==> ?x := * ;; ?x := ?e = ?x := ?e",
+     template_implication
+      ([template_predicate (template_app (template_hole 8, template_var 1)),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 7, template_var 1),
+              template_var 0)
+            )],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 5,
+             template_app (template_hole 4, template_var 1)),
+           template_app
+            (template_hole 3,
+             template_app
+              (template_app
+                (template_app (template_hole 2, template_hole 1),
+                 template_app (template_hole 0, template_var 1)),
+               template_var 0))),
+         template_app
+          (template_hole 3,
+           template_app
+            (template_app
+              (template_app (template_hole 2, template_hole 1),
+               template_app (template_hole 0, template_var 1)),
+             template_var 0))))),
+    ("utp_rel_laws.SUP_atLeastAtMost_first",
+     "?m <= ?n ==>
+      \<Sqinter>(?P ` {?m..?n}) =
+      ?P ?m \<sqinter> \<Sqinter>(?P ` {Suc ?m..?n})",
+     template_implication
+      ([template_inequation (less_equals, template_var 2, template_var 1)],
+       template_equation
+        (template_app
+          (template_hole 4,
+           template_app
+            (template_app (template_hole 3, t_empty),
+             template_app
+              (template_app (template_hole 2, template_var 2),
+               template_var 1))),
+         template_app
+          (template_app
+            (template_hole 1,
+             template_app (template_var 0, template_var 2)),
+           template_app
+            (template_hole 4,
+             template_app
+              (template_app (template_hole 3, t_empty),
+               template_app
+                (template_app
+                  (template_hole 2,
+                   template_app (template_hole 0, template_var 2)),
+                 template_var 1))))))),
+    ("utp_rel_laws.seq_UINF_distl",
+     "?P ;; (\<Sqinter> Q \<in> ?A \<bullet> ?F Q) =
+      (\<Sqinter> Q \<in> ?A \<bullet> ?P ;; ?F Q)",
+     template_equation
+      (template_app
+        (template_app (template_hole 9, template_var 2),
+         template_app (template_app (template_hole 8, t_empty), t_empty)),
+       template_app (template_app (template_hole 3, t_empty), t_empty))),
+    ("utp_rel_laws.seq_UINF_distr",
+     "(\<Sqinter> P \<in> ?A \<bullet> ?F P) ;; ?Q =
+      (\<Sqinter> P \<in> ?A \<bullet> ?F P ;; ?Q)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 9,
+           template_app (template_app (template_hole 8, t_empty), t_empty)),
+         template_var 0),
+       template_app (template_app (template_hole 3, t_empty), t_empty))),
+    ("utp_rel_laws.assign_test",
+     "mwb_lens ?x ==>
+      ?x := \<guillemotleft>?u\<guillemotright> ;;
+      ?x := \<guillemotleft>?v\<guillemotright> =
+      ?x := \<guillemotleft>?v\<guillemotright>",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 7, template_var 2))],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 5,
+             template_app
+              (template_hole 4,
+               template_app
+                (template_app
+                  (template_app (template_hole 3, template_hole 2),
+                   template_app (template_hole 1, template_var 2)),
+                 template_app (template_hole 0, template_var 1)))),
+           template_app
+            (template_hole 4,
+             template_app
+              (template_app
+                (template_app (template_hole 3, template_hole 2),
+                 template_app (template_hole 1, template_var 2)),
+               template_app (template_hole 0, template_var 0)))),
+         template_app
+          (template_hole 4,
+           template_app
+            (template_app
+              (template_app (template_hole 3, template_hole 2),
+               template_app (template_hole 1, template_var 2)),
+             template_app (template_hole 0, template_var 0)))))),
+    ("utp_rel_laws.seqr_middle",
+     "vwb_lens ?x ==>
+      ?P ;; ?Q =
+      (\<^bold>\<exists> v \<bullet> ?P\<lbrakk>\<guillemotleft>v\<guillemotright>/$?x\<acute>\<rbrakk> ;;
+                                     ?Q\<lbrakk>\<guillemotleft>v\<guillemotright>/$?x\<rbrakk>)",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 13, template_var 2))],
+       template_equation
+        (template_app
+          (template_app (template_hole 11, template_var 1), template_var 0),
+         template_app (template_hole 10, t_empty)))),
+    ("utp_rel_laws.seqr_right_one_point_true",
+     "vwb_lens ?x ==>
+      ?P ;; ($?x \<and> ?Q) =
+      ?P\<lbrakk>true/$?x\<acute>\<rbrakk> ;; ?Q\<lbrakk>true/$?x\<rbrakk>",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 14, template_var 2))],
+       template_equation
+        (template_app
+          (template_app (template_hole 12, template_var 1),
+           template_app
+            (template_app
+              (template_hole 11,
+               template_app
+                (template_hole 10,
+                 template_app (template_hole 9, template_var 2))),
+             template_var 0)),
+         template_app
+          (template_app
+            (template_hole 12,
+             template_app
+              (template_app
+                (template_hole 8,
+                 template_app
+                  (template_app
+                    (template_app (template_hole 7, template_hole 6),
+                     template_app (template_hole 5, template_var 2)),
+                   template_hole 4)),
+               template_var 1)),
+           template_app
+            (template_app
+              (template_hole 3,
+               template_app
+                (template_app
+                  (template_app (template_hole 2, template_hole 1),
+                   template_app (template_hole 9, template_var 2)),
+                 template_hole 0)),
+             template_var 0))))),
+    ("utp_rel_laws.seqr_left_one_point_true",
+     "vwb_lens ?x ==>
+      (?P \<and> $?x\<acute>) ;; ?Q =
+      ?P\<lbrakk>true/$?x\<acute>\<rbrakk> ;; ?Q\<lbrakk>true/$?x\<rbrakk>",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 14, template_var 2))],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 12,
+             template_app
+              (template_app (template_hole 11, template_var 1),
+               template_app
+                (template_hole 10,
+                 template_app (template_hole 9, template_var 2)))),
+           template_var 0),
+         template_app
+          (template_app
+            (template_hole 12,
+             template_app
+              (template_app
+                (template_hole 8,
+                 template_app
+                  (template_app
+                    (template_app (template_hole 7, template_hole 6),
+                     template_app (template_hole 9, template_var 2)),
+                   template_hole 5)),
+               template_var 1)),
+           template_app
+            (template_app
+              (template_hole 4,
+               template_app
+                (template_app
+                  (template_app (template_hole 3, template_hole 2),
+                   template_app (template_hole 1, template_var 2)),
+                 template_hole 0)),
+             template_var 0))))),
+    ("utp_rel_laws.cond_refine_rel",
+     "[| ?S \<sqsubseteq> (\<lceil>?b\<rceil>\<^sub>< \<and> ?P);
+         ?S \<sqsubseteq> (\<lceil>\<not> ?b\<rceil>\<^sub>< \<and> ?Q) |]
+      ==> ?S \<sqsubseteq>
+          ?P \<triangleleft> ?b \<triangleright>\<^sub>r ?Q",
+     template_implication
+      ([template_inequation
+         (less_equals,
+          template_app
+           (template_app
+             (template_hole 6,
+              template_app
+               (template_app (template_hole 5, template_var 3),
+                template_hole 4)),
+            template_var 2),
+          template_var 1),
+        template_inequation
+         (less_equals,
+          template_app
+           (template_app
+             (template_hole 6,
+              template_app
+               (template_app
+                 (template_hole 5,
+                  template_app (template_hole 3, template_var 3)),
+                template_hole 4)),
+            template_var 0),
+          template_var 1)],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 2, template_hole 1),
+               template_app (template_hole 0, template_var 3)),
+             template_var 2),
+           template_var 0),
+         template_var 1))),
+    ("utp_rel_laws.seqr_right_one_point_false",
+     "vwb_lens ?x ==>
+      ?P ;; (\<not> $?x \<and> ?Q) =
+      ?P\<lbrakk>false/$?x\<acute>\<rbrakk> ;;
+      ?Q\<lbrakk>false/$?x\<rbrakk>",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 15, template_var 2))],
+       template_equation
+        (template_app
+          (template_app (template_hole 13, template_var 1),
+           template_app
+            (template_app
+              (template_hole 12,
+               template_app
+                (template_hole 11,
+                 template_app
+                  (template_hole 10,
+                   template_app (template_hole 9, template_var 2)))),
+             template_var 0)),
+         template_app
+          (template_app
+            (template_hole 13,
+             template_app
+              (template_app
+                (template_hole 8,
+                 template_app
+                  (template_app
+                    (template_app (template_hole 7, template_hole 6),
+                     template_app (template_hole 5, template_var 2)),
+                   template_hole 4)),
+               template_var 1)),
+           template_app
+            (template_app
+              (template_hole 3,
+               template_app
+                (template_app
+                  (template_app (template_hole 2, template_hole 1),
+                   template_app (template_hole 9, template_var 2)),
+                 template_hole 0)),
+             template_var 0))))),
+    ("utp_rel_laws.seqr_left_one_point_false",
+     "vwb_lens ?x ==>
+      (?P \<and> \<not> $?x\<acute>) ;; ?Q =
+      ?P\<lbrakk>false/$?x\<acute>\<rbrakk> ;;
+      ?Q\<lbrakk>false/$?x\<rbrakk>",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 15, template_var 2))],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 13,
+             template_app
+              (template_app (template_hole 12, template_var 1),
+               template_app
+                (template_hole 11,
+                 template_app
+                  (template_hole 10,
+                   template_app (template_hole 9, template_var 2))))),
+           template_var 0),
+         template_app
+          (template_app
+            (template_hole 13,
+             template_app
+              (template_app
+                (template_hole 8,
+                 template_app
+                  (template_app
+                    (template_app (template_hole 7, template_hole 6),
+                     template_app (template_hole 9, template_var 2)),
+                   template_hole 5)),
+               template_var 1)),
+           template_app
+            (template_app
+              (template_hole 4,
+               template_app
+                (template_app
+                  (template_app (template_hole 3, template_hole 2),
+                   template_app (template_hole 1, template_var 2)),
+                 template_hole 0)),
+             template_var 0))))),
+    ("utp_rel_laws.assign_simultaneous",
+     "[| vwb_lens ?y; ?x \<bowtie> ?y |] ==> ?x, ?y := ?e, &?y = ?x := ?e",
+     template_implication
+      ([template_predicate (template_app (template_hole 9, template_var 2)),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 8, template_var 1),
+              template_var 2)
+            )],
+       template_equation
+        (template_app
+          (template_hole 6,
+           template_app
+            (template_app
+              (template_app
+                (template_hole 5,
+                 template_app
+                  (template_app
+                    (template_app (template_hole 4, template_hole 3),
+                     template_app (template_hole 2, template_var 1)),
+                   template_var 0)),
+               template_app (template_hole 1, template_var 2)),
+             template_app
+              (template_hole 0,
+               template_app (template_hole 1, template_var 2)))),
+         template_app
+          (template_hole 6,
+           template_app
+            (template_app
+              (template_app (template_hole 4, template_hole 3),
+               template_app (template_hole 2, template_var 1)),
+             template_var 0))))),
+    ("utp_rel_laws.assigns_r_swap_uinj",
+     "[| vwb_lens ?x; vwb_lens ?y; ?x \<bowtie> ?y |]
+      ==> uinj (?x, ?y := &?y, &?x)",
+     template_implication
+      ([template_predicate (template_app (template_hole 7, template_var 1)),
+        template_predicate (template_app (template_hole 7, template_var 0)),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 6, template_var 1),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_hole 5,
+             template_app
+              (template_hole 4,
+               template_app
+                (template_app
+                  (template_app
+                    (template_hole 3,
+                     template_app
+                      (template_app
+                        (template_app (template_hole 3, template_hole 2),
+                         template_app (template_hole 1, template_var 1)),
+                       template_app
+                        (template_hole 0,
+                         template_app (template_hole 1, template_var 0)))),
+                   template_app (template_hole 1, template_var 0)),
+                 template_app
+                  (template_hole 0,
+                   template_app (template_hole 1, template_var 1)))))
+           ))),
+    ("utp_rel_laws.assign_twice",
+     "[| mwb_lens ?x; ?x \<sharp> ?f |]
+      ==> ?x := ?e ;; ?x := ?f = ?x := ?f",
+     template_implication
+      ([template_predicate (template_app (template_hole 7, template_var 2)),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 6, template_var 2),
+              template_var 1)
+            )],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 4,
+             template_app
+              (template_hole 3,
+               template_app
+                (template_app
+                  (template_app (template_hole 2, template_hole 1),
+                   template_app (template_hole 0, template_var 2)),
+                 template_var 0))),
+           template_app
+            (template_hole 3,
+             template_app
+              (template_app
+                (template_app (template_hole 2, template_hole 1),
+                 template_app (template_hole 0, template_var 2)),
+               template_var 1))),
+         template_app
+          (template_hole 3,
+           template_app
+            (template_app
+              (template_app (template_hole 2, template_hole 1),
+               template_app (template_hole 0, template_var 2)),
+             template_var 1))))),
+    ("utp_rel_laws.antiframe_seq",
+     "[| vwb_lens ?x; $?x\<acute> \<sharp> ?P; $?x \<sharp> ?Q |]
+      ==> {?x}:\<lbrakk>?P\<rbrakk> ;; {?x}:\<lbrakk>?Q\<rbrakk> =
+          {?x}:\<lbrakk>?P ;; ?Q\<rbrakk>",
+     template_implication
+      ([template_predicate (template_app (template_hole 6, template_var 2)),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 5,
+                template_app (template_hole 4, template_var 2)),
+              template_var 1)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 5,
+                template_app (template_hole 3, template_var 2)),
+              template_var 0)
+            )],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 1,
+             template_app
+              (template_app (template_hole 0, template_var 2),
+               template_var 1)),
+           template_app
+            (template_app (template_hole 0, template_var 2),
+             template_var 0)),
+         template_app
+          (template_app (template_hole 0, template_var 2),
+           template_app
+            (template_app (template_hole 1, template_var 1),
+             template_var 0))))),
+    ("utp_rel_laws.shEx_mem_lift_seq_2",
+     "in\<alpha> \<sharp> ?A ==>
+      ?P ;;
+      (\<^bold>\<exists> x \<bullet> \<guillemotleft>x\<guillemotright> \<in>\<^sub>u
+                                     ?A \<and>
+                                     ?Q x) =
+      (\<^bold>\<exists> x \<bullet> \<guillemotleft>x\<guillemotright> \<in>\<^sub>u
+                                     ?A \<and>
+                                     ?P ;; ?Q x)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 8, template_hole 7),
+              template_var 2)
+            )],
+       template_equation
+        (template_app
+          (template_app (template_hole 5, template_var 1),
+           template_app (template_hole 4, t_empty)),
+         template_app (template_hole 4, t_empty)))),
+    ("utp_rel_laws.shEx_mem_lift_seq_1",
+     "out\<alpha> \<sharp> ?A ==>
+      (\<^bold>\<exists> x \<bullet> \<guillemotleft>x\<guillemotright> \<in>\<^sub>u
+                                     ?A \<and>
+                                     ?P x) ;;
+      ?Q =
+      (\<^bold>\<exists> x \<bullet> \<guillemotleft>x\<guillemotright> \<in>\<^sub>u
+                                     ?A \<and>
+                                     ?P x ;; ?Q)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 8, template_hole 7),
+              template_var 2)
+            )],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 5, template_app (template_hole 4, t_empty)),
+           template_var 0),
+         template_app (template_hole 4, t_empty)))),
+    ("utp_rel_laws.Sup_upto_Suc",
+     "\<Or>(power.power II (;;) ?P ` {0..Suc ?n}) =
+      \<Or>(power.power II (;;) ?P ` {0..?n}) \<sqinter>
+      power.power II (;;) ?P (Suc ?n)",
+     template_equation
+      (template_app
+        (template_hole 8,
+         template_app
+          (template_app (template_hole 7, t_empty),
+           template_app
+            (template_app (template_hole 3, template_hole 2),
+             template_app (template_hole 1, template_var 0)))),
+       template_app
+        (template_app
+          (template_hole 0,
+           template_app
+            (template_hole 8,
+             template_app
+              (template_app (template_hole 7, t_empty),
+               template_app
+                (template_app (template_hole 3, template_hole 2),
+                 template_var 0)))),
+         template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 6, template_hole 5),
+               template_hole 4),
+             template_var 1),
+           template_app (template_hole 1, template_var 0))))),
+    ("utp_rel_laws.seqr_insert_ident_left",
+     "[| vwb_lens ?x; $?x\<acute> \<sharp> ?P; $?x \<sharp> ?Q |]
+      ==> ($?x\<acute> =\<^sub>u $?x \<and> ?P) ;; ?Q = ?P ;; ?Q",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 10, template_var 2)),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 9,
+                template_app (template_hole 8, template_var 2)),
+              template_var 1)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 7,
+                template_app (template_hole 6, template_var 2)),
+              template_var 0)
+            )],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 4,
+             template_app
+              (template_app
+                (template_hole 3,
+                 template_app
+                  (template_app
+                    (template_hole 2,
+                     template_app
+                      (template_hole 1,
+                       template_app (template_hole 8, template_var 2))),
+                   template_app
+                    (template_hole 1,
+                     template_app (template_hole 0, template_var 2)))),
+               template_var 1)),
+           template_var 0),
+         template_app
+          (template_app (template_hole 4, template_var 1),
+           template_var 0)))),
+    ("utp_rel_laws.seqr_insert_ident_right",
+     "[| vwb_lens ?x; $?x\<acute> \<sharp> ?P; $?x \<sharp> ?Q |]
+      ==> ?P ;; ($?x\<acute> =\<^sub>u $?x \<and> ?Q) = ?P ;; ?Q",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 10, template_var 2)),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 9,
+                template_app (template_hole 8, template_var 2)),
+              template_var 1)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 7,
+                template_app (template_hole 6, template_var 2)),
+              template_var 0)
+            )],
+       template_equation
+        (template_app
+          (template_app (template_hole 4, template_var 1),
+           template_app
+            (template_app
+              (template_hole 3,
+               template_app
+                (template_app
+                  (template_hole 2,
+                   template_app
+                    (template_hole 1,
+                     template_app (template_hole 0, template_var 2))),
+                 template_app
+                  (template_hole 1,
+                   template_app (template_hole 6, template_var 2)))),
+             template_var 0)),
+         template_app
+          (template_app (template_hole 4, template_var 1),
+           template_var 0)))),
+    ("utp_rel_laws.assign_vacuous_assume",
+     "mwb_lens ?x ==>
+      ?[&\<^bold>v \<in>\<^sub>u
+        \<guillemotleft>\<S>\<^bsub>?x\<^esub>\<guillemotright>] ;;
+      ?x := &?x =
+      ?[&\<^bold>v \<in>\<^sub>u
+        \<guillemotleft>\<S>\<^bsub>?x\<^esub>\<guillemotright>]",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 15, template_var 0))],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 13,
+             template_app
+              (template_hole 12,
+               template_app
+                (template_app
+                  (template_app (template_hole 11, template_hole 10),
+                   template_app
+                    (template_hole 9,
+                     template_app (template_hole 8, template_hole 7))),
+                 template_app
+                  (template_hole 6,
+                   template_app (template_hole 5, template_var 0))))),
+           template_app
+            (template_hole 4,
+             template_app
+              (template_app
+                (template_app (template_hole 3, template_hole 2),
+                 template_app (template_hole 1, template_var 0)),
+               template_app
+                (template_hole 0,
+                 template_app (template_hole 1, template_var 0))))),
+         template_app
+          (template_hole 12,
+           template_app
+            (template_app
+              (template_app (template_hole 11, template_hole 10),
+               template_app
+                (template_hole 9,
+                 template_app (template_hole 8, template_hole 7))),
+             template_app
+              (template_hole 6,
+               template_app (template_hole 5, template_var 0))))))),
+    ("utp_rel_laws.seqr_right_one_point",
+     "vwb_lens ?x ==>
+      ?P ;; ($?x =\<^sub>u \<guillemotleft>?v\<guillemotright> \<and> ?Q) =
+      ?P\<lbrakk>\<guillemotleft>?v\<guillemotright>/$?x\<acute>\<rbrakk> ;;
+      ?Q\<lbrakk>\<guillemotleft>?v\<guillemotright>/$?x\<rbrakk>",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 15, template_var 3))],
+       template_equation
+        (template_app
+          (template_app (template_hole 13, template_var 2),
+           template_app
+            (template_app
+              (template_hole 12,
+               template_app
+                (template_app
+                  (template_hole 11,
+                   template_app
+                    (template_hole 10,
+                     template_app (template_hole 9, template_var 3))),
+                 template_app (template_hole 8, template_var 1))),
+             template_var 0)),
+         template_app
+          (template_app
+            (template_hole 13,
+             template_app
+              (template_app
+                (template_hole 7,
+                 template_app
+                  (template_app
+                    (template_app (template_hole 6, template_hole 5),
+                     template_app (template_hole 4, template_var 3)),
+                   template_app (template_hole 3, template_var 1))),
+               template_var 2)),
+           template_app
+            (template_app
+              (template_hole 2,
+               template_app
+                (template_app
+                  (template_app (template_hole 1, template_hole 0),
+                   template_app (template_hole 9, template_var 3)),
+                 template_app (template_hole 8, template_var 1))),
+             template_var 0))))),
+    ("utp_rel_laws.seqr_left_one_point",
+     "vwb_lens ?x ==>
+      (?P \<and>
+       $?x\<acute> =\<^sub>u \<guillemotleft>?v\<guillemotright>) ;;
+      ?Q =
+      ?P\<lbrakk>\<guillemotleft>?v\<guillemotright>/$?x\<acute>\<rbrakk> ;;
+      ?Q\<lbrakk>\<guillemotleft>?v\<guillemotright>/$?x\<rbrakk>",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 15, template_var 3))],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 13,
+             template_app
+              (template_app (template_hole 12, template_var 2),
+               template_app
+                (template_app
+                  (template_hole 11,
+                   template_app
+                    (template_hole 10,
+                     template_app (template_hole 9, template_var 3))),
+                 template_app (template_hole 8, template_var 1)))),
+           template_var 0),
+         template_app
+          (template_app
+            (template_hole 13,
+             template_app
+              (template_app
+                (template_hole 7,
+                 template_app
+                  (template_app
+                    (template_app (template_hole 6, template_hole 5),
+                     template_app (template_hole 9, template_var 3)),
+                   template_app (template_hole 8, template_var 1))),
+               template_var 2)),
+           template_app
+            (template_app
+              (template_hole 4,
+               template_app
+                (template_app
+                  (template_app (template_hole 3, template_hole 2),
+                   template_app (template_hole 1, template_var 3)),
+                 template_app (template_hole 0, template_var 1))),
+             template_var 0))))),
+    ("utp_rel_laws.assign_pred_transfer",
+     "[| $?x \<sharp> ?b; out\<alpha> \<sharp> ?b |]
+      ==> (?b \<and> ?x := ?v) = (?x := ?v \<and> ?b\<^sup>-)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 13,
+                template_app (template_hole 12, template_var 2)),
+              template_var 1)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 11, template_hole 10),
+              template_var 1)
+            )],
+       template_equation
+        (template_app
+          (template_app (template_hole 8, template_var 1),
+           template_app
+            (template_hole 7,
+             template_app
+              (template_app
+                (template_app (template_hole 6, template_hole 5),
+                 template_app (template_hole 4, template_var 2)),
+               template_var 0))),
+         template_app
+          (template_app
+            (template_hole 8,
+             template_app
+              (template_hole 7,
+               template_app
+                (template_app
+                  (template_app (template_hole 6, template_hole 5),
+                   template_app (template_hole 4, template_var 2)),
+                 template_var 0))),
+           template_app
+            (template_app (template_hole 3, template_var 1),
+             template_app
+              (template_app (template_hole 2, template_hole 1),
+               template_hole 0)))))),
+    ("utp_rel_laws.seq_refine_pred",
+     "[| (\<lceil>?b\<rceil>\<^sub>< \<Rightarrow>
+          \<lceil>?s\<rceil>\<^sub>>) \<sqsubseteq>
+         ?P;
+         (\<lceil>?s\<rceil>\<^sub>< \<Rightarrow>
+          \<lceil>?c\<rceil>\<^sub>>) \<sqsubseteq>
+         ?Q |]
+      ==> (\<lceil>?b\<rceil>\<^sub>< \<Rightarrow>
+           \<lceil>?c\<rceil>\<^sub>>) \<sqsubseteq>
+          ?P ;; ?Q",
+     template_implication
+      ([template_inequation
+         (less_equals, template_var 4,
+          template_app
+           (template_app
+             (template_hole 17,
+              template_app
+               (template_app (template_hole 16, template_var 3),
+                template_hole 15)),
+            template_app
+             (template_app (template_hole 14, template_var 2),
+              template_hole 13))),
+        template_inequation
+         (less_equals, template_var 1,
+          template_app
+           (template_app
+             (template_hole 11,
+              template_app
+               (template_app (template_hole 10, template_var 2),
+                template_hole 9)),
+            template_app
+             (template_app (template_hole 8, template_var 0),
+              template_hole 7)))],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_app (template_hole 5, template_var 4), template_var 1),
+         template_app
+          (template_app
+            (template_hole 4,
+             template_app
+              (template_app (template_hole 3, template_var 3),
+               template_hole 2)),
+           template_app
+            (template_app (template_hole 1, template_var 0),
+             template_hole 0))))),
+    ("utp_rel_laws.frame_seq",
+     "[| vwb_lens ?x; {$?x, $?x\<acute>} \<natural> ?P;
+         {$?x, $?x\<acute>} \<natural> ?Q |]
+      ==> {?x}:[?P ;; ?Q] = {?x}:[?P] ;; {?x}:[?Q]",
+     template_implication
+      ([template_predicate (template_app (template_hole 7, template_var 2)),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 6,
+                template_app
+                 (template_app
+                   (template_hole 5,
+                    template_app (template_hole 4, template_var 2)),
+                  template_app (template_hole 3, template_var 2))),
+              template_var 1)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 6,
+                template_app
+                 (template_app
+                   (template_hole 5,
+                    template_app (template_hole 4, template_var 2)),
+                  template_app (template_hole 3, template_var 2))),
+              template_var 0)
+            )],
+       template_equation
+        (template_app
+          (template_app (template_hole 1, template_var 2),
+           template_app
+            (template_app (template_hole 0, template_var 1),
+             template_var 0)),
+         template_app
+          (template_app
+            (template_hole 0,
+             template_app
+              (template_app (template_hole 1, template_var 2),
+               template_var 1)),
+           template_app
+            (template_app (template_hole 1, template_var 2),
+             template_var 0))))),
+    ("utp_rel_laws.seq_refine_unrest",
+     "[| out\<alpha> \<sharp> ?b; in\<alpha> \<sharp> ?c;
+         (?b \<Rightarrow> \<lceil>?s\<rceil>\<^sub>>) \<sqsubseteq> ?P;
+         (\<lceil>?s\<rceil>\<^sub>< \<Rightarrow> ?c) \<sqsubseteq> ?Q |]
+      ==> (?b \<Rightarrow> ?c) \<sqsubseteq> ?P ;; ?Q",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 8, template_hole 7),
+              template_var 4)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 8, template_hole 6),
+              template_var 3)
+            ),
+        template_inequation
+         (less_equals, template_var 2,
+          template_app
+           (template_app (template_hole 4, template_var 4),
+            template_app
+             (template_app (template_hole 3, template_var 1),
+              template_hole 2))),
+        template_inequation
+         (less_equals, template_var 0,
+          template_app
+           (template_app
+             (template_hole 4,
+              template_app
+               (template_app (template_hole 3, template_var 1),
+                template_hole 1)),
+            template_var 3))],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_app (template_hole 0, template_var 2), template_var 0),
+         template_app
+          (template_app (template_hole 4, template_var 4),
+           template_var 3)))),
+    ("utp_rel_laws.assign_subst",
+     "[| mwb_lens ?x; mwb_lens ?y |]
+      ==> (?y := ?v)\<lbrakk>\<lceil>?u\<rceil>\<^sub></$?x\<rbrakk> =
+          ?x, ?y := ?u, ?v\<lbrakk>?u/?x\<rbrakk>",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 15, template_var 3)),
+        template_predicate
+         (template_app (template_hole 14, template_var 2))],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 12,
+             template_app
+              (template_app
+                (template_app (template_hole 11, template_hole 10),
+                 template_app (template_hole 9, template_var 3)),
+               template_app
+                (template_app (template_hole 8, template_var 1),
+                 template_hole 7))),
+           template_app
+            (template_hole 6,
+             template_app
+              (template_app
+                (template_app (template_hole 5, template_hole 4),
+                 template_app (template_hole 3, template_var 2)),
+               template_var 0))),
+         template_app
+          (template_hole 6,
+           template_app
+            (template_app
+              (template_app
+                (template_hole 5,
+                 template_app
+                  (template_app
+                    (template_app (template_hole 2, template_hole 4),
+                     template_app (template_hole 1, template_var 3)),
+                   template_var 1)),
+               template_app (template_hole 3, template_var 2)),
+             template_app
+              (template_app
+                (template_hole 0,
+                 template_app
+                  (template_app
+                    (template_app (template_hole 2, template_hole 4),
+                     template_var 3),
+                   template_var 1)),
+               template_var 0)))))),
+    ("utp_rel_laws.assign_rcond",
+     "?x := ?e ;; (?P \<triangleleft> ?b \<triangleright>\<^sub>r ?Q) =
+      ?x := ?e ;;
+      ?P \<triangleleft> ?b\<lbrakk>?e/?x\<rbrakk> \<triangleright>\<^sub>r
+         ?x := ?e ;; ?Q",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 8,
+           template_app
+            (template_hole 7,
+             template_app
+              (template_app
+                (template_app (template_hole 6, template_hole 5),
+                 template_app (template_hole 4, template_var 4)),
+               template_var 3))),
+         template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 3, template_hole 2),
+               template_app (template_hole 1, template_var 2)),
+             template_var 1),
+           template_var 0)),
+       template_app
+        (template_app
+          (template_app
+            (template_app (template_hole 3, template_hole 2),
+             template_app
+              (template_hole 1,
+               template_app
+                (template_app
+                  (template_hole 0,
+                   template_app
+                    (template_app
+                      (template_app (template_hole 6, template_hole 5),
+                       template_var 4),
+                     template_var 3)),
+                 template_var 2))),
+           template_app
+            (template_app
+              (template_hole 8,
+               template_app
+                (template_hole 7,
+                 template_app
+                  (template_app
+                    (template_app (template_hole 6, template_hole 5),
+                     template_app (template_hole 4, template_var 4)),
+                   template_var 3))),
+             template_var 1)),
+         template_app
+          (template_app
+            (template_hole 8,
+             template_app
+              (template_hole 7,
+               template_app
+                (template_app
+                  (template_app (template_hole 6, template_hole 5),
+                   template_app (template_hole 4, template_var 4)),
+                 template_var 3))),
+           template_var 0)))),
+    ("utp_rel_laws.seqr_bool_split",
+     "vwb_lens ?x ==>
+      ?P ;; ?Q =
+      (?P\<lbrakk>true/$?x\<acute>\<rbrakk> ;;
+       ?Q\<lbrakk>true/$?x\<rbrakk> \<or>
+       ?P\<lbrakk>false/$?x\<acute>\<rbrakk> ;;
+       ?Q\<lbrakk>false/$?x\<rbrakk>)",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 15, template_var 2))],
+       template_equation
+        (template_app
+          (template_app (template_hole 13, template_var 1), template_var 0),
+         template_app
+          (template_app
+            (template_hole 12,
+             template_app
+              (template_app
+                (template_hole 13,
+                 template_app
+                  (template_app
+                    (template_hole 11,
+                     template_app
+                      (template_app
+                        (template_app (template_hole 10, template_hole 9),
+                         template_app (template_hole 8, template_var 2)),
+                       template_hole 7)),
+                   template_var 1)),
+               template_app
+                (template_app
+                  (template_hole 6,
+                   template_app
+                    (template_app
+                      (template_app (template_hole 5, template_hole 4),
+                       template_app (template_hole 3, template_var 2)),
+                     template_hole 2)),
+                 template_var 0))),
+           template_app
+            (template_app
+              (template_hole 13,
+               template_app
+                (template_app
+                  (template_hole 11,
+                   template_app
+                    (template_app
+                      (template_app (template_hole 10, template_hole 9),
+                       template_app (template_hole 8, template_var 2)),
+                     template_hole 1)),
+                 template_var 1)),
+             template_app
+              (template_app
+                (template_hole 6,
+                 template_app
+                  (template_app
+                    (template_app (template_hole 5, template_hole 4),
+                     template_app (template_hole 3, template_var 2)),
+                   template_hole 0)),
+               template_var 0)))))),
+    ("utp_rel_laws.assign_commute",
+     "[| ?x \<bowtie> ?y; ?x \<sharp> ?f; ?y \<sharp> ?e |]
+      ==> ?x := ?e ;; ?y := ?f = ?y := ?f ;; ?x := ?e",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 10, template_var 3),
+              template_var 2)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 9, template_var 3),
+              template_var 1)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 8, template_var 2),
+              template_var 0)
+            )],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 6,
+             template_app
+              (template_hole 5,
+               template_app
+                (template_app
+                  (template_app (template_hole 4, template_hole 3),
+                   template_app (template_hole 2, template_var 3)),
+                 template_var 0))),
+           template_app
+            (template_hole 5,
+             template_app
+              (template_app
+                (template_app (template_hole 1, template_hole 3),
+                 template_app (template_hole 0, template_var 2)),
+               template_var 1))),
+         template_app
+          (template_app
+            (template_hole 6,
+             template_app
+              (template_hole 5,
+               template_app
+                (template_app
+                  (template_app (template_hole 1, template_hole 3),
+                   template_app (template_hole 0, template_var 2)),
+                 template_var 1))),
+           template_app
+            (template_hole 5,
+             template_app
+              (template_app
+                (template_app (template_hole 4, template_hole 3),
+                 template_app (template_hole 2, template_var 3)),
+               template_var 0)))))),
+    ("utp_rel_laws.frame_commute",
+     "[| $?y \<sharp> ?P; $?y\<acute> \<sharp> ?P; $?x \<sharp> ?Q;
+         $?x\<acute> \<sharp> ?Q; ?x \<bowtie> ?y |]
+      ==> {?x}:[?P] ;; {?y}:[?Q] = {?y}:[?Q] ;; {?x}:[?P]",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 10,
+                template_app (template_hole 9, template_var 3)),
+              template_var 2)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 10,
+                template_app (template_hole 8, template_var 3)),
+              template_var 2)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 7,
+                template_app (template_hole 6, template_var 1)),
+              template_var 0)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 7,
+                template_app (template_hole 5, template_var 1)),
+              template_var 0)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 4, template_var 1),
+              template_var 3)
+            )],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 2,
+             template_app
+              (template_app (template_hole 1, template_var 1),
+               template_var 2)),
+           template_app
+            (template_app (template_hole 0, template_var 3),
+             template_var 0)),
+         template_app
+          (template_app
+            (template_hole 2,
+             template_app
+              (template_app (template_hole 0, template_var 3),
+               template_var 0)),
+           template_app
+            (template_app (template_hole 1, template_var 1),
+             template_var 2))))),
+    ("utp_rel_laws.cond_inter_var_split",
+     "vwb_lens ?x ==>
+      (?P \<triangleleft> $?x\<acute> \<triangleright> ?Q) ;; ?R =
+      (?P\<lbrakk>true/$?x\<acute>\<rbrakk> ;;
+       ?R\<lbrakk>true/$?x\<rbrakk> \<or>
+       ?Q\<lbrakk>false/$?x\<acute>\<rbrakk> ;;
+       ?R\<lbrakk>false/$?x\<rbrakk>)",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 18, template_var 3))],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 16,
+             template_app
+              (template_app
+                (template_app
+                  (template_app (template_hole 15, template_hole 14),
+                   template_app
+                    (template_hole 13,
+                     template_app (template_hole 12, template_var 3))),
+                 template_var 2),
+               template_var 1)),
+           template_var 0),
+         template_app
+          (template_app
+            (template_hole 11,
+             template_app
+              (template_app
+                (template_hole 16,
+                 template_app
+                  (template_app
+                    (template_hole 10,
+                     template_app
+                      (template_app
+                        (template_app (template_hole 9, template_hole 8),
+                         template_app (template_hole 12, template_var 3)),
+                       template_hole 7)),
+                   template_var 2)),
+               template_app
+                (template_app
+                  (template_hole 6,
+                   template_app
+                    (template_app
+                      (template_app (template_hole 5, template_hole 4),
+                       template_app (template_hole 3, template_var 3)),
+                     template_hole 2)),
+                 template_var 0))),
+           template_app
+            (template_app
+              (template_hole 16,
+               template_app
+                (template_app
+                  (template_hole 10,
+                   template_app
+                    (template_app
+                      (template_app (template_hole 9, template_hole 8),
+                       template_app (template_hole 12, template_var 3)),
+                     template_hole 1)),
+                 template_var 1)),
+             template_app
+              (template_app
+                (template_hole 6,
+                 template_app
+                  (template_app
+                    (template_app (template_hole 5, template_hole 4),
+                     template_app (template_hole 3, template_var 3)),
+                   template_hole 0)),
+               template_var 0)))))),
+    ("utp_rel_laws.assign_cond",
+     "out\<alpha> \<sharp> ?b ==>
+      ?x := ?e ;; (?P \<triangleleft> ?b \<triangleright> ?Q) =
+      ?x := ?e ;;
+      ?P \<triangleleft> ?b\<lbrakk>\<lceil>?e\<rceil>\<^sub></$?x\<rbrakk> \<triangleright>
+         ?x := ?e ;; ?Q",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 15, template_hole 14),
+              template_var 4)
+            )],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 12,
+             template_app
+              (template_hole 11,
+               template_app
+                (template_app
+                  (template_app (template_hole 10, template_hole 9),
+                   template_app (template_hole 8, template_var 3)),
+                 template_var 2))),
+           template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 7, template_hole 6),
+                 template_var 4),
+               template_var 1),
+             template_var 0)),
+         template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 7, template_hole 6),
+               template_app
+                (template_app
+                  (template_hole 5,
+                   template_app
+                    (template_app
+                      (template_app (template_hole 4, template_hole 3),
+                       template_app (template_hole 2, template_var 3)),
+                     template_app
+                      (template_app (template_hole 1, template_var 2),
+                       template_hole 0))),
+                 template_var 4)),
+             template_app
+              (template_app
+                (template_hole 12,
+                 template_app
+                  (template_hole 11,
+                   template_app
+                    (template_app
+                      (template_app (template_hole 10, template_hole 9),
+                       template_app (template_hole 8, template_var 3)),
+                     template_var 2))),
+               template_var 1)),
+           template_app
+            (template_app
+              (template_hole 12,
+               template_app
+                (template_hole 11,
+                 template_app
+                  (template_app
+                    (template_app (template_hole 10, template_hole 9),
+                     template_app (template_hole 8, template_var 3)),
+                   template_var 2))),
+             template_var 0))))),
+    ("utp_rel_laws.seq_var_ident_lift",
+     "[| vwb_lens ?x; $?x\<acute> \<sharp> ?P; $?x \<sharp> ?Q |]
+      ==> ($?x\<acute> =\<^sub>u $?x \<and> ?P) ;;
+          ($?x\<acute> =\<^sub>u $?x \<and> ?Q) =
+          ($?x\<acute> =\<^sub>u $?x \<and> ?P ;; ?Q)",
+     template_implication
+      ([template_predicate (template_app (template_hole 8, template_var 2)),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 7,
+                template_app (template_hole 6, template_var 2)),
+              template_var 1)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 7,
+                template_app (template_hole 5, template_var 2)),
+              template_var 0)
+            )],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 3,
+             template_app
+              (template_app
+                (template_hole 2,
+                 template_app
+                  (template_app
+                    (template_hole 1,
+                     template_app
+                      (template_hole 0,
+                       template_app (template_hole 6, template_var 2))),
+                   template_app
+                    (template_hole 0,
+                     template_app (template_hole 5, template_var 2)))),
+               template_var 1)),
+           template_app
+            (template_app
+              (template_hole 2,
+               template_app
+                (template_app
+                  (template_hole 1,
+                   template_app
+                    (template_hole 0,
+                     template_app (template_hole 6, template_var 2))),
+                 template_app
+                  (template_hole 0,
+                   template_app (template_hole 5, template_var 2)))),
+             template_var 0)),
+         template_app
+          (template_app
+            (template_hole 2,
+             template_app
+              (template_app
+                (template_hole 1,
+                 template_app
+                  (template_hole 0,
+                   template_app (template_hole 6, template_var 2))),
+               template_app
+                (template_hole 0,
+                 template_app (template_hole 5, template_var 2)))),
+           template_app
+            (template_app (template_hole 3, template_var 1),
+             template_var 0)))))]:
+   (string * thm * template) list
+### theory "Draft.utp_rel_lawsTemplates"
+### 0.767s elapsed time, 0.938s cpu time, 0.101s GC time
+val it = (): unit

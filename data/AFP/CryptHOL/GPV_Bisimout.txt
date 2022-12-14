@@ -1,0 +1,2113 @@
+Loading theory "Draft.Partial_Function_Set" (required by "Draft.GPV_BisimTemplates" via "Draft.GPV_Bisim" via "Draft.GPV_Expectation" via "Draft.Computational_Model" via "Draft.Generative_Probabilistic_Value" via "Draft.Resumption")
+Loading theory "HOL-Library.BigO" (required by "Draft.GPV_BisimTemplates" via "Draft.ExtrEqs")
+Loading theory "Draft.Templates" (required by "Draft.GPV_BisimTemplates" via "Draft.ExtrEqs")
+Loading theory "Draft.Misc_CryptHOL" (required by "Draft.GPV_BisimTemplates" via "Draft.GPV_Bisim" via "Draft.GPV_Expectation" via "Draft.Computational_Model" via "Draft.Generative_Probabilistic_Value" via "Draft.Resumption")
+datatype template_term
+=
+     t_empty
+   | template_app of template_term * template_term
+   | template_hole of int
+   | template_var of int
+datatype sign
+= equals | greater_equals | greater_than | less_equals | less_than
+datatype template
+=
+     template_bimplication of template * template
+   | template_dunno
+   | template_equation of template_term * template_term
+   | template_implication of template list * template
+   | template_inequation of sign * template_term * template_term
+   | template_negation of template
+   | template_predicate of template_term
+constructor t_empty: template_term
+constructor template_app: template_term * template_term -> template_term
+constructor template_hole: int -> template_term
+constructor template_var: int -> template_term
+constructor equals: sign
+constructor greater_equals: sign
+constructor greater_than: sign
+constructor less_equals: sign
+constructor less_than: sign
+constructor template_bimplication: template * template -> template
+constructor template_dunno: template
+constructor template_equation: template_term * template_term -> template
+constructor template_implication: template list * template -> template
+constructor template_inequation:
+   sign * template_term * template_term -> template
+constructor template_negation: template -> template
+constructor template_predicate: template_term -> template
+val vfs = fn: term -> (indexname * typ) list * (string * typ) list
+val indexOf = fn: ''a list -> ''a -> int -> int
+val has_eq = fn: term -> bool
+val term2template = fn:
+   (indexname * typ) list -> (string * typ) list -> term -> template_term
+val lemma2predicate = fn: term -> term -> template
+val makeTemplatewithContext = fn: term -> term -> template
+val lemma2template = fn: term -> template
+val thm2template = fn: thm -> template
+val tterm2string = fn: template_term -> string
+val template2string = fn: template -> string
+val t = "height ?t <= size ?t": thm
+val th =
+   Const ("HOL.Trueprop", "bool => prop") $
+     (Const ("Orderings.ord_class.less_eq", "nat => nat => bool") $
+       (Const ("Tree.height_class.height", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree")) $
+       (Const ("Nat.size_class.size", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree"))):
+   term
+### theory "Draft.Templates"
+### 0.107s elapsed time, 0.420s cpu time, 0.045s GC time
+### theory "Draft.Partial_Function_Set"
+### 0.269s elapsed time, 0.909s cpu time, 0.045s GC time
+### theory "HOL-Library.BigO"
+### 0.655s elapsed time, 1.691s cpu time, 0.077s GC time
+Loading theory "Draft.ExtrEqs" (required by "Draft.GPV_BisimTemplates")
+val eqpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Var (("_dummy_", 2), "?'a"))
+       ):
+   term Find_Theorems.criterion
+val badeqpattern = Pattern (Const ("Pure.eq", "?'a => ?'a => prop")):
+   term Find_Theorems.criterion
+val undefpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Const ("HOL.undefined", "?'a"))
+       ):
+   term Find_Theorems.criterion
+val thmpattern =
+   Pattern
+    (Const ("HOL.Trueprop", "bool => prop") $ Var (("_dummy_", 1), "bool")):
+   term Find_Theorems.criterion
+val badnames =
+   ["*nitpick*", "*Nitpick*", "*full_exhaustive*", "*_def*", "Enum.finite*",
+    "*Quickcheck*", "ATP*", "*Nunchaku*", "*Code*", "*BNF*", "*SMT*",
+    "*.*.*"]:
+   string list
+val unwanted_names =
+   [(false, Name "*nitpick*"), (false, Name "*Nitpick*"),
+    (false, Name "*full_exhaustive*"), (false, Name "*_def*"),
+    (false, Name "Enum.finite*"), (false, Name "*Quickcheck*"),
+    (false, Name "ATP*"), (false, Name "*Nunchaku*"),
+    (false, Name "*Code*"), (false, Name "*BNF*"), (false, Name "*SMT*"),
+    (false, Name "*.*.*")]:
+   (bool * term Find_Theorems.criterion) list
+val has_vars = fn: term -> bool
+val get_all_eqs = fn: string -> Proof.context -> (string * thm) list
+val get_all_thms = fn: string -> Proof.context -> (string * thm) list
+val get_noneq_thms = fn: string -> Proof.context -> (string * thm) list
+val template_eqs = fn:
+   string -> Proof.context -> (string * thm * template) list
+val template_thms = fn:
+   string -> Proof.context -> (string * thm * template) list
+### theory "Draft.ExtrEqs"
+### 0.482s elapsed time, 0.992s cpu time, 0.082s GC time
+Proofs for inductive predicate(s) "Imagep"
+  Proving monotonicity ...
+specification
+  relcompp_witness1: (?A OO ?B) (fst ?xy) (snd ?xy) ==> ?A (fst ?xy) (relcompp_witness ?A ?B ?xy)
+  relcompp_witness2: (?A OO ?B) (fst ?xy) (snd ?xy) ==> ?B (relcompp_witness ?A ?B ?xy) (snd ?xy)
+Found termination order: "{}"
+Found termination order: "{}"
+Found termination order: "{}"
+Found termination order: "{}"
+Found termination order: "{}"
+consts
+  assert_option :: "bool => unit option"
+consts
+  sup_option :: "'a option => 'a option => 'a option"
+consts
+  enforce_option :: "('a => bool) => 'a option => 'a option"
+### Ignoring duplicate rewrite rule:
+### real ?n1 <= 1 == ?n1 <= 1
+Proofs for inductive predicate(s) "finite_chains"
+  Proving monotonicity ...
+locale partial_function_definitions
+  fixes leq :: "'a => 'a => bool"
+    and lub :: "'a set => 'a"
+  assumes "partial_function_definitions leq lub"
+Proofs for inductive predicate(s) "nlistsp"
+  Proving monotonicity ...
+consts
+  sprefix :: "'a list => 'a stream => bool"
+locale monad_fail_hom
+  fixes return1 :: "'a => 'm1"
+    and bind1 :: "'m1 => ('a => 'm1) => 'm1"
+    and fail1 :: "'m1"
+    and return2 :: "'a => 'm2"
+    and bind2 :: "'m2 => ('a => 'm2) => 'm2"
+    and fail2 :: "'m2"
+    and h :: "'m1 => 'm2"
+  assumes "monad_fail_hom return1 bind1 fail1 return2 bind2 fail2 h"
+specification
+  set_rel_witness_pmf': rel_pmf ?A (fst ?xy) (snd ?xy) ==>
+set_pmf (rel_witness_pmf ?A ?xy) <= {(a, b). ?A a b}
+  map1_rel_witness_pmf': rel_pmf ?A (fst ?xy) (snd ?xy) ==>
+map_pmf fst (rel_witness_pmf ?A ?xy) = fst ?xy
+  map2_rel_witness_pmf': rel_pmf ?A (fst ?xy) (snd ?xy) ==>
+map_pmf snd (rel_witness_pmf ?A ?xy) = snd ?xy
+locale option_to_spmf
+locale option_le_spmf
+### theory "Draft.Misc_CryptHOL"
+### 4.568s elapsed time, 6.500s cpu time, 0.843s GC time
+Loading theory "Draft.Generat" (required by "Draft.GPV_BisimTemplates" via "Draft.GPV_Bisim" via "Draft.GPV_Expectation" via "Draft.Computational_Model" via "Draft.Generative_Probabilistic_Value")
+Loading theory "Draft.Resumption" (required by "Draft.GPV_BisimTemplates" via "Draft.GPV_Bisim" via "Draft.GPV_Expectation" via "Draft.Computational_Model" via "Draft.Generative_Probabilistic_Value")
+Found termination order: "{}"
+### Missing patterns in function definition:
+### !!vb vc v. rel_witness_generat (IO vb vc, Pure v) = undefined
+### !!va vb vc. rel_witness_generat (Pure va, IO vb vc) = undefined
+consts
+  bind_resumption ::
+    "('a, 'out, 'in) Resumption.resumption
+     => ('a => ('b, 'out, 'in) Resumption.resumption)
+        => ('b, 'out, 'in) Resumption.resumption"
+Found termination order: "{}"
+### theory "Draft.Generat"
+### 1.495s elapsed time, 3.298s cpu time, 0.796s GC time
+consts
+  ensure :: "bool => (unit, 'out, 'in) Resumption.resumption"
+Proofs for coinductive predicate(s) "resumption_ord"
+  Proving monotonicity ...
+consts
+  resumption_lub ::
+    "('a, 'out, 'in) Resumption.resumption set
+     => ('a, 'out, 'in) Resumption.resumption"
+### Cannot skip proof of schematic goal statement
+### theory "Draft.Resumption"
+### 1.835s elapsed time, 3.670s cpu time, 0.858s GC time
+Loading theory "Draft.Generative_Probabilistic_Value" (required by "Draft.GPV_BisimTemplates" via "Draft.GPV_Bisim" via "Draft.GPV_Expectation" via "Draft.Computational_Model")
+"('a, 'out, 'in) rpv"
+consts
+  map_gpv' ::
+    "('a => 'b)
+     => ('out => 'out')
+        => ('ret' => 'ret)
+           => ('a, 'out, 'ret) gpv => ('b, 'out', 'ret') gpv"
+Proofs for coinductive predicate(s) "rel_gpv''"
+  Proving monotonicity ...
+consts
+  Done :: "'a => ('a, 'out, 'in) gpv"
+consts
+  Pause :: "'out => ('a, 'out, 'in) rpv => ('a, 'out, 'in) gpv"
+consts
+  lift_spmf :: "'a spmf => ('a, 'out, 'in) gpv"
+consts
+  bind_gpv ::
+    "('a, 'out, 'in) gpv
+     => ('a => ('b, 'out, 'in) gpv) => ('b, 'out, 'in) gpv"
+locale spmf_to_gpv
+locale option_to_gpv
+locale option_le_gpv
+consts
+  lift_resumption ::
+    "('a, 'out, 'in) Resumption.resumption => ('a, 'out, 'in) gpv"
+### Ambiguous input (line 1428 of "$AFP/CryptHOL/Generative_Probabilistic_Value.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" the_gpv)
+###       ("\<^const>SPMF.try_spmf" ("_position" gpv) ("_position" gpv')))
+###     ("_applC" ("_position" map_spmf)
+###       ("_cargs"
+###         ("_applC" ("_position" map_generat)
+###           ("_cargs" ("_position" id)
+###             ("_cargs" ("_position" id)
+###               ("_lambda" ("_pttrns" ("_position" c) ("_position" input))
+###                 ("_case_syntax"
+###                   ("_applC" ("_position" c) ("_position" input))
+###                   ("_case2"
+###                     ("_case1" ("_applC" ("_position" Inl) ("_position" gpv))
+###                       ("_applC" ("_position" try_gpv)
+###                         ("_cargs" ("_position" gpv) ("_position" gpv'))))
+###                     ("_case1"
+###                       ("_applC" ("_position" Inr) ("_position" gpv'))
+###                       ("_position" gpv'))))))))
+###         ("_applC" ("_position" try_spmf)
+###           ("_cargs"
+###             ("_applC" ("_position" map_spmf)
+###               ("_cargs"
+###                 ("_applC" ("_position" map_generat)
+###                   ("_cargs" ("_position" id)
+###                     ("_cargs" ("_position" id)
+###                       ("_applC" ("_position" map_fun)
+###                         ("_cargs" ("_position" id) ("_position" Inl))))))
+###                 ("_applC" ("_position" the_gpv) ("_position" gpv))))
+###             ("_applC" ("_position" map_spmf)
+###               ("_cargs"
+###                 ("_applC" ("_position" map_generat)
+###                   ("_cargs" ("_position" id)
+###                     ("_cargs" ("_position" id)
+###                       ("_applC" ("_position" map_fun)
+###                         ("_cargs" ("_position" id) ("_position" Inr))))))
+###                 ("_applC" ("_position" the_gpv) ("_position" gpv'))))))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" the_gpv)
+###       ("\<^fixed>try_gpv" ("_position" gpv) ("_position" gpv')))
+###     ("_applC" ("_position" map_spmf)
+###       ("_cargs"
+###         ("_applC" ("_position" map_generat)
+###           ("_cargs" ("_position" id)
+###             ("_cargs" ("_position" id)
+###               ("_lambda" ("_pttrns" ("_position" c) ("_position" input))
+###                 ("_case_syntax"
+###                   ("_applC" ("_position" c) ("_position" input))
+###                   ("_case2"
+###                     ("_case1" ("_applC" ("_position" Inl) ("_position" gpv))
+###                       ("_applC" ("_position" try_gpv)
+###                         ("_cargs" ("_position" gpv) ("_position" gpv'))))
+###                     ("_case1"
+###                       ("_applC" ("_position" Inr) ("_position" gpv'))
+###                       ("_position" gpv'))))))))
+###         ("_applC" ("_position" try_spmf)
+###           ("_cargs"
+###             ("_applC" ("_position" map_spmf)
+###               ("_cargs"
+###                 ("_applC" ("_position" map_generat)
+###                   ("_cargs" ("_position" id)
+###                     ("_cargs" ("_position" id)
+###                       ("_applC" ("_position" map_fun)
+###                         ("_cargs" ("_position" id) ("_position" Inl))))))
+###                 ("_applC" ("_position" the_gpv) ("_position" gpv))))
+###             ("_applC" ("_position" map_spmf)
+###               ("_cargs"
+###                 ("_applC" ("_position" map_generat)
+###                   ("_cargs" ("_position" id)
+###                     ("_cargs" ("_position" id)
+###                       ("_applC" ("_position" map_fun)
+###                         ("_cargs" ("_position" id) ("_position" Inr))))))
+###                 ("_applC" ("_position" the_gpv) ("_position" gpv'))))))))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+consts
+  try_gpv ::
+    "('a, 'call, 'ret) gpv
+     => ('a, 'call, 'ret) gpv => ('a, 'call, 'ret) gpv"
+### Ambiguous input (line 1434 of "$AFP/CryptHOL/Generative_Probabilistic_Value.thy") produces 8 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" the_gpv)
+###       ("\<^const>SPMF.try_spmf" ("_position" gpv) ("_position" gpv')))
+###     ("\<^const>Generative_Probabilistic_Value.try_gpv"
+###       ("_applC" ("_position" map_spmf)
+###         ("_cargs"
+###           ("_applC" ("_position" map_generat)
+###             ("_cargs" ("_position" id)
+###               ("_cargs" ("_position" id)
+###                 ("_lambda" ("_pttrns" ("_position" c) ("_position" input))
+###                   ("\<^const>SPMF.try_spmf"
+###                     ("_applC" ("_position" c) ("_position" input))
+###                     ("_position" gpv'))))))
+###           ("_applC" ("_position" the_gpv) ("_position" gpv))))
+###       ("_applC" ("_position" the_gpv) ("_position" gpv')))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" the_gpv)
+###       ("\<^const>Generative_Probabilistic_Value.try_gpv" ("_position" gpv)
+###         ("_position" gpv')))
+###     ("\<^const>Generative_Probabilistic_Value.try_gpv"
+###       ("_applC" ("_position" map_spmf)
+###         ("_cargs"
+###           ("_applC" ("_position" map_generat)
+###             ("_cargs" ("_position" id)
+###               ("_cargs" ("_position" id)
+###                 ("_lambda" ("_pttrns" ("_position" c) ("_position" input))
+###                   ("\<^const>SPMF.try_spmf"
+###                     ("_applC" ("_position" c) ("_position" input))
+###                     ("_position" gpv'))))))
+###           ("_applC" ("_position" the_gpv) ("_position" gpv))))
+###       ("_applC" ("_position" the_gpv) ("_position" gpv')))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" the_gpv)
+###       ("\<^const>SPMF.try_spmf" ("_position" gpv) ("_position" gpv')))
+###     ("\<^const>SPMF.try_spmf"
+###       ("_applC" ("_position" map_spmf)
+###         ("_cargs"
+###           ("_applC" ("_position" map_generat)
+###             ("_cargs" ("_position" id)
+###               ("_cargs" ("_position" id)
+###                 ("_lambda" ("_pttrns" ("_position" c) ("_position" input))
+###                   ("\<^const>SPMF.try_spmf"
+###                     ("_applC" ("_position" c) ("_position" input))
+###                     ("_position" gpv'))))))
+###           ("_applC" ("_position" the_gpv) ("_position" gpv))))
+###       ("_applC" ("_position" the_gpv) ("_position" gpv')))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" the_gpv)
+###       ("\<^const>Generative_Probabilistic_Value.try_gpv" ("_position" gpv)
+###         ("_position" gpv')))
+###     ("\<^const>SPMF.try_spmf"
+###       ("_applC" ("_position" map_spmf)
+###         ("_cargs"
+###           ("_applC" ("_position" map_generat)
+###             ("_cargs" ("_position" id)
+###               ("_cargs" ("_position" id)
+###                 ("_lambda" ("_pttrns" ("_position" c) ("_position" input))
+###                   ("\<^const>SPMF.try_spmf"
+###                     ("_applC" ("_position" c) ("_position" input))
+###                     ("_position" gpv'))))))
+###           ("_applC" ("_position" the_gpv) ("_position" gpv))))
+###       ("_applC" ("_position" the_gpv) ("_position" gpv')))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" the_gpv)
+###       ("\<^const>SPMF.try_spmf" ("_position" gpv) ("_position" gpv')))
+###     ("\<^const>Generative_Probabilistic_Value.try_gpv"
+###       ("_applC" ("_position" map_spmf)
+###         ("_cargs"
+###           ("_applC" ("_position" map_generat)
+###             ("_cargs" ("_position" id)
+###               ("_cargs" ("_position" id)
+###                 ("_lambda" ("_pttrns" ("_position" c) ("_position" input))
+###                   ("\<^const>Generative_Probabilistic_Value.try_gpv"
+###                     ("_applC" ("_position" c) ("_position" input))
+###                     ("_position" gpv'))))))
+###           ("_applC" ("_position" the_gpv) ("_position" gpv))))
+###       ("_applC" ("_position" the_gpv) ("_position" gpv')))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" the_gpv)
+###       ("\<^const>Generative_Probabilistic_Value.try_gpv" ("_position" gpv)
+###         ("_position" gpv')))
+###     ("\<^const>Generative_Probabilistic_Value.try_gpv"
+###       ("_applC" ("_position" map_spmf)
+###         ("_cargs"
+###           ("_applC" ("_position" map_generat)
+###             ("_cargs" ("_position" id)
+###               ("_cargs" ("_position" id)
+###                 ("_lambda" ("_pttrns" ("_position" c) ("_position" input))
+###                   ("\<^const>Generative_Probabilistic_Value.try_gpv"
+###                     ("_applC" ("_position" c) ("_position" input))
+###                     ("_position" gpv'))))))
+###           ("_applC" ("_position" the_gpv) ("_position" gpv))))
+###       ("_applC" ("_position" the_gpv) ("_position" gpv')))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" the_gpv)
+###       ("\<^const>SPMF.try_spmf" ("_position" gpv) ("_position" gpv')))
+###     ("\<^const>SPMF.try_spmf"
+###       ("_applC" ("_position" map_spmf)
+###         ("_cargs"
+###           ("_applC" ("_position" map_generat)
+###             ("_cargs" ("_position" id)
+###               ("_cargs" ("_position" id)
+###                 ("_lambda" ("_pttrns" ("_position" c) ("_position" input))
+###                   ("\<^const>Generative_Probabilistic_Value.try_gpv"
+###                     ("_applC" ("_position" c) ("_position" input))
+###                     ("_position" gpv'))))))
+###           ("_applC" ("_position" the_gpv) ("_position" gpv))))
+###       ("_applC" ("_position" the_gpv) ("_position" gpv')))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" the_gpv)
+###       ("\<^const>Generative_Probabilistic_Value.try_gpv" ("_position" gpv)
+###         ("_position" gpv')))
+###     ("\<^const>SPMF.try_spmf"
+###       ("_applC" ("_position" map_spmf)
+###         ("_cargs"
+###           ("_applC" ("_position" map_generat)
+###             ("_cargs" ("_position" id)
+###               ("_cargs" ("_position" id)
+###                 ("_lambda" ("_pttrns" ("_position" c) ("_position" input))
+###                   ("\<^const>Generative_Probabilistic_Value.try_gpv"
+###                     ("_applC" ("_position" c) ("_position" input))
+###                     ("_position" gpv'))))))
+###           ("_applC" ("_position" the_gpv) ("_position" gpv))))
+###       ("_applC" ("_position" the_gpv) ("_position" gpv')))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ambiguous input (line 1438 of "$AFP/CryptHOL/Generative_Probabilistic_Value.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("\<^const>Generative_Probabilistic_Value.try_gpv"
+###       ("_applC" ("_position" Done) ("_position" x)) ("_position" gpv'))
+###     ("_applC" ("_position" Done) ("_position" x))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("\<^const>SPMF.try_spmf" ("_applC" ("_position" Done) ("_position" x))
+###       ("_position" gpv'))
+###     ("_applC" ("_position" Done) ("_position" x))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ambiguous input (line 1441 of "$AFP/CryptHOL/Generative_Probabilistic_Value.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("\<^const>Generative_Probabilistic_Value.try_gpv" ("_position" Fail)
+###       ("_position" gpv'))
+###     ("_position" gpv')))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("\<^const>SPMF.try_spmf" ("_position" Fail) ("_position" gpv'))
+###     ("_position" gpv')))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ambiguous input (line 1444 of "$AFP/CryptHOL/Generative_Probabilistic_Value.thy") produces 4 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("\<^const>Generative_Probabilistic_Value.try_gpv"
+###       ("_applC" ("_position" Pause)
+###         ("_cargs" ("_position" out) ("_position" c)))
+###       ("_position" gpv'))
+###     ("_applC" ("_position" Pause)
+###       ("_cargs" ("_position" out)
+###         ("_lambda" ("_position" input)
+###           ("\<^const>SPMF.try_spmf"
+###             ("_applC" ("_position" c) ("_position" input))
+###             ("_position" gpv')))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("\<^const>SPMF.try_spmf"
+###       ("_applC" ("_position" Pause)
+###         ("_cargs" ("_position" out) ("_position" c)))
+###       ("_position" gpv'))
+###     ("_applC" ("_position" Pause)
+###       ("_cargs" ("_position" out)
+###         ("_lambda" ("_position" input)
+###           ("\<^const>SPMF.try_spmf"
+###             ("_applC" ("_position" c) ("_position" input))
+###             ("_position" gpv')))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("\<^const>Generative_Probabilistic_Value.try_gpv"
+###       ("_applC" ("_position" Pause)
+###         ("_cargs" ("_position" out) ("_position" c)))
+###       ("_position" gpv'))
+###     ("_applC" ("_position" Pause)
+###       ("_cargs" ("_position" out)
+###         ("_lambda" ("_position" input)
+###           ("\<^const>Generative_Probabilistic_Value.try_gpv"
+###             ("_applC" ("_position" c) ("_position" input))
+###             ("_position" gpv')))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("\<^const>SPMF.try_spmf"
+###       ("_applC" ("_position" Pause)
+###         ("_cargs" ("_position" out) ("_position" c)))
+###       ("_position" gpv'))
+###     ("_applC" ("_position" Pause)
+###       ("_cargs" ("_position" out)
+###         ("_lambda" ("_position" input)
+###           ("\<^const>Generative_Probabilistic_Value.try_gpv"
+###             ("_applC" ("_position" c) ("_position" input))
+###             ("_position" gpv')))))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ambiguous input (line 1447 of "$AFP/CryptHOL/Generative_Probabilistic_Value.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("\<^const>Generative_Probabilistic_Value.try_gpv" ("_position" gpv)
+###       ("_position" Fail))
+###     ("_position" gpv)))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("\<^const>SPMF.try_spmf" ("_position" gpv) ("_position" Fail))
+###     ("_position" gpv)))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ambiguous input (line 1451 of "$AFP/CryptHOL/Generative_Probabilistic_Value.thy") produces 4 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" lift_spmf)
+###       ("\<^const>SPMF.try_spmf" ("_position" p) ("_position" q)))
+###     ("\<^const>Generative_Probabilistic_Value.try_gpv"
+###       ("_applC" ("_position" lift_spmf) ("_position" p))
+###       ("_applC" ("_position" lift_spmf) ("_position" q)))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" lift_spmf)
+###       ("\<^const>Generative_Probabilistic_Value.try_gpv" ("_position" p)
+###         ("_position" q)))
+###     ("\<^const>Generative_Probabilistic_Value.try_gpv"
+###       ("_applC" ("_position" lift_spmf) ("_position" p))
+###       ("_applC" ("_position" lift_spmf) ("_position" q)))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" lift_spmf)
+###       ("\<^const>SPMF.try_spmf" ("_position" p) ("_position" q)))
+###     ("\<^const>SPMF.try_spmf"
+###       ("_applC" ("_position" lift_spmf) ("_position" p))
+###       ("_applC" ("_position" lift_spmf) ("_position" q)))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" lift_spmf)
+###       ("\<^const>Generative_Probabilistic_Value.try_gpv" ("_position" p)
+###         ("_position" q)))
+###     ("\<^const>SPMF.try_spmf"
+###       ("_applC" ("_position" lift_spmf) ("_position" p))
+###       ("_applC" ("_position" lift_spmf) ("_position" q)))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ambiguous input (line 1454 of "$AFP/CryptHOL/Generative_Probabilistic_Value.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("\<^const>Generative_Probabilistic_Value.try_gpv"
+###       ("_applC" ("_position" assert_gpv) ("_position" b))
+###       ("_position" gpv'))
+###     ("\<^const>HOL.If" ("_position" b)
+###       ("_applC" ("_position" Done) ("\<^const>Product_Type.Unity"))
+###       ("_position" gpv'))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("\<^const>SPMF.try_spmf"
+###       ("_applC" ("_position" assert_gpv) ("_position" b))
+###       ("_position" gpv'))
+###     ("\<^const>HOL.If" ("_position" b)
+###       ("_applC" ("_position" Done) ("\<^const>Product_Type.Unity"))
+###       ("_position" gpv'))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ambiguous input (line 1469 of "$AFP/CryptHOL/Generative_Probabilistic_Value.thy") produces 4 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" map_gpv)
+###       ("_cargs" ("_position" f)
+###         ("_cargs" ("_position" g)
+###           ("\<^const>SPMF.try_spmf" ("_position" gpv) ("_position" gpv')))))
+###     ("\<^const>Generative_Probabilistic_Value.try_gpv"
+###       ("_applC" ("_position" map_gpv)
+###         ("_cargs" ("_position" f)
+###           ("_cargs" ("_position" g) ("_position" gpv))))
+###       ("_applC" ("_position" map_gpv)
+###         ("_cargs" ("_position" f)
+###           ("_cargs" ("_position" g) ("_position" gpv')))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" map_gpv)
+###       ("_cargs" ("_position" f)
+###         ("_cargs" ("_position" g)
+###           ("\<^const>Generative_Probabilistic_Value.try_gpv"
+###             ("_position" gpv) ("_position" gpv')))))
+###     ("\<^const>Generative_Probabilistic_Value.try_gpv"
+###       ("_applC" ("_position" map_gpv)
+###         ("_cargs" ("_position" f)
+###           ("_cargs" ("_position" g) ("_position" gpv))))
+###       ("_applC" ("_position" map_gpv)
+###         ("_cargs" ("_position" f)
+###           ("_cargs" ("_position" g) ("_position" gpv')))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" map_gpv)
+###       ("_cargs" ("_position" f)
+###         ("_cargs" ("_position" g)
+###           ("\<^const>SPMF.try_spmf" ("_position" gpv) ("_position" gpv')))))
+###     ("\<^const>SPMF.try_spmf"
+###       ("_applC" ("_position" map_gpv)
+###         ("_cargs" ("_position" f)
+###           ("_cargs" ("_position" g) ("_position" gpv))))
+###       ("_applC" ("_position" map_gpv)
+###         ("_cargs" ("_position" f)
+###           ("_cargs" ("_position" g) ("_position" gpv')))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" map_gpv)
+###       ("_cargs" ("_position" f)
+###         ("_cargs" ("_position" g)
+###           ("\<^const>Generative_Probabilistic_Value.try_gpv"
+###             ("_position" gpv) ("_position" gpv')))))
+###     ("\<^const>SPMF.try_spmf"
+###       ("_applC" ("_position" map_gpv)
+###         ("_cargs" ("_position" f)
+###           ("_cargs" ("_position" g) ("_position" gpv))))
+###       ("_applC" ("_position" map_gpv)
+###         ("_cargs" ("_position" f)
+###           ("_cargs" ("_position" g) ("_position" gpv')))))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ambiguous input (line 1472 of "$AFP/CryptHOL/Generative_Probabilistic_Value.thy") produces 4 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" map_gpv')
+###       ("_cargs" ("_position" f)
+###         ("_cargs" ("_position" g)
+###           ("_cargs" ("_position" h)
+###             ("\<^const>SPMF.try_spmf" ("_position" gpv)
+###               ("_position" gpv'))))))
+###     ("\<^const>Generative_Probabilistic_Value.try_gpv"
+###       ("_applC" ("_position" map_gpv')
+###         ("_cargs" ("_position" f)
+###           ("_cargs" ("_position" g)
+###             ("_cargs" ("_position" h) ("_position" gpv)))))
+###       ("_applC" ("_position" map_gpv')
+###         ("_cargs" ("_position" f)
+###           ("_cargs" ("_position" g)
+###             ("_cargs" ("_position" h) ("_position" gpv'))))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" map_gpv')
+###       ("_cargs" ("_position" f)
+###         ("_cargs" ("_position" g)
+###           ("_cargs" ("_position" h)
+###             ("\<^const>Generative_Probabilistic_Value.try_gpv"
+###               ("_position" gpv) ("_position" gpv'))))))
+###     ("\<^const>Generative_Probabilistic_Value.try_gpv"
+###       ("_applC" ("_position" map_gpv')
+###         ("_cargs" ("_position" f)
+###           ("_cargs" ("_position" g)
+###             ("_cargs" ("_position" h) ("_position" gpv)))))
+###       ("_applC" ("_position" map_gpv')
+###         ("_cargs" ("_position" f)
+###           ("_cargs" ("_position" g)
+###             ("_cargs" ("_position" h) ("_position" gpv'))))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" map_gpv')
+###       ("_cargs" ("_position" f)
+###         ("_cargs" ("_position" g)
+###           ("_cargs" ("_position" h)
+###             ("\<^const>SPMF.try_spmf" ("_position" gpv)
+###               ("_position" gpv'))))))
+###     ("\<^const>SPMF.try_spmf"
+###       ("_applC" ("_position" map_gpv')
+###         ("_cargs" ("_position" f)
+###           ("_cargs" ("_position" g)
+###             ("_cargs" ("_position" h) ("_position" gpv)))))
+###       ("_applC" ("_position" map_gpv')
+###         ("_cargs" ("_position" f)
+###           ("_cargs" ("_position" g)
+###             ("_cargs" ("_position" h) ("_position" gpv'))))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" map_gpv')
+###       ("_cargs" ("_position" f)
+###         ("_cargs" ("_position" g)
+###           ("_cargs" ("_position" h)
+###             ("\<^const>Generative_Probabilistic_Value.try_gpv"
+###               ("_position" gpv) ("_position" gpv'))))))
+###     ("\<^const>SPMF.try_spmf"
+###       ("_applC" ("_position" map_gpv')
+###         ("_cargs" ("_position" f)
+###           ("_cargs" ("_position" g)
+###             ("_cargs" ("_position" h) ("_position" gpv)))))
+###       ("_applC" ("_position" map_gpv')
+###         ("_cargs" ("_position" f)
+###           ("_cargs" ("_position" g)
+###             ("_cargs" ("_position" h) ("_position" gpv'))))))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ambiguous input (line 1477 of "$AFP/CryptHOL/Generative_Probabilistic_Value.thy") produces 4 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("\<^const>Generative_Probabilistic_Value.try_gpv"
+###       ("\<^const>Monad_Syntax.bind"
+###         ("_applC" ("_position" assert_gpv) ("_position" b)) ("_position" f))
+###       ("_position" gpv))
+###     ("\<^const>HOL.If" ("_position" b)
+###       ("\<^const>SPMF.try_spmf"
+###         ("_applC" ("_position" f) ("\<^const>Product_Type.Unity"))
+###         ("_position" gpv))
+###       ("_position" gpv))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("\<^const>SPMF.try_spmf"
+###       ("\<^const>Monad_Syntax.bind"
+###         ("_applC" ("_position" assert_gpv) ("_position" b)) ("_position" f))
+###       ("_position" gpv))
+###     ("\<^const>HOL.If" ("_position" b)
+###       ("\<^const>SPMF.try_spmf"
+###         ("_applC" ("_position" f) ("\<^const>Product_Type.Unity"))
+###         ("_position" gpv))
+###       ("_position" gpv))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("\<^const>Generative_Probabilistic_Value.try_gpv"
+###       ("\<^const>Monad_Syntax.bind"
+###         ("_applC" ("_position" assert_gpv) ("_position" b)) ("_position" f))
+###       ("_position" gpv))
+###     ("\<^const>HOL.If" ("_position" b)
+###       ("\<^const>Generative_Probabilistic_Value.try_gpv"
+###         ("_applC" ("_position" f) ("\<^const>Product_Type.Unity"))
+###         ("_position" gpv))
+###       ("_position" gpv))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("\<^const>SPMF.try_spmf"
+###       ("\<^const>Monad_Syntax.bind"
+###         ("_applC" ("_position" assert_gpv) ("_position" b)) ("_position" f))
+###       ("_position" gpv))
+###     ("\<^const>HOL.If" ("_position" b)
+###       ("\<^const>Generative_Probabilistic_Value.try_gpv"
+###         ("_applC" ("_position" f) ("\<^const>Product_Type.Unity"))
+###         ("_position" gpv))
+###       ("_position" gpv))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+Proofs for coinductive predicate(s) "ord_gpv"
+  Proving monotonicity ...
+Proofs for inductive predicate(s) "interaction_bounded_by"
+  Proving monotonicity ...
+instantiation
+  \<I> :: (type, type) order
+  less_eq_\<I> == less_eq :: ('a, 'b) \<I> => ('a, 'b) \<I> => bool
+  less_\<I> == less :: ('a, 'b) \<I> => ('a, 'b) \<I> => bool
+instantiation
+  \<I> :: (type, type) order_bot
+  bot_\<I> == bot :: ('a, 'b) \<I>
+Proofs for inductive predicate(s) "resultsp_gpv"
+  Proving monotonicity ...
+Proofs for inductive predicate(s) "outsp_gpv"
+  Proving monotonicity ...
+Proofs for inductive predicate(s) "pred_gpv'"
+  Proving monotonicity ...
+Proofs for coinductive predicate(s) "WT_gpv"
+  Proving monotonicity ...
+Proofs for inductive predicate(s) "sub_gpvsp"
+  Proving monotonicity ...
+### Ambiguous input (line 3300 of "$AFP/CryptHOL/Generative_Probabilistic_Value.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" results_gpv)
+###       ("_cargs" ("_position" \<I>)
+###         ("\<^const>SPMF.try_spmf" ("_position" gpv) ("_position" gpv'))))
+###     ("\<^const>Set.union"
+###       ("_applC" ("_position" results_gpv)
+###         ("_cargs" ("_position" \<I>) ("_position" gpv)))
+###       ("\<^const>HOL.If"
+###         ("_applC" ("_position" colossless_gpv)
+###           ("_cargs" ("_position" \<I>) ("_position" gpv)))
+###         ("\<^const>Set.empty")
+###         ("_applC" ("_position" results_gpv)
+###           ("_cargs" ("_position" \<I>) ("_position" gpv')))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" results_gpv)
+###       ("_cargs" ("_position" \<I>)
+###         ("\<^const>Generative_Probabilistic_Value.try_gpv" ("_position" gpv)
+###           ("_position" gpv'))))
+###     ("\<^const>Set.union"
+###       ("_applC" ("_position" results_gpv)
+###         ("_cargs" ("_position" \<I>) ("_position" gpv)))
+###       ("\<^const>HOL.If"
+###         ("_applC" ("_position" colossless_gpv)
+###           ("_cargs" ("_position" \<I>) ("_position" gpv)))
+###         ("\<^const>Set.empty")
+###         ("_applC" ("_position" results_gpv)
+###           ("_cargs" ("_position" \<I>) ("_position" gpv')))))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ambiguous input (line 3348 of "$AFP/CryptHOL/Generative_Probabilistic_Value.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" results'_gpv)
+###       ("\<^const>SPMF.try_spmf" ("_position" gpv) ("_position" gpv')))
+###     ("\<^const>Set.union"
+###       ("_applC" ("_position" results'_gpv) ("_position" gpv))
+###       ("\<^const>HOL.If"
+###         ("_applC" ("_position" colossless_gpv)
+###           ("_cargs" ("_position" \<I>_full) ("_position" gpv)))
+###         ("\<^const>Set.empty")
+###         ("_applC" ("_position" results'_gpv) ("_position" gpv'))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" results'_gpv)
+###       ("\<^const>Generative_Probabilistic_Value.try_gpv" ("_position" gpv)
+###         ("_position" gpv')))
+###     ("\<^const>Set.union"
+###       ("_applC" ("_position" results'_gpv) ("_position" gpv))
+###       ("\<^const>HOL.If"
+###         ("_applC" ("_position" colossless_gpv)
+###           ("_cargs" ("_position" \<I>_full) ("_position" gpv)))
+###         ("\<^const>Set.empty")
+###         ("_applC" ("_position" results'_gpv) ("_position" gpv'))))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ambiguous input (line 3353 of "$AFP/CryptHOL/Generative_Probabilistic_Value.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" outs'_gpv)
+###       ("\<^const>SPMF.try_spmf" ("_position" gpv) ("_position" gpv')))
+###     ("\<^const>Set.union"
+###       ("_applC" ("_position" outs'_gpv) ("_position" gpv))
+###       ("\<^const>HOL.If"
+###         ("_applC" ("_position" colossless_gpv)
+###           ("_cargs" ("_position" \<I>_full) ("_position" gpv)))
+###         ("\<^const>Set.empty")
+###         ("_applC" ("_position" outs'_gpv) ("_position" gpv'))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" outs'_gpv)
+###       ("\<^const>Generative_Probabilistic_Value.try_gpv" ("_position" gpv)
+###         ("_position" gpv')))
+###     ("\<^const>Set.union"
+###       ("_applC" ("_position" outs'_gpv) ("_position" gpv))
+###       ("\<^const>HOL.If"
+###         ("_applC" ("_position" colossless_gpv)
+###           ("_cargs" ("_position" \<I>_full) ("_position" gpv)))
+###         ("\<^const>Set.empty")
+###         ("_applC" ("_position" outs'_gpv) ("_position" gpv'))))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ambiguous input (line 3476 of "$AFP/CryptHOL/Generative_Probabilistic_Value.thy") produces 2 parse trees:
+### ("\<^const>Pure.imp"
+###   ("\<^const>HOL.Trueprop"
+###     ("_applC" ("_position" gen_lossless_gpv)
+###       ("_cargs" ("_position" b)
+###         ("_cargs" ("_position" \<I>_full) ("_position" gpv)))))
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^const>HOL.eq"
+###       ("\<^const>SPMF.try_spmf" ("_position" gpv) ("_position" gpv'))
+###       ("_position" gpv))))
+### ("\<^const>Pure.imp"
+###   ("\<^const>HOL.Trueprop"
+###     ("_applC" ("_position" gen_lossless_gpv)
+###       ("_cargs" ("_position" b)
+###         ("_cargs" ("_position" \<I>_full) ("_position" gpv)))))
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^const>HOL.eq"
+###       ("\<^const>Generative_Probabilistic_Value.try_gpv" ("_position" gpv)
+###         ("_position" gpv'))
+###       ("_position" gpv))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ambiguous input (line 3490 of "$AFP/CryptHOL/Generative_Probabilistic_Value.thy") produces 4 parse trees:
+### ("\<^const>Pure.imp"
+###   ("\<^const>HOL.Trueprop"
+###     ("_applC" ("_position" gen_lossless_gpv)
+###       ("_cargs" ("_position" b)
+###         ("_cargs" ("_position" \<I>_full) ("_position" gpv)))))
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^const>HOL.eq"
+###       ("\<^const>Generative_Probabilistic_Value.try_gpv"
+###         ("_applC" ("_position" bind_gpv)
+###           ("_cargs" ("_position" gpv) ("_position" f)))
+###         ("_position" gpv'))
+###       ("_applC" ("_position" bind_gpv)
+###         ("_cargs" ("_position" gpv)
+###           ("_lambda" ("_position" x)
+###             ("\<^const>SPMF.try_spmf"
+###               ("_applC" ("_position" f) ("_position" x))
+###               ("_position" gpv'))))))))
+### ("\<^const>Pure.imp"
+###   ("\<^const>HOL.Trueprop"
+###     ("_applC" ("_position" gen_lossless_gpv)
+###       ("_cargs" ("_position" b)
+###         ("_cargs" ("_position" \<I>_full) ("_position" gpv)))))
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^const>HOL.eq"
+###       ("\<^const>SPMF.try_spmf"
+###         ("_applC" ("_position" bind_gpv)
+###           ("_cargs" ("_position" gpv) ("_position" f)))
+###         ("_position" gpv'))
+###       ("_applC" ("_position" bind_gpv)
+###         ("_cargs" ("_position" gpv)
+###           ("_lambda" ("_position" x)
+###             ("\<^const>SPMF.try_spmf"
+###               ("_applC" ("_position" f) ("_position" x))
+###               ("_position" gpv'))))))))
+### ("\<^const>Pure.imp"
+###   ("\<^const>HOL.Trueprop"
+###     ("_applC" ("_position" gen_lossless_gpv)
+###       ("_cargs" ("_position" b)
+###         ("_cargs" ("_position" \<I>_full) ("_position" gpv)))))
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^const>HOL.eq"
+###       ("\<^const>Generative_Probabilistic_Value.try_gpv"
+###         ("_applC" ("_position" bind_gpv)
+###           ("_cargs" ("_position" gpv) ("_position" f)))
+###         ("_position" gpv'))
+###       ("_applC" ("_position" bind_gpv)
+###         ("_cargs" ("_position" gpv)
+###           ("_lambda" ("_position" x)
+###             ("\<^const>Generative_Probabilistic_Value.try_gpv"
+###               ("_applC" ("_position" f) ("_position" x))
+###               ("_position" gpv'))))))))
+### ("\<^const>Pure.imp"
+###   ("\<^const>HOL.Trueprop"
+###     ("_applC" ("_position" gen_lossless_gpv)
+###       ("_cargs" ("_position" b)
+###         ("_cargs" ("_position" \<I>_full) ("_position" gpv)))))
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^const>HOL.eq"
+###       ("\<^const>SPMF.try_spmf"
+###         ("_applC" ("_position" bind_gpv)
+###           ("_cargs" ("_position" gpv) ("_position" f)))
+###         ("_position" gpv'))
+###       ("_applC" ("_position" bind_gpv)
+###         ("_cargs" ("_position" gpv)
+###           ("_lambda" ("_position" x)
+###             ("\<^const>Generative_Probabilistic_Value.try_gpv"
+###               ("_applC" ("_position" f) ("_position" x))
+###               ("_position" gpv'))))))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+consts
+  mk_lossless_gpv :: "('a, 'b, 'c) gpv => ('a, 'b, 'c) gpv"
+### Ambiguous input (line 3541 of "$AFP/CryptHOL/Generative_Probabilistic_Value.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq" ("_applC" ("_position" catch_gpv) ("_position" gpv))
+###     ("\<^const>Generative_Probabilistic_Value.try_gpv"
+###       ("_applC" ("_position" map_gpv)
+###         ("_cargs" ("_position" Some)
+###           ("_cargs" ("_position" id) ("_position" gpv))))
+###       ("_applC" ("_position" Done) ("_position" None)))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq" ("_applC" ("_position" catch_gpv) ("_position" gpv))
+###     ("\<^const>SPMF.try_spmf"
+###       ("_applC" ("_position" map_gpv)
+###         ("_cargs" ("_position" Some)
+###           ("_cargs" ("_position" id) ("_position" gpv))))
+###       ("_applC" ("_position" Done) ("_position" None)))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ambiguous input (line 3559 of "$AFP/CryptHOL/Generative_Probabilistic_Value.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" the_gpv)
+###       ("_applC" ("_position" catch_gpv) ("_position" gpv)))
+###     ("\<^const>Generative_Probabilistic_Value.try_gpv"
+###       ("_applC" ("_position" map_spmf)
+###         ("_cargs"
+###           ("_applC" ("_position" map_generat)
+###             ("_cargs" ("_position" Some)
+###               ("_cargs" ("_position" id)
+###                 ("_lambda" ("_pttrns" ("_position" rpv) ("_position" input))
+###                   ("_applC" ("_position" catch_gpv)
+###                     ("_applC" ("_position" rpv) ("_position" input)))))))
+###           ("_applC" ("_position" the_gpv) ("_position" gpv))))
+###       ("_applC" ("_position" return_spmf)
+###         ("_applC" ("_position" Pure) ("_position" None))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" the_gpv)
+###       ("_applC" ("_position" catch_gpv) ("_position" gpv)))
+###     ("\<^const>SPMF.try_spmf"
+###       ("_applC" ("_position" map_spmf)
+###         ("_cargs"
+###           ("_applC" ("_position" map_generat)
+###             ("_cargs" ("_position" Some)
+###               ("_cargs" ("_position" id)
+###                 ("_lambda" ("_pttrns" ("_position" rpv) ("_position" input))
+###                   ("_applC" ("_position" catch_gpv)
+###                     ("_applC" ("_position" rpv) ("_position" input)))))))
+###           ("_applC" ("_position" the_gpv) ("_position" gpv))))
+###       ("_applC" ("_position" return_spmf)
+###         ("_applC" ("_position" Pure) ("_position" None))))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+consts
+  inline_aux ::
+    "('a, 'call, 'ret) gpv * 's +
+     ('a, 'call, 'ret) rpv * ('ret * 's, 'call', 'ret') gpv
+     => ('a * 's, 'call', 'ret') gpv"
+locale raw_converter_invariant
+  fixes \<I> :: "('call, 'ret) \<I>"
+    and \<I>' :: "('call', 'ret') \<I>"
+    and callee :: "'s => 'call => ('ret * 's, 'call', 'ret') gpv"
+    and I :: "'s => bool"
+  assumes "raw_converter_invariant \<I> \<I>' callee I"
+locale raw_converter_invariant
+  fixes \<I> :: "('call, 'ret) \<I>"
+    and \<I>' :: "('call', 'ret') \<I>"
+    and callee :: "'s => 'call => ('ret * 's, 'call', 'ret') gpv"
+    and I :: "'s => bool"
+  assumes "raw_converter_invariant \<I> \<I>' callee I"
+Proofs for inductive predicate(s) "WT_callee"
+  Proving monotonicity ...
+locale callee_invariant_on_base
+  fixes callee :: "'s => 'a => ('b * 's) spmf"
+    and I :: "'s => bool"
+    and \<I> :: "('a, 'b) \<I>"
+locale callee_invariant_on
+  fixes callee :: "'s => 'a => ('b * 's) spmf"
+    and I :: "'s => bool"
+    and \<I> :: "('a, 'b) \<I>"
+  assumes "callee_invariant_on callee I \<I>"
+consts
+  restrict_gpv :: "('a, 'out, 'in) gpv => ('a, 'out, 'in) gpv"
+consts
+  enforce_\<I>_gpv ::
+    "('out, 'in) \<I> => ('a, 'out, 'in) gpv => ('a, 'out, 'in) gpv"
+Proofs for inductive predicate(s) "finite_gpv"
+  Proving monotonicity ...
+### Ambiguous input (line 5702 of "$AFP/CryptHOL/Generative_Probabilistic_Value.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.iff"
+###     ("_applC" ("_position" finite_gpv)
+###       ("_cargs" ("_position" \<I>)
+###         ("\<^const>SPMF.try_spmf" ("_position" gpv) ("_position" gpv'))))
+###     ("\<^const>HOL.conj"
+###       ("_applC" ("_position" finite_gpv)
+###         ("_cargs" ("_position" \<I>) ("_position" gpv)))
+###       ("\<^const>HOL.disj"
+###         ("_applC" ("_position" colossless_gpv)
+###           ("_cargs" ("_position" \<I>) ("_position" gpv)))
+###         ("_applC" ("_position" finite_gpv)
+###           ("_cargs" ("_position" \<I>) ("_position" gpv')))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.iff"
+###     ("_applC" ("_position" finite_gpv)
+###       ("_cargs" ("_position" \<I>)
+###         ("\<^const>Generative_Probabilistic_Value.try_gpv" ("_position" gpv)
+###           ("_position" gpv'))))
+###     ("\<^const>HOL.conj"
+###       ("_applC" ("_position" finite_gpv)
+###         ("_cargs" ("_position" \<I>) ("_position" gpv)))
+###       ("\<^const>HOL.disj"
+###         ("_applC" ("_position" colossless_gpv)
+###           ("_cargs" ("_position" \<I>) ("_position" gpv)))
+###         ("_applC" ("_position" finite_gpv)
+###           ("_cargs" ("_position" \<I>) ("_position" gpv')))))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ambiguous input (line 5781 of "$AFP/CryptHOL/Generative_Probabilistic_Value.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.iff"
+###     ("_applC" ("_position" colossless_gpv)
+###       ("_cargs" ("_position" \<I>)
+###         ("\<^const>SPMF.try_spmf" ("_position" gpv) ("_position" gpv'))))
+###     ("\<^const>HOL.disj"
+###       ("_applC" ("_position" colossless_gpv)
+###         ("_cargs" ("_position" \<I>) ("_position" gpv)))
+###       ("_applC" ("_position" colossless_gpv)
+###         ("_cargs" ("_position" \<I>) ("_position" gpv'))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.iff"
+###     ("_applC" ("_position" colossless_gpv)
+###       ("_cargs" ("_position" \<I>)
+###         ("\<^const>Generative_Probabilistic_Value.try_gpv" ("_position" gpv)
+###           ("_position" gpv'))))
+###     ("\<^const>HOL.disj"
+###       ("_applC" ("_position" colossless_gpv)
+###         ("_cargs" ("_position" \<I>) ("_position" gpv)))
+###       ("_applC" ("_position" colossless_gpv)
+###         ("_cargs" ("_position" \<I>) ("_position" gpv'))))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ambiguous input (line 5828 of "$AFP/CryptHOL/Generative_Probabilistic_Value.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.iff"
+###     ("_applC" ("_position" lossless_gpv)
+###       ("_cargs" ("_position" \<I>)
+###         ("\<^const>SPMF.try_spmf" ("_position" gpv) ("_position" gpv'))))
+###     ("\<^const>HOL.conj"
+###       ("_applC" ("_position" finite_gpv)
+###         ("_cargs" ("_position" \<I>) ("_position" gpv)))
+###       ("\<^const>HOL.disj"
+###         ("_applC" ("_position" lossless_gpv)
+###           ("_cargs" ("_position" \<I>) ("_position" gpv)))
+###         ("_applC" ("_position" lossless_gpv)
+###           ("_cargs" ("_position" \<I>) ("_position" gpv')))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.iff"
+###     ("_applC" ("_position" lossless_gpv)
+###       ("_cargs" ("_position" \<I>)
+###         ("\<^const>Generative_Probabilistic_Value.try_gpv" ("_position" gpv)
+###           ("_position" gpv'))))
+###     ("\<^const>HOL.conj"
+###       ("_applC" ("_position" finite_gpv)
+###         ("_cargs" ("_position" \<I>) ("_position" gpv)))
+###       ("\<^const>HOL.disj"
+###         ("_applC" ("_position" lossless_gpv)
+###           ("_cargs" ("_position" \<I>) ("_position" gpv)))
+###         ("_applC" ("_position" lossless_gpv)
+###           ("_cargs" ("_position" \<I>) ("_position" gpv')))))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+locale callee_invariant_on
+  fixes callee :: "'s => 'a => ('b * 's) spmf"
+    and I :: "'s => bool"
+    and \<I> :: "('a, 'b) \<I>"
+  assumes "callee_invariant_on callee I \<I>"
+### theory "Draft.Generative_Probabilistic_Value"
+### 7.888s elapsed time, 9.063s cpu time, 1.734s GC time
+Loading theory "Draft.Computational_Model" (required by "Draft.GPV_BisimTemplates" via "Draft.GPV_Bisim" via "Draft.GPV_Expectation")
+"('\<sigma>, 'call, 'ret) oracle"
+consts
+  plus_oracle :: "'a + 'c => (('b + 'd) * 's) spmf"
+consts
+  plus_oracle_stop :: "'a + 'c => (('b + 'd) option * 's) spmf"
+Found termination order: "{}"
+### Ambiguous input (line 417 of "$AFP/CryptHOL/Computational_Model.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("_applC" ("_position" callee_invariant)
+###     ("_cargs"
+###       ("\<^const>Computational_Model.extend_state_oracle2"
+###         ("_position" oracle))
+###       ("_lambda" ("_pattern" ("_position" s) ("_position" s'))
+###         ("_applC" ("_position" I) ("_position" s'))))))
+### ("\<^const>HOL.Trueprop"
+###   ("_applC" ("_position" callee_invariant)
+###     ("_cargs" ("_position" oracle)
+###       ("\<^const>Computational_Model.extend_state_oracle"
+###         ("_lambda" ("_pattern" ("_position" s) ("_position" s'))
+###           ("_applC" ("_position" I) ("_position" s')))))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ambiguous input (line 421 of "$AFP/CryptHOL/Computational_Model.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("_applC" ("_position" callee_invariant)
+###     ("_cargs"
+###       ("\<^const>Computational_Model.extend_state_oracle2"
+###         ("_position" oracle))
+###       ("_lambda" ("_position" s)
+###         ("_applC" ("_position" I)
+###           ("_applC" ("_position" snd) ("_position" s)))))))
+### ("\<^const>HOL.Trueprop"
+###   ("_applC" ("_position" callee_invariant)
+###     ("_cargs" ("_position" oracle)
+###       ("\<^const>Computational_Model.extend_state_oracle"
+###         ("_lambda" ("_position" s)
+###           ("_applC" ("_position" I)
+###             ("_applC" ("_position" snd) ("_position" s))))))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+consts
+  plus_intercept :: "'s => 'x1 + 'x2 => (('y1 + 'y2) * 's, 'call, 'ret) gpv"
+consts
+  plus_intercept_stop ::
+    "'s => 'x1 + 'x2 => (('y1 + 'y2) option * 's, 'call, 'ret) gpv"
+consts
+  left_gpv :: "('a, 'out, 'in) gpv => ('a, 'out + 'out', 'in + 'in') gpv"
+consts
+  right_gpv :: "('a, 'out, 'in) gpv => ('a, 'out' + 'out, 'in' + 'in) gpv"
+Found termination order: "{}"
+### theory "Draft.Computational_Model"
+### 1.246s elapsed time, 1.352s cpu time, 0.146s GC time
+Loading theory "Draft.GPV_Expectation" (required by "Draft.GPV_BisimTemplates" via "Draft.GPV_Bisim")
+locale raw_converter_invariant
+  fixes \<I> :: "('call, 'ret) \<I>"
+    and \<I>' :: "('call', 'ret') \<I>"
+    and callee :: "'s => 'call => ('ret * 's, 'call', 'ret') gpv"
+    and I :: "'s => bool"
+  assumes "raw_converter_invariant \<I> \<I>' callee I"
+locale callee_invariant_on
+  fixes callee :: "'s => 'a => ('b * 's) spmf"
+    and I :: "'s => bool"
+    and \<I> :: "('a, 'b) \<I>"
+  assumes "callee_invariant_on callee I \<I>"
+### theory "Draft.GPV_Expectation"
+### 0.533s elapsed time, 0.639s cpu time, 0.156s GC time
+Loading theory "Draft.GPV_Bisim" (required by "Draft.GPV_BisimTemplates")
+consts
+  gpv_stop :: "('a, 'c, 'r) gpv => ('a option, 'c, 'r option) gpv"
+### theory "Draft.GPV_Bisim"
+### 0.541s elapsed time, 0.588s cpu time, 0.069s GC time
+Loading theory "Draft.GPV_BisimTemplates"
+val templateLemmas =
+   [("GPV_Bisim.gpv_stop_Done",
+     "gpv_stop (Generative_Probabilistic_Value.Done ?x) =
+      Generative_Probabilistic_Value.Done (Some ?x)",
+     template_equation
+      (template_app
+        (template_hole 3, template_app (template_hole 2, template_var 0)),
+       template_app
+        (template_hole 1, template_app (template_hole 0, template_var 0)))),
+    ("GPV_Bisim.interaction_bound_gpv_stop",
+     "interaction_bound ?consider (gpv_stop ?gpv) =
+      interaction_bound ?consider ?gpv",
+     template_equation
+      (template_app
+        (template_app (template_hole 2, template_var 1),
+         template_app (template_hole 1, template_var 0)),
+       template_app
+        (template_app (template_hole 0, template_var 1), template_var 0))),
+    ("GPV_Bisim.gpv_stop_lift_spmf",
+     "gpv_stop (lift_spmf ?p) = lift_spmf (map_spmf Some ?p)",
+     template_equation
+      (template_app
+        (template_hole 5, template_app (template_hole 4, template_var 0)),
+       template_app
+        (template_hole 3,
+         template_app
+          (template_app
+            (template_hole 2,
+             template_app (template_hole 1, template_hole 0)),
+           template_var 0)))),
+    ("GPV_Bisim.gpv_stop_parametric",
+     "rel_fun (rel_gpv ?A ?C) (rel_gpv (rel_option ?A) ?C) gpv_stop
+       gpv_stop",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_hole 5,
+                 template_app
+                  (template_app (template_hole 4, template_var 1),
+                   template_var 0)),
+               template_app
+                (template_app
+                  (template_hole 3,
+                   template_app (template_hole 2, template_var 1)),
+                 template_var 0)),
+             template_hole 1),
+           template_hole 0)
+         )),
+    ("GPV_Bisim.max_enn2ereal",
+     "max (enn2ereal ?x) (enn2ereal ?y) = enn2ereal (max ?x ?y)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 2, template_app (template_hole 1, template_var 1)),
+         template_app (template_hole 1, template_var 0)),
+       template_app
+        (template_hole 1,
+         template_app
+          (template_app (template_hole 0, template_var 1),
+           template_var 0)))),
+    ("GPV_Bisim.gpv_stop_parametric'",
+     "rel_fun (rel_gpv'' ?A ?C ?R)
+       (rel_gpv'' (rel_option ?A) ?C (rel_option ?R)) gpv_stop gpv_stop",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_hole 6,
+                 template_app
+                  (template_app
+                    (template_app (template_hole 5, template_var 2),
+                     template_var 1),
+                   template_var 0)),
+               template_app
+                (template_app
+                  (template_app
+                    (template_hole 4,
+                     template_app (template_hole 3, template_var 2)),
+                   template_var 1),
+                 template_app (template_hole 2, template_var 0))),
+             template_hole 1),
+           template_hole 0)
+         )),
+    ("GPV_Bisim.gpv_stop_transfer",
+     "rel_fun (rel_gpv'' ?A ?B ?C)
+       (rel_gpv'' (pcr_Some ?A) ?B (pcr_Some ?C)) (%x. x) gpv_stop",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_hole 5,
+                 template_app
+                  (template_app
+                    (template_app (template_hole 4, template_var 2),
+                     template_var 1),
+                   template_var 0)),
+               template_app
+                (template_app
+                  (template_app
+                    (template_hole 3,
+                     template_app (template_hole 2, template_var 2)),
+                   template_var 1),
+                 template_app (template_hole 1, template_var 0))),
+             t_empty),
+           template_hole 0)
+         )),
+    ("GPV_Bisim.gpv_stop_map'",
+     "gpv_stop (map_gpv' ?f ?g ?h ?gpv) =
+      map_gpv' (map_option ?f) ?g (map_option ?h) (gpv_stop ?gpv)",
+     template_equation
+      (template_app
+        (template_hole 5,
+         template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 4, template_var 3),
+               template_var 2),
+             template_var 1),
+           template_var 0)),
+       template_app
+        (template_app
+          (template_app
+            (template_app
+              (template_hole 3,
+               template_app (template_hole 2, template_var 3)),
+             template_var 2),
+           template_app (template_hole 1, template_var 1)),
+         template_app (template_hole 0, template_var 0)))),
+    ("GPV_Bisim.gpv_stop_Pause",
+     "gpv_stop (Generative_Probabilistic_Value.Pause ?out ?rpv) =
+      Generative_Probabilistic_Value.Pause ?out
+       (%input.
+           case input of None => Generative_Probabilistic_Value.Done None
+           | Some input' => gpv_stop (?rpv input'))",
+     template_equation
+      (template_app
+        (template_hole 5,
+         template_app
+          (template_app (template_hole 4, template_var 1), template_var 0)),
+       template_app
+        (template_app (template_hole 3, template_var 1), t_empty))),
+    ("GPV_Bisim.gpv_stop_bind",
+     "gpv_stop (?gpv >>= ?f) =
+      gpv_stop ?gpv >>=
+      (%x. case x of None => Generative_Probabilistic_Value.Done None
+           | Some x' => gpv_stop (?f x'))",
+     template_equation
+      (template_app
+        (template_hole 6,
+         template_app
+          (template_app (template_hole 5, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 4, template_app (template_hole 3, template_var 1)),
+         t_empty))),
+    ("GPV_Bisim.run_gpv_oracle_bisim",
+     "[| ?X ?s1.0 ?s2.0;
+         !!s1 s2 x.
+            ?X s1 s2 ==>
+            rel_spmf (%(a, s1') (b, s2'). a = b & ?X s1' s2')
+             (?oracle1.0 s1 x) (?oracle2.0 s2 x) |]
+      ==> run_gpv ?oracle1.0 ?gpv ?s1.0 = run_gpv ?oracle2.0 ?gpv ?s2.0",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_var 5, template_var 4), template_var 3)
+            ),
+        template_predicate (template_app (template_hole 17, t_empty))],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 7,
+             template_app (template_hole 6, template_hole 5)),
+           template_app
+            (template_app
+              (template_app (template_hole 4, template_var 2),
+               template_var 0),
+             template_var 4)),
+         template_app
+          (template_app
+            (template_hole 3,
+             template_app (template_hole 2, template_hole 1)),
+           template_app
+            (template_app
+              (template_app (template_hole 0, template_var 1),
+               template_var 0),
+             template_var 3))))),
+    ("GPV_Bisim.exec_gpv_oracle_bisim'",
+     "[| ?X ?s1.0 ?s2.0;
+         !!s1 s2 x.
+            ?X s1 s2 ==>
+            rel_spmf (%(a, s1') (b, s2'). a = b & ?X s1' s2')
+             (?oracle1.0 s1 x) (?oracle2.0 s2 x) |]
+      ==> rel_spmf (%(a, s1') (b, s2'). a = b & ?X s1' s2')
+           (exec_gpv ?oracle1.0 ?gpv ?s1.0)
+           (exec_gpv ?oracle2.0 ?gpv ?s2.0)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_var 5, template_var 4), template_var 3)
+            ),
+        template_predicate (template_app (template_hole 15, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_hole 6,
+                 template_app
+                  (template_hole 5,
+                   template_app (template_hole 4, t_empty))),
+               template_app
+                (template_app
+                  (template_app (template_hole 1, template_var 2),
+                   template_var 0),
+                 template_var 4)),
+             template_app
+              (template_app
+                (template_app (template_hole 0, template_var 1),
+                 template_var 0),
+               template_var 3))
+           ))),
+    ("GPV_Bisim.identical_until_bad",
+     "[| map_spmf ?bad ?p = map_spmf ?bad ?q;
+         Sigma_Algebra.measure
+          (measure_spmf (map_spmf (%x. (?f x, ?bad x)) ?p))
+          (?A \<times> {False}) =
+         Sigma_Algebra.measure
+          (measure_spmf (map_spmf (%x. (?f x, ?bad x)) ?q))
+          (?A \<times> {False}) |]
+      ==> \<bar>Sigma_Algebra.measure (measure_spmf (map_spmf ?f ?p)) ?A -
+                Sigma_Algebra.measure (measure_spmf (map_spmf ?f ?q))
+                 ?A\<bar>
+          <= spmf (map_spmf ?bad ?p) True",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app
+             (template_hole 21,
+              template_app (template_hole 20, template_var 4)),
+            template_var 3),
+          template_app
+           (template_app
+             (template_hole 21,
+              template_app (template_hole 20, template_var 4)),
+            template_var 2)),
+        template_equation
+         (template_app
+           (template_app
+             (template_hole 18,
+              template_app
+               (template_hole 17,
+                template_app
+                 (template_app
+                   (template_hole 16,
+                    template_app (template_hole 15, t_empty)),
+                  template_var 3))),
+            template_app
+             (template_app (template_hole 13, template_var 0), t_empty)),
+          template_app
+           (template_app
+             (template_hole 18,
+              template_app
+               (template_hole 17,
+                template_app
+                 (template_app
+                   (template_hole 16,
+                    template_app (template_hole 15, t_empty)),
+                  template_var 2))),
+            template_app
+             (template_app (template_hole 13, template_var 0), t_empty)))],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_hole 8,
+           template_app
+            (template_app
+              (template_hole 7,
+               template_app
+                (template_app
+                  (template_hole 6,
+                   template_app
+                    (template_hole 5,
+                     template_app
+                      (template_app
+                        (template_hole 4,
+                         template_app (template_hole 3, template_var 1)),
+                       template_var 3))),
+                 template_var 0)),
+             template_app
+              (template_app
+                (template_hole 6,
+                 template_app
+                  (template_hole 5,
+                   template_app
+                    (template_app
+                      (template_hole 4,
+                       template_app (template_hole 3, template_var 1)),
+                     template_var 2))),
+               template_var 0))),
+         template_app
+          (template_app
+            (template_hole 2,
+             template_app
+              (template_app
+                (template_hole 21,
+                 template_app (template_hole 20, template_var 4)),
+               template_var 3)),
+           template_app (template_hole 1, template_hole 0))))),
+    ("GPV_Bisim.exec_gpv_oracle_bisim",
+     "[| ?X ?s1.0 ?s2.0;
+         !!s1 s2 x.
+            ?X s1 s2 ==>
+            rel_spmf (%(a, s1') (b, s2'). a = b & ?X s1' s2')
+             (?oracle1.0 s1 x) (?oracle2.0 s2 x);
+         !!x s1' s2'.
+            [| ?X s1' s2';
+               (x, s1') : set_spmf (exec_gpv ?oracle1.0 ?gpv ?s1.0);
+               (x, s2') : set_spmf (exec_gpv ?oracle2.0 ?gpv ?s2.0) |]
+            ==> ?R (x, s1') (x, s2') |]
+      ==> rel_spmf ?R (exec_gpv ?oracle1.0 ?gpv ?s1.0)
+           (exec_gpv ?oracle2.0 ?gpv ?s2.0)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_var 6, template_var 5), template_var 4)
+            ),
+        template_predicate (template_app (template_hole 19, t_empty)),
+        template_predicate (template_app (template_hole 10, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_hole 1,
+                 template_app (template_hole 0, template_var 0)),
+               template_app
+                (template_app
+                  (template_app (template_hole 6, template_var 3),
+                   template_var 1),
+                 template_var 5)),
+             template_app
+              (template_app
+                (template_app (template_hole 2, template_var 2),
+                 template_var 1),
+               template_var 4))
+           ))),
+    ("GPV_Bisim.ord_spmf_exec_gpv_stop",
+     "[| !!s1 s2 x.
+            [| ?S s1 s2; ~ ?stop s2 |]
+            ==> ord_spmf
+                 (%(r1, s1') (r2, s2').
+                     le_option r2 r1 &
+                     ?S s1' s2' & (r2 = None & r1 ~= None) = ?stop s2')
+                 (?callee1.0 s1 x) (?callee2.0 s2 x);
+         ?S ?s1.0 ?s2.0; ~ ?stop ?s2.0;
+         !!s1 s2 x y s1'.
+            [| (y, s1') : set_spmf (?callee1.0 s1 x); ?S s1 s2; ?stop s2 |]
+            ==> ?S s1' s2 |]
+      ==> ord_spmf (rel_prod (ord_option \<top>)^--1 ?S)
+           (exec_gpv_stop ?callee1.0 ?gpv ?s1.0)
+           (exec_gpv_stop ?callee2.0 ?gpv ?s2.0)",
+     template_implication
+      ([template_predicate (template_app (template_hole 25, t_empty)),
+        template_predicate
+         (
+            template_app
+             (template_app (template_var 6, template_var 2), template_var 1)
+            ),
+        template_negation
+         (
+            template_predicate
+             (template_app (template_var 5, template_var 1))
+            ),
+        template_predicate (template_app (template_hole 25, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_hole 7,
+                 template_app
+                  (template_hole 6,
+                   template_app
+                    (template_app
+                      (template_hole 5,
+                       template_app
+                        (template_hole 4,
+                         template_app (template_hole 3, template_hole 2))),
+                     template_var 6))),
+               template_app
+                (template_app
+                  (template_app (template_hole 1, template_var 4),
+                   template_app (template_hole 0, template_var 0)),
+                 template_var 2)),
+             template_app
+              (template_app
+                (template_app (template_hole 1, template_var 3),
+                 template_app (template_hole 0, template_var 0)),
+               template_var 1))
+           ))),
+    ("GPV_Bisim.exec_until_bad_fixp_induct",
+     "[| spmf.admissible (%f. ?P (%gpv s1 s2. f ((gpv, s1), s2)));
+         ?P (%_ _ _. return_pmf None);
+         !!exec_until_bad'.
+            ?P exec_until_bad' ==>
+            ?P (%gpv s1 s2.
+                   if ?bad1.0 s1 | ?bad2.0 s2
+                   then pair_spmf (exec_gpv ?oracle1.0 gpv s1)
+                         (exec_gpv ?oracle2.0 gpv s2)
+                   else the_gpv gpv >>=
+                        (%generat.
+                            case generat of
+                            Pure x => return_spmf ((x, s1), x, s2)
+                            | IO out f =>
+                                ?joint_oracle (s1, s2) out >>=
+                                (%((x, s1'), y, s2').
+                                    if ?bad1.0 s1' | ?bad2.0 s2'
+                                    then pair_spmf
+    (exec_gpv ?oracle1.0 (f x) s1') (exec_gpv ?oracle2.0 (f y) s2')
+                                    else exec_until_bad' (f x) s1' s2'))) |]
+      ==> ?P (exec_until_bad ?joint_oracle ?oracle1.0 ?bad1.0 ?oracle2.0
+               ?bad2.0)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_hole 29,
+                  template_app (template_hole 28, template_hole 27)),
+                template_app
+                 (template_hole 26,
+                  template_app
+                   (template_hole 25,
+                    template_app (template_hole 24, template_hole 23)))),
+              t_empty)
+            ),
+        template_predicate (template_app (template_var 5, t_empty)),
+        template_predicate (template_app (template_hole 18, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_var 5,
+             template_app
+              (template_app
+                (template_app
+                  (template_app
+                    (template_app (template_hole 0, template_var 0),
+                     template_var 2),
+                   template_var 4),
+                 template_var 1),
+               template_var 3))
+           ))),
+    ("GPV_Bisim.exec_gpv_oracle_bisim_bad_full",
+     "[| ?X ?s1.0 ?s2.0; ?bad1.0 ?s1.0 = ?bad2.0 ?s2.0;
+         !!s1 s2 x.
+            ?X s1 s2 ==>
+            rel_spmf
+             (%(a, s1') (b, s2').
+                 ?bad1.0 s1' = ?bad2.0 s2' &
+                 (~ ?bad2.0 s2' --> a = b & ?X s1' s2'))
+             (?oracle1.0 s1 x) (?oracle2.0 s2 x);
+         callee_invariant ?oracle1.0 ?bad1.0;
+         callee_invariant ?oracle2.0 ?bad2.0;
+         !!s1 x. ?bad1.0 s1 ==> lossless_spmf (?oracle1.0 s1 x);
+         !!s2 x. ?bad2.0 s2 ==> lossless_spmf (?oracle2.0 s2 x);
+         lossless_gpv \<I>_full ?gpv;
+         !!a s1 b s2.
+            [| ?bad1.0 s1 = ?bad2.0 s2; ~ ?bad2.0 s2 ==> a = b & ?X s1 s2 |]
+            ==> ?R (a, s1) (b, s2) |]
+      ==> rel_spmf ?R (exec_gpv ?oracle1.0 ?gpv ?s1.0)
+           (exec_gpv ?oracle2.0 ?gpv ?s2.0)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_var 8, template_var 7), template_var 6)
+            ),
+        template_equation
+         (template_app (template_var 5, template_var 7),
+          template_app (template_var 4, template_var 6)),
+        template_predicate (template_app (template_hole 25, t_empty)),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 14, template_var 3),
+                template_var 5),
+              template_hole 13)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 12, template_var 2),
+                template_var 4),
+              template_hole 13)
+            ),
+        template_predicate (template_app (template_hole 25, t_empty)),
+        template_predicate (template_app (template_hole 24, t_empty)),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 9, template_hole 8),
+                template_hole 13),
+              template_var 1)
+            ),
+        template_predicate (template_app (template_hole 7, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_hole 3,
+                 template_app (template_hole 2, template_var 0)),
+               template_app
+                (template_app
+                  (template_app (template_hole 1, template_var 3),
+                   template_var 1),
+                 template_var 7)),
+             template_app
+              (template_app
+                (template_app (template_hole 0, template_var 2),
+                 template_var 1),
+               template_var 6))
+           ))),
+    ("GPV_Bisim.exec_gpv_oracle_bisim_bad_plossless",
+     "[| if ?bad2.0 ?s2.0 then ?X_bad ?s1.0 ?s2.0 else ?X ?s1.0 ?s2.0;
+         ?bad1.0 ?s1.0 = ?bad2.0 ?s2.0;
+         !!s1 s2 x.
+            [| ?X s1 s2; x : outs_\<I> ?\<I> |]
+            ==> rel_spmf
+                 (%(a, s1') (b, s2').
+                     ?bad1.0 s1' = ?bad2.0 s2' &
+                     (if ?bad2.0 s2' then ?X_bad s1' s2'
+                      else a = b & ?X s1' s2'))
+                 (?oracle1.0 s1 x) (?oracle2.0 s2 x);
+         !!s2. ?bad2.0 s2 ==>
+               callee_invariant_on ?oracle1.0
+                (%s1. ?bad1.0 s1 & ?X_bad s1 s2) ?\<I>;
+         !!s1. ?bad1.0 s1 ==>
+               callee_invariant_on ?oracle2.0
+                (%s2. ?bad2.0 s2 & ?X_bad s1 s2) ?\<I>;
+         !!s1 x.
+            [| ?bad1.0 s1; x : outs_\<I> ?\<I> |]
+            ==> lossless_spmf (?oracle1.0 s1 x);
+         !!s2 x.
+            [| ?bad2.0 s2; x : outs_\<I> ?\<I> |]
+            ==> lossless_spmf (?oracle2.0 s2 x);
+         plossless_gpv ?\<I> ?gpv;
+         !!s1. ?\<I> \<turnstile>c ?oracle1.0 s1 \<surd>;
+         !!s2. ?\<I> \<turnstile>c ?oracle2.0 s2 \<surd>;
+         ?\<I> \<turnstile>g ?gpv \<surd> |]
+      ==> rel_spmf
+           (%(a, s1') (b, s2').
+               ?bad1.0 s1' = ?bad2.0 s2' &
+               (if ?bad2.0 s2' then ?X_bad s1' s2' else a = b & ?X s1' s2'))
+           (exec_gpv ?oracle1.0 ?gpv ?s1.0)
+           (exec_gpv ?oracle2.0 ?gpv ?s2.0)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_hole 28,
+                  template_app (template_var 9, template_var 8)),
+                template_app
+                 (template_app (template_var 7, template_var 6),
+                  template_var 8)),
+              template_app
+               (template_app (template_var 5, template_var 6),
+                template_var 8))
+            ),
+        template_equation
+         (template_app (template_var 4, template_var 6),
+          template_app (template_var 9, template_var 8)),
+        template_predicate (template_app (template_hole 26, t_empty)),
+        template_predicate (template_app (template_hole 25, t_empty)),
+        template_predicate (template_app (template_hole 26, t_empty)),
+        template_predicate (template_app (template_hole 26, t_empty)),
+        template_predicate (template_app (template_hole 25, t_empty)),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 11, template_hole 10),
+                template_var 3),
+              template_var 0)
+            ),
+        template_predicate (template_app (template_hole 26, t_empty)),
+        template_predicate (template_app (template_hole 25, t_empty)),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 7, template_var 3),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_hole 6,
+                 template_app
+                  (template_hole 5,
+                   template_app (template_hole 4, t_empty))),
+               template_app
+                (template_app
+                  (template_app (template_hole 1, template_var 2),
+                   template_var 0),
+                 template_var 6)),
+             template_app
+              (template_app
+                (template_app (template_hole 0, template_var 1),
+                 template_var 0),
+               template_var 8))
+           ))),
+    ("GPV_Bisim.exec_gpv_oracle_bisim_bad'",
+     "[| if ?bad2.0 ?s2.0 then ?X_bad ?s1.0 ?s2.0 else ?X ?s1.0 ?s2.0;
+         ?bad1.0 ?s1.0 = ?bad2.0 ?s2.0;
+         !!s1 s2 x.
+            [| ?X s1 s2; x : outs_\<I> ?\<I> |]
+            ==> rel_spmf
+                 (%(a, s1') (b, s2').
+                     ?bad1.0 s1' = ?bad2.0 s2' &
+                     (if ?bad2.0 s2' then ?X_bad s1' s2'
+                      else a = b & ?X s1' s2'))
+                 (?oracle1.0 s1 x) (?oracle2.0 s2 x);
+         !!s2. ?bad2.0 s2 ==>
+               callee_invariant_on ?oracle1.0
+                (%s1. ?bad1.0 s1 & ?X_bad s1 s2) ?\<I>;
+         !!s1. ?bad1.0 s1 ==>
+               callee_invariant_on ?oracle2.0
+                (%s2. ?bad2.0 s2 & ?X_bad s1 s2) ?\<I>;
+         !!s1 x.
+            [| ?bad1.0 s1; x : outs_\<I> ?\<I> |]
+            ==> lossless_spmf (?oracle1.0 s1 x);
+         !!s2 x.
+            [| ?bad2.0 s2; x : outs_\<I> ?\<I> |]
+            ==> lossless_spmf (?oracle2.0 s2 x);
+         lossless_gpv ?\<I> ?gpv;
+         !!s1. ?\<I> \<turnstile>c ?oracle1.0 s1 \<surd>;
+         !!s2. ?\<I> \<turnstile>c ?oracle2.0 s2 \<surd>;
+         ?\<I> \<turnstile>g ?gpv \<surd> |]
+      ==> rel_spmf
+           (%(a, s1') (b, s2').
+               ?bad1.0 s1' = ?bad2.0 s2' &
+               (if ?bad2.0 s2' then ?X_bad s1' s2' else a = b & ?X s1' s2'))
+           (exec_gpv ?oracle1.0 ?gpv ?s1.0)
+           (exec_gpv ?oracle2.0 ?gpv ?s2.0)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_hole 28,
+                  template_app (template_var 9, template_var 8)),
+                template_app
+                 (template_app (template_var 7, template_var 6),
+                  template_var 8)),
+              template_app
+               (template_app (template_var 5, template_var 6),
+                template_var 8))
+            ),
+        template_equation
+         (template_app (template_var 4, template_var 6),
+          template_app (template_var 9, template_var 8)),
+        template_predicate (template_app (template_hole 26, t_empty)),
+        template_predicate (template_app (template_hole 25, t_empty)),
+        template_predicate (template_app (template_hole 26, t_empty)),
+        template_predicate (template_app (template_hole 26, t_empty)),
+        template_predicate (template_app (template_hole 25, t_empty)),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 11, template_hole 10),
+                template_var 3),
+              template_var 0)
+            ),
+        template_predicate (template_app (template_hole 26, t_empty)),
+        template_predicate (template_app (template_hole 25, t_empty)),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 7, template_var 3),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_hole 6,
+                 template_app
+                  (template_hole 5,
+                   template_app (template_hole 4, t_empty))),
+               template_app
+                (template_app
+                  (template_app (template_hole 1, template_var 2),
+                   template_var 0),
+                 template_var 6)),
+             template_app
+              (template_app
+                (template_app (template_hole 0, template_var 1),
+                 template_var 0),
+               template_var 8))
+           ))),
+    ("GPV_Bisim.exec_gpv_oracle_bisim_bad",
+     "[| if ?bad2.0 ?s2.0 then ?X_bad ?s1.0 ?s2.0 else ?X ?s1.0 ?s2.0;
+         ?bad1.0 ?s1.0 = ?bad2.0 ?s2.0;
+         !!s1 s2 x.
+            ?X s1 s2 ==>
+            rel_spmf
+             (%(a, s1') (b, s2').
+                 ?bad1.0 s1' = ?bad2.0 s2' &
+                 (if ?bad2.0 s2' then ?X_bad s1' s2'
+                  else a = b & ?X s1' s2'))
+             (?oracle1.0 s1 x) (?oracle2.0 s2 x);
+         !!s2. ?bad2.0 s2 ==>
+               callee_invariant_on ?oracle1.0
+                (%s1. ?bad1.0 s1 & ?X_bad s1 s2) ?\<I>;
+         !!s1. ?bad1.0 s1 ==>
+               callee_invariant_on ?oracle2.0
+                (%s2. ?bad2.0 s2 & ?X_bad s1 s2) ?\<I>;
+         !!s1 x. ?bad1.0 s1 ==> lossless_spmf (?oracle1.0 s1 x);
+         !!s2 x. ?bad2.0 s2 ==> lossless_spmf (?oracle2.0 s2 x);
+         lossless_gpv ?\<I> ?gpv;
+         !!s1. ?\<I> \<turnstile>c ?oracle1.0 s1 \<surd>;
+         !!s2. ?\<I> \<turnstile>c ?oracle2.0 s2 \<surd>;
+         ?\<I> \<turnstile>g ?gpv \<surd>;
+         !!a s1 b s2.
+            [| ?bad1.0 s1 = ?bad2.0 s2; ~ ?bad2.0 s2 ==> a = b & ?X s1 s2;
+               ?bad2.0 s2 ==> ?X_bad s1 s2 |]
+            ==> ?R (a, s1) (b, s2) |]
+      ==> rel_spmf ?R (exec_gpv ?oracle1.0 ?gpv ?s1.0)
+           (exec_gpv ?oracle2.0 ?gpv ?s2.0)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_hole 28,
+                  template_app (template_var 10, template_var 9)),
+                template_app
+                 (template_app (template_var 8, template_var 7),
+                  template_var 9)),
+              template_app
+               (template_app (template_var 6, template_var 7),
+                template_var 9))
+            ),
+        template_equation
+         (template_app (template_var 5, template_var 7),
+          template_app (template_var 10, template_var 9)),
+        template_predicate (template_app (template_hole 26, t_empty)),
+        template_predicate (template_app (template_hole 25, t_empty)),
+        template_predicate (template_app (template_hole 26, t_empty)),
+        template_predicate (template_app (template_hole 26, t_empty)),
+        template_predicate (template_app (template_hole 25, t_empty)),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 13, template_hole 12),
+                template_var 2),
+              template_var 1)
+            ),
+        template_predicate (template_app (template_hole 26, t_empty)),
+        template_predicate (template_app (template_hole 25, t_empty)),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 9, template_var 2),
+              template_var 1)
+            ),
+        template_predicate (template_app (template_hole 8, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_hole 3,
+                 template_app (template_hole 2, template_var 0)),
+               template_app
+                (template_app
+                  (template_app (template_hole 1, template_var 4),
+                   template_var 1),
+                 template_var 7)),
+             template_app
+              (template_app
+                (template_app (template_hole 0, template_var 3),
+                 template_var 1),
+               template_var 9))
+           ))),
+    ("GPV_Bisim.exec_gpv_oracle_bisim_bad_invariant",
+     "[| if ?bad2.0 ?s2.0 then ?X_bad ?s1.0 ?s2.0 else ?X ?s1.0 ?s2.0;
+         ?bad1.0 ?s1.0 = ?bad2.0 ?s2.0;
+         !!s1 s2 x.
+            [| ?X s1 s2; x : outs_\<I> ?\<I>; ?I1.0 s1; ?I2.0 s2 |]
+            ==> rel_spmf
+                 (%(a, s1') (b, s2').
+                     ?bad1.0 s1' = ?bad2.0 s2' &
+                     (if ?bad2.0 s2' then ?X_bad s1' s2'
+                      else a = b & ?X s1' s2'))
+                 (?oracle1.0 s1 x) (?oracle2.0 s2 x);
+         !!s2. [| ?bad2.0 s2; ?I2.0 s2 |]
+               ==> callee_invariant_on ?oracle1.0
+                    (%s1. ?bad1.0 s1 & ?X_bad s1 s2) ?\<I>;
+         !!s1. [| ?bad1.0 s1; ?I1.0 s1 |]
+               ==> callee_invariant_on ?oracle2.0
+                    (%s2. ?bad2.0 s2 & ?X_bad s1 s2) ?\<I>;
+         !!s1 x.
+            [| ?bad1.0 s1; ?I1.0 s1; x : outs_\<I> ?\<I> |]
+            ==> lossless_spmf (?oracle1.0 s1 x);
+         !!s2 x.
+            [| ?bad2.0 s2; ?I2.0 s2; x : outs_\<I> ?\<I> |]
+            ==> lossless_spmf (?oracle2.0 s2 x);
+         lossless_gpv ?\<I> ?gpv; ?\<I> \<turnstile>g ?gpv \<surd>;
+         callee_invariant_on ?oracle1.0 ?I1.0 ?\<I>;
+         callee_invariant_on ?oracle2.0 ?I2.0 ?\<I>; ?I1.0 ?s1.0;
+         ?I2.0 ?s2.0 |]
+      ==> rel_spmf
+           (%(a, s1') (b, s2').
+               ?bad1.0 s1' = ?bad2.0 s2' &
+               (if ?bad2.0 s2' then ?X_bad s1' s2' else a = b & ?X s1' s2'))
+           (exec_gpv ?oracle1.0 ?gpv ?s1.0)
+           (exec_gpv ?oracle2.0 ?gpv ?s2.0)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_hole 26,
+                  template_app (template_var 11, template_var 10)),
+                template_app
+                 (template_app (template_var 9, template_var 8),
+                  template_var 10)),
+              template_app
+               (template_app (template_var 7, template_var 8),
+                template_var 10))
+            ),
+        template_equation
+         (template_app (template_var 6, template_var 8),
+          template_app (template_var 11, template_var 10)),
+        template_predicate (template_app (template_hole 24, t_empty)),
+        template_predicate (template_app (template_hole 23, t_empty)),
+        template_predicate (template_app (template_hole 24, t_empty)),
+        template_predicate (template_app (template_hole 24, t_empty)),
+        template_predicate (template_app (template_hole 23, t_empty)),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 9, template_hole 8),
+                template_var 5),
+              template_var 0)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 7, template_var 5),
+              template_var 0)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 13, template_var 2),
+                template_var 4),
+              template_var 5)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 12, template_var 1),
+                template_var 3),
+              template_var 5)
+            ),
+        template_predicate (template_app (template_var 4, template_var 8)),
+        template_predicate
+         (template_app (template_var 3, template_var 10))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_hole 6,
+                 template_app
+                  (template_hole 5,
+                   template_app (template_hole 4, t_empty))),
+               template_app
+                (template_app
+                  (template_app (template_hole 1, template_var 2),
+                   template_var 0),
+                 template_var 8)),
+             template_app
+              (template_app
+                (template_app (template_hole 0, template_var 1),
+                 template_var 0),
+               template_var 10))
+           )))]:
+   (string * thm * template) list
+### theory "Draft.GPV_BisimTemplates"
+### 1.789s elapsed time, 2.292s cpu time, 0.389s GC time
+val it = (): unit

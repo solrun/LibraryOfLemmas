@@ -1,0 +1,797 @@
+Loading theory "Draft.Show" (required by "Draft.ShowTemplates")
+Loading theory "Draft.Templates" (required by "Draft.ShowTemplates" via "Draft.ExtrEqs")
+datatype template_term
+=
+     t_empty
+   | template_app of template_term * template_term
+   | template_hole of int
+   | template_var of int
+datatype sign
+= equals | greater_equals | greater_than | less_equals | less_than
+datatype template
+=
+     template_bimplication of template * template
+   | template_dunno
+   | template_equation of template_term * template_term
+   | template_implication of template list * template
+   | template_inequation of sign * template_term * template_term
+   | template_negation of template
+   | template_predicate of template_term
+constructor t_empty: template_term
+constructor template_app: template_term * template_term -> template_term
+constructor template_hole: int -> template_term
+constructor template_var: int -> template_term
+constructor equals: sign
+constructor greater_equals: sign
+constructor greater_than: sign
+constructor less_equals: sign
+constructor less_than: sign
+constructor template_bimplication: template * template -> template
+constructor template_dunno: template
+constructor template_equation: template_term * template_term -> template
+constructor template_implication: template list * template -> template
+constructor template_inequation:
+   sign * template_term * template_term -> template
+constructor template_negation: template -> template
+constructor template_predicate: template_term -> template
+val vfs = fn: term -> (indexname * typ) list * (string * typ) list
+val indexOf = fn: ''a list -> ''a -> int -> int
+val has_eq = fn: term -> bool
+val term2template = fn:
+   (indexname * typ) list -> (string * typ) list -> term -> template_term
+val lemma2predicate = fn: term -> term -> template
+val makeTemplatewithContext = fn: term -> term -> template
+val lemma2template = fn: term -> template
+val thm2template = fn: thm -> template
+val tterm2string = fn: template_term -> string
+val template2string = fn: template -> string
+val t = "height ?t <= size ?t": thm
+val th =
+   Const ("HOL.Trueprop", "bool => prop") $
+     (Const ("Orderings.ord_class.less_eq", "nat => nat => bool") $
+       (Const ("Tree.height_class.height", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree")) $
+       (Const ("Nat.size_class.size", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree"))):
+   term
+### theory "Draft.Templates"
+### 0.062s elapsed time, 0.151s cpu time, 0.000s GC time
+Loading theory "Draft.ExtrEqs" (required by "Draft.ShowTemplates")
+class show = type +
+  fixes shows_prec :: "nat => 'a => char list => char list"
+    and shows_list :: "'a list => char list => char list"
+  assumes
+    "shows_prec_append":
+      "!!p x r s. shows_prec p x (r @ s) = shows_prec p x r @ s"
+    and
+    "shows_list_append":
+      "!!xs r s. shows_list xs (r @ s) = shows_list xs r @ s"
+Found termination order: "(%p. length (snd (snd p))) <*mlex*> {}"
+instantiation
+  char :: show
+  shows_prec_char == shows_prec :: nat => char => char list => char list
+  shows_list_char == shows_list :: char list => char list => char list
+signature SHOW_GENERATOR =
+  sig
+    val generate_showsp: string -> local_theory -> local_theory
+    val register_foreign_partial_and_full_showsp:
+       string ->
+         int ->
+           term ->
+             term ->
+               thm option ->
+                 term ->
+                   thm option ->
+                     bool list -> thm -> local_theory -> local_theory
+    val register_foreign_showsp:
+       typ -> term -> thm -> local_theory -> local_theory
+    val show_instance: string -> theory -> theory
+  end
+structure Show_Generator: SHOW_GENERATOR
+val eqpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Var (("_dummy_", 2), "?'a"))
+       ):
+   term Find_Theorems.criterion
+val badeqpattern = Pattern (Const ("Pure.eq", "?'a => ?'a => prop")):
+   term Find_Theorems.criterion
+val undefpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Const ("HOL.undefined", "?'a"))
+       ):
+   term Find_Theorems.criterion
+val thmpattern =
+   Pattern
+    (Const ("HOL.Trueprop", "bool => prop") $ Var (("_dummy_", 1), "bool")):
+   term Find_Theorems.criterion
+val badnames =
+   ["*nitpick*", "*Nitpick*", "*full_exhaustive*", "*_def*", "Enum.finite*",
+    "*Quickcheck*", "ATP*", "*Nunchaku*", "*Code*", "*BNF*", "*SMT*",
+    "*.*.*"]:
+   string list
+val unwanted_names =
+   [(false, Name "*nitpick*"), (false, Name "*Nitpick*"),
+    (false, Name "*full_exhaustive*"), (false, Name "*_def*"),
+    (false, Name "Enum.finite*"), (false, Name "*Quickcheck*"),
+    (false, Name "ATP*"), (false, Name "*Nunchaku*"),
+    (false, Name "*Code*"), (false, Name "*BNF*"), (false, Name "*SMT*"),
+    (false, Name "*.*.*")]:
+   (bool * term Find_Theorems.criterion) list
+val has_vars = fn: term -> bool
+val get_all_eqs = fn: string -> Proof.context -> (string * thm) list
+val get_all_thms = fn: string -> Proof.context -> (string * thm) list
+val get_noneq_thms = fn: string -> Proof.context -> (string * thm) list
+val template_eqs = fn:
+   string -> Proof.context -> (string * thm * template) list
+val template_thms = fn:
+   string -> Proof.context -> (string * thm * template) list
+### theory "Draft.ExtrEqs"
+### 0.533s elapsed time, 1.091s cpu time, 0.084s GC time
+instantiation
+  list :: (show) show
+  shows_prec_list == shows_prec :: nat => 'a list => char list => char list
+  shows_list_list == shows_list :: 'a list list => char list => char list
+instantiation
+  String.literal :: show
+  shows_prec_literal == shows_prec ::
+    nat => String.literal => char list => char list
+  shows_list_literal == shows_list ::
+    String.literal list => char list => char list
+### theory "Draft.Show"
+### 0.651s elapsed time, 1.300s cpu time, 0.084s GC time
+Loading theory "Draft.ShowTemplates"
+val templateLemmas =
+   [("Show.shows_nl_append", "shows_nl (?x @ ?y) = shows_nl ?x @ ?y",
+     template_equation
+      (template_app
+        (template_hole 1,
+         template_app
+          (template_app (template_hole 0, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 0, template_app (template_hole 1, template_var 1)),
+         template_var 0))),
+    ("Show.shows_space_append",
+     "shows_space (?x @ ?y) = shows_space ?x @ ?y",
+     template_equation
+      (template_app
+        (template_hole 1,
+         template_app
+          (template_app (template_hole 0, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 0, template_app (template_hole 1, template_var 1)),
+         template_var 0))),
+    ("Show.show_law_simps",
+     "shows_list ?xs (?r @ ?s) = shows_list ?xs ?r @ ?s",
+     template_equation
+      (template_app
+        (template_app (template_hole 1, template_var 2),
+         template_app
+          (template_app (template_hole 0, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 0,
+           template_app
+            (template_app (template_hole 1, template_var 2),
+             template_var 1)),
+         template_var 0))),
+    ("Show.shows_lines_append",
+     "shows_lines ?xs (?r @ ?s) = shows_lines ?xs ?r @ ?s",
+     template_equation
+      (template_app
+        (template_app (template_hole 1, template_var 2),
+         template_app
+          (template_app (template_hole 0, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 0,
+           template_app
+            (template_app (template_hole 1, template_var 2),
+             template_var 1)),
+         template_var 0))),
+    ("Show.shows_many_append",
+     "shows_many ?xs (?r @ ?s) = shows_many ?xs ?r @ ?s",
+     template_equation
+      (template_app
+        (template_app (template_hole 1, template_var 2),
+         template_app
+          (template_app (template_hole 0, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 0,
+           template_app
+            (template_app (template_hole 1, template_var 2),
+             template_var 1)),
+         template_var 0))),
+    ("Show.shows_pl_append", "shows_pl ?p (?x @ ?y) = shows_pl ?p ?x @ ?y",
+     template_equation
+      (template_app
+        (template_app (template_hole 1, template_var 2),
+         template_app
+          (template_app (template_hole 0, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 0,
+           template_app
+            (template_app (template_hole 1, template_var 2),
+             template_var 1)),
+         template_var 0))),
+    ("Show.shows_pr_append", "shows_pr ?p (?x @ ?y) = shows_pr ?p ?x @ ?y",
+     template_equation
+      (template_app
+        (template_app (template_hole 1, template_var 2),
+         template_app
+          (template_app (template_hole 0, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 0,
+           template_app
+            (template_app (template_hole 1, template_var 2),
+             template_var 1)),
+         template_var 0))),
+    ("Show.shows_string_append",
+     "shows_string ?x (?r @ ?s) = shows_string ?x ?r @ ?s",
+     template_equation
+      (template_app
+        (template_app (template_hole 1, template_var 2),
+         template_app
+          (template_app (template_hole 0, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 0,
+           template_app
+            (template_app (template_hole 1, template_var 2),
+             template_var 1)),
+         template_var 0))),
+    ("Show.shows_words_append",
+     "shows_words ?xs (?r @ ?s) = shows_words ?xs ?r @ ?s",
+     template_equation
+      (template_app
+        (template_app (template_hole 1, template_var 2),
+         template_app
+          (template_app (template_hole 0, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 0,
+           template_app
+            (template_app (template_hole 1, template_var 2),
+             template_var 1)),
+         template_var 0))),
+    ("Show.shows_sep_map",
+     "shows_sep ?f ?sep (map ?g ?xs) = shows_sep (?f o ?g) ?sep ?xs",
+     template_equation
+      (template_app
+        (template_app
+          (template_app (template_hole 3, template_var 3), template_var 2),
+         template_app
+          (template_app (template_hole 2, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_app
+            (template_hole 1,
+             template_app
+              (template_app (template_hole 0, template_var 3),
+               template_var 1)),
+           template_var 2),
+         template_var 0))),
+    ("Show.show_law_simps",
+     "shows_prec ?p ?x (?r @ ?s) = shows_prec ?p ?x ?r @ ?s",
+     template_equation
+      (template_app
+        (template_app
+          (template_app (template_hole 1, template_var 3), template_var 2),
+         template_app
+          (template_app (template_hole 0, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 0,
+           template_app
+            (template_app
+              (template_app (template_hole 1, template_var 3),
+               template_var 2),
+             template_var 1)),
+         template_var 0))),
+    ("Show.show_law_list",
+     "(!!x. x : set ?xs ==> show_law ?s x) ==>
+      show_law (showsp_list ?s) ?xs",
+     template_implication
+      ([template_predicate (template_app (template_hole 6, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 1,
+               template_app (template_hole 0, template_var 0)),
+             template_var 1)
+           ))),
+    ("Show.show_lawD",
+     "show_law ?s ?x ==> ?s ?p ?x (?y @ ?z) = ?s ?p ?x ?y @ ?z",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 2, template_var 4),
+              template_var 3)
+            )],
+       template_equation
+        (template_app
+          (template_app
+            (template_app (template_var 4, template_var 2), template_var 3),
+           template_app
+            (template_app (template_hole 0, template_var 1),
+             template_var 0)),
+         template_app
+          (template_app
+            (template_hole 0,
+             template_app
+              (template_app
+                (template_app (template_var 4, template_var 2),
+                 template_var 3),
+               template_var 1)),
+           template_var 0)))),
+    ("Show.shows_list_gen_map",
+     "shows_list_gen ?f ?e ?l ?sep ?r (map ?g ?xs) =
+      shows_list_gen (?f o ?g) ?e ?l ?sep ?r ?xs",
+     template_equation
+      (template_app
+        (template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 3, template_var 6),
+                 template_var 5),
+               template_var 4),
+             template_var 3),
+           template_var 2),
+         template_app
+          (template_app (template_hole 2, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_hole 1,
+                   template_app
+                    (template_app (template_hole 0, template_var 6),
+                     template_var 1)),
+                 template_var 5),
+               template_var 4),
+             template_var 3),
+           template_var 2),
+         template_var 0))),
+    ("Show.show_lawI",
+     "(!!p y z. ?s p ?x (y @ z) = ?s p ?x y @ z) ==> show_law ?s ?x",
+     template_implication
+      ([template_predicate (template_app (template_hole 5, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 0, template_var 1), template_var 0)
+           ))),
+    ("Show.show_lawE",
+     "[| show_law ?s ?x; ?s ?p ?x (?y @ ?z) = ?s ?p ?x ?y @ ?z ==> ?P |]
+      ==> ?P",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 2, template_var 5),
+              template_var 4)
+            ),
+        template_implication
+         ([template_equation
+            (template_app
+              (template_app
+                (template_app (template_var 5, template_var 3),
+                 template_var 4),
+               template_app
+                (template_app (template_hole 0, template_var 2),
+                 template_var 1)),
+             template_app
+              (template_app
+                (template_hole 0,
+                 template_app
+                  (template_app
+                    (template_app (template_var 5, template_var 3),
+                     template_var 4),
+                   template_var 2)),
+               template_var 1))],
+          template_predicate (template_var 0))],
+       template_predicate (template_var 0))),
+    ("Show.shows_paren_append",
+     "(!!x y. ?s (x @ y) = ?s x @ y) ==>
+      shows_paren ?s (?x @ ?y) = shows_paren ?s ?x @ ?y",
+     template_implication
+      ([template_predicate (template_app (template_hole 4, t_empty))],
+       template_equation
+        (template_app
+          (template_app (template_hole 0, template_var 2),
+           template_app
+            (template_app (template_hole 1, template_var 1),
+             template_var 0)),
+         template_app
+          (template_app
+            (template_hole 1,
+             template_app
+              (template_app (template_hole 0, template_var 2),
+               template_var 1)),
+           template_var 0)))),
+    ("Show.shows_quote_append",
+     "(!!x y. ?s (x @ y) = ?s x @ y) ==>
+      shows_quote ?s (?x @ ?y) = shows_quote ?s ?x @ ?y",
+     template_implication
+      ([template_predicate (template_app (template_hole 4, t_empty))],
+       template_equation
+        (template_app
+          (template_app (template_hole 0, template_var 2),
+           template_app
+            (template_app (template_hole 1, template_var 1),
+             template_var 0)),
+         template_app
+          (template_app
+            (template_hole 1,
+             template_app
+              (template_app (template_hole 0, template_var 2),
+               template_var 1)),
+           template_var 0)))),
+    ("Show.shows_sep_cong",
+     "[| ?xs = ?ys; !!x. x : set ?ys ==> ?f x = ?g x |]
+      ==> shows_sep ?f ?sep ?xs = shows_sep ?g ?sep ?ys",
+     template_implication
+      ([template_equation (template_var 4, template_var 3),
+        template_predicate (template_app (template_hole 4, t_empty))],
+       template_equation
+        (template_app
+          (template_app
+            (template_app (template_hole 0, template_var 2),
+             template_var 0),
+           template_var 4),
+         template_app
+          (template_app
+            (template_app (template_hole 0, template_var 1),
+             template_var 0),
+           template_var 3)))),
+    ("Show.shows_foldr_append",
+     "(!!r s. ALL x:set ?xs. ?showx x (r @ s) = ?showx x r @ s) ==>
+      foldr ?showx ?xs (?r @ ?s) = foldr ?showx ?xs ?r @ ?s",
+     template_implication
+      ([template_predicate (template_app (template_hole 6, t_empty))],
+       template_equation
+        (template_app
+          (template_app
+            (template_app (template_hole 0, template_var 2),
+             template_var 3),
+           template_app
+            (template_app (template_hole 1, template_var 1),
+             template_var 0)),
+         template_app
+          (template_app
+            (template_hole 1,
+             template_app
+              (template_app
+                (template_app (template_hole 0, template_var 2),
+                 template_var 3),
+               template_var 1)),
+           template_var 0)))),
+    ("Show.shows_list_gen_cong",
+     "[| ?xs = ?ys; !!x. x : set ?ys ==> ?f x = ?g x |]
+      ==> shows_list_gen ?f ?e ?l ?sep ?r ?xs =
+          shows_list_gen ?g ?e ?l ?sep ?r ?ys",
+     template_implication
+      ([template_equation (template_var 7, template_var 6),
+        template_predicate (template_app (template_hole 4, t_empty))],
+       template_equation
+        (template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_app (template_hole 0, template_var 5),
+                   template_var 3),
+                 template_var 2),
+               template_var 1),
+             template_var 0),
+           template_var 7),
+         template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_app (template_hole 0, template_var 4),
+                   template_var 3),
+                 template_var 2),
+               template_var 1),
+             template_var 0),
+           template_var 6)))),
+    ("Show.showsp_list_cong",
+     "[| ?xs = ?ys; ?p = ?q; !!p x. x : set ?ys ==> ?f p x = ?g p x |]
+      ==> showsp_list ?f ?p ?xs = showsp_list ?g ?q ?ys",
+     template_implication
+      ([template_equation (template_var 5, template_var 4),
+        template_equation (template_var 3, template_var 2),
+        template_predicate (template_app (template_hole 5, t_empty))],
+       template_equation
+        (template_app
+          (template_app
+            (template_app (template_hole 0, template_var 1),
+             template_var 3),
+           template_var 5),
+         template_app
+          (template_app
+            (template_app (template_hole 0, template_var 0),
+             template_var 2),
+           template_var 4)))),
+    ("Show.o_append",
+     "[| !!x y. ?f (x @ y) = ?f x @ y; ?g (?x @ ?y) = ?g ?x @ ?y |]
+      ==> (?f o ?g) (?x @ ?y) = (?f o ?g) ?x @ ?y",
+     template_implication
+      ([template_predicate (template_app (template_hole 4, t_empty)),
+        template_equation
+         (template_app
+           (template_var 2,
+            template_app
+             (template_app (template_hole 1, template_var 1),
+              template_var 0)),
+          template_app
+           (template_app
+             (template_hole 1,
+              template_app (template_var 2, template_var 1)),
+            template_var 0))],
+       template_equation
+        (template_app
+          (template_app
+            (template_app (template_hole 0, template_var 3),
+             template_var 2),
+           template_app
+            (template_app (template_hole 1, template_var 1),
+             template_var 0)),
+         template_app
+          (template_app
+            (template_hole 1,
+             template_app
+              (template_app
+                (template_app (template_hole 0, template_var 3),
+                 template_var 2),
+               template_var 1)),
+           template_var 0)))),
+    ("Show.showsp_list_append",
+     "(!!p y z. ALL x:set ?xs. ?s p x (y @ z) = ?s p x y @ z) ==>
+      showsp_list ?s ?p ?xs (?y @ ?z) = showsp_list ?s ?p ?xs ?y @ ?z",
+     template_implication
+      ([template_predicate (template_app (template_hole 7, t_empty))],
+       template_equation
+        (template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 0, template_var 3),
+               template_var 2),
+             template_var 4),
+           template_app
+            (template_app (template_hole 1, template_var 1),
+             template_var 0)),
+         template_app
+          (template_app
+            (template_hole 1,
+             template_app
+              (template_app
+                (template_app
+                  (template_app (template_hole 0, template_var 3),
+                   template_var 2),
+                 template_var 4),
+               template_var 1)),
+           template_var 0)))),
+    ("Show.shows_list_gen_append",
+     "(!!r s. ALL x:set ?xs. ?showsx x (r @ s) = ?showsx x r @ s) ==>
+      shows_list_gen ?showsx ?e ?l ?sep ?r ?xs (?s @ ?t) =
+      shows_list_gen ?showsx ?e ?l ?sep ?r ?xs ?s @ ?t",
+     template_implication
+      ([template_predicate (template_app (template_hole 6, t_empty))],
+       template_equation
+        (template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_app
+                    (template_app (template_hole 0, template_var 6),
+                     template_var 5),
+                   template_var 4),
+                 template_var 3),
+               template_var 2),
+             template_var 7),
+           template_app
+            (template_app (template_hole 1, template_var 1),
+             template_var 0)),
+         template_app
+          (template_app
+            (template_hole 1,
+             template_app
+              (template_app
+                (template_app
+                  (template_app
+                    (template_app
+                      (template_app
+                        (template_app (template_hole 0, template_var 6),
+                         template_var 5),
+                       template_var 4),
+                     template_var 3),
+                   template_var 2),
+                 template_var 7),
+               template_var 1)),
+           template_var 0)))),
+    ("Show.shows_sep_append",
+     "[| !!r s. ALL x:set ?xs. ?showsx x (r @ s) = ?showsx x r @ s;
+         !!r s. ?sep (r @ s) = ?sep r @ s |]
+      ==> shows_sep ?showsx ?sep ?xs (?r @ ?s) =
+          shows_sep ?showsx ?sep ?xs ?r @ ?s",
+     template_implication
+      ([template_predicate (template_app (template_hole 6, t_empty)),
+        template_predicate (template_app (template_hole 6, t_empty))],
+       template_equation
+        (template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 0, template_var 3),
+               template_var 2),
+             template_var 4),
+           template_app
+            (template_app (template_hole 1, template_var 1),
+             template_var 0)),
+         template_app
+          (template_app
+            (template_hole 1,
+             template_app
+              (template_app
+                (template_app
+                  (template_app (template_hole 0, template_var 3),
+                   template_var 2),
+                 template_var 4),
+               template_var 1)),
+           template_var 0)))),
+    ("Show.showsp_list_code",
+     "showsp_list ?s ?p ?xs =
+      shows_list_gen (?s 0) ''[]'' ''['' '', '' '']'' ?xs",
+     template_equation
+      (template_app
+        (template_app
+          (template_app (template_hole 7, template_var 2), template_var 1),
+         template_var 0),
+       template_app
+        (template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_hole 6,
+                   template_app (template_var 2, template_hole 5)),
+                 template_app
+                  (template_app
+                    (template_hole 4,
+                     template_app
+                      (template_app
+                        (template_app
+                          (template_app
+                            (template_app
+                              (template_app
+                                (template_app
+                                  (template_app
+                                    (template_hole 3, template_hole 2),
+                                   template_hole 2),
+                                 template_hole 1),
+                               template_hole 2),
+                             template_hole 2),
+                           template_hole 1),
+                         template_hole 2),
+                       template_hole 1)),
+                   template_app
+                    (template_app
+                      (template_hole 4,
+                       template_app
+                        (template_app
+                          (template_app
+                            (template_app
+                              (template_app
+                                (template_app
+                                  (template_app
+                                    (template_app
+(template_hole 3, template_hole 2),
+                                     template_hole 1),
+                                   template_hole 2),
+                                 template_hole 2),
+                               template_hole 2),
+                             template_hole 1),
+                           template_hole 2),
+                         template_hole 1)),
+                     template_hole 0))),
+               template_app
+                (template_app
+                  (template_hole 4,
+                   template_app
+                    (template_app
+                      (template_app
+                        (template_app
+                          (template_app
+                            (template_app
+                              (template_app
+                                (template_app
+                                  (template_hole 3, template_hole 2),
+                                 template_hole 2),
+                               template_hole 1),
+                             template_hole 2),
+                           template_hole 2),
+                         template_hole 1),
+                       template_hole 2),
+                     template_hole 1)),
+                 template_hole 0)),
+             template_app
+              (template_app
+                (template_hole 4,
+                 template_app
+                  (template_app
+                    (template_app
+                      (template_app
+                        (template_app
+                          (template_app
+                            (template_app
+                              (template_app
+                                (template_hole 3, template_hole 1),
+                               template_hole 1),
+                             template_hole 2),
+                           template_hole 2),
+                         template_hole 1),
+                       template_hole 2),
+                     template_hole 1),
+                   template_hole 1)),
+               template_app
+                (template_app
+                  (template_hole 4,
+                   template_app
+                    (template_app
+                      (template_app
+                        (template_app
+                          (template_app
+                            (template_app
+                              (template_app
+                                (template_app
+                                  (template_hole 3, template_hole 1),
+                                 template_hole 1),
+                               template_hole 1),
+                             template_hole 1),
+                           template_hole 1),
+                         template_hole 2),
+                       template_hole 1),
+                     template_hole 1)),
+                 template_hole 0))),
+           template_app
+            (template_app
+              (template_hole 4,
+               template_app
+                (template_app
+                  (template_app
+                    (template_app
+                      (template_app
+                        (template_app
+                          (template_app
+                            (template_app
+                              (template_hole 3, template_hole 2),
+                             template_hole 1),
+                           template_hole 2),
+                         template_hole 2),
+                       template_hole 2),
+                     template_hole 1),
+                   template_hole 2),
+                 template_hole 1)),
+             template_hole 0)),
+         template_var 0)))]:
+   (string * thm * template) list
+### theory "Draft.ShowTemplates"
+### 0.315s elapsed time, 0.449s cpu time, 0.000s GC time
+val it = (): unit

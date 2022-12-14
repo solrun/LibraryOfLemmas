@@ -1,0 +1,1078 @@
+Loading theory "Draft.Lambda_Free_Util" (required by "Draft.Lambda_Free_TermTemplates" via "Draft.Lambda_Free_Term")
+Loading theory "Draft.Templates" (required by "Draft.Lambda_Free_TermTemplates" via "Draft.ExtrEqs")
+datatype template_term
+=
+     t_empty
+   | template_app of template_term * template_term
+   | template_hole of int
+   | template_var of int
+datatype sign
+= equals | greater_equals | greater_than | less_equals | less_than
+datatype template
+=
+     template_bimplication of template * template
+   | template_dunno
+   | template_equation of template_term * template_term
+   | template_implication of template list * template
+   | template_inequation of sign * template_term * template_term
+   | template_negation of template
+   | template_predicate of template_term
+constructor t_empty: template_term
+constructor template_app: template_term * template_term -> template_term
+constructor template_hole: int -> template_term
+constructor template_var: int -> template_term
+constructor equals: sign
+constructor greater_equals: sign
+constructor greater_than: sign
+constructor less_equals: sign
+constructor less_than: sign
+constructor template_bimplication: template * template -> template
+constructor template_dunno: template
+constructor template_equation: template_term * template_term -> template
+constructor template_implication: template list * template -> template
+constructor template_inequation:
+   sign * template_term * template_term -> template
+constructor template_negation: template -> template
+constructor template_predicate: template_term -> template
+val vfs = fn: term -> (indexname * typ) list * (string * typ) list
+val indexOf = fn: ''a list -> ''a -> int -> int
+val has_eq = fn: term -> bool
+val term2template = fn:
+   (indexname * typ) list -> (string * typ) list -> term -> template_term
+val lemma2predicate = fn: term -> term -> template
+val makeTemplatewithContext = fn: term -> term -> template
+val lemma2template = fn: term -> template
+val thm2template = fn: thm -> template
+val tterm2string = fn: template_term -> string
+val template2string = fn: template -> string
+val t = "height ?t <= size ?t": thm
+val th =
+   Const ("HOL.Trueprop", "bool => prop") $
+     (Const ("Orderings.ord_class.less_eq", "nat => nat => bool") $
+       (Const ("Tree.height_class.height", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree")) $
+       (Const ("Nat.size_class.size", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree"))):
+   term
+### theory "Draft.Templates"
+### 0.064s elapsed time, 0.161s cpu time, 0.000s GC time
+Loading theory "Draft.ExtrEqs" (required by "Draft.Lambda_Free_TermTemplates")
+### theory "Draft.Lambda_Free_Util"
+### 0.477s elapsed time, 0.998s cpu time, 0.033s GC time
+Loading theory "Draft.Lambda_Free_Term" (required by "Draft.Lambda_Free_TermTemplates")
+locale gt_sym
+  fixes gt_sym :: "'s => 's => bool"  (infix \<open>>\<^sub>s\<close> 50)
+  assumes "gt_sym (>\<^sub>s)"
+val eqpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Var (("_dummy_", 2), "?'a"))
+       ):
+   term Find_Theorems.criterion
+val badeqpattern = Pattern (Const ("Pure.eq", "?'a => ?'a => prop")):
+   term Find_Theorems.criterion
+val undefpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Const ("HOL.undefined", "?'a"))
+       ):
+   term Find_Theorems.criterion
+val thmpattern =
+   Pattern
+    (Const ("HOL.Trueprop", "bool => prop") $ Var (("_dummy_", 1), "bool")):
+   term Find_Theorems.criterion
+val badnames =
+   ["*nitpick*", "*Nitpick*", "*full_exhaustive*", "*_def*", "Enum.finite*",
+    "*Quickcheck*", "ATP*", "*Nunchaku*", "*Code*", "*BNF*", "*SMT*",
+    "*.*.*"]:
+   string list
+val unwanted_names =
+   [(false, Name "*nitpick*"), (false, Name "*Nitpick*"),
+    (false, Name "*full_exhaustive*"), (false, Name "*_def*"),
+    (false, Name "Enum.finite*"), (false, Name "*Quickcheck*"),
+    (false, Name "ATP*"), (false, Name "*Nunchaku*"),
+    (false, Name "*Code*"), (false, Name "*BNF*"), (false, Name "*SMT*"),
+    (false, Name "*.*.*")]:
+   (bool * term Find_Theorems.criterion) list
+val has_vars = fn: term -> bool
+val get_all_eqs = fn: string -> Proof.context -> (string * thm) list
+val get_all_thms = fn: string -> Proof.context -> (string * thm) list
+val get_noneq_thms = fn: string -> Proof.context -> (string * thm) list
+val template_eqs = fn:
+   string -> Proof.context -> (string * thm * template) list
+val template_thms = fn:
+   string -> Proof.context -> (string * thm * template) list
+### theory "Draft.ExtrEqs"
+### 0.547s elapsed time, 1.134s cpu time, 0.100s GC time
+overloading
+  head0 \<equiv> head0 :: ('s, 'v) tm => ('s, 'v) hd
+consts
+  head0 :: "('s, 'v) tm => ('s, 'v) hd"
+Found termination order: "size <*mlex*> {}"
+consts
+  apps :: "('s, 'v) tm => ('s, 'v) tm list => ('s, 'v) tm"
+consts
+  vars_mset :: "('s, 'v) tm => 'v multiset"
+consts
+  hsize :: "('s, 'v) tm => nat"
+consts
+  subst :: "('v => ('s, 'v) tm) => ('s, 'v) tm => ('s, 'v) tm"
+Proofs for inductive predicate(s) "sub"
+  Proving monotonicity ...
+locale arity
+  fixes arity_sym :: "'s => enat"
+    and arity_var :: "'v => enat"
+consts
+  arity_hd :: "('s, 'v) hd => enat"
+Proofs for inductive predicate(s) "wary"
+  Proving monotonicity ...
+Proofs for inductive predicate(s) "wary_fo"
+  Proving monotonicity ...
+locale ground_heads
+  fixes gt_sym :: "'s => 's => bool"  (infix \<open>>\<^sub>s\<close> 50)
+    and arity_sym :: "'s => enat"
+    and arity_var :: "'v => enat"
+    and ground_heads_var :: "'v => 's set"
+  assumes "ground_heads (>\<^sub>s) arity_sym arity_var ground_heads_var"
+consts
+  ground_heads :: "('s, 'v) hd => 's set"
+### theory "Draft.Lambda_Free_Term"
+### 1.392s elapsed time, 1.636s cpu time, 0.206s GC time
+Loading theory "Draft.Lambda_Free_TermTemplates"
+val templateLemmas =
+   [("Lambda_Free_Term.finite_syms_hd", "finite (syms_hd ?\<zeta>)",
+     template_predicate
+      (
+         template_app
+          (template_hole 1, template_app (template_hole 0, template_var 0))
+         )),
+    ("Lambda_Free_Term.finite_vars_hd", "finite (vars_hd ?\<zeta>)",
+     template_predicate
+      (
+         template_app
+          (template_hole 1, template_app (template_hole 0, template_var 0))
+         )),
+    ("Lambda_Free_Term.finite_vars", "finite (vars ?s)",
+     template_predicate
+      (
+         template_app
+          (template_hole 1, template_app (template_hole 0, template_var 0))
+         )),
+    ("Lambda_Free_Term.finite_syms", "finite (syms ?s)",
+     template_predicate
+      (
+         template_app
+          (template_hole 1, template_app (template_hole 0, template_var 0))
+         )),
+    ("Lambda_Free_Term.hsize_pos", "0 < hsize ?t",
+     template_inequation
+      (less_than, template_hole 1,
+       template_app (template_hole 0, template_var 0))),
+    ("Lambda_Free_Term.hsize_ge_num_args", "hsize ?s <= hsize ?s",
+     template_inequation
+      (less_equals, template_app (template_hole 0, template_var 0),
+       template_app (template_hole 0, template_var 0))),
+    ("Lambda_Free_Term.set_vars_mset", "set_mset (vars_mset ?t) = vars ?t",
+     template_equation
+      (template_app
+        (template_hole 2, template_app (template_hole 1, template_var 0)),
+       template_app (template_hole 0, template_var 0))),
+    ("Lambda_Free_Term.head_fun", "head (fun ?s) = head ?s",
+     template_equation
+      (template_app
+        (template_hole 1, template_app (template_hole 0, template_var 0)),
+       template_app (template_hole 1, template_var 0))),
+    ("Lambda_Free_Term.vars_mset_arg",
+     "vars_mset (arg ?t) <=# vars_mset ?t",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_hole 2,
+             template_app
+              (template_hole 1,
+               template_app (template_hole 0, template_var 0))),
+           template_app (template_hole 1, template_var 0))
+         )),
+    ("Lambda_Free_Term.vars_mset_fun",
+     "vars_mset (fun ?t) <=# vars_mset ?t",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_hole 2,
+             template_app
+              (template_hole 1,
+               template_app (template_hole 0, template_var 0))),
+           template_app (template_hole 1, template_var 0))
+         )),
+    ("Lambda_Free_Term.size_ge_num_args", "num_args ?s <= size ?s",
+     template_inequation
+      (less_equals,
+       template_app
+        (template_hole 2, template_app (template_hole 1, template_var 0)),
+       template_app (template_hole 0, template_var 0))),
+    ("Lambda_Free_Term.vars_head_subseteq", "vars_hd (head ?s) <= vars ?s",
+     template_inequation
+      (less_equals,
+       template_app
+        (template_hole 2, template_app (template_hole 1, template_var 0)),
+       template_app (template_hole 0, template_var 0))),
+    ("Lambda_Free_Term.syms_head_subseteq", "syms_hd (head ?s) <= syms ?s",
+     template_inequation
+      (less_equals,
+       template_app
+        (template_hole 2, template_app (template_hole 1, template_var 0)),
+       template_app (template_hole 0, template_var 0))),
+    ("Lambda_Free_Term.args_Nil_iff_is_Hd", "(args ?s = []) = is_Hd ?s",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 3, template_app (template_hole 2, template_var 0)),
+         template_hole 1),
+       template_app (template_hole 0, template_var 0))),
+    ("Lambda_Free_Term.head_App", "head (App ?s ?t) = head ?s",
+     template_equation
+      (template_app
+        (template_hole 1,
+         template_app
+          (template_app (template_hole 0, template_var 1), template_var 0)),
+       template_app (template_hole 1, template_var 1))),
+    ("Lambda_Free_Term.head_apps", "head (apps ?s ?ss) = head ?s",
+     template_equation
+      (template_app
+        (template_hole 1,
+         template_app
+          (template_app (template_hole 0, template_var 1), template_var 0)),
+       template_app (template_hole 1, template_var 1))),
+    ("Lambda_Free_Term.arg_apps_Nil", "arg (apps ?s []) = arg ?s",
+     template_equation
+      (template_app
+        (template_hole 2,
+         template_app
+          (template_app (template_hole 1, template_var 0),
+           template_hole 0)),
+       template_app (template_hole 2, template_var 0))),
+    ("Lambda_Free_Term.fun_apps_Nil", "fun (apps ?s []) = fun ?s",
+     template_equation
+      (template_app
+        (template_hole 2,
+         template_app
+          (template_app (template_hole 1, template_var 0),
+           template_hole 0)),
+       template_app (template_hole 2, template_var 0))),
+    ("Lambda_Free_Term.tm_collapse_apps",
+     "apps (Hd (head ?s)) (args ?s) = ?s",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 3,
+           template_app
+            (template_hole 2,
+             template_app (template_hole 1, template_var 0))),
+         template_app (template_hole 0, template_var 0)),
+       template_var 0)),
+    ("Lambda_Free_Term.set_args_fun",
+     "set (args (fun ?s)) <= set (args ?s)",
+     template_inequation
+      (less_equals,
+       template_app
+        (template_hole 2,
+         template_app
+          (template_hole 1,
+           template_app (template_hole 0, template_var 0))),
+       template_app
+        (template_hole 2, template_app (template_hole 1, template_var 0)))),
+    ("Lambda_Free_Term.vars_mset_empty_iff",
+     "(vars_mset ?s = {#}) = ground ?s",
+     template_bimplication
+      (template_equation
+        (template_app (template_hole 4, template_var 0), template_hole 3),
+       template_equation
+        (template_app (template_hole 1, template_var 0), template_hole 0))),
+    ("Lambda_Free_Term.args_apps", "args (apps ?s ?ss) = args ?s @ ?ss",
+     template_equation
+      (template_app
+        (template_hole 2,
+         template_app
+          (template_app (template_hole 1, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 0, template_app (template_hole 2, template_var 1)),
+         template_var 0))),
+    ("Lambda_Free_Term.hsize_args",
+     "1 + sum_list (map hsize (args ?t)) = hsize ?t",
+     template_equation
+      (template_app
+        (template_app (template_hole 5, template_hole 4),
+         template_app
+          (template_hole 3,
+           template_app
+            (template_app (template_hole 2, template_hole 1),
+             template_app (template_hole 0, template_var 0)))),
+       template_app (template_hole 1, template_var 0))),
+    ("Lambda_Free_Term.in_vars_imp_sub",
+     "(?x : vars ?s) = sub (Hd (Var ?x)) ?s",
+     template_equation
+      (template_app
+        (template_app (template_hole 4, template_var 1),
+         template_app (template_hole 3, template_var 0)),
+       template_app
+        (template_app
+          (template_hole 2,
+           template_app
+            (template_hole 1,
+             template_app (template_hole 0, template_var 1))),
+         template_var 0))),
+    ("Lambda_Free_Term.sub_size", "sub ?s ?t ==> size ?s <= size ?t",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 2, template_var 1),
+              template_var 0)
+            )],
+       template_inequation
+        (less_equals, template_app (template_hole 0, template_var 1),
+         template_app (template_hole 0, template_var 0)))),
+    ("Lambda_Free_Term.ground_head", "ground ?s ==> is_Sym (head ?s)",
+     template_implication
+      ([template_equation
+         (template_app (template_hole 4, template_var 0), template_hole 3)],
+       template_negation
+        (
+           template_predicate
+            (
+               template_app
+                (template_hole 1,
+                 template_app (template_hole 0, template_var 0))
+               )
+           ))),
+    ("Lambda_Free_Term.sub_args", "?s : set (args ?t) ==> sub ?s ?t",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 3, template_var 1),
+              template_app
+               (template_hole 2,
+                template_app (template_hole 1, template_var 0)))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 0, template_var 1), template_var 0)
+           ))),
+    ("Lambda_Free_Term.proper_sub_Hd", "~ proper_sub ?s (Hd ?\<zeta>)",
+     template_negation
+      (
+         template_predicate
+          (
+             template_app
+              (template_app
+                (template_hole 3,
+                 template_app
+                  (template_app (template_hole 2, template_var 1),
+                   template_app (template_hole 1, template_var 0))),
+               template_app
+                (template_hole 4,
+                 template_app
+                  (template_app (template_hole 0, template_var 1),
+                   template_app (template_hole 1, template_var 0))))
+             )
+         )),
+    ("Lambda_Free_Term.hsize_size", "hsize ?t * 2 = size ?t + 1",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 7, template_app (template_hole 6, template_var 0)),
+         template_app
+          (template_hole 5,
+           template_app (template_hole 4, template_hole 3))),
+       template_app
+        (template_app
+          (template_hole 2, template_app (template_hole 1, template_var 0)),
+         template_hole 0))),
+    ("Lambda_Free_Term.head_subst",
+     "head (subst ?\<rho> ?s) = head (subst ?\<rho> (Hd (head ?s)))",
+     template_equation
+      (template_app
+        (template_hole 2,
+         template_app
+          (template_app (template_hole 1, template_var 1), template_var 0)),
+       template_app
+        (template_hole 2,
+         template_app
+          (template_app (template_hole 1, template_var 1),
+           template_app
+            (template_hole 0,
+             template_app (template_hole 2, template_var 0)))))),
+    ("Lambda_Free_Term.apps_append",
+     "apps ?s (?ss @ ?ts) = apps (apps ?s ?ss) ?ts",
+     template_equation
+      (template_app
+        (template_app (template_hole 1, template_var 2),
+         template_app
+          (template_app (template_hole 0, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 1,
+           template_app
+            (template_app (template_hole 1, template_var 2),
+             template_var 1)),
+         template_var 0))),
+    ("Lambda_Free_Term.arg_apps_Cons",
+     "arg (apps (App ?s ?sa) ?ss) = last (?sa # ?ss)",
+     template_equation
+      (template_app
+        (template_hole 4,
+         template_app
+          (template_app
+            (template_hole 3,
+             template_app
+              (template_app (template_hole 2, template_var 2),
+               template_var 1)),
+           template_var 0)),
+       template_app
+        (template_hole 1,
+         template_app
+          (template_app (template_hole 0, template_var 1),
+           template_var 0)))),
+    ("Lambda_Free_Term.hsize_arg_lt",
+     "is_App ?s ==> hsize (arg ?s) < hsize ?s",
+     template_implication
+      ([template_negation
+         (
+            template_predicate
+             (template_app (template_hole 3, template_var 0))
+            )],
+       template_inequation
+        (less_than,
+         template_app
+          (template_hole 1, template_app (template_hole 0, template_var 0)),
+         template_app (template_hole 1, template_var 0)))),
+    ("Lambda_Free_Term.hsize_fun_lt",
+     "is_App ?s ==> hsize (fun ?s) < hsize ?s",
+     template_implication
+      ([template_negation
+         (
+            template_predicate
+             (template_app (template_hole 3, template_var 0))
+            )],
+       template_inequation
+        (less_than,
+         template_app
+          (template_hole 1, template_app (template_hole 0, template_var 0)),
+         template_app (template_hole 1, template_var 0)))),
+    ("Lambda_Free_Term.size_arg_lt",
+     "is_App ?s ==> size (arg ?s) < size ?s",
+     template_implication
+      ([template_negation
+         (
+            template_predicate
+             (template_app (template_hole 3, template_var 0))
+            )],
+       template_inequation
+        (less_than,
+         template_app
+          (template_hole 1, template_app (template_hole 0, template_var 0)),
+         template_app (template_hole 1, template_var 0)))),
+    ("Lambda_Free_Term.size_fun_lt",
+     "is_App ?s ==> size (fun ?s) < size ?s",
+     template_implication
+      ([template_negation
+         (
+            template_predicate
+             (template_app (template_hole 3, template_var 0))
+            )],
+       template_inequation
+        (less_than,
+         template_app
+          (template_hole 1, template_app (template_hole 0, template_var 0)),
+         template_app (template_hole 1, template_var 0)))),
+    ("Lambda_Free_Term.arg_in_args", "is_App ?s ==> arg ?s : set (args ?s)",
+     template_implication
+      ([template_negation
+         (
+            template_predicate
+             (template_app (template_hole 4, template_var 0))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 3,
+               template_app (template_hole 2, template_var 0)),
+             template_app
+              (template_hole 1,
+               template_app (template_hole 0, template_var 0)))
+           ))),
+    ("Lambda_Free_Term.ground_arg", "ground ?s ==> ground (arg ?s)",
+     template_implication
+      ([template_equation
+         (template_app (template_hole 2, template_var 0), template_hole 1)],
+       template_equation
+        (template_app
+          (template_hole 2, template_app (template_hole 0, template_var 0)),
+         template_hole 1))),
+    ("Lambda_Free_Term.ground_fun", "ground ?s ==> ground (fun ?s)",
+     template_implication
+      ([template_equation
+         (template_app (template_hole 2, template_var 0), template_hole 1)],
+       template_equation
+        (template_app
+          (template_hole 2, template_app (template_hole 0, template_var 0)),
+         template_hole 1))),
+    ("Lambda_Free_Term.ground_imp_subst_iden",
+     "ground ?s ==> subst ?\<rho> ?s = ?s",
+     template_implication
+      ([template_equation
+         (template_app (template_hole 3, template_var 1), template_hole 2)],
+       template_equation
+        (template_app
+          (template_app (template_hole 0, template_var 0), template_var 1),
+         template_var 1))),
+    ("Lambda_Free_Term.hsize_apps",
+     "hsize (apps ?t ?ts) = hsize ?t + sum_list (map hsize ?ts)",
+     template_equation
+      (template_app
+        (template_hole 4,
+         template_app
+          (template_app (template_hole 3, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 2, template_app (template_hole 4, template_var 1)),
+         template_app
+          (template_hole 1,
+           template_app
+            (template_app (template_hole 0, template_hole 4),
+             template_var 0))))),
+    ("Lambda_Free_Term.sub_subst",
+     "sub ?s ?t ==> sub (subst ?\<rho> ?s) (subst ?\<rho> ?t)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 1, template_var 2),
+              template_var 1)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 1,
+               template_app
+                (template_app (template_hole 0, template_var 0),
+                 template_var 2)),
+             template_app
+              (template_app (template_hole 0, template_var 0),
+               template_var 1))
+           ))),
+    ("Lambda_Free_Term.Hd_head_id", "num_args ?s = 0 ==> Hd (head ?s) = ?s",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_hole 5,
+            template_app (template_hole 4, template_var 0)),
+          template_hole 3)],
+       template_equation
+        (template_app
+          (template_hole 1, template_app (template_hole 0, template_var 0)),
+         template_var 0))),
+    ("Lambda_Free_Term.hsize_in_args",
+     "?s : set (args ?t) ==> hsize ?s < hsize ?t",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 4, template_var 1),
+              template_app
+               (template_hole 3,
+                template_app (template_hole 2, template_var 0)))
+            )],
+       template_inequation
+        (less_than, template_app (template_hole 0, template_var 1),
+         template_app (template_hole 0, template_var 0)))),
+    ("Lambda_Free_Term.size_in_args",
+     "?s : set (args ?t) ==> size ?s < size ?t",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 4, template_var 1),
+              template_app
+               (template_hole 3,
+                template_app (template_hole 2, template_var 0)))
+            )],
+       template_inequation
+        (less_than, template_app (template_hole 0, template_var 1),
+         template_app (template_hole 0, template_var 0)))),
+    ("Lambda_Free_Term.syms_args_subseteq",
+     "?si : set (args ?s) ==> syms ?si <= syms ?s",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 4, template_var 1),
+              template_app
+               (template_hole 3,
+                template_app (template_hole 2, template_var 0)))
+            )],
+       template_inequation
+        (less_equals, template_app (template_hole 0, template_var 1),
+         template_app (template_hole 0, template_var 0)))),
+    ("Lambda_Free_Term.vars_args_subseteq",
+     "?si : set (args ?s) ==> vars ?si <= vars ?s",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 4, template_var 1),
+              template_app
+               (template_hole 3,
+                template_app (template_hole 2, template_var 0)))
+            )],
+       template_inequation
+        (less_equals, template_app (template_hole 0, template_var 1),
+         template_app (template_hole 0, template_var 0)))),
+    ("Lambda_Free_Term.is_App_apps",
+     "is_App (apps ?s ?ss) = (args (apps ?s ?ss) ~= [])",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_hole 5,
+              template_app
+               (template_hole 4,
+                template_app
+                 (template_app (template_hole 3, template_var 1),
+                  template_var 0)))
+            )],
+       template_negation
+        (
+           template_equation
+            (template_app
+              (template_hole 1,
+               template_app
+                (template_app (template_hole 3, template_var 1),
+                 template_var 0)),
+             template_hole 0)
+           ))),
+    ("Lambda_Free_Term.vars_mset_subst",
+     "vars_mset (subst ?\<rho> ?s) =
+      (SUM x:#vars_mset ?s. vars_mset (?\<rho> x))",
+     template_equation
+      (template_app
+        (template_hole 3,
+         template_app
+          (template_app (template_hole 2, template_var 1), template_var 0)),
+       template_app
+        (template_hole 1,
+         template_app
+          (template_app (template_hole 0, t_empty),
+           template_app (template_hole 3, template_var 0))))),
+    ("Lambda_Free_Term.App_apps",
+     "App (apps ?s ?ts) ?t = apps ?s (?ts @ [?t])",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 4,
+           template_app
+            (template_app (template_hole 3, template_var 2),
+             template_var 1)),
+         template_var 0),
+       template_app
+        (template_app (template_hole 3, template_var 2),
+         template_app
+          (template_app (template_hole 2, template_var 1),
+           template_app
+            (template_app (template_hole 1, template_var 0),
+             template_hole 0))))),
+    ("Lambda_Free_Term.fun_apps_Cons",
+     "fun (apps (App ?s ?sa) ?ss) = apps ?s (butlast (?sa # ?ss))",
+     template_equation
+      (template_app
+        (template_hole 4,
+         template_app
+          (template_app
+            (template_hole 3,
+             template_app
+              (template_app (template_hole 2, template_var 2),
+               template_var 1)),
+           template_var 0)),
+       template_app
+        (template_app (template_hole 3, template_var 2),
+         template_app
+          (template_hole 1,
+           template_app
+            (template_app (template_hole 0, template_var 1),
+             template_var 0))))),
+    ("Lambda_Free_Term.subst_apps",
+     "subst ?\<rho> (apps ?s ?ts) =
+      apps (subst ?\<rho> ?s) (map (subst ?\<rho>) ?ts)",
+     template_equation
+      (template_app
+        (template_app (template_hole 2, template_var 2),
+         template_app
+          (template_app (template_hole 1, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 1,
+           template_app
+            (template_app (template_hole 2, template_var 2),
+             template_var 1)),
+         template_app
+          (template_app
+            (template_hole 0,
+             template_app (template_hole 2, template_var 2)),
+           template_var 0)))),
+    ("Lambda_Free_Term.tm_exhaust_apps_sel",
+     "(?s = apps (Hd (head ?s)) (args ?s) ==> ?P) ==> ?P",
+     template_implication
+      ([template_implication
+         ([template_equation
+            (template_var 1,
+             template_app
+              (template_app
+                (template_hole 3,
+                 template_app
+                  (template_hole 2,
+                   template_app (template_hole 1, template_var 1))),
+               template_app (template_hole 0, template_var 1)))],
+          template_predicate (template_var 0))],
+       template_predicate (template_var 0))),
+    ("Lambda_Free_Term.vars_apps",
+     "vars (apps ?s ?ss) = vars ?s Un \<Union> (vars ` set ?ss)",
+     template_equation
+      (template_app
+        (template_hole 5,
+         template_app
+          (template_app (template_hole 4, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 3, template_app (template_hole 5, template_var 1)),
+         template_app
+          (template_hole 2,
+           template_app
+            (template_app (template_hole 1, t_empty),
+             template_app (template_hole 0, template_var 0)))))),
+    ("Lambda_Free_Term.syms_apps",
+     "syms (apps ?s ?ss) = syms ?s Un \<Union> (syms ` set ?ss)",
+     template_equation
+      (template_app
+        (template_hole 5,
+         template_app
+          (template_app (template_hole 4, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 3, template_app (template_hole 5, template_var 1)),
+         template_app
+          (template_hole 2,
+           template_app
+            (template_app (template_hole 1, t_empty),
+             template_app (template_hole 0, template_var 0)))))),
+    ("Lambda_Free_Term.vars_mset_subst_subseteq",
+     "vars_mset ?s <=# vars_mset ?t ==>
+      vars_mset (subst ?\<rho> ?s) <=# vars_mset (subst ?\<rho> ?t)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 2,
+                template_app (template_hole 1, template_var 2)),
+              template_app (template_hole 1, template_var 1))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 2,
+               template_app
+                (template_hole 1,
+                 template_app
+                  (template_app (template_hole 0, template_var 0),
+                   template_var 2))),
+             template_app
+              (template_hole 1,
+               template_app
+                (template_app (template_hole 0, template_var 0),
+                 template_var 1)))
+           ))),
+    ("Lambda_Free_Term.vars_subst_subseteq",
+     "vars ?s <= vars ?t ==>
+      vars (subst ?\<rho> ?s) <= vars (subst ?\<rho> ?t)",
+     template_implication
+      ([template_inequation
+         (less_equals, template_app (template_hole 1, template_var 2),
+          template_app (template_hole 1, template_var 1))],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_hole 1,
+           template_app
+            (template_app (template_hole 0, template_var 0),
+             template_var 2)),
+         template_app
+          (template_hole 1,
+           template_app
+            (template_app (template_hole 0, template_var 0),
+             template_var 1))))),
+    ("Lambda_Free_Term.tm_exhaust_apps",
+     "(!!\<zeta> ss. ?s = apps (Hd \<zeta>) ss ==> ?P) ==> ?P",
+     template_implication
+      ([template_predicate (template_app (template_hole 5, t_empty))],
+       template_predicate (template_var 0))),
+    ("Lambda_Free_Term.sub_HdE",
+     "[| sub ?s (Hd ?\<xi>); Hd ?\<xi> = ?s ==> ?P |] ==> ?P",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 2, template_var 2),
+              template_app (template_hole 1, template_var 1))
+            ),
+        template_implication
+         ([template_equation
+            (template_app (template_hole 1, template_var 1),
+             template_var 2)],
+          template_predicate (template_var 0))],
+       template_predicate (template_var 0))),
+    ("Lambda_Free_Term.sub_Hd_HdE",
+     "[| sub (Hd ?\<zeta>) (Hd ?\<xi>); ?\<xi> = ?\<zeta> ==> ?P |] ==> ?P",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 2,
+                template_app (template_hole 1, template_var 2)),
+              template_app (template_hole 1, template_var 1))
+            ),
+        template_implication
+         ([template_equation (template_var 1, template_var 2)],
+          template_predicate (template_var 0))],
+       template_predicate (template_var 0))),
+    ("Lambda_Free_Term.tm_inject_apps",
+     "(apps (Hd ?\<zeta>) ?ss = apps (Hd ?\<xi>) ?ts) =
+      (?\<zeta> = ?\<xi> & ?ss = ?ts)",
+     template_bimplication
+      (template_equation
+        (template_app
+          (template_app
+            (template_hole 4,
+             template_app (template_hole 3, template_var 3)),
+           template_var 2),
+         template_app
+          (template_app
+            (template_hole 4,
+             template_app (template_hole 3, template_var 1)),
+           template_var 0)),
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 2,
+               template_app
+                (template_app (template_hole 1, template_var 3),
+                 template_var 1)),
+             template_app
+              (template_app (template_hole 0, template_var 2),
+               template_var 0))
+           ))),
+    ("Lambda_Free_Term.tm_expand_apps",
+     "[| head ?s = head ?t; args ?s = args ?t |] ==> ?s = ?t",
+     template_implication
+      ([template_equation
+         (template_app (template_hole 3, template_var 1),
+          template_app (template_hole 3, template_var 0)),
+        template_equation
+         (template_app (template_hole 1, template_var 1),
+          template_app (template_hole 1, template_var 0))],
+       template_equation (template_var 1, template_var 0))),
+    ("Lambda_Free_Term.ground_args",
+     "[| ?t : set (args ?s); ground ?s |] ==> ground ?t",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 5, template_var 1),
+              template_app
+               (template_hole 4,
+                template_app (template_hole 3, template_var 0)))
+            ),
+        template_equation
+         (template_app (template_hole 1, template_var 0), template_hole 0)],
+       template_equation
+        (template_app (template_hole 1, template_var 1), template_hole 0))),
+    ("Lambda_Free_Term.one_arg_imp_Hd",
+     "[| num_args ?s = 1; ?s = App ?t ?u |] ==> ?t = Hd (head ?t)",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_hole 6,
+            template_app (template_hole 5, template_var 2)),
+          template_hole 4),
+        template_equation
+         (template_var 2,
+          template_app
+           (template_app (template_hole 2, template_var 1),
+            template_var 0))],
+       template_equation
+        (template_var 1,
+         template_app
+          (template_hole 1,
+           template_app (template_hole 0, template_var 1))))),
+    ("Lambda_Free_Term.args_subst",
+     "args (subst ?\<rho> ?s) =
+      (case head ?s of Var x => args (?\<rho> x) | Sym f => []) @
+      map (subst ?\<rho>) (args ?s)",
+     template_equation
+      (template_app
+        (template_hole 6,
+         template_app
+          (template_app (template_hole 5, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 4,
+           template_app
+            (template_app
+              (template_app (template_hole 3, t_empty), t_empty),
+             template_app (template_hole 1, template_var 0))),
+         template_app
+          (template_app
+            (template_hole 0,
+             template_app (template_hole 5, template_var 1)),
+           template_app (template_hole 6, template_var 0))))),
+    ("Lambda_Free_Term.tm_induct_apps",
+     "(!!\<zeta> ss.
+          (!!s. s : set ss ==> ?P s) ==> ?P (apps (Hd \<zeta>) ss)) ==>
+      ?P ?s",
+     template_implication
+      ([template_predicate (template_app (template_hole 7, t_empty))],
+       template_predicate (template_app (template_var 1, template_var 0)))),
+    ("Lambda_Free_Term.proper_sub_subst",
+     "proper_sub ?s ?t ==>
+      proper_sub (subst ?\<rho> ?s) (subst ?\<rho> ?t)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 4,
+                template_app
+                 (template_app (template_hole 3, template_var 2),
+                  template_var 1)),
+              template_app
+               (template_hole 2,
+                template_app
+                 (template_app (template_hole 1, template_var 2),
+                  template_var 1)))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 4,
+               template_app
+                (template_app
+                  (template_hole 3,
+                   template_app
+                    (template_app (template_hole 0, template_var 0),
+                     template_var 2)),
+                 template_app
+                  (template_app (template_hole 0, template_var 0),
+                   template_var 1))),
+             template_app
+              (template_hole 2,
+               template_app
+                (template_app
+                  (template_hole 1,
+                   template_app
+                    (template_app (template_hole 0, template_var 0),
+                     template_var 2)),
+                 template_app
+                  (template_app (template_hole 0, template_var 0),
+                   template_var 1))))
+           ))),
+    ("Lambda_Free_Term.sub_Hd_AppE",
+     "[| sub (Hd ?\<zeta>) (App ?t ?u); sub (Hd ?\<zeta>) ?u ==> ?P;
+         sub (Hd ?\<zeta>) ?t ==> ?P |]
+      ==> ?P",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 2,
+                template_app (template_hole 1, template_var 3)),
+              template_app
+               (template_app (template_hole 0, template_var 2),
+                template_var 1))
+            ),
+        template_implication
+         ([template_predicate
+            (
+               template_app
+                (template_app
+                  (template_hole 2,
+                   template_app (template_hole 1, template_var 3)),
+                 template_var 1)
+               )],
+          template_predicate (template_var 0)),
+        template_implication
+         ([template_predicate
+            (
+               template_app
+                (template_app
+                  (template_hole 2,
+                   template_app (template_hole 1, template_var 3)),
+                 template_var 2)
+               )],
+          template_predicate (template_var 0))],
+       template_predicate (template_var 0))),
+    ("Lambda_Free_Term.sub_AppE",
+     "[| sub ?s (App ?t ?u); App ?t ?u = ?s ==> ?P; sub ?s ?u ==> ?P;
+         sub ?s ?t ==> ?P |]
+      ==> ?P",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 2, template_var 3),
+              template_app
+               (template_app (template_hole 1, template_var 2),
+                template_var 1))
+            ),
+        template_implication
+         ([template_equation
+            (template_app
+              (template_app (template_hole 1, template_var 2),
+               template_var 1),
+             template_var 3)],
+          template_predicate (template_var 0)),
+        template_implication
+         ([template_predicate
+            (
+               template_app
+                (template_app (template_hole 2, template_var 3),
+                 template_var 1)
+               )],
+          template_predicate (template_var 0)),
+        template_implication
+         ([template_predicate
+            (
+               template_app
+                (template_app (template_hole 2, template_var 3),
+                 template_var 2)
+               )],
+          template_predicate (template_var 0))],
+       template_predicate (template_var 0)))]:
+   (string * thm * template) list
+### theory "Draft.Lambda_Free_TermTemplates"
+### 0.522s elapsed time, 0.922s cpu time, 0.419s GC time
+val it = (): unit

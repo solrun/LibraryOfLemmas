@@ -1,0 +1,1637 @@
+Loading theory "Draft.Map_Extra" (required by "Draft.Map_ExtraTemplates")
+Loading theory "Draft.Templates" (required by "Draft.Map_ExtraTemplates" via "Draft.ExtrEqs")
+datatype template_term
+=
+     t_empty
+   | template_app of template_term * template_term
+   | template_hole of int
+   | template_var of int
+datatype sign
+= equals | greater_equals | greater_than | less_equals | less_than
+datatype template
+=
+     template_bimplication of template * template
+   | template_dunno
+   | template_equation of template_term * template_term
+   | template_implication of template list * template
+   | template_inequation of sign * template_term * template_term
+   | template_negation of template
+   | template_predicate of template_term
+constructor t_empty: template_term
+constructor template_app: template_term * template_term -> template_term
+constructor template_hole: int -> template_term
+constructor template_var: int -> template_term
+constructor equals: sign
+constructor greater_equals: sign
+constructor greater_than: sign
+constructor less_equals: sign
+constructor less_than: sign
+constructor template_bimplication: template * template -> template
+constructor template_dunno: template
+constructor template_equation: template_term * template_term -> template
+constructor template_implication: template list * template -> template
+constructor template_inequation:
+   sign * template_term * template_term -> template
+constructor template_negation: template -> template
+constructor template_predicate: template_term -> template
+val vfs = fn: term -> (indexname * typ) list * (string * typ) list
+val indexOf = fn: ''a list -> ''a -> int -> int
+val has_eq = fn: term -> bool
+val term2template = fn:
+   (indexname * typ) list -> (string * typ) list -> term -> template_term
+val lemma2predicate = fn: term -> term -> template
+val makeTemplatewithContext = fn: term -> term -> template
+val lemma2template = fn: term -> template
+val thm2template = fn: thm -> template
+val tterm2string = fn: template_term -> string
+val template2string = fn: template -> string
+val t = "height ?t <= size ?t": thm
+val th =
+   Const ("HOL.Trueprop", "bool => prop") $
+     (Const ("Orderings.ord_class.less_eq", "nat => nat => bool") $
+       (Const ("Tree.height_class.height", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree")) $
+       (Const ("Nat.size_class.size", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree"))):
+   term
+### theory "Draft.Templates"
+### 0.064s elapsed time, 0.157s cpu time, 0.000s GC time
+Loading theory "Draft.ExtrEqs" (required by "Draft.Map_ExtraTemplates")
+Found termination order: "{}"
+### theory "Draft.Map_Extra"
+### 0.614s elapsed time, 1.270s cpu time, 0.144s GC time
+val eqpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Var (("_dummy_", 2), "?'a"))
+       ):
+   term Find_Theorems.criterion
+val badeqpattern = Pattern (Const ("Pure.eq", "?'a => ?'a => prop")):
+   term Find_Theorems.criterion
+val undefpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Const ("HOL.undefined", "?'a"))
+       ):
+   term Find_Theorems.criterion
+val thmpattern =
+   Pattern
+    (Const ("HOL.Trueprop", "bool => prop") $ Var (("_dummy_", 1), "bool")):
+   term Find_Theorems.criterion
+val badnames =
+   ["*nitpick*", "*Nitpick*", "*full_exhaustive*", "*_def*", "Enum.finite*",
+    "*Quickcheck*", "ATP*", "*Nunchaku*", "*Code*", "*BNF*", "*SMT*",
+    "*.*.*"]:
+   string list
+val unwanted_names =
+   [(false, Name "*nitpick*"), (false, Name "*Nitpick*"),
+    (false, Name "*full_exhaustive*"), (false, Name "*_def*"),
+    (false, Name "Enum.finite*"), (false, Name "*Quickcheck*"),
+    (false, Name "ATP*"), (false, Name "*Nunchaku*"),
+    (false, Name "*Code*"), (false, Name "*BNF*"), (false, Name "*SMT*"),
+    (false, Name "*.*.*")]:
+   (bool * term Find_Theorems.criterion) list
+val has_vars = fn: term -> bool
+val get_all_eqs = fn: string -> Proof.context -> (string * thm) list
+val get_all_thms = fn: string -> Proof.context -> (string * thm) list
+val get_noneq_thms = fn: string -> Proof.context -> (string * thm) list
+val template_eqs = fn:
+   string -> Proof.context -> (string * thm * template) list
+val template_thms = fn:
+   string -> Proof.context -> (string * thm * template) list
+### theory "Draft.ExtrEqs"
+### 0.574s elapsed time, 1.161s cpu time, 0.144s GC time
+Loading theory "Draft.Map_ExtraTemplates"
+val templateLemmas =
+   [("Map_Extra.comp_map_refl", "?f \<parallel>\<^sub>m ?f",
+     template_predicate
+      (
+         template_app
+          (template_app (template_hole 0, template_var 0), template_var 0)
+         )),
+    ("Map_Extra.map_graph_functional", "functional (map_graph ?f)",
+     template_predicate
+      (
+         template_app
+          (template_hole 1, template_app (template_hole 0, template_var 0))
+         )),
+    ("Map_Extra.map_id_on_inj", "inj_on (map_id_on ?xs) ?xs",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_hole 1,
+             template_app (template_hole 0, template_var 0)),
+           template_var 0)
+         )),
+    ("Map_Extra.comp_map_unit", "Map.empty \<parallel>\<^sub>m ?f",
+     template_predicate
+      (
+         template_app
+          (template_app (template_hole 1, t_empty), template_var 0)
+         )),
+    ("Map_Extra.map_comp_runit", "?f \<circ>\<^sub>m Some = ?f",
+     template_equation
+      (template_app
+        (template_app (template_hole 1, template_var 0), template_hole 0),
+       template_var 0)),
+    ("Map_Extra.map_comp_lunit", "Some \<circ>\<^sub>m ?f = ?f",
+     template_equation
+      (template_app
+        (template_app (template_hole 1, template_hole 0), template_var 0),
+       template_var 0)),
+    ("Map_Extra.map_graph_inv", "graph_map (map_graph ?f) = ?f",
+     template_equation
+      (template_app
+        (template_hole 1, template_app (template_hole 0, template_var 0)),
+       template_var 0)),
+    ("Map_Extra.map_id_dom", "dom (map_id_on ?xs) = ?xs",
+     template_equation
+      (template_app
+        (template_hole 1, template_app (template_hole 0, template_var 0)),
+       template_var 0)),
+    ("Map_Extra.map_id_ran", "ran (map_id_on ?xs) = ?xs",
+     template_equation
+      (template_app
+        (template_hole 1, template_app (template_hole 0, template_var 0)),
+       template_var 0)),
+    ("Map_Extra.map_of_list_inv", "list_of_map (map_of_list ?xs) = ?xs",
+     template_equation
+      (template_app
+        (template_hole 1, template_app (template_hole 0, template_var 0)),
+       template_var 0)),
+    ("Map_Extra.map_inv_id", "map_inv (map_id_on ?xs) = map_id_on ?xs",
+     template_equation
+      (template_app
+        (template_hole 1, template_app (template_hole 0, template_var 0)),
+       template_app (template_hole 0, template_var 0))),
+    ("Map_Extra.ran_restrict_empty",
+     "?f\<upharpoonleft>\<^bsub>{}\<^esub> = Map.empty",
+     template_equation
+      (template_app
+        (template_app (template_hole 2, template_var 0), template_hole 1),
+       t_empty)),
+    ("Map_Extra.map_restrict_dom", "?f |` dom ?f = ?f",
+     template_equation
+      (template_app
+        (template_app (template_hole 1, template_var 0),
+         template_app (template_hole 0, template_var 0)),
+       template_var 0)),
+    ("Map_Extra.merge_singleton", "merge {?f} = ?f",
+     template_equation
+      (template_app
+        (template_hole 2,
+         template_app
+          (template_app (template_hole 1, template_var 0),
+           template_hole 0)),
+       template_var 0)),
+    ("Map_Extra.ran_restrict_ran",
+     "?f\<upharpoonleft>\<^bsub>ran ?f\<^esub> = ?f",
+     template_equation
+      (template_app
+        (template_app (template_hole 1, template_var 0),
+         template_app (template_hole 0, template_var 0)),
+       template_var 0)),
+    ("Map_Extra.dom_map_graph", "dom ?f = Domain (map_graph ?f)",
+     template_equation
+      (template_app (template_hole 2, template_var 0),
+       template_app
+        (template_hole 1, template_app (template_hole 0, template_var 0)))),
+    ("Map_Extra.ran_map_graph", "ran ?f = Range (map_graph ?f)",
+     template_equation
+      (template_app (template_hole 2, template_var 0),
+       template_app
+        (template_hole 1, template_app (template_hole 0, template_var 0)))),
+    ("Map_Extra.dom_map_inv", "dom (map_inv ?f) = ran ?f",
+     template_equation
+      (template_app
+        (template_hole 2, template_app (template_hole 1, template_var 0)),
+       template_app (template_hole 0, template_var 0))),
+    ("Map_Extra.ran_map_of_list", "ran (map_of_list ?xs) = set ?xs",
+     template_equation
+      (template_app
+        (template_hole 2, template_app (template_hole 1, template_var 0)),
+       template_app (template_hole 0, template_var 0))),
+    ("Map_Extra.dom_Some", "dom (Some o ?f) = UNIV",
+     template_equation
+      (template_app
+        (template_hole 3,
+         template_app
+          (template_app (template_hole 2, template_hole 1),
+           template_var 0)),
+       template_hole 0)),
+    ("Map_Extra.functional_list",
+     "functional_list ?xs = functional (set ?xs)",
+     template_equation
+      (template_app (template_hole 2, template_var 0),
+       template_app
+        (template_hole 1, template_app (template_hole 0, template_var 0)))),
+    ("Map_Extra.map_graph_inv'", "graph_map' (map_graph ?f) = Some ?f",
+     template_equation
+      (template_app
+        (template_hole 2, template_app (template_hole 1, template_var 0)),
+       template_app (template_hole 0, template_var 0))),
+    ("Map_Extra.graph_map_dom", "dom (graph_map ?R) = fst ` ?R",
+     template_equation
+      (template_app
+        (template_hole 3, template_app (template_hole 2, template_var 0)),
+       template_app
+        (template_app (template_hole 1, template_hole 0), template_var 0))),
+    ("Map_Extra.preimage_range", "preimage ?f (ran ?f) = dom ?f",
+     template_equation
+      (template_app
+        (template_app (template_hole 2, template_var 0),
+         template_app (template_hole 1, template_var 0)),
+       template_app (template_hole 0, template_var 0))),
+    ("Map_Extra.map_comp_dom", "dom (?g \<circ>\<^sub>m ?f) <= dom ?f",
+     template_inequation
+      (less_equals,
+       template_app
+        (template_hole 2,
+         template_app
+          (template_app (template_hole 1, template_var 1), template_var 0)),
+       template_app (template_hole 0, template_var 0))),
+    ("Map_Extra.dom_ran_restrict",
+     "dom (?f\<upharpoonleft>\<^bsub>?B\<^esub>) <= dom ?f",
+     template_inequation
+      (less_equals,
+       template_app
+        (template_hole 1,
+         template_app
+          (template_app (template_hole 0, template_var 1), template_var 0)),
+       template_app (template_hole 1, template_var 1))),
+    ("Map_Extra.map_restrict_dom_compl", "?f |` (- dom ?f) = Map.empty",
+     template_equation
+      (template_app
+        (template_app (template_hole 3, template_var 0),
+         template_app
+          (template_hole 2,
+           template_app (template_hole 1, template_var 0))),
+       t_empty)),
+    ("Map_Extra.dom_map_of_list",
+     "dom (map_of_list ?xs) = {0..<length ?xs}",
+     template_equation
+      (template_app
+        (template_hole 4, template_app (template_hole 3, template_var 0)),
+       template_app
+        (template_app (template_hole 2, template_hole 1),
+         template_app (template_hole 0, template_var 0)))),
+    ("Map_Extra.graph_map_countable_dom",
+     "countable ?R ==> countable (dom (graph_map ?R))",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 3, template_var 0))],
+       template_predicate
+        (
+           template_app
+            (template_hole 2,
+             template_app
+              (template_hole 1,
+               template_app (template_hole 0, template_var 0)))
+           ))),
+    ("Map_Extra.countable_ran", "countable (dom ?f) ==> countable (ran ?f)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_hole 3,
+              template_app (template_hole 2, template_var 0))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_hole 1,
+             template_app (template_hole 0, template_var 0))
+           ))),
+    ("Map_Extra.map_graph_countable",
+     "countable (dom ?f) ==> countable (map_graph ?f)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_hole 3,
+              template_app (template_hole 2, template_var 0))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_hole 1,
+             template_app (template_hole 0, template_var 0))
+           ))),
+    ("Map_Extra.finite_dom_ran", "finite (dom ?f) ==> finite (ran ?f)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_hole 3,
+              template_app (template_hole 2, template_var 0))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_hole 1,
+             template_app (template_hole 0, template_var 0))
+           ))),
+    ("Map_Extra.finite_dom_graph",
+     "finite (dom ?f) ==> finite (map_graph ?f)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_hole 3,
+              template_app (template_hole 2, template_var 0))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_hole 1,
+             template_app (template_hole 0, template_var 0))
+           ))),
+    ("Map_Extra.comp_map_sym",
+     "?f \<parallel>\<^sub>m ?g ==> ?g \<parallel>\<^sub>m ?f",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 0, template_var 1),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 0, template_var 0), template_var 1)
+           ))),
+    ("Map_Extra.dom_preimage",
+     "dom (?m \<circ>\<^sub>m ?f) = preimage ?f (dom ?m)",
+     template_equation
+      (template_app
+        (template_hole 3,
+         template_app
+          (template_app (template_hole 2, template_var 1), template_var 0)),
+       template_app
+        (template_app (template_hole 1, template_var 0),
+         template_app (template_hole 0, template_var 1)))),
+    ("Map_Extra.ran_ran_restrict",
+     "ran (?f\<upharpoonleft>\<^bsub>?B\<^esub>) = ran ?f Int ?B",
+     template_equation
+      (template_app
+        (template_hole 2,
+         template_app
+          (template_app (template_hole 1, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 0, template_app (template_hole 2, template_var 1)),
+         template_var 0))),
+    ("Map_Extra.dom_image_ran", "?f ` dom ?f = Some ` ran ?f",
+     template_equation
+      (template_app
+        (template_app (template_hole 4, template_var 0),
+         template_app (template_hole 3, template_var 0)),
+       template_app
+        (template_app (template_hole 2, template_hole 1),
+         template_app (template_hole 0, template_var 0)))),
+    ("Map_Extra.map_eq_graph", "(?f = ?g) = (map_graph ?f = map_graph ?g)",
+     template_bimplication
+      (template_equation (template_var 1, template_var 0),
+       template_equation
+        (template_app (template_hole 0, template_var 1),
+         template_app (template_hole 0, template_var 0)))),
+    ("Map_Extra.map_le_graph",
+     "(?f \<subseteq>\<^sub>m ?g) = (map_graph ?f <= map_graph ?g)",
+     template_equation
+      (template_app
+        (template_app (template_hole 2, template_var 1), template_var 0),
+       template_app
+        (template_app
+          (template_hole 1, template_app (template_hole 0, template_var 1)),
+         template_app (template_hole 0, template_var 0)))),
+    ("Map_Extra.map_comp_apply",
+     "(?f \<circ>\<^sub>m ?g) ?x = ?g ?x >>= ?f",
+     template_equation
+      (template_app
+        (template_app
+          (template_app (template_hole 1, template_var 2), template_var 1),
+         template_var 0),
+       template_app
+        (template_app
+          (template_hole 0, template_app (template_var 1, template_var 0)),
+         template_var 2))),
+    ("Map_Extra.graph_map_inv",
+     "functional ?g ==> map_graph (graph_map ?g) = ?g",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 3, template_var 0))],
+       template_equation
+        (template_app
+          (template_hole 1, template_app (template_hole 0, template_var 0)),
+         template_var 0))),
+    ("Map_Extra.map_add_Some", "Some ++ ?f = map_id_on (- dom ?f) ++ ?f",
+     template_equation
+      (template_app
+        (template_app (template_hole 4, template_hole 3), template_var 0),
+       template_app
+        (template_app
+          (template_hole 4,
+           template_app
+            (template_hole 2,
+             template_app
+              (template_hole 1,
+               template_app (template_hole 0, template_var 0)))),
+         template_var 0))),
+    ("Map_Extra.map_graph_comp",
+     "map_graph (?g \<circ>\<^sub>m ?f) = map_graph ?f O map_graph ?g",
+     template_equation
+      (template_app
+        (template_hole 4,
+         template_app
+          (template_app (template_hole 3, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 2, template_app (template_hole 1, template_var 0)),
+         template_app (template_hole 0, template_var 1)))),
+    ("Map_Extra.map_graph_minus",
+     "map_graph (?f -- ?g) = map_graph ?f - map_graph ?g",
+     template_equation
+      (template_app
+        (template_hole 2,
+         template_app
+          (template_app (template_hole 1, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 0, template_app (template_hole 2, template_var 1)),
+         template_app (template_hole 2, template_var 0)))),
+    ("Map_Extra.map_le_via_restrict",
+     "(?f \<subseteq>\<^sub>m ?g) = (?g |` dom ?f = ?f)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 3, template_var 1),
+              template_var 0)
+            )],
+       template_equation
+        (template_app
+          (template_app (template_hole 1, template_var 0),
+           template_app (template_hole 0, template_var 1)),
+         template_var 1))),
+    ("Map_Extra.ran_map_add_subset", "ran (?x ++ ?y) <= ran ?x Un ran ?y",
+     template_inequation
+      (less_equals,
+       template_app
+        (template_hole 2,
+         template_app
+          (template_app (template_hole 1, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 0, template_app (template_hole 2, template_var 1)),
+         template_app (template_hole 2, template_var 0)))),
+    ("Map_Extra.ran_restrict_finite_dom",
+     "finite (dom ?f) ==>
+      finite (dom (?f\<upharpoonleft>\<^bsub>?B\<^esub>))",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_hole 2,
+              template_app (template_hole 1, template_var 1))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_hole 2,
+             template_app
+              (template_hole 1,
+               template_app
+                (template_app (template_hole 0, template_var 1),
+                 template_var 0)))
+           ))),
+    ("Map_Extra.sorted_list_of_map_inv",
+     "finite (dom ?f) ==> map_of (sorted_list_of_map ?f) = ?f",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_hole 4,
+              template_app (template_hole 3, template_var 0))
+            )],
+       template_equation
+        (template_app
+          (template_hole 1, template_app (template_hole 0, template_var 0)),
+         template_var 0))),
+    ("Map_Extra.map_add_restrict", "?f ++ ?g = ?f |` (- dom ?g) ++ ?g",
+     template_equation
+      (template_app
+        (template_app (template_hole 3, template_var 1), template_var 0),
+       template_app
+        (template_app
+          (template_hole 3,
+           template_app
+            (template_app (template_hole 2, template_var 1),
+             template_app
+              (template_hole 1,
+               template_app (template_hole 0, template_var 0)))),
+         template_var 0))),
+    ("Map_Extra.map_comp_assoc",
+     "?f \<circ>\<^sub>m (?g \<circ>\<^sub>m ?h) =
+      ?f \<circ>\<^sub>m ?g \<circ>\<^sub>m ?h",
+     template_equation
+      (template_app
+        (template_app (template_hole 3, template_var 2),
+         template_app
+          (template_app (template_hole 2, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 1,
+           template_app
+            (template_app (template_hole 0, template_var 2),
+             template_var 1)),
+         template_var 0))),
+    ("Map_Extra.map_id_on_in", "?x : ?xs ==> map_id_on ?xs ?x = Some ?x",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 3, template_var 1),
+              template_var 0)
+            )],
+       template_equation
+        (template_app
+          (template_app (template_hole 1, template_var 0), template_var 1),
+         template_app (template_hole 0, template_var 1)))),
+    ("Map_Extra.inj_map_inv",
+     "inj_on ?f (dom ?f) ==> inj_on (map_inv ?f) (ran ?f)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 4, template_var 0),
+              template_app (template_hole 3, template_var 0))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 2,
+               template_app (template_hole 1, template_var 0)),
+             template_app (template_hole 0, template_var 0))
+           ))),
+    ("Map_Extra.map_inv_map_inv",
+     "inj_on ?f (dom ?f) ==> map_inv (map_inv ?f) = ?f",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 4, template_var 0),
+              template_app (template_hole 3, template_var 0))
+            )],
+       template_equation
+        (template_app
+          (template_hole 1, template_app (template_hole 0, template_var 0)),
+         template_var 0))),
+    ("Map_Extra.map_id_on_out", "?x ~: ?xs ==> map_id_on ?xs ?x = None",
+     template_implication
+      ([template_negation
+         (
+            template_predicate
+             (
+                template_app
+                 (template_app (template_hole 3, template_var 1),
+                  template_var 0)
+                )
+            )],
+       template_equation
+        (template_app
+          (template_app (template_hole 1, template_var 0), template_var 1),
+         template_hole 0))),
+    ("Map_Extra.map_graph_mem_equiv",
+     "((?x, ?y) : map_graph ?f) = (?f ?x = Some ?y)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 4,
+                template_app
+                 (template_app (template_hole 3, template_var 2),
+                  template_var 1)),
+              template_app (template_hole 2, template_var 0))
+            )],
+       template_equation
+        (template_app (template_var 0, template_var 2),
+         template_app (template_hole 0, template_var 1)))),
+    ("Map_Extra.map_add_cancel",
+     "?f \<subseteq>\<^sub>m ?g ==> ?f ++ (?g -- ?f) = ?g",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 3, template_var 1),
+              template_var 0)
+            )],
+       template_equation
+        (template_app
+          (template_app (template_hole 1, template_var 1),
+           template_app
+            (template_app (template_hole 0, template_var 0),
+             template_var 1)),
+         template_var 0))),
+    ("Map_Extra.ran_map_inv",
+     "inj_on ?f (dom ?f) ==> ran (map_inv ?f) = dom ?f",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 4, template_var 0),
+              template_app (template_hole 3, template_var 0))
+            )],
+       template_equation
+        (template_app
+          (template_hole 1, template_app (template_hole 0, template_var 0)),
+         template_app (template_hole 3, template_var 0)))),
+    ("Map_Extra.map_plus_restrict_dist",
+     "(?f ++ ?g) |` ?A = ?f |` ?A ++ ?g |` ?A",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 1,
+           template_app
+            (template_app (template_hole 0, template_var 2),
+             template_var 1)),
+         template_var 0),
+       template_app
+        (template_app
+          (template_hole 0,
+           template_app
+            (template_app (template_hole 1, template_var 2),
+             template_var 0)),
+         template_app
+          (template_app (template_hole 1, template_var 1),
+           template_var 0)))),
+    ("Map_Extra.dom_left_map_add", "?x : dom ?g ==> (?f ++ ?g) ?x = ?g ?x",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 3, template_var 2),
+              template_app (template_hole 2, template_var 1))
+            )],
+       template_equation
+        (template_app
+          (template_app
+            (template_app (template_hole 0, template_var 0),
+             template_var 1),
+           template_var 2),
+         template_app (template_var 1, template_var 2)))),
+    ("Map_Extra.map_inv_maplet", "map_inv [?x |-> ?y] = [?y |-> ?x]",
+     template_equation
+      (template_app
+        (template_hole 6,
+         template_app
+          (template_app
+            (template_app (template_hole 5, t_empty), template_var 1),
+           template_app (template_hole 3, template_var 0))),
+       template_app
+        (template_app
+          (template_app (template_hole 2, t_empty), template_var 0),
+         template_app (template_hole 0, template_var 1)))),
+    ("Map_Extra.inj_map_bij",
+     "inj_on ?f (dom ?f) ==> bij_betw ?f (dom ?f) (Some ` ran ?f)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 5, template_var 0),
+              template_app (template_hole 4, template_var 0))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app (template_hole 3, template_var 0),
+               template_app (template_hole 4, template_var 0)),
+             template_app
+              (template_app (template_hole 2, template_hole 1),
+               template_app (template_hole 0, template_var 0)))
+           ))),
+    ("Map_Extra.bij_map_Some",
+     "bij_betw ?f ?a (Some ` ?b) ==> bij_betw (the o ?f) ?a ?b",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 5, template_var 2),
+                template_var 1),
+              template_app
+               (template_app (template_hole 4, template_hole 3),
+                template_var 0))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_hole 2,
+                 template_app
+                  (template_app (template_hole 1, template_hole 0),
+                   template_var 2)),
+               template_var 1),
+             template_var 0)
+           ))),
+    ("Map_Extra.restrict_map_neg_disj",
+     "dom ?f Int ?A = {} ==> ?f |` (- ?A) = ?f",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app
+             (template_hole 5,
+              template_app (template_hole 4, template_var 1)),
+            template_var 0),
+          template_hole 3)],
+       template_equation
+        (template_app
+          (template_app (template_hole 1, template_var 1),
+           template_app (template_hole 0, template_var 0)),
+         template_var 1))),
+    ("Map_Extra.countable_preimage",
+     "[| countable ?A; inj_on ?f (preimage ?f ?A) |]
+      ==> countable (preimage ?f ?A)",
+     template_implication
+      ([template_predicate (template_app (template_hole 3, template_var 1)),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 2, template_var 0),
+              template_app
+               (template_app (template_hole 1, template_var 0),
+                template_var 1))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_hole 0,
+             template_app
+              (template_app (template_hole 1, template_var 0),
+               template_var 1))
+           ))),
+    ("Map_Extra.distinct_map_dom",
+     "?x ~: set ?xs ==> ?x ~: dom [?xs [|->] ?ys]",
+     template_implication
+      ([template_negation
+         (
+            template_predicate
+             (
+                template_app
+                 (template_app (template_hole 4, template_var 2),
+                  template_app (template_hole 3, template_var 1))
+                )
+            )],
+       template_negation
+        (
+           template_predicate
+            (
+               template_app
+                (template_app (template_hole 4, template_var 2),
+                 template_app
+                  (template_hole 2,
+                   template_app
+                    (template_app
+                      (template_app (template_hole 1, t_empty),
+                       template_var 1),
+                     template_var 0)))
+               )
+           ))),
+    ("Map_Extra.map_add_split",
+     "dom ?f = ?A Un ?B ==> ?f |` ?A ++ ?f |` ?B = ?f",
+     template_implication
+      ([template_equation
+         (template_app (template_hole 4, template_var 2),
+          template_app
+           (template_app (template_hole 3, template_var 1),
+            template_var 0))],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 1,
+             template_app
+              (template_app (template_hole 0, template_var 2),
+               template_var 1)),
+           template_app
+            (template_app (template_hole 0, template_var 2),
+             template_var 0)),
+         template_var 2))),
+    ("Map_Extra.map_minus_apply",
+     "?y : dom (?f -- ?g) ==> (?f -- ?g)(?y)\<^sub>m = ?f(?y)\<^sub>m",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 4, template_var 2),
+              template_app
+               (template_hole 3,
+                template_app
+                 (template_app (template_hole 2, template_var 1),
+                  template_var 0)))
+            )],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 0,
+             template_app
+              (template_app (template_hole 2, template_var 1),
+               template_var 0)),
+           template_var 2),
+         template_app
+          (template_app (template_hole 0, template_var 1),
+           template_var 2)))),
+    ("Map_Extra.inj_completed_map",
+     "[| dom ?f = ran ?f; inj_on ?f (dom ?f) |] ==> inj (Some ++ ?f)",
+     template_implication
+      ([template_equation
+         (template_app (template_hole 5, template_var 0),
+          template_app (template_hole 4, template_var 0)),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 3, template_var 0),
+              template_app (template_hole 5, template_var 0))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 3,
+               template_app
+                (template_app (template_hole 2, template_hole 1),
+                 template_var 0)),
+             template_hole 0)
+           ))),
+    ("Map_Extra.map_le_member",
+     "(?f \<subseteq>\<^sub>m ?g) =
+      (ALL x y. (x, y) \<in>\<^sub>m ?f --> (x, y) \<in>\<^sub>m ?g)",
+     template_equation
+      (template_app
+        (template_app (template_hole 5, template_var 1), template_var 0),
+       template_app (template_hole 4, t_empty))),
+    ("Map_Extra.map_le_iff_add",
+     "(?f \<subseteq>\<^sub>m ?g) =
+      (EX h. dom ?f Int dom h = {} & ?f ++ h = ?g)",
+     template_equation
+      (template_app
+        (template_app (template_hole 8, template_var 1), template_var 0),
+       template_app (template_hole 7, t_empty))),
+    ("Map_Extra.functional_insert",
+     "functional (insert (?x, ?y) ?g) =
+      (?g `` {?x} <= {?y} & functional ?g)",
+     template_equation
+      (template_app
+        (template_hole 9,
+         template_app
+          (template_app
+            (template_hole 8,
+             template_app
+              (template_app (template_hole 7, template_var 2),
+               template_var 1)),
+           template_var 0)),
+       template_app
+        (template_app
+          (template_hole 6,
+           template_app
+            (template_app
+              (template_hole 5,
+               template_app
+                (template_app (template_hole 4, template_var 0),
+                 template_app
+                  (template_app (template_hole 3, template_var 2),
+                   template_hole 2))),
+             template_app
+              (template_app (template_hole 1, template_var 1),
+               template_hole 0))),
+         template_app (template_hole 9, template_var 0)))),
+    ("Map_Extra.map_add_lookup",
+     "?x ~: dom ?f ==> ([?x |-> ?y] ++ ?f) ?x = Some ?y",
+     template_implication
+      ([template_negation
+         (
+            template_predicate
+             (
+                template_app
+                 (template_app (template_hole 6, template_var 2),
+                  template_app (template_hole 5, template_var 1))
+                )
+            )],
+       template_equation
+        (template_app
+          (template_app
+            (template_app
+              (template_hole 3,
+               template_app
+                (template_app
+                  (template_app (template_hole 2, t_empty), template_var 2),
+                 template_app (template_hole 0, template_var 0))),
+             template_var 1),
+           template_var 2),
+         template_app (template_hole 0, template_var 0)))),
+    ("Map_Extra.map_inv_f_f",
+     "[| inj_on ?f (dom ?f); ?f ?x = Some ?y |]
+      ==> map_inv ?f ?y = Some ?x",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 6, template_var 2),
+              template_app (template_hole 5, template_var 2))
+            ),
+        template_equation
+         (template_app (template_var 2, template_var 1),
+          template_app (template_hole 3, template_var 0))],
+       template_equation
+        (template_app
+          (template_app (template_hole 1, template_var 2), template_var 0),
+         template_app (template_hole 0, template_var 1)))),
+    ("Map_Extra.option_bindSomeI",
+     "[| ?X = Some ?x; ?F ?x = Some ?y |] ==> ?X >>= ?F = Some ?y",
+     template_implication
+      ([template_equation
+         (template_var 3, template_app (template_hole 3, template_var 2)),
+        template_equation
+         (template_app (template_var 1, template_var 2),
+          template_app (template_hole 1, template_var 0))],
+       template_equation
+        (template_app
+          (template_app (template_hole 0, template_var 3), template_var 1),
+         template_app (template_hole 1, template_var 0)))),
+    ("Map_Extra.map_compr_eta",
+     "[x \<mapsto> y |x y. (x, y) \<in>\<^sub>m ?f] = ?f",
+     template_equation
+      (template_app
+        (template_hole 7, template_app (template_hole 6, t_empty)),
+       template_var 0)),
+    ("Map_Extra.map_compr_dom_simple",
+     "dom [x \<mapsto> ?f x |x. ?P x] = {x. ?P x}",
+     template_equation
+      (template_app
+        (template_hole 7,
+         template_app
+          (template_hole 6, template_app (template_hole 5, t_empty))),
+       template_app (template_hole 0, t_empty))),
+    ("Map_Extra.map_member_minus",
+     "((?x, ?y) \<in>\<^sub>m ?f -- ?g) =
+      ((?x, ?y) \<in>\<^sub>m ?f & ~ (?x, ?y) \<in>\<^sub>m ?g)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 4,
+           template_app
+            (template_app (template_hole 3, template_var 3),
+             template_var 2)),
+         template_app
+          (template_app (template_hole 2, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 1,
+           template_app
+            (template_app
+              (template_hole 4,
+               template_app
+                (template_app (template_hole 3, template_var 3),
+                 template_var 2)),
+             template_var 1)),
+         template_app
+          (template_hole 0,
+           template_app
+            (template_app
+              (template_hole 4,
+               template_app
+                (template_app (template_hole 3, template_var 3),
+                 template_var 2)),
+             template_var 0))))),
+    ("Map_Extra.map_plus_eq_left",
+     "?f ++ ?h = ?g ++ ?h ==> ?f |` (- dom ?h) = ?g |` (- dom ?h)",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app (template_hole 3, template_var 2), template_var 1),
+          template_app
+           (template_app (template_hole 3, template_var 0),
+            template_var 1))],
+       template_equation
+        (template_app
+          (template_app (template_hole 2, template_var 2),
+           template_app
+            (template_hole 1,
+             template_app (template_hole 0, template_var 1))),
+         template_app
+          (template_app (template_hole 2, template_var 0),
+           template_app
+            (template_hole 1,
+             template_app (template_hole 0, template_var 1)))))),
+    ("Map_Extra.map_minus_plus_commute",
+     "dom ?g Int dom ?h = {} ==> ?f -- ?g ++ ?h = ?f ++ ?h -- ?g",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app
+             (template_hole 5,
+              template_app (template_hole 4, template_var 2)),
+            template_app (template_hole 4, template_var 1)),
+          template_hole 3)],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 1,
+             template_app
+              (template_app (template_hole 0, template_var 0),
+               template_var 2)),
+           template_var 1),
+         template_app
+          (template_app
+            (template_hole 0,
+             template_app
+              (template_app (template_hole 1, template_var 0),
+               template_var 1)),
+           template_var 2)))),
+    ("Map_Extra.map_ext",
+     "(!!x y. ((x, y) \<in>\<^sub>m ?A) = ((x, y) \<in>\<^sub>m ?B)) ==>
+      ?A = ?B",
+     template_implication
+      ([template_predicate (template_app (template_hole 6, t_empty))],
+       template_equation (template_var 1, template_var 0))),
+    ("Map_Extra.dom_right_map_add",
+     "[| ?x ~: dom ?g; ?x : dom ?f |] ==> (?f ++ ?g) ?x = ?f ?x",
+     template_implication
+      ([template_negation
+         (
+            template_predicate
+             (
+                template_app
+                 (template_app (template_hole 3, template_var 2),
+                  template_app (template_hole 2, template_var 1))
+                )
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 3, template_var 2),
+              template_app (template_hole 2, template_var 0))
+            )],
+       template_equation
+        (template_app
+          (template_app
+            (template_app (template_hole 0, template_var 0),
+             template_var 1),
+           template_var 2),
+         template_app (template_var 0, template_var 2)))),
+    ("Map_Extra.ran_maplets",
+     "[| length ?xs = length ?ys; distinct ?xs |]
+      ==> ran [?xs [|->] ?ys] = set ?ys",
+     template_implication
+      ([template_equation
+         (template_app (template_hole 7, template_var 1),
+          template_app (template_hole 6, template_var 0)),
+        template_predicate
+         (template_app (template_hole 5, template_var 1))],
+       template_equation
+        (template_app
+          (template_hole 3,
+           template_app
+            (template_app
+              (template_app (template_hole 2, t_empty), template_var 1),
+             template_var 0)),
+         template_app (template_hole 0, template_var 0)))),
+    ("Map_Extra.map_add_comm_weak",
+     "ALL k:dom ?m1.0 Int dom ?m2.0. ?m1.0 k = ?m2.0 k ==>
+      ?m1.0 ++ ?m2.0 = ?m2.0 ++ ?m1.0",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 5,
+                template_app
+                 (template_app
+                   (template_hole 4,
+                    template_app (template_hole 3, template_var 1)),
+                  template_app (template_hole 3, template_var 0))),
+              t_empty)
+            )],
+       template_equation
+        (template_app
+          (template_app (template_hole 0, template_var 1), template_var 0),
+         template_app
+          (template_app (template_hole 0, template_var 0),
+           template_var 1)))),
+    ("Map_Extra.map_minus_common_subset",
+     "[| ?h \<subseteq>\<^sub>m ?f; ?h \<subseteq>\<^sub>m ?g |]
+      ==> (?f -- ?h = ?g -- ?h) = (?f = ?g)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 3, template_var 2),
+              template_var 1)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 3, template_var 2),
+              template_var 0)
+            )],
+       template_bimplication
+        (template_equation
+          (template_app
+            (template_app (template_hole 0, template_var 1),
+             template_var 2),
+           template_app
+            (template_app (template_hole 0, template_var 0),
+             template_var 2)),
+         template_equation (template_var 1, template_var 0)))),
+    ("Map_Extra.bij_completed_map",
+     "[| dom ?f = ran ?f; inj_on ?f (dom ?f) |]
+      ==> bij_betw (Some ++ ?f) UNIV (range Some)",
+     template_implication
+      ([template_equation
+         (template_app (template_hole 7, template_var 0),
+          template_app (template_hole 6, template_var 0)),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 5, template_var 0),
+              template_app (template_hole 7, template_var 0))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_hole 4,
+                 template_app
+                  (template_app (template_hole 3, template_hole 2),
+                   template_var 0)),
+               template_hole 1),
+             template_app
+              (template_app (template_hole 0, template_hole 2),
+               template_hole 1))
+           ))),
+    ("Map_Extra.ifSomeE",
+     "[| (if ?c then Some ?x else None) = Some ?y;
+         [| ?c; ?x = ?y |] ==> ?P |]
+      ==> ?P",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app
+             (template_app (template_hole 3, template_var 3),
+              template_app (template_hole 2, template_var 2)),
+            template_hole 1),
+          template_app (template_hole 2, template_var 1)),
+        template_implication
+         ([template_predicate (template_var 3)],
+          template_implication
+           ([template_equation (template_var 2, template_var 1)],
+            template_predicate (template_var 0)))],
+       template_predicate (template_var 0))),
+    ("Map_Extra.map_compr_eval_simple",
+     "[x \<mapsto> ?f x |x. ?P x] ?x =
+      (if ?P ?x then Some (?f ?x) else None)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 8, template_app (template_hole 7, t_empty)),
+         template_var 0),
+       template_app
+        (template_app
+          (template_app
+            (template_hole 2,
+             template_app (template_var 1, template_var 0)),
+           template_app
+            (template_hole 1,
+             template_app (template_var 2, template_var 0))),
+         template_hole 0))),
+    ("Map_Extra.map_eqI",
+     "[| dom ?f = dom ?g; ALL x:dom ?f. the (?f x) = the (?g x) |]
+      ==> ?f = ?g",
+     template_implication
+      ([template_equation
+         (template_app (template_hole 4, template_var 1),
+          template_app (template_hole 4, template_var 0)),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 3,
+                template_app (template_hole 4, template_var 1)),
+              t_empty)
+            )],
+       template_equation (template_var 1, template_var 0))),
+    ("Map_Extra.map_member_plus",
+     "((?x, ?y) \<in>\<^sub>m ?f ++ ?g) =
+      (?x ~: dom ?g & (?x, ?y) \<in>\<^sub>m ?f |
+       (?x, ?y) \<in>\<^sub>m ?g)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 7,
+           template_app
+            (template_app (template_hole 6, template_var 3),
+             template_var 2)),
+         template_app
+          (template_app (template_hole 5, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 4,
+           template_app
+            (template_app
+              (template_hole 3,
+               template_app
+                (template_hole 2,
+                 template_app
+                  (template_app (template_hole 1, template_var 3),
+                   template_app (template_hole 0, template_var 0)))),
+             template_app
+              (template_app
+                (template_hole 7,
+                 template_app
+                  (template_app (template_hole 6, template_var 3),
+                   template_var 2)),
+               template_var 1))),
+         template_app
+          (template_app
+            (template_hole 7,
+             template_app
+              (template_app (template_hole 6, template_var 3),
+               template_var 2)),
+           template_var 0)))),
+    ("Map_Extra.map_self_adjoin_complete",
+     "[| dom ?f Int ran ?f = {}; inj_on ?f (dom ?f) |]
+      ==> inj_on (map_inv ?f ++ ?f) (dom ?f Un ran ?f)",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app
+             (template_hole 7,
+              template_app (template_hole 6, template_var 0)),
+            template_app (template_hole 5, template_var 0)),
+          template_hole 4),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 3, template_var 0),
+              template_app (template_hole 6, template_var 0))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 3,
+               template_app
+                (template_app
+                  (template_hole 2,
+                   template_app (template_hole 1, template_var 0)),
+                 template_var 0)),
+             template_app
+              (template_app
+                (template_hole 0,
+                 template_app (template_hole 6, template_var 0)),
+               template_app (template_hole 5, template_var 0)))
+           ))),
+    ("Map_Extra.maplets_lookup",
+     "[| length ?xs = length ?ys; distinct ?xs;
+         [?xs [|->] ?ys] ?x = Some ?y |]
+      ==> ?y : set ?ys",
+     template_implication
+      ([template_equation
+         (template_app (template_hole 8, template_var 3),
+          template_app (template_hole 7, template_var 2)),
+        template_predicate (template_app (template_hole 6, template_var 3)),
+        template_equation
+         (template_app
+           (template_app
+             (template_app
+               (template_app (template_hole 4, t_empty), template_var 3),
+              template_var 2),
+            template_var 1),
+          template_app (template_hole 2, template_var 0))],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 1, template_var 0),
+             template_app (template_hole 0, template_var 2))
+           ))),
+    ("Map_Extra.map_compr_ran_simple",
+     "ran [x \<mapsto> ?f x |x. ?P x] = {?f x |x. ?P x}",
+     template_equation
+      (template_app
+        (template_hole 8,
+         template_app
+          (template_hole 7, template_app (template_hole 6, t_empty))),
+       template_app (template_hole 1, t_empty))),
+    ("Map_Extra.ran_map_add",
+     "?m ` (dom ?m Int dom ?n) = ?n ` (dom ?m Int dom ?n) ==>
+      ran (?m ++ ?n) = ran ?n Un ran ?m",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app (template_hole 6, template_var 1),
+            template_app
+             (template_app
+               (template_hole 5,
+                template_app (template_hole 4, template_var 1)),
+              template_app (template_hole 4, template_var 0))),
+          template_app
+           (template_app (template_hole 6, template_var 0),
+            template_app
+             (template_app
+               (template_hole 5,
+                template_app (template_hole 4, template_var 1)),
+              template_app (template_hole 4, template_var 0))))],
+       template_equation
+        (template_app
+          (template_hole 2,
+           template_app
+            (template_app (template_hole 1, template_var 1),
+             template_var 0)),
+         template_app
+          (template_app
+            (template_hole 0,
+             template_app (template_hole 2, template_var 0)),
+           template_app (template_hole 2, template_var 1))))),
+    ("Map_Extra.inv_map_inv",
+     "[| inj_on ?f (dom ?f); ran ?f = dom ?f |]
+      ==> inv (the o Some ++ ?f) = the o map_inv (Some ++ ?f)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 11, template_var 0),
+              template_app (template_hole 10, template_var 0))
+            ),
+        template_equation
+         (template_app (template_hole 8, template_var 0),
+          template_app (template_hole 10, template_var 0))],
+       template_equation
+        (template_app
+          (template_app (template_hole 6, template_hole 5),
+           template_app
+            (template_app (template_hole 4, template_hole 3),
+             template_app
+              (template_app (template_hole 2, template_hole 1),
+               template_var 0))),
+         template_app
+          (template_app (template_hole 4, template_hole 3),
+           template_app
+            (template_hole 0,
+             template_app
+              (template_app (template_hole 2, template_hole 1),
+               template_var 0)))))),
+    ("Map_Extra.option_bindSomeE",
+     "[| ?X >>= ?F = Some ?v;
+         !!x. [| ?X = Some x; ?F x = Some ?v |] ==> ?P |]
+      ==> ?P",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app (template_hole 4, template_var 3), template_var 2),
+          template_app (template_hole 3, template_var 1)),
+        template_predicate (template_app (template_hole 2, t_empty))],
+       template_predicate (template_var 0))),
+    ("Map_Extra.distinct_map_ran",
+     "[| distinct ?xs; ?y ~: set ?ys; length ?xs = length ?ys |]
+      ==> ?y ~: ran [?xs [|->] ?ys]",
+     template_implication
+      ([template_predicate (template_app (template_hole 9, template_var 2)),
+        template_negation
+         (
+            template_predicate
+             (
+                template_app
+                 (template_app (template_hole 7, template_var 1),
+                  template_app (template_hole 6, template_var 0))
+                )
+            ),
+        template_equation
+         (template_app (template_hole 4, template_var 2),
+          template_app (template_hole 3, template_var 0))],
+       template_negation
+        (
+           template_predicate
+            (
+               template_app
+                (template_app (template_hole 7, template_var 1),
+                 template_app
+                  (template_hole 2,
+                   template_app
+                    (template_app
+                      (template_app (template_hole 1, t_empty),
+                       template_var 2),
+                     template_var 0)))
+               )
+           ))),
+    ("Map_Extra.graph_map_insert",
+     "[| functional ?g; ?g `` {?x} <= {?y} |]
+      ==> graph_map (insert (?x, ?y) ?g) = graph_map ?g(?x |-> ?y)",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 12, template_var 2)),
+        template_inequation
+         (less_equals,
+          template_app
+           (template_app (template_hole 10, template_var 2),
+            template_app
+             (template_app (template_hole 9, template_var 1),
+              template_hole 8)),
+          template_app
+           (template_app (template_hole 7, template_var 0),
+            template_hole 6))],
+       template_equation
+        (template_app
+          (template_hole 4,
+           template_app
+            (template_app
+              (template_hole 3,
+               template_app
+                (template_app (template_hole 2, template_var 1),
+                 template_var 0)),
+             template_var 2)),
+         template_app
+          (template_app
+            (template_app
+              (template_hole 1,
+               template_app (template_hole 4, template_var 2)),
+             template_var 1),
+           template_app (template_hole 0, template_var 0))))),
+    ("Map_Extra.map_compr_simple",
+     "[x \<mapsto> ?F x y |x y. (x, y) \<in>\<^sub>m ?f] =
+      (%x. ?f x >>= (%y. Some (?F x y)))",
+     template_equation
+      (template_app
+        (template_hole 10, template_app (template_hole 9, t_empty)),
+       t_empty)),
+    ("Map_Extra.inj_map_add",
+     "[| inj_on ?f (dom ?f); inj_on ?g (dom ?g); ran ?f Int ran ?g = {} |]
+      ==> inj_on (?f ++ ?g) (dom ?f Un dom ?g)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 7, template_var 1),
+              template_app (template_hole 6, template_var 1))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 7, template_var 0),
+              template_app (template_hole 6, template_var 0))
+            ),
+        template_equation
+         (template_app
+           (template_app
+             (template_hole 4,
+              template_app (template_hole 3, template_var 1)),
+            template_app (template_hole 3, template_var 0)),
+          template_hole 2)],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 7,
+               template_app
+                (template_app (template_hole 1, template_var 1),
+                 template_var 0)),
+             template_app
+              (template_app
+                (template_hole 0,
+                 template_app (template_hole 6, template_var 1)),
+               template_app (template_hole 6, template_var 0)))
+           ))),
+    ("Map_Extra.maplets_lookup_nth",
+     "[| length ?xs = length ?ys; distinct ?xs; ?i < length ?ys |]
+      ==> [?xs [|->] ?ys] (?xs ! ?i) = Some (?ys ! ?i)",
+     template_implication
+      ([template_equation
+         (template_app (template_hole 9, template_var 2),
+          template_app (template_hole 8, template_var 1)),
+        template_predicate (template_app (template_hole 7, template_var 2)),
+        template_inequation
+         (less_than, template_var 0,
+          template_app (template_hole 8, template_var 1))],
+       template_equation
+        (template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 4, t_empty), template_var 2),
+             template_var 1),
+           template_app
+            (template_app (template_hole 2, template_var 2),
+             template_var 0)),
+         template_app
+          (template_hole 1,
+           template_app
+            (template_app (template_hole 0, template_var 1),
+             template_var 0))))),
+    ("Map_Extra.maplets_distinct_inj",
+     "[| length ?xs = length ?ys; distinct ?xs; distinct ?ys;
+         set ?xs Int set ?ys = {} |]
+      ==> inj_on [?xs [|->] ?ys] (set ?xs)",
+     template_implication
+      ([template_equation
+         (template_app (template_hole 8, template_var 1),
+          template_app (template_hole 8, template_var 0)),
+        template_predicate (template_app (template_hole 7, template_var 1)),
+        template_predicate (template_app (template_hole 7, template_var 0)),
+        template_equation
+         (template_app
+           (template_app
+             (template_hole 5,
+              template_app (template_hole 4, template_var 1)),
+            template_app (template_hole 4, template_var 0)),
+          template_hole 3)],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 2,
+               template_app
+                (template_app
+                  (template_app (template_hole 1, t_empty), template_var 1),
+                 template_var 0)),
+             template_app (template_hole 4, template_var 1))
+           ))),
+    ("Map_Extra.map_inv_maplets",
+     "[| length ?xs = length ?ys; distinct ?xs; distinct ?ys;
+         set ?xs Int set ?ys = {} |]
+      ==> map_inv [?xs [|->] ?ys] = [?ys [|->] ?xs]",
+     template_implication
+      ([template_equation
+         (template_app (template_hole 9, template_var 1),
+          template_app (template_hole 9, template_var 0)),
+        template_predicate (template_app (template_hole 8, template_var 1)),
+        template_predicate (template_app (template_hole 8, template_var 0)),
+        template_equation
+         (template_app
+           (template_app
+             (template_hole 6,
+              template_app (template_hole 5, template_var 1)),
+            template_app (template_hole 5, template_var 0)),
+          template_hole 4)],
+       template_equation
+        (template_app
+          (template_hole 2,
+           template_app
+            (template_app
+              (template_app (template_hole 1, t_empty), template_var 1),
+             template_var 0)),
+         template_app
+          (template_app
+            (template_app (template_hole 1, t_empty), template_var 0),
+           template_var 1)))),
+    ("Map_Extra.map_inv_add",
+     "[| inj_on ?f (dom ?f); inj_on ?g (dom ?g); dom ?f Int dom ?g = {};
+         ran ?f Int ran ?g = {} |]
+      ==> map_inv (?f ++ ?g) = map_inv ?f ++ map_inv ?g",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 12, template_var 1),
+              template_app (template_hole 11, template_var 1))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 12, template_var 0),
+              template_app (template_hole 11, template_var 0))
+            ),
+        template_equation
+         (template_app
+           (template_app
+             (template_hole 9,
+              template_app (template_hole 11, template_var 1)),
+            template_app (template_hole 11, template_var 0)),
+          template_hole 8),
+        template_equation
+         (template_app
+           (template_app
+             (template_hole 6,
+              template_app (template_hole 5, template_var 1)),
+            template_app (template_hole 5, template_var 0)),
+          template_hole 4)],
+       template_equation
+        (template_app
+          (template_hole 2,
+           template_app
+            (template_app (template_hole 1, template_var 1),
+             template_var 0)),
+         template_app
+          (template_app
+            (template_hole 0,
+             template_app (template_hole 2, template_var 1)),
+           template_app (template_hole 2, template_var 0)))))]:
+   (string * thm * template) list
+### theory "Draft.Map_ExtraTemplates"
+### 0.356s elapsed time, 0.484s cpu time, 0.053s GC time
+val it = (): unit

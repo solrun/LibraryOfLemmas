@@ -1,0 +1,441 @@
+Loading theory "Draft.MFMC_Misc" (required by "Draft.MFMC_Flow_AttainabilityTemplates" via "Draft.MFMC_Flow_Attainability" via "Draft.MFMC_Network")
+Loading theory "Draft.Templates" (required by "Draft.MFMC_Flow_AttainabilityTemplates" via "Draft.ExtrEqs")
+Loading theory "HOL-Library.Function_Algebras" (required by "Draft.MFMC_Flow_AttainabilityTemplates" via "Draft.ExtrEqs" via "HOL-Library.BigO")
+instantiation
+  fun :: (type, plus) plus
+  plus_fun == plus :: ('a => 'b) => ('a => 'b) => 'a => 'b
+instantiation
+  fun :: (type, zero) zero
+  zero_fun == zero_class.zero :: 'a => 'b
+instantiation
+  fun :: (type, times) times
+  times_fun == times :: ('a => 'b) => ('a => 'b) => 'a => 'b
+instantiation
+  fun :: (type, one) one
+  one_fun == one_class.one :: 'a => 'b
+datatype template_term
+=
+     t_empty
+   | template_app of template_term * template_term
+   | template_hole of int
+   | template_var of int
+datatype sign
+= equals | greater_equals | greater_than | less_equals | less_than
+datatype template
+=
+     template_bimplication of template * template
+   | template_dunno
+   | template_equation of template_term * template_term
+   | template_implication of template list * template
+   | template_inequation of sign * template_term * template_term
+   | template_negation of template
+   | template_predicate of template_term
+constructor t_empty: template_term
+constructor template_app: template_term * template_term -> template_term
+constructor template_hole: int -> template_term
+constructor template_var: int -> template_term
+constructor equals: sign
+constructor greater_equals: sign
+constructor greater_than: sign
+constructor less_equals: sign
+constructor less_than: sign
+constructor template_bimplication: template * template -> template
+constructor template_dunno: template
+constructor template_equation: template_term * template_term -> template
+constructor template_implication: template list * template -> template
+constructor template_inequation:
+   sign * template_term * template_term -> template
+constructor template_negation: template -> template
+constructor template_predicate: template_term -> template
+val vfs = fn: term -> (indexname * typ) list * (string * typ) list
+val indexOf = fn: ''a list -> ''a -> int -> int
+val has_eq = fn: term -> bool
+val term2template = fn:
+   (indexname * typ) list -> (string * typ) list -> term -> template_term
+val lemma2predicate = fn: term -> term -> template
+val makeTemplatewithContext = fn: term -> term -> template
+val lemma2template = fn: term -> template
+val thm2template = fn: thm -> template
+val tterm2string = fn: template_term -> string
+val template2string = fn: template -> string
+val t = "height ?t <= size ?t": thm
+val th =
+   Const ("HOL.Trueprop", "bool => prop") $
+     (Const ("Orderings.ord_class.less_eq", "nat => nat => bool") $
+       (Const ("Tree.height_class.height", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree")) $
+       (Const ("Nat.size_class.size", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree"))):
+   term
+### theory "Draft.Templates"
+### 0.079s elapsed time, 0.266s cpu time, 0.000s GC time
+### theory "HOL-Library.Function_Algebras"
+### 0.143s elapsed time, 0.396s cpu time, 0.000s GC time
+Loading theory "HOL-Library.BigO" (required by "Draft.MFMC_Flow_AttainabilityTemplates" via "Draft.ExtrEqs")
+### theory "Draft.MFMC_Misc"
+### 0.701s elapsed time, 1.547s cpu time, 0.100s GC time
+Loading theory "Draft.MFMC_Network" (required by "Draft.MFMC_Flow_AttainabilityTemplates" via "Draft.MFMC_Flow_Attainability")
+### theory "HOL-Library.BigO"
+### 0.672s elapsed time, 1.376s cpu time, 0.100s GC time
+Loading theory "Draft.ExtrEqs" (required by "Draft.MFMC_Flow_AttainabilityTemplates")
+Proofs for inductive predicate(s) "cycle"
+  Proving monotonicity ...
+Proofs for inductive predicate(s) "support_flowp"
+  Proving monotonicity ...
+val eqpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Var (("_dummy_", 2), "?'a"))
+       ):
+   term Find_Theorems.criterion
+val badeqpattern = Pattern (Const ("Pure.eq", "?'a => ?'a => prop")):
+   term Find_Theorems.criterion
+val undefpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Const ("HOL.undefined", "?'a"))
+       ):
+   term Find_Theorems.criterion
+val thmpattern =
+   Pattern
+    (Const ("HOL.Trueprop", "bool => prop") $ Var (("_dummy_", 1), "bool")):
+   term Find_Theorems.criterion
+val badnames =
+   ["*nitpick*", "*Nitpick*", "*full_exhaustive*", "*_def*", "Enum.finite*",
+    "*Quickcheck*", "ATP*", "*Nunchaku*", "*Code*", "*BNF*", "*SMT*",
+    "*.*.*"]:
+   string list
+val unwanted_names =
+   [(false, Name "*nitpick*"), (false, Name "*Nitpick*"),
+    (false, Name "*full_exhaustive*"), (false, Name "*_def*"),
+    (false, Name "Enum.finite*"), (false, Name "*Quickcheck*"),
+    (false, Name "ATP*"), (false, Name "*Nunchaku*"),
+    (false, Name "*Code*"), (false, Name "*BNF*"), (false, Name "*SMT*"),
+    (false, Name "*.*.*")]:
+   (bool * term Find_Theorems.criterion) list
+val has_vars = fn: term -> bool
+val get_all_eqs = fn: string -> Proof.context -> (string * thm) list
+val get_all_thms = fn: string -> Proof.context -> (string * thm) list
+val get_noneq_thms = fn: string -> Proof.context -> (string * thm) list
+val template_eqs = fn:
+   string -> Proof.context -> (string * thm * template) list
+val template_thms = fn:
+   string -> Proof.context -> (string * thm * template) list
+### theory "Draft.ExtrEqs"
+### 0.540s elapsed time, 1.104s cpu time, 0.066s GC time
+Proofs for inductive predicate(s) "SINKp"
+  Proving monotonicity ...
+Proofs for inductive predicate(s) "flow"
+  Proving monotonicity ...
+Proofs for inductive predicate(s) "cut"
+  Proving monotonicity ...
+Proofs for inductive predicate(s) "orthogonal"
+  Proving monotonicity ...
+locale countable_network
+  fixes \<Delta> :: "('v, 'more) network_scheme"  (structure)
+  assumes "countable_network \<Delta>"
+locale antiparallel_edges
+  fixes \<Delta> :: "('v, 'more) network_scheme"  (structure)
+  assumes "antiparallel_edges \<Delta>"
+Proofs for inductive predicate(s) "edg"
+  Proving monotonicity ...
+Found termination order: "{}"
+### theory "Draft.MFMC_Network"
+### 1.603s elapsed time, 2.402s cpu time, 0.199s GC time
+Loading theory "Draft.MFMC_Flow_Attainability" (required by "Draft.MFMC_Flow_AttainabilityTemplates")
+locale flow_attainability
+  fixes \<Delta> :: "('v, 'more) network_scheme"  (structure)
+  assumes "flow_attainability \<Delta>"
+locale flow_network
+  fixes \<Delta> :: "('v, 'a) network_scheme"  (structure)
+    and g :: "'v * 'v => ennreal"
+  assumes "flow_network \<Delta> g"
+Found termination order: "(%p. size (fst p)) <*mlex*> {}"
+Found termination order: "(%p. size (fst p)) <*mlex*> {}"
+Found termination order: "(%p. size (fst p)) <*mlex*> {}"
+locale countable_network
+  fixes \<Delta> :: "('v, 'more) network_scheme"  (structure)
+  assumes "countable_network \<Delta>"
+Proofs for inductive predicate(s) "wf_residual_network"
+  Proving monotonicity ...
+locale antiparallel_edges
+  fixes \<Delta> :: "('v, 'more) network_scheme"  (structure)
+  assumes "antiparallel_edges \<Delta>"
+locale flow_attainability
+  fixes \<Delta> :: "('v, 'more) network_scheme"  (structure)
+  assumes "flow_attainability \<Delta>"
+locale countable_network
+  fixes \<Delta> :: "('v, 'more) network_scheme"  (structure)
+  assumes "countable_network \<Delta>"
+locale flow_attainability
+  fixes \<Delta> :: "('v, 'more) network_scheme"  (structure)
+  assumes "flow_attainability \<Delta>"
+Proofs for inductive predicate(s) "edge'"
+  Proving monotonicity ...
+Found termination order: "{}"
+Found termination order: "{}"
+### theory "Draft.MFMC_Flow_Attainability"
+### 2.290s elapsed time, 2.490s cpu time, 0.267s GC time
+Loading theory "Draft.MFMC_Flow_AttainabilityTemplates"
+val templateLemmas =
+   [("MFMC_Flow_Attainability.plus_flow_outside",
+     "?e ~: \<^bold>E\<^bsub>?G\<^esub> ==>
+      (?f \<oplus>\<^bsub>?G\<^esub> ?g) ?e = 0",
+     template_implication
+      ([template_negation
+         (
+            template_predicate
+             (
+                template_app
+                 (template_app (template_hole 6, template_var 3),
+                  template_app
+                   (template_hole 5,
+                    template_app (template_hole 4, t_empty)))
+                )
+            )],
+       template_equation
+        (template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 1, template_var 2),
+               template_var 1),
+             template_var 0),
+           template_var 3),
+         template_hole 0))),
+    ("MFMC_Flow_Attainability.value_flow_cleanup",
+     "(!!x. ?f (x, source ?\<Delta>) = 0) ==>
+      value_flow ?\<Delta> (cleanup ?f) = value_flow ?\<Delta> ?f",
+     template_implication
+      ([template_predicate (template_app (template_hole 7, t_empty))],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 1,
+             template_app (template_hole 0, template_var 1)),
+           template_app (template_hole 3, template_var 0)),
+         template_app
+          (template_app (template_hole 1, template_var 1),
+           template_app (template_hole 3, template_var 0))))),
+    ("MFMC_Flow_Attainability.cleanup_simps",
+     "cleanup ?f (?a, ?b) =
+      (if ?f (?b, ?a) < ?f (?a, ?b) then ?f (?a, ?b) - ?f (?b, ?a) else 0)",
+     template_equation
+      (template_app
+        (template_app (template_hole 5, template_var 2),
+         template_app
+          (template_app (template_hole 4, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_app
+            (template_hole 3,
+             template_app
+              (template_app
+                (template_hole 2,
+                 template_app
+                  (template_var 2,
+                   template_app
+                    (template_app (template_hole 4, template_var 0),
+                     template_var 1))),
+               template_app
+                (template_var 2,
+                 template_app
+                  (template_app (template_hole 4, template_var 1),
+                   template_var 0)))),
+           template_app
+            (template_app
+              (template_hole 1,
+               template_app
+                (template_var 2,
+                 template_app
+                  (template_app (template_hole 4, template_var 1),
+                   template_var 0))),
+             template_app
+              (template_var 2,
+               template_app
+                (template_app (template_hole 4, template_var 0),
+                 template_var 1)))),
+         template_hole 0))),
+    ("MFMC_Flow_Attainability.KIR_cleanup",
+     "[| KIR ?f ?x; d_IN ?f ?x ~= \<top> |] ==> KIR (cleanup ?f) ?x",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app (template_hole 4, template_var 1), template_var 0),
+          template_app
+           (template_app (template_hole 3, template_var 1),
+            template_var 0)),
+        template_negation
+         (
+            template_equation
+             (template_app
+               (template_app (template_hole 3, template_var 1),
+                template_var 0),
+              template_hole 1)
+            )],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 4,
+             template_app (template_hole 0, template_var 1)),
+           template_var 0),
+         template_app
+          (template_app
+            (template_hole 3,
+             template_app (template_hole 0, template_var 1)),
+           template_var 0)))),
+    ("MFMC_Flow_Attainability.plus_flow_simps",
+     "(?f \<oplus>\<^bsub>?G\<^esub> ?g) (?x, ?y) =
+      (if edge ?G ?x ?y then ?f (?x, ?y) + ?g (?x, ?y) - ?g (?y, ?x)
+       else 0)",
+     template_equation
+      (template_app
+        (template_app
+          (template_app
+            (template_app (template_hole 6, template_var 4),
+             template_var 3),
+           template_var 2),
+         template_app
+          (template_app (template_hole 5, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_app
+            (template_hole 4,
+             template_app
+              (template_app
+                (template_app (template_hole 3, template_var 4),
+                 template_var 1),
+               template_var 0)),
+           template_app
+            (template_app
+              (template_hole 2,
+               template_app
+                (template_app
+                  (template_hole 1,
+                   template_app
+                    (template_var 3,
+                     template_app
+                      (template_app (template_hole 5, template_var 1),
+                       template_var 0))),
+                 template_app
+                  (template_var 2,
+                   template_app
+                    (template_app (template_hole 5, template_var 1),
+                     template_var 0)))),
+             template_app
+              (template_var 2,
+               template_app
+                (template_app (template_hole 5, template_var 0),
+                 template_var 1)))),
+         template_hole 0))),
+    ("MFMC_Flow_Attainability.OUT_plus_flow",
+     "[| !!e. e ~: \<^bold>E\<^bsub>?\<Delta>\<^esub> ==> ?f e = 0;
+         !!x y. edge ?\<Delta> x y ==> ?g (y, x) <= ?f (x, y);
+         d_IN ?g ?x ~= \<top> |]
+      ==> d_OUT (?f \<oplus>\<^bsub>?\<Delta>\<^esub> ?g) ?x =
+          d_OUT ?f ?x +
+          (\<Sum>\<^sup>+ y.
+             ?g (?x, y) *
+             indicator \<^bold>E\<^bsub>?\<Delta>\<^esub> (?x, y)) -
+          (\<Sum>\<^sup>+ y.
+             ?g (y, ?x) *
+             indicator \<^bold>E\<^bsub>?\<Delta>\<^esub> (?x, y))",
+     template_implication
+      ([template_predicate (template_app (template_hole 22, t_empty)),
+        template_predicate (template_app (template_hole 13, t_empty)),
+        template_negation
+         (
+            template_equation
+             (template_app
+               (template_app (template_hole 10, template_var 1),
+                template_var 0),
+              template_hole 9)
+            )],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 8,
+             template_app
+              (template_app
+                (template_app (template_hole 7, template_var 3),
+                 template_var 2),
+               template_var 1)),
+           template_var 0),
+         template_app
+          (template_app
+            (template_hole 6,
+             template_app
+              (template_app
+                (template_hole 5,
+                 template_app
+                  (template_app (template_hole 8, template_var 2),
+                   template_var 0)),
+               template_app
+                (template_app
+                  (template_hole 4,
+                   template_app (template_hole 3, template_hole 2)),
+                 t_empty))),
+           template_app
+            (template_app
+              (template_hole 4,
+               template_app (template_hole 3, template_hole 2)),
+             t_empty))))),
+    ("MFMC_Flow_Attainability.IN_plus_flow",
+     "[| !!e. e ~: \<^bold>E\<^bsub>?\<Delta>\<^esub> ==> ?f e = 0;
+         !!x y. edge ?\<Delta> x y ==> ?g (y, x) <= ?f (x, y);
+         d_OUT ?g ?x ~= \<top> |]
+      ==> d_IN (?f \<oplus>\<^bsub>?\<Delta>\<^esub> ?g) ?x =
+          d_IN ?f ?x +
+          (\<Sum>\<^sup>+ y.
+             ?g (y, ?x) *
+             indicator \<^bold>E\<^bsub>?\<Delta>\<^esub> (y, ?x)) -
+          (\<Sum>\<^sup>+ y.
+             ?g (?x, y) *
+             indicator \<^bold>E\<^bsub>?\<Delta>\<^esub> (y, ?x))",
+     template_implication
+      ([template_predicate (template_app (template_hole 22, t_empty)),
+        template_predicate (template_app (template_hole 13, t_empty)),
+        template_negation
+         (
+            template_equation
+             (template_app
+               (template_app (template_hole 10, template_var 1),
+                template_var 0),
+              template_hole 9)
+            )],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 8,
+             template_app
+              (template_app
+                (template_app (template_hole 7, template_var 3),
+                 template_var 2),
+               template_var 1)),
+           template_var 0),
+         template_app
+          (template_app
+            (template_hole 6,
+             template_app
+              (template_app
+                (template_hole 5,
+                 template_app
+                  (template_app (template_hole 8, template_var 2),
+                   template_var 0)),
+               template_app
+                (template_app
+                  (template_hole 4,
+                   template_app (template_hole 3, template_hole 2)),
+                 t_empty))),
+           template_app
+            (template_app
+              (template_hole 4,
+               template_app (template_hole 3, template_hole 2)),
+             t_empty)))))]:
+   (string * thm * template) list
+### theory "Draft.MFMC_Flow_AttainabilityTemplates"
+### 1.587s elapsed time, 2.311s cpu time, 0.792s GC time
+val it = (): unit

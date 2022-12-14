@@ -1,0 +1,331 @@
+Loading theory "Draft.utp_parser_utils" (required by "Draft.utp_expr_instsTemplates" via "Draft.utp_expr_insts" via "Draft.utp_expr" via "Draft.utp_var")
+Loading theory "Draft.Templates" (required by "Draft.utp_expr_instsTemplates" via "Draft.ExtrEqs")
+signature UTP_PARSER_UTILS =
+  sig
+    val mk_char: string -> Ast.ast
+    val mk_nib: int -> Ast.ast
+    val mk_string: string list -> Ast.ast
+    val string_ast_tr: Ast.ast list -> Ast.ast
+  end
+signature NAME_UTILS =
+  sig
+    val deep_unmark_const: term -> term
+    val last_char_str: string -> string
+    val mk_id: string -> term
+    val repeat_char: char -> int -> string
+    val right_crop_by: int -> string -> string
+  end
+structure Utp_Parser_Utils: UTP_PARSER_UTILS
+structure Name_Utils: NAME_UTILS
+### theory "Draft.utp_parser_utils"
+### 0.042s elapsed time, 0.110s cpu time, 0.000s GC time
+Loading theory "Draft.utp_var" (required by "Draft.utp_expr_instsTemplates" via "Draft.utp_expr_insts" via "Draft.utp_expr")
+datatype template_term
+=
+     t_empty
+   | template_app of template_term * template_term
+   | template_hole of int
+   | template_var of int
+datatype sign
+= equals | greater_equals | greater_than | less_equals | less_than
+datatype template
+=
+     template_bimplication of template * template
+   | template_dunno
+   | template_equation of template_term * template_term
+   | template_implication of template list * template
+   | template_inequation of sign * template_term * template_term
+   | template_negation of template
+   | template_predicate of template_term
+constructor t_empty: template_term
+constructor template_app: template_term * template_term -> template_term
+constructor template_hole: int -> template_term
+constructor template_var: int -> template_term
+constructor equals: sign
+constructor greater_equals: sign
+constructor greater_than: sign
+constructor less_equals: sign
+constructor less_than: sign
+constructor template_bimplication: template * template -> template
+constructor template_dunno: template
+constructor template_equation: template_term * template_term -> template
+constructor template_implication: template list * template -> template
+constructor template_inequation:
+   sign * template_term * template_term -> template
+constructor template_negation: template -> template
+constructor template_predicate: template_term -> template
+val vfs = fn: term -> (indexname * typ) list * (string * typ) list
+val indexOf = fn: ''a list -> ''a -> int -> int
+val has_eq = fn: term -> bool
+val term2template = fn:
+   (indexname * typ) list -> (string * typ) list -> term -> template_term
+val lemma2predicate = fn: term -> term -> template
+val makeTemplatewithContext = fn: term -> term -> template
+val lemma2template = fn: term -> template
+val thm2template = fn: thm -> template
+val tterm2string = fn: template_term -> string
+val template2string = fn: template -> string
+val t = "height ?t <= size ?t": thm
+val th =
+   Const ("HOL.Trueprop", "bool => prop") $
+     (Const ("Orderings.ord_class.less_eq", "nat => nat => bool") $
+       (Const ("Tree.height_class.height", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree")) $
+       (Const ("Nat.size_class.size", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree"))):
+   term
+### theory "Draft.Templates"
+### 0.065s elapsed time, 0.159s cpu time, 0.000s GC time
+Loading theory "Draft.ExtrEqs" (required by "Draft.utp_expr_instsTemplates")
+val eqpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Var (("_dummy_", 2), "?'a"))
+       ):
+   term Find_Theorems.criterion
+val badeqpattern = Pattern (Const ("Pure.eq", "?'a => ?'a => prop")):
+   term Find_Theorems.criterion
+val undefpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Const ("HOL.undefined", "?'a"))
+       ):
+   term Find_Theorems.criterion
+val thmpattern =
+   Pattern
+    (Const ("HOL.Trueprop", "bool => prop") $ Var (("_dummy_", 1), "bool")):
+   term Find_Theorems.criterion
+val badnames =
+   ["*nitpick*", "*Nitpick*", "*full_exhaustive*", "*_def*", "Enum.finite*",
+    "*Quickcheck*", "ATP*", "*Nunchaku*", "*Code*", "*BNF*", "*SMT*",
+    "*.*.*"]:
+   string list
+val unwanted_names =
+   [(false, Name "*nitpick*"), (false, Name "*Nitpick*"),
+    (false, Name "*full_exhaustive*"), (false, Name "*_def*"),
+    (false, Name "Enum.finite*"), (false, Name "*Quickcheck*"),
+    (false, Name "ATP*"), (false, Name "*Nunchaku*"),
+    (false, Name "*Code*"), (false, Name "*BNF*"), (false, Name "*SMT*"),
+    (false, Name "*.*.*")]:
+   (bool * term Find_Theorems.criterion) list
+val has_vars = fn: term -> bool
+val get_all_eqs = fn: string -> Proof.context -> (string * thm) list
+val get_all_thms = fn: string -> Proof.context -> (string * thm) list
+val get_noneq_thms = fn: string -> Proof.context -> (string * thm) list
+val template_eqs = fn:
+   string -> Proof.context -> (string * thm * template) list
+val template_thms = fn:
+   string -> Proof.context -> (string * thm * template) list
+### theory "Draft.ExtrEqs"
+### 0.548s elapsed time, 1.109s cpu time, 0.106s GC time
+### theory "Draft.utp_var"
+### 0.642s elapsed time, 1.226s cpu time, 0.106s GC time
+Loading theory "Draft.utp_expr" (required by "Draft.utp_expr_instsTemplates" via "Draft.utp_expr_insts")
+instantiation
+  uexpr :: (zero, type) zero
+  zero_uexpr == zero_class.zero :: ('a, 'b) uexpr
+instantiation
+  uexpr :: (one, type) one
+  one_uexpr == one_class.one :: ('a, 'b) uexpr
+instantiation
+  uexpr :: (plus, type) plus
+  plus_uexpr == plus :: ('a, 'b) uexpr => ('a, 'b) uexpr => ('a, 'b) uexpr
+instantiation
+  uexpr :: (ord, type) ord
+  less_eq_uexpr == less_eq :: ('a, 'b) uexpr => ('a, 'b) uexpr => bool
+  less_uexpr == less :: ('a, 'b) uexpr => ('a, 'b) uexpr => bool
+### theory "Draft.utp_expr"
+### 0.789s elapsed time, 0.822s cpu time, 0.060s GC time
+Loading theory "Draft.utp_expr_insts" (required by "Draft.utp_expr_instsTemplates")
+instantiation
+  uexpr :: (uminus, type) uminus
+  uminus_uexpr == uminus :: ('a, 'b) uexpr => ('a, 'b) uexpr
+instantiation
+  uexpr :: (minus, type) minus
+  minus_uexpr == minus :: ('a, 'b) uexpr => ('a, 'b) uexpr => ('a, 'b) uexpr
+instantiation
+  uexpr :: (times, type) times
+  times_uexpr == times :: ('a, 'b) uexpr => ('a, 'b) uexpr => ('a, 'b) uexpr
+instantiation
+  uexpr :: (divide, type) divide
+  divide_uexpr == divide ::
+    ('a, 'b) uexpr => ('a, 'b) uexpr => ('a, 'b) uexpr
+instantiation
+  uexpr :: (inverse, type) inverse
+  inverse_uexpr == inverse :: ('a, 'b) uexpr => ('a, 'b) uexpr
+instantiation
+  uexpr :: (modulo, type) modulo
+  modulo_uexpr == modulo ::
+    ('a, 'b) uexpr => ('a, 'b) uexpr => ('a, 'b) uexpr
+instantiation
+  uexpr :: (sgn, type) sgn
+  sgn_uexpr == sgn :: ('a, 'b) uexpr => ('a, 'b) uexpr
+instantiation
+  uexpr :: (abs, type) abs
+  abs_uexpr == abs :: ('a, 'b) uexpr => ('a, 'b) uexpr
+### theory "Draft.utp_expr_insts"
+### 0.227s elapsed time, 0.227s cpu time, 0.000s GC time
+Loading theory "Draft.utp_expr_instsTemplates"
+val templateLemmas =
+   [("utp_expr_insts.mkuexpr_lit",
+     "mk\<^sub>e (%s. ?k) = \<guillemotleft>?k\<guillemotright>",
+     template_equation
+      (template_app (template_hole 1, t_empty),
+       template_app (template_hole 0, template_var 0))),
+    ("utp_expr_insts.of_nat_uexpr_rep_eq",
+     "\<lbrakk>of_nat ?x\<rbrakk>\<^sub>e ?b = of_nat ?x",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 2, template_app (template_hole 1, template_var 1)),
+         template_var 0),
+       template_app (template_hole 0, template_var 1))),
+    ("utp_expr_insts.mkuexpr_lens_get",
+     "mk\<^sub>e get\<^bsub>?x\<^esub> = &?x",
+     template_equation
+      (template_app
+        (template_hole 3, template_app (template_hole 2, template_var 0)),
+       template_app
+        (template_hole 1, template_app (template_hole 0, template_var 0)))),
+    ("utp_expr_insts.mkuexpr_numeral",
+     "mk\<^sub>e (%s. numeral ?n) = numeral ?n",
+     template_equation
+      (template_app (template_hole 2, t_empty),
+       template_app (template_hole 0, template_var 0))),
+    ("utp_expr_insts.lit_uminus",
+     "\<guillemotleft>- ?x\<guillemotright> =
+      - \<guillemotleft>?x\<guillemotright>",
+     template_equation
+      (template_app
+        (template_hole 2, template_app (template_hole 1, template_var 0)),
+       template_app
+        (template_hole 0, template_app (template_hole 2, template_var 0)))),
+    ("utp_expr_insts.mkuexpr_uminus",
+     "mk\<^sub>e (%s. - ?f s) = - mk\<^sub>e ?f",
+     template_equation
+      (template_app (template_hole 2, t_empty),
+       template_app
+        (template_hole 0, template_app (template_hole 2, template_var 0)))),
+    ("utp_expr_insts.lit_power",
+     "\<guillemotleft>?x ^ ?n\<guillemotright> =
+      \<guillemotleft>?x\<guillemotright> ^ ?n",
+     template_equation
+      (template_app
+        (template_hole 2,
+         template_app
+          (template_app (template_hole 1, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 0, template_app (template_hole 2, template_var 1)),
+         template_var 0))),
+    ("utp_expr_insts.lit_minus",
+     "\<guillemotleft>?x - ?y\<guillemotright> =
+      \<guillemotleft>?x\<guillemotright> -
+      \<guillemotleft>?y\<guillemotright>",
+     template_equation
+      (template_app
+        (template_hole 2,
+         template_app
+          (template_app (template_hole 1, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 0, template_app (template_hole 2, template_var 1)),
+         template_app (template_hole 2, template_var 0)))),
+    ("utp_expr_insts.lit_times",
+     "\<guillemotleft>?x * ?y\<guillemotright> =
+      \<guillemotleft>?x\<guillemotright> *
+      \<guillemotleft>?y\<guillemotright>",
+     template_equation
+      (template_app
+        (template_hole 2,
+         template_app
+          (template_app (template_hole 1, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 0, template_app (template_hole 2, template_var 1)),
+         template_app (template_hole 2, template_var 0)))),
+    ("utp_expr_insts.lit_div",
+     "\<guillemotleft>?x div ?y\<guillemotright> =
+      \<guillemotleft>?x\<guillemotright> div
+      \<guillemotleft>?y\<guillemotright>",
+     template_equation
+      (template_app
+        (template_hole 2,
+         template_app
+          (template_app (template_hole 1, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 0, template_app (template_hole 2, template_var 1)),
+         template_app (template_hole 2, template_var 0)))),
+    ("utp_expr_insts.lit_divide",
+     "\<guillemotleft>?x / ?y\<guillemotright> =
+      \<guillemotleft>?x\<guillemotright> /
+      \<guillemotleft>?y\<guillemotright>",
+     template_equation
+      (template_app
+        (template_hole 2,
+         template_app
+          (template_app (template_hole 1, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 0, template_app (template_hole 2, template_var 1)),
+         template_app (template_hole 2, template_var 0)))),
+    ("utp_expr_insts.power_rep_eq",
+     "\<lbrakk>?P ^ ?n\<rbrakk>\<^sub>e =
+      (%b. \<lbrakk>?P\<rbrakk>\<^sub>e b ^ ?n)",
+     template_equation
+      (template_app
+        (template_hole 2,
+         template_app
+          (template_app (template_hole 1, template_var 1), template_var 0)),
+       t_empty)),
+    ("utp_expr_insts.mkuexpr_plus",
+     "mk\<^sub>e (%s. ?f s + ?g s) = mk\<^sub>e ?f + mk\<^sub>e ?g",
+     template_equation
+      (template_app (template_hole 2, t_empty),
+       template_app
+        (template_app
+          (template_hole 0, template_app (template_hole 2, template_var 1)),
+         template_app (template_hole 2, template_var 0)))),
+    ("utp_expr_insts.mkuexpr_minus",
+     "mk\<^sub>e (%s. ?f s - ?g s) = mk\<^sub>e ?f - mk\<^sub>e ?g",
+     template_equation
+      (template_app (template_hole 2, t_empty),
+       template_app
+        (template_app
+          (template_hole 0, template_app (template_hole 2, template_var 1)),
+         template_app (template_hole 2, template_var 0)))),
+    ("utp_expr_insts.mkuexpr_times",
+     "mk\<^sub>e (%s. ?f s * ?g s) = mk\<^sub>e ?f * mk\<^sub>e ?g",
+     template_equation
+      (template_app (template_hole 2, t_empty),
+       template_app
+        (template_app
+          (template_hole 0, template_app (template_hole 2, template_var 1)),
+         template_app (template_hole 2, template_var 0)))),
+    ("utp_expr_insts.mkuexpr_divide",
+     "mk\<^sub>e (%s. ?f s / ?g s) = mk\<^sub>e ?f / mk\<^sub>e ?g",
+     template_equation
+      (template_app (template_hole 2, t_empty),
+       template_app
+        (template_app
+          (template_hole 0, template_app (template_hole 2, template_var 1)),
+         template_app (template_hole 2, template_var 0)))),
+    ("utp_expr_insts.mkuexpr_pair",
+     "mk\<^sub>e (%s. (?f s, ?g s)) =
+      (mk\<^sub>e ?f, mk\<^sub>e ?g)\<^sub>u",
+     template_equation
+      (template_app (template_hole 4, t_empty),
+       template_app
+        (template_app
+          (template_app (template_hole 2, template_hole 3),
+           template_app (template_hole 1, template_var 1)),
+         template_app (template_hole 0, template_var 0))))]:
+   (string * thm * template) list
+### theory "Draft.utp_expr_instsTemplates"
+### 0.643s elapsed time, 0.842s cpu time, 0.145s GC time
+val it = (): unit

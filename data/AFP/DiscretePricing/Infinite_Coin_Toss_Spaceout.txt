@@ -1,0 +1,1215 @@
+Loading theory "Draft.Templates" (required by "Draft.Infinite_Coin_Toss_SpaceTemplates" via "Draft.ExtrEqs")
+Loading theory "HOL-Library.Function_Algebras" (required by "Draft.Infinite_Coin_Toss_SpaceTemplates" via "Draft.ExtrEqs" via "HOL-Library.BigO")
+Loading theory "Draft.Filtration" (required by "Draft.Infinite_Coin_Toss_SpaceTemplates" via "Draft.Infinite_Coin_Toss_Space")
+Loading theory "Draft.Generated_Subalgebra" (required by "Draft.Infinite_Coin_Toss_SpaceTemplates" via "Draft.Infinite_Coin_Toss_Space")
+instantiation
+  fun :: (type, plus) plus
+  plus_fun == plus :: ('a => 'b) => ('a => 'b) => 'a => 'b
+instantiation
+  fun :: (type, zero) zero
+  zero_fun == zero_class.zero :: 'a => 'b
+instantiation
+  fun :: (type, times) times
+  times_fun == times :: ('a => 'b) => ('a => 'b) => 'a => 'b
+instantiation
+  fun :: (type, one) one
+  one_fun == one_class.one :: 'a => 'b
+datatype template_term
+=
+     t_empty
+   | template_app of template_term * template_term
+   | template_hole of int
+   | template_var of int
+datatype sign
+= equals | greater_equals | greater_than | less_equals | less_than
+datatype template
+=
+     template_bimplication of template * template
+   | template_dunno
+   | template_equation of template_term * template_term
+   | template_implication of template list * template
+   | template_inequation of sign * template_term * template_term
+   | template_negation of template
+   | template_predicate of template_term
+constructor t_empty: template_term
+constructor template_app: template_term * template_term -> template_term
+constructor template_hole: int -> template_term
+constructor template_var: int -> template_term
+constructor equals: sign
+constructor greater_equals: sign
+constructor greater_than: sign
+constructor less_equals: sign
+constructor less_than: sign
+constructor template_bimplication: template * template -> template
+constructor template_dunno: template
+constructor template_equation: template_term * template_term -> template
+constructor template_implication: template list * template -> template
+constructor template_inequation:
+   sign * template_term * template_term -> template
+constructor template_negation: template -> template
+constructor template_predicate: template_term -> template
+val vfs = fn: term -> (indexname * typ) list * (string * typ) list
+val indexOf = fn: ''a list -> ''a -> int -> int
+val has_eq = fn: term -> bool
+val term2template = fn:
+   (indexname * typ) list -> (string * typ) list -> term -> template_term
+val lemma2predicate = fn: term -> term -> template
+val makeTemplatewithContext = fn: term -> term -> template
+val lemma2template = fn: term -> template
+val thm2template = fn: thm -> template
+val tterm2string = fn: template_term -> string
+val template2string = fn: template -> string
+val t = "height ?t <= size ?t": thm
+val th =
+   Const ("HOL.Trueprop", "bool => prop") $
+     (Const ("Orderings.ord_class.less_eq", "nat => nat => bool") $
+       (Const ("Tree.height_class.height", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree")) $
+       (Const ("Nat.size_class.size", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree"))):
+   term
+### theory "Draft.Templates"
+### 0.071s elapsed time, 0.325s cpu time, 0.000s GC time
+### theory "HOL-Library.Function_Algebras"
+### 0.128s elapsed time, 0.484s cpu time, 0.044s GC time
+Loading theory "HOL-Library.BigO" (required by "Draft.Infinite_Coin_Toss_SpaceTemplates" via "Draft.ExtrEqs")
+### theory "Draft.Generated_Subalgebra"
+### 0.203s elapsed time, 0.715s cpu time, 0.044s GC time
+Loading theory "Draft.Disc_Cond_Expect" (required by "Draft.Infinite_Coin_Toss_SpaceTemplates" via "Draft.Infinite_Coin_Toss_Space")
+instantiation
+  nat :: linorder_bot
+### theory "Draft.Disc_Cond_Expect"
+### 0.428s elapsed time, 1.283s cpu time, 0.163s GC time
+locale filtrated_prob_space
+  fixes M :: "'a measure"
+    and F :: "'b => 'a measure"
+  assumes "filtrated_prob_space M F"
+locale disc_filtr_prob_space
+  fixes M :: "'a measure"
+    and F :: "nat => 'a measure"
+  assumes "disc_filtr_prob_space M F"
+### theory "HOL-Library.BigO"
+### 0.718s elapsed time, 1.994s cpu time, 0.255s GC time
+Loading theory "Draft.ExtrEqs" (required by "Draft.Infinite_Coin_Toss_SpaceTemplates")
+locale trivial_init_filtrated_prob_space
+  fixes M :: "'a measure"
+    and F :: "'b => 'a measure"
+  assumes "trivial_init_filtrated_prob_space M F"
+locale triv_init_disc_filtr_prob_space
+  fixes M :: "'a measure"
+    and F :: "nat => 'a measure"
+  assumes "triv_init_disc_filtr_prob_space M F"
+### theory "Draft.Filtration"
+### 1.242s elapsed time, 3.283s cpu time, 0.367s GC time
+Loading theory "Draft.Infinite_Coin_Toss_Space" (required by "Draft.Infinite_Coin_Toss_SpaceTemplates")
+val eqpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Var (("_dummy_", 2), "?'a"))
+       ):
+   term Find_Theorems.criterion
+val badeqpattern = Pattern (Const ("Pure.eq", "?'a => ?'a => prop")):
+   term Find_Theorems.criterion
+val undefpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Const ("HOL.undefined", "?'a"))
+       ):
+   term Find_Theorems.criterion
+val thmpattern =
+   Pattern
+    (Const ("HOL.Trueprop", "bool => prop") $ Var (("_dummy_", 1), "bool")):
+   term Find_Theorems.criterion
+val badnames =
+   ["*nitpick*", "*Nitpick*", "*full_exhaustive*", "*_def*", "Enum.finite*",
+    "*Quickcheck*", "ATP*", "*Nunchaku*", "*Code*", "*BNF*", "*SMT*",
+    "*.*.*"]:
+   string list
+val unwanted_names =
+   [(false, Name "*nitpick*"), (false, Name "*Nitpick*"),
+    (false, Name "*full_exhaustive*"), (false, Name "*_def*"),
+    (false, Name "Enum.finite*"), (false, Name "*Quickcheck*"),
+    (false, Name "ATP*"), (false, Name "*Nunchaku*"),
+    (false, Name "*Code*"), (false, Name "*BNF*"), (false, Name "*SMT*"),
+    (false, Name "*.*.*")]:
+   (bool * term Find_Theorems.criterion) list
+val has_vars = fn: term -> bool
+val get_all_eqs = fn: string -> Proof.context -> (string * thm) list
+val get_all_thms = fn: string -> Proof.context -> (string * thm) list
+val get_noneq_thms = fn: string -> Proof.context -> (string * thm) list
+val template_eqs = fn:
+   string -> Proof.context -> (string * thm * template) list
+val template_thms = fn:
+   string -> Proof.context -> (string * thm * template) list
+### theory "Draft.ExtrEqs"
+### 0.709s elapsed time, 1.632s cpu time, 0.615s GC time
+locale infinite_coin_toss_space
+  fixes p :: "real"
+    and M :: "bool stream measure"
+  assumes "infinite_coin_toss_space p M"
+locale infinite_cts_filtration
+  fixes p :: "real"
+    and M :: "bool stream measure"
+    and F :: "nat => bool stream measure"
+  assumes "infinite_cts_filtration p M F"
+consts
+  smap_stoch_proc :: "nat => (nat => 'a => 'b) => nat => 'a => 'b list"
+### theory "Draft.Infinite_Coin_Toss_Space"
+### 3.120s elapsed time, 4.341s cpu time, 1.620s GC time
+Loading theory "Draft.Infinite_Coin_Toss_SpaceTemplates"
+val templateLemmas =
+   [("Infinite_Coin_Toss_Space.smap_stoch_proc_length",
+     "length (smap_stoch_proc ?n ?f ?k ?w) = ?n",
+     template_equation
+      (template_app
+        (template_hole 1,
+         template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 0, template_var 3),
+               template_var 2),
+             template_var 1),
+           template_var 0)),
+       template_var 3)),
+    ("Infinite_Coin_Toss_Space.stoch_proc_filt_space",
+     "space (stoch_proc_filt ?M ?X ?N ?n) = space ?M",
+     template_equation
+      (template_app
+        (template_hole 1,
+         template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 0, template_var 3),
+               template_var 2),
+             template_var 1),
+           template_var 0)),
+       template_app (template_hole 1, template_var 3))),
+    ("Infinite_Coin_Toss_Space.bernoulli_stream_space",
+     "?N = bernoulli_stream ?p ==> space ?N = streams UNIV",
+     template_implication
+      ([template_equation
+         (template_var 1, template_app (template_hole 4, template_var 0))],
+       template_equation
+        (template_app (template_hole 2, template_var 1),
+         template_app (template_hole 1, template_hole 0)))),
+    ("Infinite_Coin_Toss_Space.streams_stake_set",
+     "?pw : streams ?A ==> set (stake ?n ?pw) <= ?A",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 4, template_var 2),
+              template_app (template_hole 3, template_var 1))
+            )],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_hole 1,
+           template_app
+            (template_app (template_hole 0, template_var 0),
+             template_var 2)),
+         template_var 1))),
+    ("Infinite_Coin_Toss_Space.filt_equiv_filt",
+     "[| filt_equiv ?F ?M ?N; Filtration.filtration ?M ?G |]
+      ==> Filtration.filtration ?N ?G",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 1, template_var 3),
+                template_var 2),
+              template_var 1)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 0, template_var 2),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 0, template_var 1), template_var 0)
+           ))),
+    ("Infinite_Coin_Toss_Space.proj_stoch_proc_component",
+     "?k < ?n ==> proj_stoch_proc ?f ?n ?w !! ?k = ?f ?k ?w",
+     template_implication
+      ([template_inequation (less_than, template_var 3, template_var 2)],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 1,
+             template_app
+              (template_app
+                (template_app (template_hole 0, template_var 1),
+                 template_var 2),
+               template_var 0)),
+           template_var 3),
+         template_app
+          (template_app (template_var 1, template_var 3),
+           template_var 0)))),
+    ("Infinite_Coin_Toss_Space.proj_stoch_proc_component'",
+     "?k <= ?n ==> ?f ?k ?x = proj_stoch_proc ?f ?n ?x !! ?k",
+     template_implication
+      ([template_inequation (less_equals, template_var 3, template_var 2)],
+       template_equation
+        (template_app
+          (template_app (template_var 1, template_var 3), template_var 0),
+         template_app
+          (template_app
+            (template_hole 1,
+             template_app
+              (template_app
+                (template_app (template_hole 0, template_var 1),
+                 template_var 2),
+               template_var 0)),
+           template_var 3)))),
+    ("Infinite_Coin_Toss_Space.proj_stoch_proc_component",
+     "?n <= ?k ==> proj_stoch_proc ?f ?n ?w !! ?k = ?f ?n ?w",
+     template_implication
+      ([template_inequation (less_equals, template_var 3, template_var 2)],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 1,
+             template_app
+              (template_app
+                (template_app (template_hole 0, template_var 1),
+                 template_var 3),
+               template_var 0)),
+           template_var 2),
+         template_app
+          (template_app (template_var 1, template_var 3),
+           template_var 0)))),
+    ("Infinite_Coin_Toss_Space.diff_streams_only_if",
+     "?w ~= ?x ==> EX n. ?w !! n ~= ?x !! n",
+     template_implication
+      ([template_negation
+         (template_equation (template_var 1, template_var 0))],
+       template_predicate (template_app (template_hole 2, t_empty)))),
+    ("Infinite_Coin_Toss_Space.bernoulli_stream_preimage",
+     "?N = bernoulli_stream ?p ==> ?f -` ?A Int space ?N = ?f -` ?A",
+     template_implication
+      ([template_equation
+         (template_var 3, template_app (template_hole 4, template_var 2))],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 2,
+             template_app
+              (template_app (template_hole 1, template_var 1),
+               template_var 0)),
+           template_app (template_hole 0, template_var 3)),
+         template_app
+          (template_app (template_hole 1, template_var 1),
+           template_var 0)))),
+    ("Infinite_Coin_Toss_Space.stoch_proc_filt_disc_filtr",
+     "(!!i. ?X i : ?M \<rightarrow>\<^sub>M ?N) ==>
+      disc_filtr ?M (stoch_proc_filt ?M ?X ?N)",
+     template_implication
+      ([template_predicate (template_app (template_hole 5, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 1, template_var 1),
+             template_app
+              (template_app
+                (template_app (template_hole 0, template_var 1),
+                 template_var 2),
+               template_var 0))
+           ))),
+    ("Infinite_Coin_Toss_Space.diff_streams_if",
+     "EX n. ?w !! n ~= ?x !! n ==> ?w ~= ?x",
+     template_implication
+      ([template_predicate (template_app (template_hole 4, t_empty))],
+       template_negation
+        (template_equation (template_var 1, template_var 0)))),
+    ("Infinite_Coin_Toss_Space.stake_finite_universe_finite",
+     "[| finite ?A; ?A ~= {} |] ==> finite (stake ?n ` streams ?A)",
+     template_implication
+      ([template_predicate (template_app (template_hole 7, template_var 1)),
+        template_negation
+         (template_equation (template_var 1, template_hole 4))],
+       template_predicate
+        (
+           template_app
+            (template_hole 3,
+             template_app
+              (template_app
+                (template_hole 2,
+                 template_app (template_hole 1, template_var 0)),
+               template_app (template_hole 0, template_var 1)))
+           ))),
+    ("Infinite_Coin_Toss_Space.stoch_proc_filt_filt_equiv",
+     "filt_equiv ?F ?M ?N ==>
+      stoch_proc_filt ?M ?f ?P ?n = stoch_proc_filt ?N ?f ?P ?n",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 2, template_var 5),
+                template_var 4),
+              template_var 3)
+            )],
+       template_equation
+        (template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 0, template_var 4),
+               template_var 2),
+             template_var 1),
+           template_var 0),
+         template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 0, template_var 3),
+               template_var 2),
+             template_var 1),
+           template_var 0)))),
+    ("Infinite_Coin_Toss_Space.stoch_proc_filt_adapt",
+     "(!!n. ?X n : ?M \<rightarrow>\<^sub>M ?N) ==>
+      adapt_stoch_proc (stoch_proc_filt ?M ?X ?N) ?X ?N",
+     template_implication
+      ([template_predicate (template_app (template_hole 5, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_hole 1,
+                 template_app
+                  (template_app
+                    (template_app (template_hole 0, template_var 1),
+                     template_var 2),
+                   template_var 0)),
+               template_var 2),
+             template_var 0)
+           ))),
+    ("Infinite_Coin_Toss_Space.proj_stoch_adapted_if_adapted'",
+     "[| Filtration.filtration ?M ?F; adapt_stoch_proc ?F ?f ?N |]
+      ==> adapt_stoch_proc ?F (proj_stoch_proc ?f) (stream_space ?N)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 4, template_var 3),
+              template_var 2)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 3, template_var 2),
+                template_var 1),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app (template_hole 2, template_var 2),
+               template_app (template_hole 1, template_var 1)),
+             template_app (template_hole 0, template_var 0))
+           ))),
+    ("Infinite_Coin_Toss_Space.prob_component_neq_zero",
+     "[| 0 < ?p; ?p < 1 |] ==> prob_component ?p ?w ?n ~= 0",
+     template_implication
+      ([template_inequation (less_than, template_hole 4, template_var 2),
+        template_inequation (less_than, template_var 2, template_hole 3)],
+       template_negation
+        (
+           template_equation
+            (template_app
+              (template_app
+                (template_app (template_hole 0, template_var 2),
+                 template_var 1),
+               template_var 0),
+             template_hole 4)
+           ))),
+    ("Infinite_Coin_Toss_Space.decompose_init_prod",
+     "prod ?f {0..?n} = ?f 0 * prod ?f {1..?n}",
+     template_equation
+      (template_app
+        (template_app (template_hole 4, t_empty),
+         template_app
+          (template_app (template_hole 3, template_hole 2),
+           template_var 0)),
+       template_app
+        (template_app
+          (template_hole 1, template_app (template_var 1, template_hole 2)),
+         template_app
+          (template_app (template_hole 4, t_empty),
+           template_app
+            (template_app (template_hole 3, template_hole 0),
+             template_var 0))))),
+    ("Infinite_Coin_Toss_Space.Inter_nonempty_distrib",
+     "?A ~= {} ==> \<Inter> ?A Int ?B = (INT C:?A. C Int ?B)",
+     template_implication
+      ([template_negation
+         (template_equation (template_var 1, template_hole 4))],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 2,
+             template_app (template_hole 1, template_var 1)),
+           template_var 0),
+         template_app
+          (template_hole 1,
+           template_app
+            (template_app (template_hole 0, t_empty), template_var 1))))),
+    ("Infinite_Coin_Toss_Space.proj_stoch_measurable_if_adapted",
+     "[| Filtration.filtration ?M ?F; adapt_stoch_proc ?F ?f ?N |]
+      ==> proj_stoch_proc ?f ?n : ?M \<rightarrow>\<^sub>M stream_space ?N",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 5, template_var 4),
+              template_var 3)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 4, template_var 3),
+                template_var 2),
+              template_var 1)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 3,
+               template_app
+                (template_app (template_hole 2, template_var 2),
+                 template_var 0)),
+             template_app
+              (template_app (template_hole 1, template_var 4),
+               template_app (template_hole 0, template_var 1)))
+           ))),
+    ("Infinite_Coin_Toss_Space.stoch_proc_filt_eq_sets",
+     "space ?M = space ?N ==>
+      sets (stoch_proc_filt ?M ?X ?P ?n) =
+      sets (stoch_proc_filt ?N ?X ?P ?n)",
+     template_implication
+      ([template_equation
+         (template_app (template_hole 3, template_var 4),
+          template_app (template_hole 3, template_var 3))],
+       template_equation
+        (template_app
+          (template_hole 1,
+           template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 0, template_var 4),
+                 template_var 2),
+               template_var 1),
+             template_var 0)),
+         template_app
+          (template_hole 1,
+           template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 0, template_var 3),
+                 template_var 2),
+               template_var 1),
+             template_var 0))))),
+    ("Infinite_Coin_Toss_Space.proj_stoch_adapted_if_adapted",
+     "[| Filtration.filtration ?M ?F; adapt_stoch_proc ?F ?f ?N |]
+      ==> proj_stoch_proc ?f ?n
+          : ?F ?n \<rightarrow>\<^sub>M stream_space ?N",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 5, template_var 4),
+              template_var 3)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 4, template_var 3),
+                template_var 2),
+              template_var 1)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 3,
+               template_app
+                (template_app (template_hole 2, template_var 2),
+                 template_var 0)),
+             template_app
+              (template_app
+                (template_hole 1,
+                 template_app (template_var 3, template_var 0)),
+               template_app (template_hole 0, template_var 1)))
+           ))),
+    ("Infinite_Coin_Toss_Space.smap_stoch_proc_nth",
+     "Suc ?p <= Suc ?n ==>
+      smap_stoch_proc (Suc ?n) ?f ?k ?w ! ?p = ?f (?k + ?p) ?w",
+     template_implication
+      ([template_inequation
+         (less_equals, template_app (template_hole 4, template_var 4),
+          template_app (template_hole 4, template_var 3))],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 2,
+             template_app
+              (template_app
+                (template_app
+                  (template_app
+                    (template_hole 1,
+                     template_app (template_hole 4, template_var 3)),
+                   template_var 2),
+                 template_var 1),
+               template_var 0)),
+           template_var 4),
+         template_app
+          (template_app
+            (template_var 2,
+             template_app
+              (template_app (template_hole 0, template_var 1),
+               template_var 4)),
+           template_var 0)))),
+    ("Infinite_Coin_Toss_Space.stake_snth_charact",
+     "stake ?n ?w = stake ?n ?x ==> ALL i<?n. ?w !! i = ?x !! i",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app (template_hole 5, template_var 2), template_var 1),
+          template_app
+           (template_app (template_hole 5, template_var 2),
+            template_var 0))],
+       template_predicate (template_app (template_hole 4, t_empty)))),
+    ("Infinite_Coin_Toss_Space.stake_snth",
+     "[| stake ?n ?w = stake ?n ?x; Suc ?i <= ?n |]
+      ==> ?w !! ?i = ?x !! ?i",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app (template_hole 4, template_var 3), template_var 2),
+          template_app
+           (template_app (template_hole 4, template_var 3),
+            template_var 1)),
+        template_inequation
+         (less_equals, template_app (template_hole 2, template_var 0),
+          template_var 3)],
+       template_equation
+        (template_app
+          (template_app (template_hole 0, template_var 2), template_var 0),
+         template_app
+          (template_app (template_hole 0, template_var 1),
+           template_var 0)))),
+    ("Infinite_Coin_Toss_Space.proj_stoch_proc_eq_snth",
+     "[| proj_stoch_proc ?f ?n ?x = proj_stoch_proc ?f ?n ?y; ?k <= ?n |]
+      ==> ?f ?k ?x = ?f ?k ?y",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app
+             (template_app (template_hole 2, template_var 4),
+              template_var 3),
+            template_var 2),
+          template_app
+           (template_app
+             (template_app (template_hole 2, template_var 4),
+              template_var 3),
+            template_var 1)),
+        template_inequation (less_equals, template_var 0, template_var 3)],
+       template_equation
+        (template_app
+          (template_app (template_var 4, template_var 0), template_var 2),
+         template_app
+          (template_app (template_var 4, template_var 0),
+           template_var 1)))),
+    ("Infinite_Coin_Toss_Space.bernoulli_stream_npref_prob",
+     "?M = bernoulli_stream ?p ==>
+      emeasure ?M {w: space ?M. stake 0 w = stake 0 ?x} = 1",
+     template_implication
+      ([template_equation
+         (template_var 2, template_app (template_hole 10, template_var 1))],
+       template_equation
+        (template_app
+          (template_app (template_hole 8, template_var 2),
+           template_app (template_hole 7, t_empty)),
+         template_hole 0))),
+    ("Infinite_Coin_Toss_Space.stake_snth'",
+     "(!!i. Suc i <= ?n ==> ?w !! i = ?x !! i) ==>
+      stake ?n ?w = stake ?n ?x",
+     template_implication
+      ([template_predicate (template_app (template_hole 7, t_empty))],
+       template_equation
+        (template_app
+          (template_app (template_hole 0, template_var 2), template_var 1),
+         template_app
+          (template_app (template_hole 0, template_var 2),
+           template_var 0)))),
+    ("Infinite_Coin_Toss_Space.stoch_proc_comp_proj_preimage",
+     "?X ?n -` {?X ?n ?x} =
+      (UN z:comp_proj ?X ?n (?X ?n ?x). proj_stoch_proc ?X ?n -` {z})",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 9, template_app (template_var 2, template_var 1)),
+         template_app
+          (template_app
+            (template_hole 8,
+             template_app
+              (template_app (template_var 2, template_var 1),
+               template_var 0)),
+           template_hole 7)),
+       template_app
+        (template_hole 6,
+         template_app
+          (template_app (template_hole 5, t_empty),
+           template_app
+            (template_app
+              (template_app (template_hole 0, template_var 2),
+               template_var 1),
+             template_app
+              (template_app (template_var 2, template_var 1),
+               template_var 0)))))),
+    ("Infinite_Coin_Toss_Space.ennreal_sum",
+     "[| finite ?A; !!a. 0 <= ?f a |]
+      ==> (SUM a:?A. ennreal (?f a)) = ennreal (sum ?f ?A)",
+     template_implication
+      ([template_predicate (template_app (template_hole 7, template_var 1)),
+        template_predicate (template_app (template_hole 6, t_empty))],
+       template_equation
+        (template_app
+          (template_app (template_hole 2, t_empty), template_var 1),
+         template_app
+          (template_hole 1,
+           template_app
+            (template_app (template_hole 0, t_empty), template_var 1))))),
+    ("Infinite_Coin_Toss_Space.prob_component_measure",
+     "[| 0 <= ?p; ?p <= 1 |]
+      ==> emeasure (measure_pmf (bernoulli_pmf ?p)) {?x !! ?i} =
+          ennreal (prob_component ?p ?x ?i)",
+     template_implication
+      ([template_inequation (less_equals, template_hole 10, template_var 2),
+        template_inequation (less_equals, template_var 2, template_hole 9)],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 7,
+             template_app
+              (template_hole 6,
+               template_app (template_hole 5, template_var 2))),
+           template_app
+            (template_app
+              (template_hole 4,
+               template_app
+                (template_app (template_hole 3, template_var 1),
+                 template_var 0)),
+             template_hole 2)),
+         template_app
+          (template_hole 1,
+           template_app
+            (template_app
+              (template_app (template_hole 0, template_var 2),
+               template_var 1),
+             template_var 0))))),
+    ("Infinite_Coin_Toss_Space.sigma_set_union_count",
+     "[| ALL y:?A. ?B y : sigma_sets ?X ?Y; countable ?A |]
+      ==> \<Union> (?B ` ?A) : sigma_sets ?X ?Y",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 5, template_var 3), t_empty)
+            ),
+        template_predicate
+         (template_app (template_hole 2, template_var 3))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 4,
+               template_app
+                (template_hole 1,
+                 template_app
+                  (template_app (template_hole 0, t_empty),
+                   template_var 3))),
+             template_app
+              (template_app (template_hole 3, template_var 1),
+               template_var 0))
+           ))),
+    ("Infinite_Coin_Toss_Space.comp_proj_stoch_proc_preimage",
+     "proj_stoch_proc ?X ?n -` {proj_stoch_proc ?X ?n ?x} =
+      (INT i:{m. m <= ?n}. ?X i -` {?X i ?x})",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 10,
+           template_app
+            (template_app (template_hole 9, template_var 2),
+             template_var 1)),
+         template_app
+          (template_app
+            (template_hole 8,
+             template_app
+              (template_app
+                (template_app (template_hole 9, template_var 2),
+                 template_var 1),
+               template_var 0)),
+           template_hole 7)),
+       template_app
+        (template_hole 6,
+         template_app
+          (template_app (template_hole 5, t_empty),
+           template_app (template_hole 1, t_empty))))),
+    ("Infinite_Coin_Toss_Space.snth_as_fct",
+     "?M = bernoulli_stream ?p ==>
+      to_stream -` {w: space ?M. w !! ?i = ?b} = {X. X ?i = ?b}",
+     template_implication
+      ([template_equation
+         (template_var 3, template_app (template_hole 10, template_var 2))],
+       template_equation
+        (template_app
+          (template_app (template_hole 8, template_hole 7),
+           template_app (template_hole 6, t_empty)),
+         template_app (template_hole 0, t_empty)))),
+    ("Infinite_Coin_Toss_Space.bernoulli_stream_sets",
+     "[| 0 < ?q; ?q < 1; 0 < ?p; ?p < 1 |]
+      ==> sets (bernoulli_stream ?p) = sets (bernoulli_stream ?q)",
+     template_implication
+      ([template_inequation (less_than, template_hole 4, template_var 1),
+        template_inequation (less_than, template_var 1, template_hole 3),
+        template_inequation (less_than, template_hole 4, template_var 0),
+        template_inequation (less_than, template_var 0, template_hole 3)],
+       template_equation
+        (template_app
+          (template_hole 1, template_app (template_hole 0, template_var 0)),
+         template_app
+          (template_hole 1,
+           template_app (template_hole 0, template_var 1))))),
+    ("Infinite_Coin_Toss_Space.enn2real_sum",
+     "[| finite ?A; !!a. a : ?A ==> ?f a < \<top> |]
+      ==> enn2real (sum ?f ?A) = (SUM a:?A. enn2real (?f a))",
+     template_implication
+      ([template_predicate (template_app (template_hole 8, template_var 1)),
+        template_predicate (template_app (template_hole 7, t_empty))],
+       template_equation
+        (template_app
+          (template_hole 2,
+           template_app
+            (template_app (template_hole 1, template_var 0),
+             template_var 1)),
+         template_app
+          (template_app (template_hole 0, t_empty), template_var 1)))),
+    ("Infinite_Coin_Toss_Space.gen_subalgebra_eq_space_sets",
+     "[| space ?M = space ?N; ?P = ?Q; ?P <= Pow (space ?M) |]
+      ==> sets (gen_subalgebra ?M ?P) = sets (gen_subalgebra ?N ?Q)",
+     template_implication
+      ([template_equation
+         (template_app (template_hole 5, template_var 3),
+          template_app (template_hole 5, template_var 2)),
+        template_equation (template_var 1, template_var 0),
+        template_inequation
+         (less_equals, template_var 1,
+          template_app
+           (template_hole 2,
+            template_app (template_hole 5, template_var 3)))],
+       template_equation
+        (template_app
+          (template_hole 1,
+           template_app
+            (template_app (template_hole 0, template_var 3),
+             template_var 1)),
+         template_app
+          (template_hole 1,
+           template_app
+            (template_app (template_hole 0, template_var 2),
+             template_var 0))))),
+    ("Infinite_Coin_Toss_Space.stake_preimage_measurable",
+     "[| Suc 0 <= ?n; ?M = bernoulli_stream ?p |]
+      ==> {w: space ?M. stake ?n w = stake ?n ?x} : sets ?M",
+     template_implication
+      ([template_inequation
+         (less_equals, template_app (template_hole 11, template_hole 10),
+          template_var 3),
+        template_equation
+         (template_var 2, template_app (template_hole 8, template_var 1))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 7, template_app (template_hole 6, t_empty)),
+             template_app (template_hole 0, template_var 2))
+           ))),
+    ("Infinite_Coin_Toss_Space.stoch_proc_comp_proj_i_preimage",
+     "?i <= ?n ==>
+      ?X ?i -` {?X ?i ?x} =
+      (UN z:comp_proj_i ?X ?n ?i (?X ?i ?x). proj_stoch_proc ?X ?n -` {z})",
+     template_implication
+      ([template_inequation (less_equals, template_var 3, template_var 2)],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 9,
+             template_app (template_var 1, template_var 3)),
+           template_app
+            (template_app
+              (template_hole 8,
+               template_app
+                (template_app (template_var 1, template_var 3),
+                 template_var 0)),
+             template_hole 7)),
+         template_app
+          (template_hole 6,
+           template_app
+            (template_app (template_hole 5, t_empty),
+             template_app
+              (template_app
+                (template_app
+                  (template_app (template_hole 0, template_var 1),
+                   template_var 2),
+                 template_var 3),
+               template_app
+                (template_app (template_var 1, template_var 3),
+                 template_var 0))))))),
+    ("Infinite_Coin_Toss_Space.bernoulli_stream_component_probability",
+     "[| ?N = bernoulli_stream ?p; 0 <= ?p; ?p <= 1 |]
+      ==> ALL n. emeasure ?N {w: space ?N. w !! n} = ennreal ?p",
+     template_implication
+      ([template_equation
+         (template_var 1, template_app (template_hole 12, template_var 0)),
+        template_inequation (less_equals, template_hole 10, template_var 0),
+        template_inequation (less_equals, template_var 0, template_hole 9)],
+       template_predicate (template_app (template_hole 8, t_empty)))),
+    ("Infinite_Coin_Toss_Space.sum_union_disjoint'",
+     "[| finite ?A; finite ?B; ?A Int ?B = {}; ?A Un ?B = ?C |]
+      ==> sum ?g ?C = sum ?g ?A + sum ?g ?B",
+     template_implication
+      ([template_predicate (template_app (template_hole 7, template_var 3)),
+        template_predicate (template_app (template_hole 7, template_var 2)),
+        template_equation
+         (template_app
+           (template_app (template_hole 5, template_var 3), template_var 2),
+          template_hole 4),
+        template_equation
+         (template_app
+           (template_app (template_hole 3, template_var 3), template_var 2),
+          template_var 1)],
+       template_equation
+        (template_app
+          (template_app (template_hole 1, template_var 0), template_var 1),
+         template_app
+          (template_app
+            (template_hole 0,
+             template_app
+              (template_app (template_hole 1, template_var 0),
+               template_var 3)),
+           template_app
+            (template_app (template_hole 1, template_var 0),
+             template_var 2))))),
+    ("Infinite_Coin_Toss_Space.sigma_set_inter_init",
+     "[| !!i. i <= ?n ==> ?A i : sigma_sets ?sp ?B; ?B <= Pow ?sp |]
+      ==> \<Inter> (?A ` {m. m <= ?n}) : sigma_sets ?sp ?B",
+     template_implication
+      ([template_predicate (template_app (template_hole 9, t_empty)),
+        template_inequation
+         (less_equals, template_var 0,
+          template_app (template_hole 3, template_var 1))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 6,
+               template_app
+                (template_hole 2,
+                 template_app
+                  (template_app (template_hole 1, t_empty),
+                   template_app (template_hole 0, t_empty)))),
+             template_app
+              (template_app (template_hole 5, template_var 1),
+               template_var 0))
+           ))),
+    ("Infinite_Coin_Toss_Space.bernoulli_stream_component_probability_compl",
+     "[| ?N = bernoulli_stream ?p; 0 <= ?p; ?p <= 1 |]
+      ==> ALL n. emeasure ?N {w: space ?N. ~ w !! n} = ennreal (1 - ?p)",
+     template_implication
+      ([template_equation
+         (template_var 1, template_app (template_hole 14, template_var 0)),
+        template_inequation (less_equals, template_hole 12, template_var 0),
+        template_inequation
+         (less_equals, template_var 0, template_hole 11)],
+       template_predicate (template_app (template_hole 10, t_empty)))),
+    ("Infinite_Coin_Toss_Space.stake_finite_universe_induct",
+     "[| finite ?A; ?A ~= {} |]
+      ==> stake (Suc ?n) ` streams ?A =
+          {s # w |s w. s : ?A & w : stake ?n ` streams ?A}",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 16, template_var 1)),
+        template_negation
+         (template_equation (template_var 1, template_hole 13))],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 11,
+             template_app
+              (template_hole 10,
+               template_app (template_hole 9, template_var 0))),
+           template_app (template_hole 8, template_var 1)),
+         template_app (template_hole 7, t_empty)))),
+    ("Infinite_Coin_Toss_Space.bernoulli_stream_stake_prob",
+     "[| ?M = bernoulli_stream ?p; ?p <= 1; 0 <= ?p |]
+      ==> \<P>(w in ?M. stake ?n w = stake ?n ?x) =
+          prod (prob_component ?p ?x) {0..<?n}",
+     template_implication
+      ([template_equation
+         (template_var 3, template_app (template_hole 15, template_var 2)),
+        template_inequation (less_equals, template_var 2, template_hole 13),
+        template_inequation
+         (less_equals, template_hole 12, template_var 2)],
+       template_equation
+        (template_app
+          (template_app (template_hole 10, template_var 3),
+           template_app (template_hole 9, t_empty)),
+         template_app
+          (template_app (template_hole 3, t_empty),
+           template_app
+            (template_app (template_hole 1, template_hole 0),
+             template_var 1))))),
+    ("Infinite_Coin_Toss_Space.stake_inter_snth",
+     "Suc 0 <= ?n ==>
+      {w: space ?M. stake ?n w = stake ?n ?x} =
+      (INT i:{0..?n - 1}. {w: space ?M. w !! i = ?x !! i})",
+     template_implication
+      ([template_inequation
+         (less_equals, template_app (template_hole 15, template_hole 14),
+          template_var 2)],
+       template_equation
+        (template_app (template_hole 12, t_empty),
+         template_app
+          (template_hole 6,
+           template_app
+            (template_app (template_hole 5, t_empty),
+             template_app
+              (template_app (template_hole 2, template_hole 14),
+               template_app
+                (template_app (template_hole 1, template_var 2),
+                 template_hole 0))))))),
+    ("Infinite_Coin_Toss_Space.bernoulli_stream_pref_prob'",
+     "[| ?M = bernoulli_stream ?p; ?p <= 1; 0 <= ?p |]
+      ==> emeasure ?M {w: space ?M. stake ?n w = stake ?n ?x} =
+          ennreal (prod (prob_component ?p ?x) {0..<?n})",
+     template_implication
+      ([template_equation
+         (template_var 3, template_app (template_hole 16, template_var 2)),
+        template_inequation (less_equals, template_var 2, template_hole 14),
+        template_inequation
+         (less_equals, template_hole 13, template_var 2)],
+       template_equation
+        (template_app
+          (template_app (template_hole 11, template_var 3),
+           template_app (template_hole 10, t_empty)),
+         template_app
+          (template_hole 4,
+           template_app
+            (template_app (template_hole 3, t_empty),
+             template_app
+              (template_app (template_hole 1, template_hole 0),
+               template_var 1)))))),
+    ("Infinite_Coin_Toss_Space.adapt_sigma_sets",
+     "(!!i. i <= ?n ==> ?X i : ?M \<rightarrow>\<^sub>M ?N) ==>
+      sigma_algebra (space ?M)
+       (sigma_sets (space ?M)
+         (UN i:{m. m <= ?n}. {?X i -` A Int space ?M |A. A : sets ?N}))",
+     template_implication
+      ([template_predicate (template_app (template_hole 18, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 13,
+               template_app (template_hole 12, template_var 1)),
+             template_app
+              (template_app
+                (template_hole 11,
+                 template_app (template_hole 12, template_var 1)),
+               template_app
+                (template_hole 10,
+                 template_app
+                  (template_app (template_hole 9, t_empty),
+                   template_app (template_hole 0, t_empty)))))
+           ))),
+    ("Infinite_Coin_Toss_Space.stake_as_fct",
+     "[| Suc 0 <= ?n; ?M = bernoulli_stream ?p |]
+      ==> to_stream -` {w: space ?M. stake ?n w = stake ?n ?x} =
+          {X. ALL i. 0 <= i & i <= ?n - 1 --> X i = ?x !! i}",
+     template_implication
+      ([template_inequation
+         (less_equals, template_app (template_hole 19, template_hole 18),
+          template_var 3),
+        template_equation
+         (template_var 2, template_app (template_hole 16, template_var 1))],
+       template_equation
+        (template_app
+          (template_app (template_hole 14, template_hole 13),
+           template_app (template_hole 12, t_empty)),
+         template_app (template_hole 6, t_empty)))),
+    ("Infinite_Coin_Toss_Space.filt_equiv_borel_AE_eq_iff",
+     "[| filt_equiv ?F ?M ?N; ?f : borel_measurable (?F ?t);
+         ?g : borel_measurable (?F ?t); prob_space ?N; prob_space ?M |]
+      ==> (AE w in ?M. ?f w = ?g w) = (AE w in ?N. ?f w = ?g w)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 8, template_var 5),
+                template_var 4),
+              template_var 3)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 7, template_var 2),
+              template_app
+               (template_app
+                 (template_hole 6,
+                  template_app (template_var 5, template_var 1)),
+                template_hole 5))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 7, template_var 0),
+              template_app
+               (template_app
+                 (template_hole 6,
+                  template_app (template_var 5, template_var 1)),
+                template_hole 5))
+            ),
+        template_predicate (template_app (template_hole 4, template_var 3)),
+        template_predicate
+         (template_app (template_hole 4, template_var 4))],
+       template_equation
+        (template_app
+          (template_app (template_hole 2, t_empty),
+           template_app (template_hole 0, template_var 4)),
+         template_app
+          (template_app (template_hole 2, t_empty),
+           template_app (template_hole 0, template_var 3))))),
+    ("Infinite_Coin_Toss_Space.stoch_proc_filt_sets",
+     "(!!i. i <= ?n ==> ?X i : ?M \<rightarrow>\<^sub>M ?N) ==>
+      sets (stoch_proc_filt ?M ?X ?N ?n) =
+      sigma_sets (space ?M)
+       (UN i:{m. m <= ?n}. {?X i -` A Int space ?M |A. A : sets ?N})",
+     template_implication
+      ([template_predicate (template_app (template_hole 20, t_empty))],
+       template_equation
+        (template_app
+          (template_hole 14,
+           template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 13, template_var 1),
+                 template_var 2),
+               template_var 0),
+             template_var 3)),
+         template_app
+          (template_app
+            (template_hole 12,
+             template_app (template_hole 11, template_var 1)),
+           template_app
+            (template_hole 10,
+             template_app
+              (template_app (template_hole 9, t_empty),
+               template_app (template_hole 0, t_empty))))))),
+    ("Infinite_Coin_Toss_Space.bernoulli_stream_pref_prob",
+     "[| ?M = bernoulli_stream ?p; 0 <= ?p; ?p <= 1; Suc 0 <= ?n |]
+      ==> emeasure ?M {w: space ?M. stake ?n w = stake ?n ?x} =
+          ennreal (prod (prob_component ?p ?x) {0..?n - 1})",
+     template_implication
+      ([template_equation
+         (template_var 3, template_app (template_hole 20, template_var 2)),
+        template_inequation (less_equals, template_hole 18, template_var 2),
+        template_inequation (less_equals, template_var 2, template_hole 17),
+        template_inequation
+         (less_equals, template_app (template_hole 15, template_hole 14),
+          template_var 1)],
+       template_equation
+        (template_app
+          (template_app (template_hole 12, template_var 3),
+           template_app (template_hole 11, t_empty)),
+         template_app
+          (template_hole 5,
+           template_app
+            (template_app (template_hole 4, t_empty),
+             template_app
+              (template_app (template_hole 2, template_hole 14),
+               template_app
+                (template_app (template_hole 1, template_var 1),
+                 template_hole 0))))))),
+    ("Infinite_Coin_Toss_Space.bernoulli_stream_element_prob_rec'",
+     "[| ?M = bernoulli_stream ?p; 0 <= ?p; ?p <= 1 |]
+      ==> \<P>(w in ?M. stake (Suc ?n) w = stake (Suc ?n) ?x) =
+          \<P>(w in ?M. stake ?n w = stake ?n ?x) *
+          prob_component ?p ?x ?n",
+     template_implication
+      ([template_equation
+         (template_var 3, template_app (template_hole 14, template_var 2)),
+        template_inequation (less_equals, template_hole 12, template_var 2),
+        template_inequation
+         (less_equals, template_var 2, template_hole 11)],
+       template_equation
+        (template_app
+          (template_app (template_hole 9, template_var 3),
+           template_app (template_hole 8, t_empty)),
+         template_app
+          (template_app
+            (template_hole 1,
+             template_app
+              (template_app (template_hole 9, template_var 3),
+               template_app (template_hole 8, t_empty))),
+           template_app
+            (template_app
+              (template_app (template_hole 0, template_var 2),
+               template_var 0),
+             template_var 1))))),
+    ("Infinite_Coin_Toss_Space.bernoulli_stream_element_prob_rec",
+     "[| ?M = bernoulli_stream ?p; 0 <= ?p; ?p <= 1 |]
+      ==> emeasure ?M {w: space ?M. stake (Suc ?n) w = stake (Suc ?n) ?x} =
+          emeasure ?M {w: space ?M. stake ?n w = stake ?n ?x} *
+          ennreal (prob_component ?p ?x ?n)",
+     template_implication
+      ([template_equation
+         (template_var 3, template_app (template_hole 15, template_var 2)),
+        template_inequation (less_equals, template_hole 13, template_var 2),
+        template_inequation
+         (less_equals, template_var 2, template_hole 12)],
+       template_equation
+        (template_app
+          (template_app (template_hole 10, template_var 3),
+           template_app (template_hole 9, t_empty)),
+         template_app
+          (template_app
+            (template_hole 2,
+             template_app
+              (template_app (template_hole 10, template_var 3),
+               template_app (template_hole 9, t_empty))),
+           template_app
+            (template_hole 1,
+             template_app
+              (template_app
+                (template_app (template_hole 0, template_var 2),
+                 template_var 0),
+               template_var 1))))))]:
+   (string * thm * template) list
+### theory "Draft.Infinite_Coin_Toss_SpaceTemplates"
+### 1.347s elapsed time, 1.728s cpu time, 0.299s GC time
+val it = (): unit

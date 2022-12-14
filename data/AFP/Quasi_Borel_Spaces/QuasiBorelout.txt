@@ -1,0 +1,967 @@
+Loading theory "Draft.StandardBorel" (required by "Draft.QuasiBorelTemplates" via "Draft.QuasiBorel")
+Loading theory "HOL-Library.Function_Algebras" (required by "Draft.QuasiBorelTemplates" via "Draft.ExtrEqs" via "HOL-Library.BigO")
+Loading theory "Draft.Templates" (required by "Draft.QuasiBorelTemplates" via "Draft.ExtrEqs")
+instantiation
+  fun :: (type, plus) plus
+  plus_fun == plus :: ('a => 'b) => ('a => 'b) => 'a => 'b
+instantiation
+  fun :: (type, zero) zero
+  zero_fun == zero_class.zero :: 'a => 'b
+instantiation
+  fun :: (type, times) times
+  times_fun == times :: ('a => 'b) => ('a => 'b) => 'a => 'b
+instantiation
+  fun :: (type, one) one
+  one_fun == one_class.one :: 'a => 'b
+datatype template_term
+=
+     t_empty
+   | template_app of template_term * template_term
+   | template_hole of int
+   | template_var of int
+datatype sign
+= equals | greater_equals | greater_than | less_equals | less_than
+datatype template
+=
+     template_bimplication of template * template
+   | template_dunno
+   | template_equation of template_term * template_term
+   | template_implication of template list * template
+   | template_inequation of sign * template_term * template_term
+   | template_negation of template
+   | template_predicate of template_term
+constructor t_empty: template_term
+constructor template_app: template_term * template_term -> template_term
+constructor template_hole: int -> template_term
+constructor template_var: int -> template_term
+constructor equals: sign
+constructor greater_equals: sign
+constructor greater_than: sign
+constructor less_equals: sign
+constructor less_than: sign
+constructor template_bimplication: template * template -> template
+constructor template_dunno: template
+constructor template_equation: template_term * template_term -> template
+constructor template_implication: template list * template -> template
+constructor template_inequation:
+   sign * template_term * template_term -> template
+constructor template_negation: template -> template
+constructor template_predicate: template_term -> template
+val vfs = fn: term -> (indexname * typ) list * (string * typ) list
+val indexOf = fn: ''a list -> ''a -> int -> int
+val has_eq = fn: term -> bool
+val term2template = fn:
+   (indexname * typ) list -> (string * typ) list -> term -> template_term
+val lemma2predicate = fn: term -> term -> template
+val makeTemplatewithContext = fn: term -> term -> template
+val lemma2template = fn: term -> template
+val thm2template = fn: thm -> template
+val tterm2string = fn: template_term -> string
+val template2string = fn: template -> string
+val t = "height ?t <= size ?t": thm
+val th =
+   Const ("HOL.Trueprop", "bool => prop") $
+     (Const ("Orderings.ord_class.less_eq", "nat => nat => bool") $
+       (Const ("Tree.height_class.height", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree")) $
+       (Const ("Nat.size_class.size", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree"))):
+   term
+### theory "Draft.Templates"
+### 0.071s elapsed time, 0.253s cpu time, 0.000s GC time
+locale standard_borel
+  fixes M :: "'a measure"
+  assumes "standard_borel M"
+### theory "HOL-Library.Function_Algebras"
+### 0.109s elapsed time, 0.326s cpu time, 0.000s GC time
+Loading theory "HOL-Library.BigO" (required by "Draft.QuasiBorelTemplates" via "Draft.ExtrEqs")
+locale standard_borel_space_UNIV
+  fixes M :: "'a measure"
+  assumes "standard_borel_space_UNIV M"
+Found termination order: "(%p. size (snd p)) <*mlex*> {}"
+locale pair_standard_borel
+  fixes M :: "'a measure"
+    and N :: "'b measure"
+  assumes "pair_standard_borel M N"
+locale pair_standard_borel_space_UNIV
+  fixes M :: "'a measure"
+    and N :: "'b measure"
+  assumes "pair_standard_borel_space_UNIV M N"
+### theory "HOL-Library.BigO"
+### 0.624s elapsed time, 1.326s cpu time, 0.172s GC time
+Loading theory "Draft.ExtrEqs" (required by "Draft.QuasiBorelTemplates")
+### theory "Draft.StandardBorel"
+### 0.753s elapsed time, 1.660s cpu time, 0.223s GC time
+Loading theory "Draft.QuasiBorel" (required by "Draft.QuasiBorelTemplates")
+Proofs for inductive predicate(s) "generating_Mxp"
+  Proving monotonicity ...
+instantiation
+  quasi_borel :: (type) order_bot
+  bot_quasi_borel == bot :: 'a quasi_borel
+  less_eq_quasi_borel == less_eq :: 'a quasi_borel => 'a quasi_borel => bool
+  less_quasi_borel == less :: 'a quasi_borel => 'a quasi_borel => bool
+Proofs for inductive predicate(s) "less_eq_quasi_borel"
+  Proving monotonicity ...
+val eqpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Var (("_dummy_", 2), "?'a"))
+       ):
+   term Find_Theorems.criterion
+val badeqpattern = Pattern (Const ("Pure.eq", "?'a => ?'a => prop")):
+   term Find_Theorems.criterion
+val undefpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Const ("HOL.undefined", "?'a"))
+       ):
+   term Find_Theorems.criterion
+val thmpattern =
+   Pattern
+    (Const ("HOL.Trueprop", "bool => prop") $ Var (("_dummy_", 1), "bool")):
+   term Find_Theorems.criterion
+val badnames =
+   ["*nitpick*", "*Nitpick*", "*full_exhaustive*", "*_def*", "Enum.finite*",
+    "*Quickcheck*", "ATP*", "*Nunchaku*", "*Code*", "*BNF*", "*SMT*",
+    "*.*.*"]:
+   string list
+val unwanted_names =
+   [(false, Name "*nitpick*"), (false, Name "*Nitpick*"),
+    (false, Name "*full_exhaustive*"), (false, Name "*_def*"),
+    (false, Name "Enum.finite*"), (false, Name "*Quickcheck*"),
+    (false, Name "ATP*"), (false, Name "*Nunchaku*"),
+    (false, Name "*Code*"), (false, Name "*BNF*"), (false, Name "*SMT*"),
+    (false, Name "*.*.*")]:
+   (bool * term Find_Theorems.criterion) list
+val has_vars = fn: term -> bool
+val get_all_eqs = fn: string -> Proof.context -> (string * thm) list
+val get_all_thms = fn: string -> Proof.context -> (string * thm) list
+val get_noneq_thms = fn: string -> Proof.context -> (string * thm) list
+val template_eqs = fn:
+   string -> Proof.context -> (string * thm * template) list
+val template_thms = fn:
+   string -> Proof.context -> (string * thm * template) list
+### theory "Draft.ExtrEqs"
+### 0.487s elapsed time, 0.997s cpu time, 0.060s GC time
+instantiation
+  quasi_borel :: (type) semilattice_sup
+  sup_quasi_borel == sup ::
+    'a quasi_borel => 'a quasi_borel => 'a quasi_borel
+### theory "Draft.QuasiBorel"
+### 0.497s elapsed time, 1.027s cpu time, 0.100s GC time
+Loading theory "Draft.QuasiBorelTemplates"
+val templateLemmas =
+   [("QuasiBorel.generating_Mx_closed1",
+     "qbs_closed1 (generating_Mx ?X ?Mx)",
+     template_predicate
+      (
+         template_app
+          (template_hole 1,
+           template_app
+            (template_app (template_hole 0, template_var 1),
+             template_var 0))
+         )),
+    ("QuasiBorel.generating_Mx_closed3",
+     "qbs_closed3 (generating_Mx ?X ?Mx)",
+     template_predicate
+      (
+         template_app
+          (template_hole 1,
+           template_app
+            (template_app (template_hole 0, template_var 1),
+             template_var 0))
+         )),
+    ("QuasiBorel.max_qbs_space", "qbs_space (max_quasi_borel ?X) = ?X",
+     template_equation
+      (template_app
+        (template_hole 1, template_app (template_hole 0, template_var 0)),
+       template_var 0)),
+    ("QuasiBorel.generating_Mx_closed2",
+     "qbs_closed2 ?X (generating_Mx ?X ?Mx)",
+     template_predicate
+      (
+         template_app
+          (template_app (template_hole 1, template_var 1),
+           template_app
+            (template_app (template_hole 0, template_var 1),
+             template_var 0))
+         )),
+    ("QuasiBorel.qbs_morphism_ident", "id : ?X \<rightarrow>\<^sub>Q ?X",
+     template_predicate
+      (
+         template_app
+          (template_app (template_hole 2, template_hole 1),
+           template_app
+            (template_app (template_hole 0, template_var 0),
+             template_var 0))
+         )),
+    ("QuasiBorel.to_unit_quasi_borel_morphism",
+     "!\<^sub>Q : ?X \<rightarrow>\<^sub>Q 1\<^sub>Q",
+     template_predicate
+      (
+         template_app
+          (template_app (template_hole 3, template_hole 2),
+           template_app
+            (template_app (template_hole 1, template_var 0),
+             template_hole 0))
+         )),
+    ("QuasiBorel.qbs_morphism_ident'",
+     "(%x. x) : ?X \<rightarrow>\<^sub>Q ?X",
+     template_predicate
+      (
+         template_app
+          (template_app (template_hole 1, t_empty),
+           template_app
+            (template_app (template_hole 0, template_var 0),
+             template_var 0))
+         )),
+    ("QuasiBorel.unit_quasi_borel_terminal",
+     "EX! f. f : ?X \<rightarrow>\<^sub>Q 1\<^sub>Q",
+     template_predicate (template_app (template_hole 3, t_empty))),
+    ("QuasiBorel.max_qbs_Mx",
+     "qbs_Mx (max_quasi_borel ?X) = UNIV \<rightarrow> ?X",
+     template_equation
+      (template_app
+        (template_hole 3, template_app (template_hole 2, template_var 0)),
+       template_app
+        (template_app (template_hole 1, template_hole 0), t_empty))),
+    ("QuasiBorel.generating_Mx_Mx",
+     "generating_Mx (qbs_space ?X) (qbs_Mx ?X) = qbs_Mx ?X",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 2, template_app (template_hole 1, template_var 0)),
+         template_app (template_hole 0, template_var 0)),
+       template_app (template_hole 0, template_var 0))),
+    ("QuasiBorel.empty_quasi_borel_iff",
+     "(qbs_space ?X = {}) = (?X = empty_quasi_borel)",
+     template_bimplication
+      (template_equation
+        (template_app (template_hole 3, template_var 0), template_hole 2),
+       template_equation (template_var 0, template_hole 0))),
+    ("QuasiBorel.map_qbs_space",
+     "qbs_space (map_qbs ?f ?X) = ?f ` qbs_space ?X",
+     template_equation
+      (template_app
+        (template_hole 3,
+         template_app
+          (template_app (template_hole 2, template_var 1), template_var 0)),
+       template_app
+        (template_app (template_hole 1, template_var 1),
+         template_app (template_hole 0, template_var 0)))),
+    ("QuasiBorel.sub_qbs_space",
+     "qbs_space (sub_qbs ?X ?U) = qbs_space ?X Int ?U",
+     template_equation
+      (template_app
+        (template_hole 2,
+         template_app
+          (template_app (template_hole 1, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 0, template_app (template_hole 2, template_var 1)),
+         template_var 0))),
+    ("QuasiBorel.qbs_empty_equiv", "(qbs_space ?X = {}) = (qbs_Mx ?X = {})",
+     template_bimplication
+      (template_equation
+        (template_app (template_hole 4, template_var 0), template_hole 3),
+       template_equation
+        (template_app (template_hole 1, template_var 0), template_hole 0))),
+    ("QuasiBorel.inf_qbs_space",
+     "qbs_space (inf_quasi_borel ?X ?X') = qbs_space ?X Int qbs_space ?X'",
+     template_equation
+      (template_app
+        (template_hole 2,
+         template_app
+          (template_app (template_hole 1, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 0, template_app (template_hole 2, template_var 1)),
+         template_app (template_hole 2, template_var 0)))),
+    ("QuasiBorel.inf_qbs_Mx",
+     "qbs_Mx (inf_quasi_borel ?X ?X') = qbs_Mx ?X Int qbs_Mx ?X'",
+     template_equation
+      (template_app
+        (template_hole 2,
+         template_app
+          (template_app (template_hole 1, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 0, template_app (template_hole 2, template_var 1)),
+         template_app (template_hole 2, template_var 0)))),
+    ("QuasiBorel.max_quasi_borel_correct",
+     "Rep_quasi_borel (max_quasi_borel ?X) = (?X, UNIV \<rightarrow> ?X)",
+     template_equation
+      (template_app
+        (template_hole 4, template_app (template_hole 3, template_var 0)),
+       template_app
+        (template_app (template_hole 2, template_var 0),
+         template_app
+          (template_app (template_hole 1, template_hole 0), t_empty)))),
+    ("QuasiBorel.qbs_eqI", "qbs_Mx ?X = qbs_Mx ?Y ==> ?X = ?Y",
+     template_implication
+      ([template_equation
+         (template_app (template_hole 1, template_var 1),
+          template_app (template_hole 1, template_var 0))],
+       template_equation (template_var 1, template_var 0))),
+    ("QuasiBorel.qbs_closed2_dest",
+     "?x : qbs_space ?X ==> (%r. ?x) : qbs_Mx ?X",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 3, template_var 1),
+              template_app (template_hole 2, template_var 0))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 1, t_empty),
+             template_app (template_hole 0, template_var 0))
+           ))),
+    ("QuasiBorel.qbs_Mx_to_X",
+     "?\<alpha> : qbs_Mx ?X ==> ?\<alpha> ?r : qbs_space ?X",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 3, template_var 2),
+              template_app (template_hole 2, template_var 1))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 1,
+               template_app (template_var 2, template_var 0)),
+             template_app (template_hole 0, template_var 1))
+           ))),
+    ("QuasiBorel.map_qbs_closed1",
+     "qbs_closed1
+       {\<beta>. EX \<alpha>:qbs_Mx ?X. \<beta> = ?f o \<alpha>}",
+     template_predicate
+      (
+         template_app
+          (template_hole 5, template_app (template_hole 4, t_empty))
+         )),
+    ("QuasiBorel.map_qbs_closed3",
+     "qbs_closed3
+       {\<beta>. EX \<alpha>:qbs_Mx ?X. \<beta> = ?f o \<alpha>}",
+     template_predicate
+      (
+         template_app
+          (template_hole 5, template_app (template_hole 4, t_empty))
+         )),
+    ("QuasiBorel.qbs_morphism_const",
+     "?y : qbs_space ?Y ==> (%_. ?y) : ?X \<rightarrow>\<^sub>Q ?Y",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 3, template_var 2),
+              template_app (template_hole 2, template_var 1))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 1, t_empty),
+             template_app
+              (template_app (template_hole 0, template_var 0),
+               template_var 1))
+           ))),
+    ("QuasiBorel.qbs_space_eq_Mx",
+     "qbs_Mx ?X = qbs_Mx ?Y ==> qbs_space ?X = qbs_space ?Y",
+     template_implication
+      ([template_equation
+         (template_app (template_hole 2, template_var 1),
+          template_app (template_hole 2, template_var 0))],
+       template_equation
+        (template_app (template_hole 0, template_var 1),
+         template_app (template_hole 0, template_var 0)))),
+    ("QuasiBorel.qbs_decomp",
+     "(qbs_space ?X, qbs_Mx ?X) : {(X, Mx). is_quasi_borel X Mx}",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_hole 6,
+             template_app
+              (template_app
+                (template_hole 5,
+                 template_app (template_hole 4, template_var 0)),
+               template_app (template_hole 3, template_var 0))),
+           template_app
+            (template_hole 2, template_app (template_hole 1, t_empty)))
+         )),
+    ("QuasiBorel.qbs_Mx_to_X",
+     "?\<alpha> : qbs_Mx ?X ==>
+      ?\<alpha> : UNIV \<rightarrow> qbs_space ?X",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 4, template_var 1),
+              template_app (template_hole 3, template_var 0))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 4, template_var 1),
+             template_app
+              (template_app (template_hole 2, template_hole 1), t_empty))
+           ))),
+    ("QuasiBorel.qbs_morphismE",
+     "?f : ?X \<rightarrow>\<^sub>Q ?Y ==>
+      ?f : qbs_space ?X \<rightarrow> qbs_space ?Y",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 4, template_var 2),
+              template_app
+               (template_app (template_hole 3, template_var 1),
+                template_var 0))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 4, template_var 2),
+             template_app
+              (template_app
+                (template_hole 2,
+                 template_app (template_hole 1, template_var 1)),
+               t_empty))
+           ))),
+    ("QuasiBorel.measurable_separate",
+     "?P : borel_measurable real_borel ==> ?P -` {?i} : sets real_borel",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 8, template_var 1),
+              template_app
+               (template_app (template_hole 7, template_hole 6),
+                template_hole 5))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 4,
+               template_app
+                (template_app (template_hole 3, template_var 1),
+                 template_app
+                  (template_app (template_hole 2, template_var 0),
+                   template_hole 1))),
+             template_app (template_hole 0, template_hole 6))
+           ))),
+    ("QuasiBorel.generating_Mxp_generating_Mx_eq",
+     "generating_Mxp (%x. x : ?X) (%x. x : ?Mx) =
+      (%x. x : generating_Mx ?X ?Mx)",
+     template_equation
+      (template_app (template_app (template_hole 3, t_empty), t_empty),
+       t_empty)),
+    ("QuasiBorel.map_qbs_Mx",
+     "qbs_Mx (map_qbs ?f ?X) =
+      {\<beta>. EX \<alpha>:qbs_Mx ?X. \<beta> = ?f o \<alpha>}",
+     template_equation
+      (template_app
+        (template_hole 6,
+         template_app
+          (template_app (template_hole 5, template_var 1), template_var 0)),
+       template_app (template_hole 4, t_empty))),
+    ("QuasiBorel.inf_quasi_borel_correct",
+     "Rep_quasi_borel (inf_quasi_borel ?X ?X') =
+      (qbs_space ?X Int qbs_space ?X', qbs_Mx ?X Int qbs_Mx ?X')",
+     template_equation
+      (template_app
+        (template_hole 6,
+         template_app
+          (template_app (template_hole 5, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 4,
+           template_app
+            (template_app
+              (template_hole 3,
+               template_app (template_hole 2, template_var 1)),
+             template_app (template_hole 2, template_var 0))),
+         template_app
+          (template_app
+            (template_hole 1,
+             template_app (template_hole 0, template_var 1)),
+           template_app (template_hole 0, template_var 0))))),
+    ("QuasiBorel.map_qbs_closed2",
+     "qbs_closed2 (?f ` qbs_space ?X)
+       {\<beta>. EX \<alpha>:qbs_Mx ?X. \<beta> = ?f o \<alpha>}",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_hole 7,
+             template_app
+              (template_app (template_hole 6, template_var 1),
+               template_app (template_hole 5, template_var 0))),
+           template_app (template_hole 4, t_empty))
+         )),
+    ("QuasiBorel.generating_Mx_to_space",
+     "?Mx <= UNIV \<rightarrow> ?X ==>
+      generating_Mx ?X ?Mx <= UNIV \<rightarrow> ?X",
+     template_implication
+      ([template_inequation
+         (less_equals, template_var 1,
+          template_app
+           (template_app (template_hole 2, template_hole 1), t_empty))],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_app (template_hole 0, template_var 0), template_var 1),
+         template_app
+          (template_app (template_hole 2, template_hole 1), t_empty)))),
+    ("QuasiBorel.qbs_closed2I",
+     "(!!x. x : ?X ==> (%r. x) : ?Mx) ==> qbs_closed2 ?X ?Mx",
+     template_implication
+      ([template_predicate (template_app (template_hole 4, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 0, template_var 1), template_var 0)
+           ))),
+    ("QuasiBorel.sub_qbs_closed",
+     "qbs_closed1
+       {f: UNIV \<rightarrow> qbs_space ?X Int ?U. f : qbs_Mx ?X}",
+     template_predicate
+      (
+         template_app
+          (template_hole 8, template_app (template_hole 7, t_empty))
+         )),
+    ("QuasiBorel.sub_qbs_closed",
+     "qbs_closed3
+       {f: UNIV \<rightarrow> qbs_space ?X Int ?U. f : qbs_Mx ?X}",
+     template_predicate
+      (
+         template_app
+          (template_hole 8, template_app (template_hole 7, t_empty))
+         )),
+    ("QuasiBorel.separate_measurable",
+     "(!!i. ?P -` {i} : sets real_borel) ==>
+      ?P : borel_measurable real_borel",
+     template_implication
+      ([template_predicate (template_app (template_hole 10, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 2, template_var 0),
+             template_app
+              (template_app (template_hole 1, template_hole 3),
+               template_hole 0))
+           ))),
+    ("QuasiBorel.qbs_space_Mx",
+     "qbs_space ?X = {\<alpha> x |x \<alpha>. \<alpha> : qbs_Mx ?X}",
+     template_equation
+      (template_app (template_hole 7, template_var 0),
+       template_app (template_hole 6, t_empty))),
+    ("QuasiBorel.qbs_morphismE",
+     "[| ?f : ?X \<rightarrow>\<^sub>Q ?Y; ?x : qbs_space ?X |]
+      ==> ?f ?x : qbs_space ?Y",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 5, template_var 3),
+              template_app
+               (template_app (template_hole 4, template_var 2),
+                template_var 1))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 3, template_var 0),
+              template_app (template_hole 2, template_var 2))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 1,
+               template_app (template_var 3, template_var 0)),
+             template_app (template_hole 0, template_var 1))
+           ))),
+    ("QuasiBorel.map_qbs_f",
+     "{\<beta>. EX \<alpha>:qbs_Mx ?X. \<beta> = ?f o \<alpha>}
+      <= UNIV \<rightarrow> ?f ` qbs_space ?X",
+     template_inequation
+      (less_equals, template_app (template_hole 8, t_empty),
+       template_app
+        (template_app (template_hole 3, template_hole 2), t_empty))),
+    ("QuasiBorel.qbs_closed1_dest",
+     "[| ?\<alpha> : qbs_Mx ?X; ?f : borel_measurable real_borel |]
+      ==> ?\<alpha> o ?f : qbs_Mx ?X",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 5, template_var 2),
+              template_app (template_hole 4, template_var 1))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 3, template_var 0),
+              template_app
+               (template_app (template_hole 2, template_hole 1),
+                template_hole 1))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 5,
+               template_app
+                (template_app (template_hole 0, template_var 2),
+                 template_var 0)),
+             template_app (template_hole 4, template_var 1))
+           ))),
+    ("QuasiBorel.qbs_morphismE",
+     "[| ?f : ?X \<rightarrow>\<^sub>Q ?Y; ?\<alpha> : qbs_Mx ?X |]
+      ==> ?f o ?\<alpha> : qbs_Mx ?Y",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 6, template_var 3),
+              template_app
+               (template_app (template_hole 5, template_var 2),
+                template_var 1))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 4, template_var 0),
+              template_app (template_hole 3, template_var 2))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 2,
+               template_app
+                (template_app (template_hole 1, template_var 3),
+                 template_var 0)),
+             template_app (template_hole 0, template_var 1))
+           ))),
+    ("QuasiBorel.le_quasi_borel_iff",
+     "(?X <= ?Y) =
+      (if qbs_space ?X = qbs_space ?Y then qbs_Mx ?Y <= qbs_Mx ?X
+       else qbs_space ?X < qbs_space ?Y)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 6, template_var 1),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_hole 5,
+                 template_app
+                  (template_app
+                    (template_hole 4,
+                     template_app (template_hole 3, template_var 1)),
+                   template_app (template_hole 3, template_var 0))),
+               template_app
+                (template_app
+                  (template_hole 2,
+                   template_app (template_hole 1, template_var 0)),
+                 template_app (template_hole 1, template_var 1))),
+             template_app
+              (template_app
+                (template_hole 0,
+                 template_app (template_hole 3, template_var 1)),
+               template_app (template_hole 3, template_var 0)))
+           ))),
+    ("QuasiBorel.sub_qbs_Mx",
+     "qbs_Mx (sub_qbs ?X ?U) =
+      {f: UNIV \<rightarrow> qbs_space ?X Int ?U. f : qbs_Mx ?X}",
+     template_equation
+      (template_app
+        (template_hole 8,
+         template_app
+          (template_app (template_hole 7, template_var 1), template_var 0)),
+       template_app (template_hole 6, t_empty))),
+    ("QuasiBorel.map_qbs_correct",
+     "Rep_quasi_borel (map_qbs ?f ?X) =
+      (?f ` qbs_space ?X,
+       {\<beta>. EX \<alpha>:qbs_Mx ?X. \<beta> = ?f o \<alpha>})",
+     template_equation
+      (template_app
+        (template_hole 9,
+         template_app
+          (template_app (template_hole 8, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 7,
+           template_app
+            (template_app (template_hole 6, template_var 1),
+             template_app (template_hole 5, template_var 0))),
+         template_app (template_hole 4, t_empty)))),
+    ("QuasiBorel.sub_qbs_closed",
+     "qbs_closed2 (qbs_space ?X Int ?U)
+       {f: UNIV \<rightarrow> qbs_space ?X Int ?U. f : qbs_Mx ?X}",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_hole 8,
+             template_app
+              (template_app
+                (template_hole 7,
+                 template_app (template_hole 6, template_var 1)),
+               template_var 0)),
+           template_app (template_hole 5, t_empty))
+         )),
+    ("QuasiBorel.qbs_morphismI",
+     "(!!\<alpha>. \<alpha> : qbs_Mx ?X ==> ?f o \<alpha> : qbs_Mx ?Y) ==>
+      ?f : ?X \<rightarrow>\<^sub>Q ?Y",
+     template_implication
+      ([template_predicate (template_app (template_hole 8, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 1, template_var 1),
+             template_app
+              (template_app (template_hole 0, template_var 2),
+               template_var 0))
+           ))),
+    ("QuasiBorel.qbs_morphism_comp",
+     "[| ?f : ?X \<rightarrow>\<^sub>Q ?Y;
+         ?g : ?Y \<rightarrow>\<^sub>Q ?Z |]
+      ==> ?g o ?f : ?X \<rightarrow>\<^sub>Q ?Z",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 6, template_var 4),
+              template_app
+               (template_app (template_hole 5, template_var 3),
+                template_var 2))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 4, template_var 1),
+              template_app
+               (template_app (template_hole 3, template_var 2),
+                template_var 0))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 2,
+               template_app
+                (template_app (template_hole 1, template_var 1),
+                 template_var 4)),
+             template_app
+              (template_app (template_hole 0, template_var 3),
+               template_var 0))
+           ))),
+    ("QuasiBorel.qbs_closed3_dest'",
+     "[| ?P : borel_measurable real_borel; !!i. ?Fi i : qbs_Mx ?X |]
+      ==> (%r. ?Fi (?P r) r) : qbs_Mx ?X",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 6, template_var 2),
+              template_app
+               (template_app (template_hole 5, template_hole 4),
+                template_hole 3))
+            ),
+        template_predicate (template_app (template_hole 2, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 1, t_empty),
+             template_app (template_hole 0, template_var 0))
+           ))),
+    ("QuasiBorel.is_quasi_borel_intro",
+     "[| ?Mx <= UNIV \<rightarrow> ?X; qbs_closed1 ?Mx; qbs_closed2 ?X ?Mx;
+         qbs_closed3 ?Mx |]
+      ==> is_quasi_borel ?X ?Mx",
+     template_implication
+      ([template_inequation
+         (less_equals, template_var 1,
+          template_app
+           (template_app (template_hole 5, template_hole 4), t_empty)),
+        template_predicate (template_app (template_hole 3, template_var 1)),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 2, template_var 0),
+              template_var 1)
+            ),
+        template_predicate
+         (template_app (template_hole 1, template_var 1))],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 0, template_var 0), template_var 1)
+           ))),
+    ("QuasiBorel.qbs_closed1I",
+     "(!!\<alpha> f.
+          [| \<alpha> : ?Mx; f : borel_measurable real_borel |]
+          ==> \<alpha> o f : ?Mx) ==>
+      qbs_closed1 ?Mx",
+     template_implication
+      ([template_predicate (template_app (template_hole 8, t_empty))],
+       template_predicate
+        (template_app (template_hole 0, template_var 0)))),
+    ("QuasiBorel.sub_qbs_correct",
+     "Rep_quasi_borel (sub_qbs ?X ?U) =
+      (qbs_space ?X Int ?U,
+       {f: UNIV \<rightarrow> qbs_space ?X Int ?U. f : qbs_Mx ?X})",
+     template_equation
+      (template_app
+        (template_hole 10,
+         template_app
+          (template_app (template_hole 9, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 8,
+           template_app
+            (template_app
+              (template_hole 7,
+               template_app (template_hole 6, template_var 1)),
+             template_var 0)),
+         template_app (template_hole 5, t_empty)))),
+    ("QuasiBorel.qbs_morphism_cong",
+     "[| !!x. x : qbs_space ?X ==> ?f x = ?g x;
+         ?f : ?X \<rightarrow>\<^sub>Q ?Y |]
+      ==> ?g : ?X \<rightarrow>\<^sub>Q ?Y",
+     template_implication
+      ([template_predicate (template_app (template_hole 6, t_empty)),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 1, template_var 2),
+              template_app
+               (template_app (template_hole 0, template_var 3),
+                template_var 0))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 1, template_var 1),
+             template_app
+              (template_app (template_hole 0, template_var 3),
+               template_var 0))
+           ))),
+    ("QuasiBorel.qbs_closed3_dest",
+     "[| !!i. ?P -` {i} : sets real_borel; !!i. ?Fi i : qbs_Mx ?X |]
+      ==> (%r. ?Fi (?P r) r) : qbs_Mx ?X",
+     template_implication
+      ([template_predicate (template_app (template_hole 9, t_empty)),
+        template_predicate (template_app (template_hole 9, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 1, t_empty),
+             template_app (template_hole 0, template_var 0))
+           ))),
+    ("QuasiBorel.qbs_closed3I'",
+     "(!!P Fi.
+          [| P : borel_measurable real_borel; !!i. Fi i : ?Mx |]
+          ==> (%r. Fi (P r) r) : ?Mx) ==>
+      qbs_closed3 ?Mx",
+     template_implication
+      ([template_predicate (template_app (template_hole 9, t_empty))],
+       template_predicate
+        (template_app (template_hole 0, template_var 0)))),
+    ("QuasiBorel.sub_qbs",
+     "?U <= qbs_space ?X ==>
+      (qbs_space (sub_qbs ?X ?U), qbs_Mx (sub_qbs ?X ?U)) =
+      (?U, {f: UNIV \<rightarrow> ?U. f : qbs_Mx ?X})",
+     template_implication
+      ([template_inequation
+         (less_equals, template_var 1,
+          template_app (template_hole 9, template_var 0))],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 7,
+             template_app
+              (template_hole 9,
+               template_app
+                (template_app (template_hole 6, template_var 0),
+                 template_var 1))),
+           template_app
+            (template_hole 5,
+             template_app
+              (template_app (template_hole 6, template_var 0),
+               template_var 1))),
+         template_app
+          (template_app (template_hole 7, template_var 1),
+           template_app (template_hole 4, t_empty))))),
+    ("QuasiBorel.qbs_closed3_dest2",
+     "[| countable ?I; ?P : real_borel \<rightarrow>\<^sub>M count_space ?I;
+         !!i. i : ?I ==> ?Fi i : qbs_Mx ?X |]
+      ==> (%r. ?Fi (?P r) r) : qbs_Mx ?X",
+     template_implication
+      ([template_predicate (template_app (template_hole 8, template_var 3)),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 7, template_var 2),
+              template_app
+               (template_app (template_hole 6, template_hole 5),
+                template_app (template_hole 4, template_var 3)))
+            ),
+        template_predicate (template_app (template_hole 3, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 1, t_empty),
+             template_app (template_hole 0, template_var 0))
+           ))),
+    ("QuasiBorel.qbs_closed3I",
+     "(!!P Fi.
+          [| !!i. P -` {i} : sets real_borel; !!i. Fi i : ?Mx |]
+          ==> (%r. Fi (P r) r) : ?Mx) ==>
+      qbs_closed3 ?Mx",
+     template_implication
+      ([template_predicate (template_app (template_hole 11, t_empty))],
+       template_predicate
+        (template_app (template_hole 0, template_var 0)))),
+    ("QuasiBorel.qbs_closed3_dest2'",
+     "[| countable ?I; ?P : real_borel \<rightarrow>\<^sub>M count_space ?I;
+         !!i. i : range ?P ==> ?Fi i : qbs_Mx ?X |]
+      ==> (%r. ?Fi (?P r) r) : qbs_Mx ?X",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 10, template_var 3)),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 9, template_var 2),
+              template_app
+               (template_app (template_hole 8, template_hole 7),
+                template_app (template_hole 6, template_var 3)))
+            ),
+        template_predicate (template_app (template_hole 5, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 1, t_empty),
+             template_app (template_hole 0, template_var 0))
+           )))]:
+   (string * thm * template) list
+### theory "Draft.QuasiBorelTemplates"
+### 1.379s elapsed time, 2.112s cpu time, 0.765s GC time
+val it = (): unit

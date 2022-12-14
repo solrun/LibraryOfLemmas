@@ -1,0 +1,848 @@
+Loading theory "HOL-Library.Function_Algebras" (required by "Draft.Skip_ListTemplates" via "Draft.ExtrEqs" via "HOL-Library.BigO")
+Loading theory "Draft.Misc" (required by "Draft.Skip_ListTemplates" via "Draft.Skip_List")
+Loading theory "Draft.Templates" (required by "Draft.Skip_ListTemplates" via "Draft.ExtrEqs")
+Loading theory "Draft.Pi_pmf" (required by "Draft.Skip_ListTemplates" via "Draft.Skip_List" via "Draft.Geometric_PMF")
+instantiation
+  fun :: (type, plus) plus
+  plus_fun == plus :: ('a => 'b) => ('a => 'b) => 'a => 'b
+instantiation
+  fun :: (type, zero) zero
+  zero_fun == zero_class.zero :: 'a => 'b
+instantiation
+  fun :: (type, times) times
+  times_fun == times :: ('a => 'b) => ('a => 'b) => 'a => 'b
+instantiation
+  fun :: (type, one) one
+  one_fun == one_class.one :: 'a => 'b
+datatype template_term
+=
+     t_empty
+   | template_app of template_term * template_term
+   | template_hole of int
+   | template_var of int
+datatype sign
+= equals | greater_equals | greater_than | less_equals | less_than
+datatype template
+=
+     template_bimplication of template * template
+   | template_dunno
+   | template_equation of template_term * template_term
+   | template_implication of template list * template
+   | template_inequation of sign * template_term * template_term
+   | template_negation of template
+   | template_predicate of template_term
+constructor t_empty: template_term
+constructor template_app: template_term * template_term -> template_term
+constructor template_hole: int -> template_term
+constructor template_var: int -> template_term
+constructor equals: sign
+constructor greater_equals: sign
+constructor greater_than: sign
+constructor less_equals: sign
+constructor less_than: sign
+constructor template_bimplication: template * template -> template
+constructor template_dunno: template
+constructor template_equation: template_term * template_term -> template
+constructor template_implication: template list * template -> template
+constructor template_inequation:
+   sign * template_term * template_term -> template
+constructor template_negation: template -> template
+constructor template_predicate: template_term -> template
+val vfs = fn: term -> (indexname * typ) list * (string * typ) list
+val indexOf = fn: ''a list -> ''a -> int -> int
+val has_eq = fn: term -> bool
+val term2template = fn:
+   (indexname * typ) list -> (string * typ) list -> term -> template_term
+val lemma2predicate = fn: term -> term -> template
+val makeTemplatewithContext = fn: term -> term -> template
+val lemma2template = fn: term -> template
+val thm2template = fn: thm -> template
+val tterm2string = fn: template_term -> string
+val template2string = fn: template -> string
+val t = "height ?t <= size ?t": thm
+val th =
+   Const ("HOL.Trueprop", "bool => prop") $
+     (Const ("Orderings.ord_class.less_eq", "nat => nat => bool") $
+       (Const ("Tree.height_class.height", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree")) $
+       (Const ("Nat.size_class.size", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree"))):
+   term
+### theory "Draft.Templates"
+### 0.071s elapsed time, 0.315s cpu time, 0.000s GC time
+### theory "HOL-Library.Function_Algebras"
+### 0.131s elapsed time, 0.486s cpu time, 0.037s GC time
+Loading theory "HOL-Library.BigO" (required by "Draft.Skip_ListTemplates" via "Draft.ExtrEqs")
+### theory "Draft.Misc"
+### 0.132s elapsed time, 0.486s cpu time, 0.037s GC time
+### theory "Draft.Pi_pmf"
+### 0.274s elapsed time, 0.768s cpu time, 0.037s GC time
+Loading theory "Draft.Geometric_PMF" (required by "Draft.Skip_ListTemplates" via "Draft.Skip_List")
+### theory "Draft.Geometric_PMF"
+### 0.315s elapsed time, 0.670s cpu time, 0.095s GC time
+Loading theory "Draft.Skip_List" (required by "Draft.Skip_ListTemplates")
+### theory "HOL-Library.BigO"
+### 0.637s elapsed time, 1.358s cpu time, 0.182s GC time
+Loading theory "Draft.ExtrEqs" (required by "Draft.Skip_ListTemplates")
+locale random_skip_list
+  fixes p :: "real"
+locale random_skip_list
+  fixes p :: "real"
+val eqpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Var (("_dummy_", 2), "?'a"))
+       ):
+   term Find_Theorems.criterion
+val badeqpattern = Pattern (Const ("Pure.eq", "?'a => ?'a => prop")):
+   term Find_Theorems.criterion
+val undefpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Const ("HOL.undefined", "?'a"))
+       ):
+   term Find_Theorems.criterion
+val thmpattern =
+   Pattern
+    (Const ("HOL.Trueprop", "bool => prop") $ Var (("_dummy_", 1), "bool")):
+   term Find_Theorems.criterion
+val badnames =
+   ["*nitpick*", "*Nitpick*", "*full_exhaustive*", "*_def*", "Enum.finite*",
+    "*Quickcheck*", "ATP*", "*Nunchaku*", "*Code*", "*BNF*", "*SMT*",
+    "*.*.*"]:
+   string list
+val unwanted_names =
+   [(false, Name "*nitpick*"), (false, Name "*Nitpick*"),
+    (false, Name "*full_exhaustive*"), (false, Name "*_def*"),
+    (false, Name "Enum.finite*"), (false, Name "*Quickcheck*"),
+    (false, Name "ATP*"), (false, Name "*Nunchaku*"),
+    (false, Name "*Code*"), (false, Name "*BNF*"), (false, Name "*SMT*"),
+    (false, Name "*.*.*")]:
+   (bool * term Find_Theorems.criterion) list
+val has_vars = fn: term -> bool
+val get_all_eqs = fn: string -> Proof.context -> (string * thm) list
+val get_all_thms = fn: string -> Proof.context -> (string * thm) list
+val get_noneq_thms = fn: string -> Proof.context -> (string * thm) list
+val template_eqs = fn:
+   string -> Proof.context -> (string * thm * template) list
+val template_thms = fn:
+   string -> Proof.context -> (string * thm * template) list
+### theory "Draft.ExtrEqs"
+### 0.494s elapsed time, 1.014s cpu time, 0.074s GC time
+locale random_skip_list
+  fixes p :: "real"
+### theory "Draft.Skip_List"
+### 0.910s elapsed time, 1.683s cpu time, 0.224s GC time
+Loading theory "Draft.Skip_ListTemplates"
+?p : {0<..<1} ==>
+1 / (1 - ?p) * random_skip_list.EH\<^sub>N ?p ?n =
+random_skip_list.EL\<^sub>N ?p ?n
+[| ?p : {0<..<1}; 0 < ?n |]
+==> - harm ?n / ln (1 - ?p) - 1 <= random_skip_list.EH\<^sub>N ?p ?n
+[| ?p : {0<..<1}; 0 < ?n |]
+==> random_skip_list.EH\<^sub>N ?p ?n <= - harm ?n / ln (1 - ?p)
+[| ?p : {0<..<1}; 0 < ?n |]
+==> integrable (measure_pmf (random_skip_list.H\<^sub>N ?p ?n)) real
+val templateLemmas =
+   [("Skip_List.steps_empty", "steps {} ?f ?l ?up ?left = 0",
+     template_equation
+      (template_app
+        (template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 2, template_hole 1),
+               template_var 3),
+             template_var 2),
+           template_var 1),
+         template_var 0),
+       template_hole 0)),
+    ("Skip_List.harm_integral_x_raised_n",
+     "set_integrable lborel {0..1} (%x. sum ((^) x) {..<?n})",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_app (template_hole 7, template_hole 6),
+             template_app
+              (template_app (template_hole 5, template_hole 4),
+               template_hole 3)),
+           t_empty)
+         )),
+    ("Skip_List.steps_lsteps",
+     "steps ?A ?f ?l ?u ?v =
+      lsteps (rev (sorted_list_of_set ?A)) ?f ?l ?u ?v",
+     template_equation
+      (template_app
+        (template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 3, template_var 4),
+               template_var 3),
+             template_var 2),
+           template_var 1),
+         template_var 0),
+       template_app
+        (template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_hole 2,
+                 template_app
+                  (template_hole 1,
+                   template_app (template_hole 0, template_var 4))),
+               template_var 3),
+             template_var 2),
+           template_var 1),
+         template_var 0))),
+    ("Skip_List.harm_integral_x_raised_n",
+     "LBINT x=0..1. sum ((^) x) {..<?n} = harm ?n",
+     template_equation
+      (template_app
+        (template_app
+          (template_app
+            (template_app (template_hole 7, template_hole 6),
+             template_hole 5),
+           template_hole 4),
+         t_empty),
+       template_app (template_hole 0, template_var 0))),
+    ("Skip_List.harm_integral_0_1_fraction",
+     "set_integrable lborel {0..1} (%x. (1 - x ^ ?n) / (1 - x))",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_app (template_hole 7, template_hole 6),
+             template_app
+              (template_app (template_hole 5, template_hole 4),
+               template_hole 3)),
+           t_empty)
+         )),
+    ("Skip_List.expectation_prob_atLeast",
+     "(%i. measure_pmf.prob ?N {i..}) abs_summable_on {1..} ==>
+      integrable (measure_pmf ?N) real",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 6, t_empty),
+              template_app (template_hole 3, template_hole 2))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 1,
+               template_app (template_hole 4, template_var 0)),
+             template_hole 0)
+           ))),
+    ("Skip_List.nn_integral_finite_imp_abs_sumable_on",
+     "\<integral>\<^sup>+ x. ennreal (norm (?f x)) \<partial>count_space ?A
+      < \<infinity> ==>
+      ?f abs_summable_on ?A",
+     template_implication
+      ([template_inequation
+         (less_than,
+          template_app
+           (template_app
+             (template_hole 5,
+              template_app (template_hole 4, template_var 1)),
+            t_empty),
+          template_hole 1)],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 0, template_var 0), template_var 1)
+           ))),
+    ("Skip_List.lsteps_comp_map",
+     "lsteps ?zs (?f o ?g) ?l ?u ?v = lsteps (map ?g ?zs) ?f ?l ?u ?v",
+     template_equation
+      (template_app
+        (template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 3, template_var 5),
+               template_app
+                (template_app (template_hole 2, template_var 4),
+                 template_var 3)),
+             template_var 2),
+           template_var 1),
+         template_var 0),
+       template_app
+        (template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_hole 1,
+                 template_app
+                  (template_app (template_hole 0, template_var 3),
+                   template_var 5)),
+               template_var 4),
+             template_var 2),
+           template_var 1),
+         template_var 0))),
+    ("Skip_List.harm_integral_0_1_fraction",
+     "LBINT x=0..1. (1 - x ^ ?n) / (1 - x) = harm ?n",
+     template_equation
+      (template_app
+        (template_app
+          (template_app
+            (template_app (template_hole 8, template_hole 7),
+             template_hole 6),
+           template_hole 5),
+         t_empty),
+       template_app (template_hole 0, template_var 0))),
+    ("Skip_List.lsteps_f_add'",
+     "lsteps ?xs ?f ?l ?u ?v = lsteps ?xs (%x. ?f x + ?m) (?l + ?m) ?u ?v",
+     template_equation
+      (template_app
+        (template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 1, template_var 5),
+               template_var 4),
+             template_var 3),
+           template_var 2),
+         template_var 1),
+       template_app
+        (template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 1, template_var 5), t_empty),
+             template_app
+              (template_app (template_hole 0, template_var 3),
+               template_var 0)),
+           template_var 2),
+         template_var 1))),
+    ("Skip_List.steps_f_add'",
+     "steps ?A ?f ?l ?u ?v = steps ?A (%x. ?f x + ?m) (?l + ?m) ?u ?v",
+     template_equation
+      (template_app
+        (template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 1, template_var 5),
+               template_var 4),
+             template_var 3),
+           template_var 2),
+         template_var 1),
+       template_app
+        (template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 1, template_var 5), t_empty),
+             template_app
+              (template_app (template_hole 0, template_var 3),
+               template_var 0)),
+           template_var 2),
+         template_var 1))),
+    ("Skip_List.nn_integral_nats_reals",
+     "\<integral>\<^sup>+ i. ennreal (?f i) \<partial>count_space UNIV =
+      \<integral>\<^sup>+x\<in>{0..}. ennreal (?f (nat \<lfloor>x\<rfloor>))
+      \<partial>lborel",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 11,
+           template_app (template_hole 10, template_hole 9)),
+         t_empty),
+       template_app
+        (template_app (template_hole 7, template_hole 6), t_empty))),
+    ("Skip_List.steps_height",
+     "finite ?A ==> steps ?A ?f 0 ?up 0 = ?up * Max (?f ` ?A Un {0})",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 9, template_var 2))],
+       template_equation
+        (template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 7, template_var 2),
+                 template_var 1),
+               template_hole 6),
+             template_var 0),
+           template_hole 6),
+         template_app
+          (template_app (template_hole 5, template_var 0),
+           template_app
+            (template_hole 4,
+             template_app
+              (template_app
+                (template_hole 3,
+                 template_app
+                  (template_app (template_hole 2, template_var 1),
+                   template_var 2)),
+               template_app
+                (template_app (template_hole 1, template_hole 6),
+                 template_hole 0))))))),
+    ("Skip_List.one_minus_one_minus_q_x_n_integral",
+     "?q : {0<..<1} ==>
+      set_integrable lborel (einterval 0 \<infinity>)
+       (%x. 1 - (1 - ?q powr x) ^ ?n)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 11, template_var 1),
+              template_app
+               (template_app (template_hole 10, template_hole 9),
+                template_hole 8))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app (template_hole 7, template_hole 6),
+               template_app
+                (template_app (template_hole 5, template_hole 4),
+                 template_hole 3)),
+             t_empty)
+           ))),
+    ("Skip_List.lsteps_level_greater_fun_image",
+     "(!!x. x : set ?xs ==> ?f x < ?l) ==> lsteps ?xs ?f ?l ?u ?v = 0",
+     template_implication
+      ([template_predicate (template_app (template_hole 7, t_empty))],
+       template_equation
+        (template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 1, template_var 4),
+                 template_var 3),
+               template_var 2),
+             template_var 1),
+           template_var 0),
+         template_hole 0))),
+    ("Skip_List.nn_integral_finite_imp_abs_sumable_on'",
+     "[| \<integral>\<^sup>+ x. ennreal (?f x) \<partial>count_space ?A
+         < \<infinity>;
+         !!x. 0 <= ?f x |]
+      ==> ?f abs_summable_on ?A",
+     template_implication
+      ([template_inequation
+         (less_than,
+          template_app
+           (template_app
+             (template_hole 7,
+              template_app (template_hole 6, template_var 1)),
+            t_empty),
+          template_hole 4),
+        template_predicate (template_app (template_hole 3, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 0, template_var 0), template_var 1)
+           ))),
+    ("Skip_List.bind_pmf_if'",
+     "?C >>= (%c. (if c then ?A else ?B) >>= ?D) =
+      ?C >>= (%c. if c then ?A >>= ?D else ?B >>= ?D)",
+     template_equation
+      (template_app
+        (template_app (template_hole 3, template_var 3), t_empty),
+       template_app
+        (template_app (template_hole 3, template_var 3), t_empty))),
+    ("Skip_List.lsteps_smaller_set",
+     "?m <= ?l ==>
+      lsteps ?xs ?f ?l ?u ?v =
+      lsteps (filter (%x. ?m <= ?f x) ?xs) ?f ?l ?u ?v",
+     template_implication
+      ([template_inequation (less_equals, template_var 5, template_var 4)],
+       template_equation
+        (template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 1, template_var 3),
+                 template_var 2),
+               template_var 4),
+             template_var 1),
+           template_var 0),
+         template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_hole 1,
+                   template_app
+                    (template_app (template_hole 0, t_empty),
+                     template_var 3)),
+                 template_var 2),
+               template_var 4),
+             template_var 1),
+           template_var 0)))),
+    ("Skip_List.expectation_prob_atLeast",
+     "(%i. measure_pmf.prob ?N {i..}) abs_summable_on {1..} ==>
+      measure_pmf.expectation ?N real =
+      (INFSETSUM i:{1..}. measure_pmf.prob ?N {i..})",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 8, t_empty),
+              template_app (template_hole 5, template_hole 4))
+            )],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 2,
+             template_app (template_hole 6, template_var 0)),
+           template_hole 1),
+         template_app
+          (template_app (template_hole 0, t_empty),
+           template_app (template_hole 5, template_hole 4))))),
+    ("Skip_List.one_minus_one_minus_q_x_n_integral",
+     "?q : {0<..<1} ==>
+      LBINT x=0..\<infinity>. 1 - (1 - ?q powr x) ^ ?n = - harm ?n / ln ?q",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 15, template_var 1),
+              template_app
+               (template_app (template_hole 14, template_hole 13),
+                template_hole 12))
+            )],
+       template_equation
+        (template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 10, template_hole 9),
+               template_hole 8),
+             template_hole 7),
+           t_empty),
+         template_app
+          (template_app
+            (template_hole 3,
+             template_app
+              (template_hole 2,
+               template_app (template_hole 1, template_var 0))),
+           template_app (template_hole 0, template_var 1))))),
+    ("Skip_List.steps_smaller_set",
+     "[| finite ?A; ?m <= ?l |]
+      ==> steps ?A ?f ?l ?u ?v = steps {x: ?A. ?m <= ?f x} ?f ?l ?u ?v",
+     template_implication
+      ([template_predicate (template_app (template_hole 6, template_var 5)),
+        template_inequation (less_equals, template_var 4, template_var 3)],
+       template_equation
+        (template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 3, template_var 5),
+                 template_var 2),
+               template_var 3),
+             template_var 1),
+           template_var 0),
+         template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_hole 3,
+                   template_app (template_hole 2, t_empty)),
+                 template_var 2),
+               template_var 3),
+             template_var 1),
+           template_var 0)))),
+    ("Skip_List.infsetsum_set_nn_integral_reals",
+     "[| ?f abs_summable_on UNIV; !!n. 0 <= ?f n |]
+      ==> ennreal (infsetsum ?f UNIV) =
+          \<integral>\<^sup>+x\<in>{0..}.
+                             ennreal (?f (nat \<lfloor>x\<rfloor>))
+          \<partial>lborel",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 14, template_var 0),
+              template_hole 13)
+            ),
+        template_predicate (template_app (template_hole 12, t_empty))],
+       template_equation
+        (template_app
+          (template_hole 8,
+           template_app
+            (template_app (template_hole 7, template_var 0),
+             template_hole 13)),
+         template_app
+          (template_app (template_hole 6, template_hole 5), t_empty)))),
+    ("Skip_List.steps_image",
+     "[| finite ?A; mono_on ?g ?A; inj_on ?g ?A |]
+      ==> steps ?A (?f o ?g) ?l ?u ?v = steps (?g ` ?A) ?f ?l ?u ?v",
+     template_implication
+      ([template_predicate (template_app (template_hole 7, template_var 5)),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 6, template_var 4),
+              template_var 5)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 5, template_var 4),
+              template_var 5)
+            )],
+       template_equation
+        (template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 3, template_var 5),
+                 template_app
+                  (template_app (template_hole 2, template_var 3),
+                   template_var 4)),
+               template_var 2),
+             template_var 1),
+           template_var 0),
+         template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_hole 1,
+                   template_app
+                    (template_app (template_hole 0, template_var 4),
+                     template_var 5)),
+                 template_var 3),
+               template_var 2),
+             template_var 1),
+           template_var 0)))),
+    ("Skip_List.lsteps_height",
+     "EX x:set ?xs. ?l <= ?f x ==>
+      lsteps ?xs ?f ?l ?up 0 + ?up * ?l = ?up * Max (?f ` set ?xs Un {0})",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 12,
+                template_app (template_hole 11, template_var 3)),
+              t_empty)
+            )],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 8,
+             template_app
+              (template_app
+                (template_app
+                  (template_app
+                    (template_app (template_hole 7, template_var 3),
+                     template_var 1),
+                   template_var 2),
+                 template_var 0),
+               template_hole 6)),
+           template_app
+            (template_app (template_hole 5, template_var 0),
+             template_var 2)),
+         template_app
+          (template_app (template_hole 5, template_var 0),
+           template_app
+            (template_hole 4,
+             template_app
+              (template_app
+                (template_hole 3,
+                 template_app
+                  (template_app (template_hole 2, template_var 1),
+                   template_app (template_hole 11, template_var 3))),
+               template_app
+                (template_app (template_hole 1, template_hole 6),
+                 template_hole 0))))))),
+    ("Skip_List.lsteps_smaller_card_Max_fun'",
+     "EX x:set ?xs. ?l <= ?f x ==>
+      lsteps ?xs ?f ?l ?u ?v + ?l * ?u
+      <= ?v * length ?xs + ?u * Max (?f ` set ?xs Un {0})",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 12,
+                template_app (template_hole 11, template_var 4)),
+              t_empty)
+            )],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_app
+            (template_hole 9,
+             template_app
+              (template_app
+                (template_app
+                  (template_app
+                    (template_app (template_hole 8, template_var 4),
+                     template_var 2),
+                   template_var 3),
+                 template_var 1),
+               template_var 0)),
+           template_app
+            (template_app (template_hole 7, template_var 3),
+             template_var 1)),
+         template_app
+          (template_app
+            (template_hole 9,
+             template_app
+              (template_app (template_hole 7, template_var 0),
+               template_app (template_hole 6, template_var 4))),
+           template_app
+            (template_app (template_hole 7, template_var 1),
+             template_app
+              (template_hole 5,
+               template_app
+                (template_app
+                  (template_hole 4,
+                   template_app
+                    (template_app (template_hole 3, template_var 2),
+                     template_app (template_hole 11, template_var 4))),
+                 template_app
+                  (template_app (template_hole 2, template_hole 1),
+                   template_hole 0)))))))),
+    ("Skip_List.steps_cong",
+     "[| ?A = ?B; !!x. x : ?A ==> ?f x = ?g x; ?l = ?l' |]
+      ==> steps ?A ?f ?l ?u ?v = steps ?B ?g ?l' ?u ?v",
+     template_implication
+      ([template_equation (template_var 7, template_var 6),
+        template_predicate (template_app (template_hole 3, t_empty)),
+        template_equation (template_var 3, template_var 2)],
+       template_equation
+        (template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 0, template_var 7),
+                 template_var 5),
+               template_var 3),
+             template_var 1),
+           template_var 0),
+         template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 0, template_var 6),
+                 template_var 4),
+               template_var 2),
+             template_var 1),
+           template_var 0)))),
+    ("Skip_List.lsteps_cong",
+     "[| ?ys = ?xs; !!x. x : set ?xs ==> ?f x = ?g x; ?l = ?l' |]
+      ==> lsteps ?xs ?f ?l ?u ?v = lsteps ?ys ?g ?l' ?u ?v",
+     template_implication
+      ([template_equation (template_var 7, template_var 6),
+        template_predicate (template_app (template_hole 4, t_empty)),
+        template_equation (template_var 3, template_var 2)],
+       template_equation
+        (template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 0, template_var 6),
+                 template_var 5),
+               template_var 3),
+             template_var 1),
+           template_var 0),
+         template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 0, template_var 7),
+                 template_var 4),
+               template_var 2),
+             template_var 1),
+           template_var 0)))),
+    ("Skip_List.steps_smaller_card_Max_fun'",
+     "[| finite ?A; EX x:?A. ?l <= ?f x |]
+      ==> steps ?A ?f ?l ?up ?left + ?l * ?up
+          <= ?left * card ?A + ?up * Max (?f ` ?A Un {0})",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 12, template_var 4)),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 11, template_var 4), t_empty)
+            )],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_app
+            (template_hole 9,
+             template_app
+              (template_app
+                (template_app
+                  (template_app
+                    (template_app (template_hole 8, template_var 4),
+                     template_var 2),
+                   template_var 3),
+                 template_var 1),
+               template_var 0)),
+           template_app
+            (template_app (template_hole 7, template_var 3),
+             template_var 1)),
+         template_app
+          (template_app
+            (template_hole 9,
+             template_app
+              (template_app (template_hole 7, template_var 0),
+               template_app (template_hole 6, template_var 4))),
+           template_app
+            (template_app (template_hole 7, template_var 1),
+             template_app
+              (template_hole 5,
+               template_app
+                (template_app
+                  (template_hole 4,
+                   template_app
+                    (template_app (template_hole 3, template_var 2),
+                     template_var 4)),
+                 template_app
+                  (template_app (template_hole 2, template_hole 1),
+                   template_hole 0)))))))),
+    ("Skip_List.one_minus_one_minus_q_x_n_nn_integral",
+     "?q : {0<..<1} ==>
+      \<integral>\<^sup>+x\<in>{0..}. ennreal (1 - (1 - ?q powr x) ^ ?n)
+      \<partial>lborel =
+      ennreal (LBINT x=0..\<infinity>. 1 - (1 - ?q powr x) ^ ?n)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 16, template_var 1),
+              template_app
+               (template_app (template_hole 15, template_hole 14),
+                template_hole 13))
+            )],
+       template_equation
+        (template_app
+          (template_app (template_hole 11, template_hole 10), t_empty),
+         template_app
+          (template_hole 8,
+           template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 2, template_hole 10),
+                 template_hole 1),
+               template_hole 0),
+             t_empty))))),
+    ("Skip_List.nn_integral_floor_less_eq",
+     "(!!x y. x <= y ==> ?f y <= ?f x) ==>
+      \<integral>\<^sup>+x\<in>{0..}. ennreal (?f x)\<partial>lborel
+      <= \<integral>\<^sup>+x\<in>{0..}.
+                            ennreal (?f (real (nat \<lfloor>x\<rfloor>)))
+         \<partial>lborel",
+     template_implication
+      ([template_predicate (template_app (template_hole 13, t_empty))],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_app (template_hole 9, template_hole 8), t_empty),
+         template_app
+          (template_app (template_hole 9, template_hole 8), t_empty))))]:
+   (string * thm * template) list
+### theory "Draft.Skip_ListTemplates"
+### 1.436s elapsed time, 2.092s cpu time, 0.603s GC time
+val it = (): unit

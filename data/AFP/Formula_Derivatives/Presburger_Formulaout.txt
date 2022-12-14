@@ -1,0 +1,3044 @@
+Loading theory "Coinductive_Languages.Coinductive_Language" (required by "Draft.Presburger_FormulaMoreTemplates" via "Draft.Presburger_Formula" via "Draft.Abstract_Formula" via "Draft.Automaton")
+Loading theory "Deriving.Comparator" (required by "Draft.Presburger_FormulaMoreTemplates" via "Draft.Presburger_Formula" via "Draft.Abstract_Formula" via "Deriving.Compare_Instances" via "Deriving.Compare_Generator" via "Deriving.Comparator_Generator")
+Loading theory "Deriving.Derive_Manager" (required by "Draft.Presburger_FormulaMoreTemplates" via "Draft.Presburger_Formula" via "Draft.Abstract_Formula" via "Deriving.Compare_Instances" via "Deriving.Compare_Generator" via "Deriving.Comparator_Generator")
+Loading theory "Deriving.Generator_Aux" (required by "Draft.Presburger_FormulaMoreTemplates" via "Draft.Presburger_Formula" via "Draft.Abstract_Formula" via "Deriving.Compare_Instances" via "Deriving.Compare_Generator" via "Deriving.Comparator_Generator")
+signature BNF_ACCESS =
+  sig
+    val bnf_types: Proof.context -> string list -> typ list
+    val case_consts: Proof.context -> string list -> term list
+    val case_simps: Proof.context -> string list -> thm list list
+    val case_thms: Proof.context -> string list -> thm list
+    val constr_argument_types:
+       Proof.context -> string list -> typ list list list
+    val constr_terms: Proof.context -> string -> term list
+    val distinct_thms: Proof.context -> string list -> thm list list
+    val induct_thms: Proof.context -> string list -> thm list
+    val inject_thms: Proof.context -> string list -> thm list list
+    val map_comps: Proof.context -> string list -> thm list
+    val map_simps: Proof.context -> string list -> thm list list
+    val map_terms: Proof.context -> string list -> term list
+    val set_simps: Proof.context -> string list -> thm list list
+    val set_terms: Proof.context -> string list -> term list list
+  end
+structure Bnf_Access: BNF_ACCESS
+signature DERIVE_MANAGER =
+  sig
+    val derive: string -> string -> string -> theory -> theory
+    val derive_cmd: string -> string -> string -> theory -> theory
+    val print_info: theory -> unit
+    val register_derive:
+       string ->
+         string ->
+           (string -> string -> theory -> theory) -> theory -> theory
+  end
+structure Derive_Manager: DERIVE_MANAGER
+### theory "Deriving.Derive_Manager"
+### 0.047s elapsed time, 0.224s cpu time, 0.000s GC time
+Loading theory "HOL-Library.Char_ord" (required by "Draft.Presburger_FormulaMoreTemplates" via "Draft.Presburger_Formula" via "Draft.Abstract_Formula" via "Deriving.Compare_Instances")
+instantiation
+  char :: linorder
+  less_eq_char == less_eq :: char => char => bool
+  less_char == less :: char => char => bool
+instantiation
+  char :: distrib_lattice
+  inf_char == inf :: char => char => char
+  sup_char == sup :: char => char => char
+### theory "HOL-Library.Char_ord"
+### 0.078s elapsed time, 0.294s cpu time, 0.044s GC time
+Loading theory "HOL-Library.Code_Abstract_Nat" (required by "Draft.Presburger_FormulaMoreTemplates" via "Draft.Presburger_Formula" via "Draft.Abstract_Formula" via "HOL-Library.Code_Target_Nat")
+signature GENERATOR_AUX =
+  sig
+    val OF_option: thm -> thm option list -> thm
+    val add_used_tycos:
+       Proof.context -> string -> string list -> string list
+    val alist_to_string: (string * 'a) list -> string
+    val conjI_tac:
+       thm list ->
+         Proof.context ->
+           'a list -> (Proof.context -> int -> tactic) -> tactic
+    val create_map:
+       (typ -> term) ->
+         (string * typ -> 'a -> term) ->
+           'a ->
+             (typ -> bool) ->
+               (local_theory -> string -> bool list) ->
+                 (local_theory -> string -> term) ->
+                   (local_theory -> string -> 'a -> term) ->
+                     string list ->
+                       (local_theory -> string -> 'a) ->
+                         typ -> local_theory -> term
+    val create_partial:
+       'a ->
+         (typ -> bool) ->
+           (local_theory -> string -> bool list) ->
+             (local_theory -> string -> term) ->
+               (local_theory -> string -> 'a -> term) ->
+                 string list ->
+                   (local_theory -> string -> 'a) ->
+                     typ -> local_theory -> term
+    val define_overloaded:
+       string * term -> local_theory -> thm * local_theory
+    val define_overloaded_generic:
+       Attrib.binding * term -> local_theory -> thm * local_theory
+    val drop_last: 'a list -> 'a list
+    val freeify_tvars: typ -> typ
+    val ind_case_to_idxs: 'a list list -> int -> int * int
+    val infer_type: Proof.context -> term -> term
+    val ints_to_subscript: int list -> string
+    val is_class_instance: theory -> string -> sort -> bool
+    val lambdas: term list -> term -> term
+    val mk_case_tac:
+       Proof.context ->
+         term option list list ->
+           thm ->
+             (int ->
+                Proof.context * thm list * (string * cterm) list -> tactic)
+               -> tactic
+    val mk_def: typ -> string -> term -> term
+    val mk_id: typ -> term
+    val mk_infer_const: string -> Proof.context -> term -> term
+    val mutual_recursive_types:
+       string -> Proof.context -> string list * typ list
+    val prove_multi_future:
+       Proof.context ->
+         string list ->
+           term list ->
+             term list ->
+               ({context: Proof.context, prems: thm list} -> tactic) ->
+                 thm list
+    val recursor:
+       (string -> 'a) * ('a -> bool list) * string list ->
+         bool ->
+           (typ -> 'b) ->
+             (typ -> 'b) ->
+               (typ -> 'b) ->
+                 ((typ * 'b option) list * 'a -> 'b) -> typ -> 'b
+    val rename_types: (typ * typ) list -> term -> term
+    val split_IHs:
+       (string -> 'a) * ('a -> bool list) * string list ->
+         typ list -> thm list -> thm list list
+    val std_recursor_tac:
+       (string -> 'a) * ('a -> bool list) * string list ->
+         typ list ->
+           ('a -> thm) ->
+             thm list -> typ -> thm list -> Proof.context -> tactic
+    val sub: string -> string
+    val subT: string -> typ -> string
+    val typ_and_vs_of_typname:
+       theory -> string -> sort -> typ * (string * sort) list
+    val typ_and_vs_of_used_typname:
+       string ->
+         bool list -> string list -> typ * (string * string list) list
+    val type_parameters:
+       typ -> Proof.context -> (string * sort) list * typ list
+  end
+structure Generator_Aux: GENERATOR_AUX
+### theory "Deriving.Generator_Aux"
+### 0.146s elapsed time, 0.600s cpu time, 0.044s GC time
+Loading theory "HOL-Library.Code_Target_Int" (required by "Draft.Presburger_FormulaMoreTemplates" via "Draft.Presburger_Formula")
+### theory "HOL-Library.Code_Abstract_Nat"
+### 0.051s elapsed time, 0.213s cpu time, 0.000s GC time
+Loading theory "HOL-Library.Code_Target_Nat" (required by "Draft.Presburger_FormulaMoreTemplates" via "Draft.Presburger_Formula" via "Draft.Abstract_Formula")
+### Code generator: dropping subsumed code equation
+### 1 == Int.Pos num.One
+### Code generator: dropping subsumed code equation
+### Int.Neg ?m + Int.Neg ?n == Int.Neg (?m + ?n)
+### Code generator: dropping subsumed code equation
+### Int.Neg ?m + Int.Pos ?n == Int.sub ?n ?m
+### Code generator: dropping subsumed code equation
+### Int.Pos ?m + Int.Neg ?n == Int.sub ?m ?n
+### Code generator: dropping subsumed code equation
+### Int.Pos ?m + Int.Pos ?n == Int.Pos (?m + ?n)
+### Code generator: dropping subsumed code equation
+### 0 + ?l == ?l
+### Code generator: dropping subsumed code equation
+### ?k + 0 == ?k
+### Code generator: dropping subsumed code equation
+### - Int.Neg ?m == Int.Pos ?m
+### Code generator: dropping subsumed code equation
+### - Int.Pos ?m == Int.Neg ?m
+### Code generator: dropping subsumed code equation
+### - 0 == 0
+### Code generator: dropping subsumed code equation
+### Int.Neg ?m - Int.Neg ?n == Int.sub ?n ?m
+### Code generator: dropping subsumed code equation
+### Int.Neg ?m - Int.Pos ?n == Int.Neg (?m + ?n)
+### Code generator: dropping subsumed code equation
+### Int.Pos ?m - Int.Neg ?n == Int.Pos (?m + ?n)
+### Code generator: dropping subsumed code equation
+### Int.Pos ?m - Int.Pos ?n == Int.sub ?m ?n
+### Code generator: dropping subsumed code equation
+### 0 - ?l == - ?l
+### Code generator: dropping subsumed code equation
+### ?k - 0 == ?k
+### Code generator: dropping subsumed code equation
+### Int.dup (Int.Neg ?n) == Int.Neg (num.Bit0 ?n)
+### Code generator: dropping subsumed code equation
+### Int.dup (Int.Pos ?n) == Int.Pos (num.Bit0 ?n)
+### Code generator: dropping subsumed code equation
+### Int.dup 0 == 0
+### Code generator: dropping subsumed code equation
+### Int.Neg ?m * Int.Neg ?n == Int.Pos (?m * ?n)
+### Code generator: dropping subsumed code equation
+### Int.Neg ?m * Int.Pos ?n == Int.Neg (?m * ?n)
+### Code generator: dropping subsumed code equation
+### Int.Pos ?m * Int.Neg ?n == Int.Neg (?m * ?n)
+### Code generator: dropping subsumed code equation
+### Int.Pos ?m * Int.Pos ?n == Int.Pos (?m * ?n)
+### Code generator: dropping subsumed code equation
+### 0 * ?l == 0
+### Code generator: dropping subsumed code equation
+### ?k * 0 == 0
+### Code generator: dropping subsumed code equation
+### Int.Neg ?m div Int.Neg ?n == fst (divmod ?m ?n)
+### Code generator: dropping subsumed code equation
+### Int.Pos ?m div Int.Neg ?n == - Divides.adjust_div (divmod ?m ?n)
+### Code generator: dropping subsumed code equation
+### Int.Neg ?m div Int.Pos ?n == - Divides.adjust_div (divmod ?m ?n)
+### Code generator: dropping subsumed code equation
+### Int.Pos ?m div Int.Pos ?n == fst (divmod ?m ?n)
+### Code generator: dropping subsumed code equation
+### ?k div Int.Neg num.One == - ?k
+### Code generator: dropping subsumed code equation
+### ?k div Int.Pos num.One == ?k
+### Code generator: dropping subsumed code equation
+### 0 div ?k == 0
+### Code generator: dropping subsumed code equation
+### ?k div 0 == 0
+### Code generator: dropping subsumed code equation
+### Int.Neg ?m mod Int.Neg ?n == - snd (divmod ?m ?n)
+### Code generator: dropping subsumed code equation
+### Int.Pos ?m mod Int.Neg ?n ==
+### - Divides.adjust_mod (Int.Pos ?n) (snd (divmod ?m ?n))
+### Code generator: dropping subsumed code equation
+### Int.Neg ?m mod Int.Pos ?n ==
+### Divides.adjust_mod (Int.Pos ?n) (snd (divmod ?m ?n))
+### Code generator: dropping subsumed code equation
+### Int.Pos ?m mod Int.Pos ?n == snd (divmod ?m ?n)
+### Code generator: dropping subsumed code equation
+### ?k mod Int.Neg num.One == 0
+### Code generator: dropping subsumed code equation
+### ?k mod Int.Pos num.One == 0
+### Code generator: dropping subsumed code equation
+### 0 mod ?k == 0
+### Code generator: dropping subsumed code equation
+### ?k mod 0 == ?k
+### Code generator: dropping subsumed code equation
+### divmod (num.Bit1 ?m) (num.Bit1 ?n) ==
+### if ?m < ?n then (0, numeral (num.Bit1 ?m))
+### else divmod_step (num.Bit1 ?n)
+###       (divmod (num.Bit1 ?m) (num.Bit0 (num.Bit1 ?n)))
+### Code generator: dropping subsumed code equation
+### divmod (num.Bit0 ?m) (num.Bit1 ?n) ==
+### if ?m <= ?n then (0, numeral (num.Bit0 ?m))
+### else divmod_step (num.Bit1 ?n)
+###       (divmod (num.Bit0 ?m) (num.Bit0 (num.Bit1 ?n)))
+### Code generator: dropping subsumed code equation
+### divmod (num.Bit1 ?m) (num.Bit0 ?n) ==
+### case divmod ?m ?n of (q, r) => (q, 2 * r + 1)
+### Code generator: dropping subsumed code equation
+### divmod (num.Bit0 ?m) (num.Bit0 ?n) ==
+### case divmod ?m ?n of (q, r) => (q, 2 * r)
+### Code generator: dropping subsumed code equation
+### divmod num.One (num.Bit1 ?n) == (0, Numeral1)
+### Code generator: dropping subsumed code equation
+### divmod num.One (num.Bit0 ?n) == (0, Numeral1)
+### Code generator: dropping subsumed code equation
+### divmod ?m num.One == (numeral ?m, 0)
+### Code generator: dropping subsumed code equation
+### equal_class.equal ?k ?k == True
+### Code generator: dropping subsumed code equation
+### equal_class.equal (Int.Neg ?k) (Int.Neg ?l) == equal_class.equal ?k ?l
+### Code generator: dropping subsumed code equation
+### equal_class.equal (Int.Neg ?k) (Int.Pos ?l) == False
+### Code generator: dropping subsumed code equation
+### equal_class.equal (Int.Neg ?k) 0 == False
+### Code generator: dropping subsumed code equation
+### equal_class.equal (Int.Pos ?k) (Int.Neg ?l) == False
+### Code generator: dropping subsumed code equation
+### equal_class.equal (Int.Pos ?k) (Int.Pos ?l) == equal_class.equal ?k ?l
+### Code generator: dropping subsumed code equation
+### equal_class.equal (Int.Pos ?k) 0 == False
+### Code generator: dropping subsumed code equation
+### equal_class.equal 0 (Int.Neg ?l) == False
+### Code generator: dropping subsumed code equation
+### equal_class.equal 0 (Int.Pos ?l) == False
+### Code generator: dropping subsumed code equation
+### equal_class.equal 0 0 == True
+### Code generator: dropping subsumed code equation
+### Int.Neg ?k <= Int.Neg ?l == ?l <= ?k
+### Code generator: dropping subsumed code equation
+### Int.Neg ?k <= Int.Pos ?l == True
+### Code generator: dropping subsumed code equation
+### Int.Neg ?k <= 0 == True
+### Code generator: dropping subsumed code equation
+### Int.Pos ?k <= Int.Neg ?l == False
+### Code generator: dropping subsumed code equation
+### Int.Pos ?k <= Int.Pos ?l == ?k <= ?l
+### Code generator: dropping subsumed code equation
+### Int.Pos ?k <= 0 == False
+### Code generator: dropping subsumed code equation
+### 0 <= Int.Neg ?l == False
+### Code generator: dropping subsumed code equation
+### 0 <= Int.Pos ?l == True
+### Code generator: dropping subsumed code equation
+### 0 <= 0 == True
+### Code generator: dropping subsumed code equation
+### Int.Neg ?k < Int.Neg ?l == ?l < ?k
+### Code generator: dropping subsumed code equation
+### Int.Neg ?k < Int.Pos ?l == True
+### Code generator: dropping subsumed code equation
+### Int.Neg ?k < 0 == True
+### Code generator: dropping subsumed code equation
+### Int.Pos ?k < Int.Neg ?l == False
+### Code generator: dropping subsumed code equation
+### Int.Pos ?k < Int.Pos ?l == ?k < ?l
+### Code generator: dropping subsumed code equation
+### Int.Pos ?k < 0 == False
+### Code generator: dropping subsumed code equation
+### 0 < Int.Neg ?l == False
+### Code generator: dropping subsumed code equation
+### 0 < Int.Pos ?l == True
+### Code generator: dropping subsumed code equation
+### 0 < 0 == False
+### Code generator: dropping subsumed code equation
+### divmod_nat ?m ?n ==
+### if ?n = 0 | ?m < ?n then (0, ?m)
+### else let (q, y) = divmod_nat (?m - ?n) ?n in (Suc q, y)
+### Code generator: dropping subsumed code equation
+### divmod (num.Bit1 ?m) (num.Bit1 ?n) ==
+### if ?m < ?n then (0, numeral (num.Bit1 ?m))
+### else divmod_step (num.Bit1 ?n)
+###       (divmod (num.Bit1 ?m) (num.Bit0 (num.Bit1 ?n)))
+### Code generator: dropping subsumed code equation
+### divmod (num.Bit0 ?m) (num.Bit1 ?n) ==
+### if ?m <= ?n then (0, numeral (num.Bit0 ?m))
+### else divmod_step (num.Bit1 ?n)
+###       (divmod (num.Bit0 ?m) (num.Bit0 (num.Bit1 ?n)))
+### Code generator: dropping subsumed code equation
+### divmod (num.Bit1 ?m) (num.Bit0 ?n) ==
+### case divmod ?m ?n of (q, r) => (q, 2 * r + 1)
+### Code generator: dropping subsumed code equation
+### divmod (num.Bit0 ?m) (num.Bit0 ?n) ==
+### case divmod ?m ?n of (q, r) => (q, 2 * r)
+### Code generator: dropping subsumed code equation
+### divmod num.One (num.Bit1 ?n) == (0, Numeral1)
+### Code generator: dropping subsumed code equation
+### divmod num.One (num.Bit0 ?n) == (0, Numeral1)
+### Code generator: dropping subsumed code equation
+### divmod ?m num.One == (numeral ?m, 0)
+### Code generator: dropping subsumed code equation
+### Suc ?m <= ?n == ?m < ?n
+### Code generator: dropping subsumed code equation
+### 0 <= ?n == True
+### Code generator: dropping subsumed code equation
+### ?m < Suc ?n == ?m <= ?n
+### Code generator: dropping subsumed code equation
+### ?n < 0 == False
+### Code generator: dropping subsumed code equation
+### of_int (Int.Pos ?k) == numeral ?k
+### Code generator: dropping subsumed code equation
+### of_int 0 == 0::?'a
+### Code generator: dropping subsumed code equation
+### of_int (Int.Neg ?k) == - numeral ?k
+### Code generator: dropping subsumed code equation
+### nat (Int.Pos ?k) == nat_of_num ?k
+### Code generator: dropping subsumed code equation
+### nat 0 == 0
+### Code generator: dropping subsumed code equation
+### nat (Int.Neg ?k) == 0
+### Code generator: dropping subsumed code equation
+### of_nat ?n == semiring_1_class.of_nat_aux (%i. i + (1::?'a)) ?n (0::?'a)
+### theory "HOL-Library.Code_Target_Int"
+### 0.160s elapsed time, 0.639s cpu time, 0.053s GC time
+Loading theory "HOL-Library.Function_Algebras" (required by "Draft.Presburger_FormulaMoreTemplates" via "Draft.ExtrEqs" via "HOL-Library.BigO")
+### theory "HOL-Library.Code_Target_Nat"
+### 0.148s elapsed time, 0.579s cpu time, 0.053s GC time
+Loading theory "HOL-Library.Nat_Bijection" (required by "Draft.Presburger_FormulaMoreTemplates" via "Draft.ExtrEqs" via "HOL-Library.Stream")
+instantiation
+  fun :: (type, plus) plus
+  plus_fun == plus :: ('a => 'b) => ('a => 'b) => 'a => 'b
+instantiation
+  fun :: (type, zero) zero
+  zero_fun == zero_class.zero :: 'a => 'b
+instantiation
+  fun :: (type, times) times
+  times_fun == times :: ('a => 'b) => ('a => 'b) => 'a => 'b
+instantiation
+  fun :: (type, one) one
+  one_fun == one_class.one :: 'a => 'b
+Found termination order: "{}"
+consts
+  Zero :: "'a language"
+### theory "HOL-Library.Function_Algebras"
+### 0.090s elapsed time, 0.354s cpu time, 0.000s GC time
+Loading theory "HOL-Library.Set_Algebras" (required by "Draft.Presburger_FormulaMoreTemplates" via "Draft.ExtrEqs" via "HOL-Library.BigO")
+locale comparator
+  fixes comp :: "'a => 'a => order"
+  assumes "comparator comp"
+Found termination order: "(%p. size (snd p)) <*mlex*> {}"
+consts
+  One :: "'a language"
+consts
+  Atom :: "'a => 'a language"
+consts
+  Plus :: "'a language => 'a language => 'a language"
+instantiation
+  set :: (plus) plus
+  plus_set == plus :: 'a set => 'a set => 'a set
+instantiation
+  set :: (times) times
+  times_set == times :: 'a set => 'a set => 'a set
+instantiation
+  set :: (zero) zero
+  zero_set == zero_class.zero :: 'a set
+consts
+  TimesLR :: "'a language => 'a language => ('a * bool) language"
+instantiation
+  set :: (one) one
+  one_set == one_class.one :: 'a set
+consts
+  Times_Plus :: "('a * bool) language => 'a language"
+Found termination order: "size_list size <*mlex*> {}"
+Proofs for inductive predicate(s) "Plus_cong"
+  Proving monotonicity ...
+consts
+  StarLR :: "'a language => 'a language => 'a language"
+consts
+  Inter :: "'a language => 'a language => 'a language"
+### theory "HOL-Library.Set_Algebras"
+### 0.228s elapsed time, 0.897s cpu time, 0.151s GC time
+Loading theory "HOL-Library.Tree" (required by "Draft.Presburger_FormulaMoreTemplates" via "Draft.ExtrEqs" via "Draft.Templates")
+### theory "HOL-Library.Nat_Bijection"
+### 0.301s elapsed time, 1.181s cpu time, 0.151s GC time
+Loading theory "HOL-Library.Stream" (required by "Draft.Presburger_FormulaMoreTemplates" via "Draft.ExtrEqs")
+consts
+  Not :: "'a language => 'a language"
+consts
+  Full :: "'a language"
+consts
+  ShuffleLR :: "'a language => 'a language => ('a * bool) language"
+### theory "Deriving.Comparator"
+### 0.670s elapsed time, 2.670s cpu time, 0.248s GC time
+Loading theory "Deriving.Compare" (required by "Draft.Presburger_FormulaMoreTemplates" via "Draft.Presburger_Formula" via "Draft.Abstract_Formula" via "Deriving.Compare_Instances" via "Deriving.Compare_Generator")
+class compare = type +
+  fixes compare :: "'a => 'a => order"
+  assumes "comparator_compare": "comparator compare"
+Proofs for inductive predicate(s) "regular_cong"
+  Proving monotonicity ...
+instantiation
+  language :: (type) {order,semiring_1}
+  zero_language == zero_class.zero :: 'a language
+  plus_language == plus :: 'a language => 'a language => 'a language
+  one_language == one_class.one :: 'a language
+  times_language == times :: 'a language => 'a language => 'a language
+  less_eq_language == less_eq :: 'a language => 'a language => bool
+  less_language == less :: 'a language => 'a language => bool
+Proofs for inductive predicate(s) "Plus_Times_pre_cong"
+class compare_order = compare + ord +
+  assumes "ord_defs": "le_of_comp compare = (<=)" "lt_of_comp compare = (<)"
+  Proving monotonicity ...
+consts
+  tails :: "'a list => 'a list list"
+consts
+  in_language :: "'a language => 'a list => bool"
+consts
+  to_language :: "'a list set => 'a language"
+### theory "Coinductive_Languages.Coinductive_Language"
+### 1.185s elapsed time, 4.560s cpu time, 0.831s GC time
+Loading theory "Deriving.Comparator_Generator" (required by "Draft.Presburger_FormulaMoreTemplates" via "Draft.Presburger_Formula" via "Draft.Abstract_Formula" via "Deriving.Compare_Instances" via "Deriving.Compare_Generator")
+consts
+  shift :: "'a list => 'a stream => 'a stream"
+Proofs for coinductive predicate(s) "streamsp"
+  Proving monotonicity ...
+consts
+  left :: "'a tree => 'a tree"
+consts
+  right :: "'a tree => 'a tree"
+consts
+  snth :: "'a stream => nat => 'a"
+consts
+  stake :: "nat => 'a stream => 'a list"
+consts
+  sdrop :: "nat => 'a stream => 'a stream"
+Found termination order: "size <*mlex*> {}"
+class compare_order = compare + linorder +
+  assumes "ord_defs": "le_of_comp compare = (<=)" "lt_of_comp compare = (<)"
+consts
+  sfilter :: "('a => bool) => 'a stream => 'a stream"
+Found termination order: "size <*mlex*> {}"
+signature COMPARE_CODE =
+  sig
+    val change_compare_code:
+       term -> string list -> local_theory -> local_theory
+  end
+structure Compare_Code: COMPARE_CODE
+### theory "Deriving.Compare"
+### 0.744s elapsed time, 2.803s cpu time, 0.624s GC time
+Loading theory "HOL-Library.While_Combinator" (required by "Draft.Presburger_FormulaMoreTemplates" via "Draft.Presburger_Formula" via "Draft.Abstract_Formula" via "Draft.Automaton")
+consts
+  cycle :: "'a list => 'a stream"
+Found termination order: "size_list size <*mlex*> {}"
+consts
+  siterate :: "('a => 'a) => 'a => 'a stream"
+Found termination order: "size <*mlex*> {}"
+class height = type +
+  fixes height :: "'a => nat"
+instantiation
+  tree :: (type) height
+  height_tree == height :: 'a tree => nat
+consts
+  flat :: "'a list stream => 'a stream"
+consts
+  sinterleave :: "'a stream => 'a stream => 'a stream"
+Found termination order: "size <*mlex*> {}"
+consts
+  szip :: "'a stream => 'b stream => ('a * 'b) stream"
+consts
+  smap2 :: "('a => 'b => 'c) => 'a stream => 'b stream => 'c stream"
+Found termination order: "{}"
+Found termination order: "size <*mlex*> {}"
+### theory "HOL-Library.Stream"
+### 1.002s elapsed time, 3.809s cpu time, 0.761s GC time
+Loading theory "HOL-Library.BigO" (required by "Draft.Presburger_FormulaMoreTemplates" via "Draft.ExtrEqs")
+Found termination order: "size <*mlex*> {}"
+Found termination order: "{}"
+signature COMPARATOR_GENERATOR =
+  sig
+    datatype comparator_type = BNF | Linorder
+    val ensure_info:
+       comparator_type -> string -> local_theory -> local_theory
+    val generate_comparator:
+       comparator_type -> string -> local_theory -> local_theory
+    val generate_comparators_from_bnf_fp:
+       string ->
+         local_theory ->
+           ((term * thm list) list * (term * thm) list) * local_theory
+    val get_info: Proof.context -> string -> info option
+    type info =
+       {comp: term,
+        comp_def: thm option,
+        comp_thm: thm,
+        map: term,
+        map_comp: thm option,
+        partial_comp_thms: thm list, pcomp: term, used_positions: bool list}
+    val register_comparator_of: string -> local_theory -> local_theory
+    val register_foreign_comparator:
+       typ -> term -> thm -> local_theory -> local_theory
+    val register_foreign_partial_and_full_comparator:
+       string ->
+         term ->
+           term ->
+             term ->
+               thm option ->
+                 thm option ->
+                   thm ->
+                     thm ->
+                       thm ->
+                         thm -> bool list -> local_theory -> local_theory
+  end
+structure Comparator_Generator: COMPARATOR_GENERATOR
+### theory "Deriving.Comparator_Generator"
+### 0.551s elapsed time, 2.168s cpu time, 0.233s GC time
+Loading theory "Deriving.Compare_Generator" (required by "Draft.Presburger_FormulaMoreTemplates" via "Draft.Presburger_Formula" via "Draft.Abstract_Formula" via "Deriving.Compare_Instances")
+Found termination order: "size <*mlex*> {}"
+Found termination order: "{}"
+Found termination order: "size <*mlex*> {}"
+### theory "HOL-Library.While_Combinator"
+### 0.400s elapsed time, 1.569s cpu time, 0.192s GC time
+Loading theory "Draft.Automaton" (required by "Draft.Presburger_FormulaMoreTemplates" via "Draft.Presburger_Formula" via "Draft.Abstract_Formula")
+Found termination order: "size <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+Proofs for coinductive predicate(s) "rel_language"
+  Proving monotonicity ...
+Found termination order: "(%p. size (fst p)) <*mlex*> {}"
+signature COMPARE_GENERATOR =
+  sig
+    val compare_instance:
+       Comparator_Generator.comparator_type -> string -> theory -> theory
+    val compare_order_instance_via_comparator_of: string -> theory -> theory
+    val compare_order_instance_via_compare: string -> theory -> theory
+  end
+structure Compare_Generator: COMPARE_GENERATOR
+### theory "Deriving.Compare_Generator"
+### 0.271s elapsed time, 1.079s cpu time, 0.047s GC time
+Loading theory "Deriving.Compare_Instances" (required by "Draft.Presburger_FormulaMoreTemplates" via "Draft.Presburger_Formula" via "Draft.Abstract_Formula")
+locale DA
+  fixes alphabet :: "'a list"
+    and init :: "'t => 's"
+    and delta :: "'a => 's => 's"
+    and accept :: "'s => bool"
+    and wellformed :: "'s => bool"
+    and Language :: "'s => 'a language"
+    and wf :: "'t => bool"
+    and Lang :: "'t => 'a language"
+  assumes "DA alphabet init delta accept wellformed Language wf Lang"
+Found termination order: "size <*mlex*> {}"
+locale DAs
+  fixes alphabet1 :: "'a1 list"
+    and init1 :: "'t1 => 's1"
+    and delta1 :: "'a1 => 's1 => 's1"
+    and accept1 :: "'s1 => bool"
+    and wellformed1 :: "'s1 => bool"
+    and Language1 :: "'s1 => 'a1 language"
+    and wf1 :: "'t1 => bool"
+    and Lang1 :: "'t1 => 'a1 language"
+    and alphabet2 :: "'a2 list"
+    and init2 :: "'t2 => 's2"
+    and delta2 :: "'a2 => 's2 => 's2"
+    and accept2 :: "'s2 => bool"
+    and wellformed2 :: "'s2 => bool"
+    and Language2 :: "'s2 => 'a2 language"
+    and wf2 :: "'t2 => bool"
+    and Lang2 :: "'t2 => 'a2 language"
+    and letter_eq :: "'a1 => 'a2 => bool"
+  assumes
+    "DAs alphabet1 init1 delta1 accept1 wellformed1 Language1 wf1 Lang1
+      alphabet2 init2 delta2 accept2 wellformed2 Language2 wf2 Lang2
+      letter_eq"
+Found termination order: "(%p. size (snd p)) <*mlex*> {}"
+locale DFA
+  fixes alphabet :: "'a list"
+    and init :: "'b => 'c"
+    and delta :: "'a => 'c => 'c"
+    and accept :: "'c => bool"
+    and wellformed :: "'c => bool"
+    and Language :: "'c => 'a language"
+    and wf :: "'b => bool"
+    and Lang :: "'b => 'a language"
+  assumes "DFA alphabet init delta accept wellformed Language wf Lang"
+deriving "compare_order" instance for type "Int.int"
+deriving "compare" instance for type "Int.int"
+locale DFAs
+  fixes alphabet1 :: "'a1 list"
+    and init1 :: "'t1 => 's1"
+    and delta1 :: "'a1 => 's1 => 's1"
+    and accept1 :: "'s1 => bool"
+    and wellformed1 :: "'s1 => bool"
+    and Language1 :: "'s1 => 'a1 language"
+    and wf1 :: "'t1 => bool"
+    and Lang1 :: "'t1 => 'a1 language"
+    and alphabet2 :: "'a2 list"
+    and init2 :: "'t2 => 's2"
+    and delta2 :: "'a2 => 's2 => 's2"
+    and accept2 :: "'s2 => bool"
+    and wellformed2 :: "'s2 => bool"
+    and Language2 :: "'s2 => 'a2 language"
+    and wf2 :: "'t2 => bool"
+    and Lang2 :: "'t2 => 'a2 language"
+    and letter_eq :: "'a1 => 'a2 => bool"
+  assumes
+    "DFAs alphabet1 init1 delta1 accept1 wellformed1 Language1 wf1 Lang1
+      alphabet2 init2 delta2 accept2 wellformed2 Language2 wf2 Lang2
+      letter_eq"
+deriving "compare_order" instance for type "Code_Numeral.integer"
+deriving "compare" instance for type "Code_Numeral.integer"
+deriving "compare_order" instance for type "Nat.nat"
+deriving "compare" instance for type "Nat.nat"
+deriving "compare_order" instance for type "String.char"
+deriving "compare" instance for type "String.char"
+deriving "compare" instance for type "Sum_Type.sum"
+generating comparator for type "Sum_Type.sum"
+### theory "Draft.Automaton"
+### 0.443s elapsed time, 1.749s cpu time, 0.163s GC time
+Loading theory "Draft.While_Default" (required by "Draft.Presburger_FormulaMoreTemplates" via "Draft.Presburger_Formula" via "Draft.Abstract_Formula")
+deriving "compare" instance for type "List.list"
+generating comparator for type "List.list"
+deriving "compare" instance for type "Product_Type.prod"
+generating comparator for type "Product_Type.prod"
+### theory "Draft.While_Default"
+### 0.035s elapsed time, 0.143s cpu time, 0.000s GC time
+Loading theory "List-Index.List_Index" (required by "Draft.Presburger_FormulaMoreTemplates" via "Draft.Presburger_Formula")
+deriving "compare" instance for type "Option.option"
+generating comparator for type "Option.option"
+consts
+  find_index :: "('a => bool) => 'a list => nat"
+Found termination order: "{}"
+### theory "HOL-Library.BigO"
+### 0.757s elapsed time, 2.992s cpu time, 0.265s GC time
+Found termination order: "{}"
+(if ?x <= ?y then if ?x = ?y then ?P else ?Q else ?R) =
+(case compare ?x ?y of Eq => ?P | Lt => ?Q | Gt => ?R)
+(if ?x <= ?y then if ?y = ?x then ?P else ?Q else ?R) =
+(case compare ?x ?y of Eq => ?P | Lt => ?Q | Gt => ?R)
+(if ?x <= ?y then if ?y <= ?x then ?P else ?Q else ?R) =
+(case compare ?x ?y of Eq => ?P | Lt => ?Q | Gt => ?R)
+(if ?x <= ?y then if ?x < ?y then ?Q else ?P else ?R) =
+(case compare ?x ?y of Eq => ?P | Lt => ?Q | Gt => ?R)
+(if ?x < ?y then ?Q else if ?x <= ?y then ?P else ?R) =
+(case compare ?x ?y of Eq => ?P | Lt => ?Q | Gt => ?R)
+(if ?x < ?y then ?Q else if ?y < ?x then ?R else ?P) =
+(case compare ?x ?y of Eq => ?P | Lt => ?Q | Gt => ?R)
+(if ?x < ?y then ?Q else if ?x = ?y then ?P else ?R) =
+(case compare ?x ?y of Eq => ?P | Lt => ?Q | Gt => ?R)
+(if ?x < ?y then ?Q else if ?y = ?x then ?P else ?R) =
+(case compare ?x ?y of Eq => ?P | Lt => ?Q | Gt => ?R)
+(if ?x = ?y then ?P else if ?y < ?x then ?R else ?Q) =
+(case compare ?x ?y of Eq => ?P | Lt => ?Q | Gt => ?R)
+(if ?x = ?y then ?P else if ?x < ?y then ?Q else ?R) =
+(case compare ?x ?y of Eq => ?P | Lt => ?Q | Gt => ?R)
+(if ?x = ?y then ?P else if ?y <= ?x then ?R else ?Q) =
+(case compare ?x ?y of Eq => ?P | Lt => ?Q | Gt => ?R)
+(if ?x = ?y then ?P else if ?x <= ?y then ?Q else ?R) =
+(case compare ?x ?y of Eq => ?P | Lt => ?Q | Gt => ?R)
+deriving "compare" instance for type "HOL.bool"
+deriving "compare" instance for type "Product_Type.unit"
+deriving "compare_order" instance for type "HOL.bool"
+deriving "compare_order" instance for type "Product_Type.unit"
+### theory "Deriving.Compare_Instances"
+### 0.428s elapsed time, 1.672s cpu time, 0.164s GC time
+Loading theory "Draft.Abstract_Formula" (required by "Draft.Presburger_FormulaMoreTemplates" via "Draft.Presburger_Formula")
+Found termination order: "size <*mlex*> {}"
+consts
+  map_index' :: "nat => (nat => 'a => 'b) => 'a list => 'b list"
+consts
+  insert_nth :: "nat => 'a => 'a list => 'a list"
+### theory "HOL-Library.Tree"
+### 1.957s elapsed time, 7.459s cpu time, 1.074s GC time
+Loading theory "Draft.Templates" (required by "Draft.Presburger_FormulaMoreTemplates" via "Draft.ExtrEqs")
+Found termination order: "(%p. length (snd p)) <*mlex*> {}"
+### theory "List-Index.List_Index"
+### 0.318s elapsed time, 1.118s cpu time, 0.095s GC time
+datatype template_term
+=
+     t_empty
+   | template_app of template_term * template_term
+   | template_hole of int
+   | template_var of int
+datatype sign
+= equals | greater_equals | greater_than | less_equals | less_than
+datatype template
+=
+     template_bimplication of template * template
+   | template_dunno
+   | template_equation of template_term * template_term
+   | template_implication of template list * template
+   | template_inequation of sign * template_term * template_term
+   | template_negation of template
+   | template_predicate of template_term
+constructor t_empty: template_term
+constructor template_app: template_term * template_term -> template_term
+constructor template_hole: int -> template_term
+constructor template_var: int -> template_term
+constructor equals: sign
+constructor greater_equals: sign
+constructor greater_than: sign
+constructor less_equals: sign
+constructor less_than: sign
+constructor template_bimplication: template * template -> template
+constructor template_dunno: template
+constructor template_equation: template_term * template_term -> template
+constructor template_implication: template list * template -> template
+constructor template_inequation:
+   sign * template_term * template_term -> template
+constructor template_negation: template -> template
+constructor template_predicate: template_term -> template
+val vfs = fn: term -> (indexname * typ) list * (string * typ) list
+val indexOf = fn: ''a list -> ''a -> int -> int
+val has_eq = fn: term -> bool
+val term2template = fn:
+   (indexname * typ) list -> (string * typ) list -> term -> template_term
+val lemma2predicate = fn: term -> term -> template
+val makeTemplatewithContext = fn: term -> term -> template
+val lemma2template = fn: term -> template
+val thm2template = fn: thm -> template
+val tterm2string = fn: template_term -> string
+val template2string = fn: template -> string
+val t = "height ?t <= size ?t": thm
+val th =
+   Const ("HOL.Trueprop", "bool => prop") $
+     (Const ("Orderings.ord_class.less_eq", "nat => nat => bool") $
+       (Const ("Tree.height_class.height", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree")) $
+       (Const ("Nat.size_class.size", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree"))):
+   term
+### theory "Draft.Templates"
+### 0.070s elapsed time, 0.224s cpu time, 0.061s GC time
+Loading theory "Draft.ExtrEqs" (required by "Draft.Presburger_FormulaMoreTemplates")
+val eqpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Var (("_dummy_", 2), "?'a"))
+       ):
+   term Find_Theorems.criterion
+val badeqpattern = Pattern (Const ("Pure.eq", "?'a => ?'a => prop")):
+   term Find_Theorems.criterion
+val undefpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Const ("HOL.undefined", "?'a"))
+       ):
+   term Find_Theorems.criterion
+val thmpattern =
+   Pattern
+    (Const ("HOL.Trueprop", "bool => prop") $ Var (("_dummy_", 1), "bool")):
+   term Find_Theorems.criterion
+val badnames =
+   ["*nitpick*", "*Nitpick*", "*full_exhaustive*", "*_def*", "Enum.finite*",
+    "*Quickcheck*", "ATP*", "*Nunchaku*", "*Code*", "*BNF*", "*SMT*",
+    "*.*.*"]:
+   string list
+val unwanted_names =
+   [(false, Name "*nitpick*"), (false, Name "*Nitpick*"),
+    (false, Name "*full_exhaustive*"), (false, Name "*_def*"),
+    (false, Name "Enum.finite*"), (false, Name "*Quickcheck*"),
+    (false, Name "ATP*"), (false, Name "*Nunchaku*"),
+    (false, Name "*Code*"), (false, Name "*BNF*"), (false, Name "*SMT*"),
+    (false, Name "*.*.*")]:
+   (bool * term Find_Theorems.criterion) list
+val has_vars = fn: term -> bool
+val get_all_eqs = fn: string -> Proof.context -> (string * thm) list
+val get_all_thms = fn: string -> Proof.context -> (string * thm) list
+val get_noneq_thms = fn: string -> Proof.context -> (string * thm) list
+val template_eqs = fn:
+   string -> Proof.context -> (string * thm * template) list
+val template_thms = fn:
+   string -> Proof.context -> (string * thm * template) list
+### theory "Draft.ExtrEqs"
+### 0.483s elapsed time, 0.993s cpu time, 0.065s GC time
+deriving "linorder" instance for type "Abstract_Formula.aformula"
+generating comparator for type "Abstract_Formula.aformula"
+Found termination order: "size_list size <*mlex*> {}"
+Found termination order: "size_list size <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+consts
+  norm_ACI :: "('a, 'b) aformula => ('a, 'b) aformula"
+Found termination order: "size <*mlex*> {}"
+locale Formula_Operations
+  fixes TYPEVARS :: "'a * 'i * 'k * 'n * 'x * 'v"
+    and SUC :: "'k => 'n => 'n"
+    and LESS :: "'k => nat => 'n => bool"
+    and
+    assigns :: "nat => 'i => 'k => 'v"
+      (\<open>_\<^bsup>_\<^esup>_\<close> [900, 999, 999] 999)
+    and nvars :: "'i => 'n"  (\<open>#\<^sub>V _\<close> [1000] 900)
+    and Extend :: "'k => nat => 'i => 'v => 'i"
+    and CONS :: "'x => 'i => 'i"
+    and SNOC :: "'x => 'i => 'i"
+    and Length :: "'i => nat"
+    and extend :: "'k => bool => 'x => 'x"
+    and size :: "'x => 'n"
+    and zero :: "'n => 'x"
+    and alphabet :: "'n => 'x list"
+    and eval :: "'v => nat => bool"
+    and downshift :: "'v => 'v"
+    and upshift :: "'v => 'v"
+    and add :: "nat => 'v => 'v"
+    and cut :: "nat => 'v => 'v"
+    and len :: "'v => nat"
+    and restrict :: "'k => 'v => bool"
+    and Restrict :: "'k => nat => ('a, 'k) aformula"
+    and lformula0 :: "'a => bool"
+    and FV0 :: "'k => 'a => nat set"
+    and find0 :: "'k => nat => 'a => bool"
+    and wf0 :: "'n => 'a => bool"
+    and decr0 :: "'k => nat => 'a => 'a"
+    and
+    satisfies0 :: "'i => 'a => bool"
+      (infix \<open>\<Turnstile>\<^sub>0\<close> 50)
+    and nullable0 :: "'a => bool"
+    and lderiv0 :: "'x => 'a => ('a, 'k) aformula"
+    and rderiv0 :: "'x => 'a => ('a, 'k) aformula"
+consts
+  FV :: "('a, 'k) aformula => 'k => nat set"
+consts
+  find :: "'k => nat => ('a, 'k) aformula => bool"
+consts
+  wf :: "'n => ('a, 'k) aformula => bool"
+consts
+  lformula :: "('a, 'k) aformula => bool"
+consts
+  decr :: "'k => nat => ('a, 'k) aformula => ('a, 'k) aformula"
+consts
+  satisfies_gen ::
+    "('k => 'v => nat => bool) => 'i => ('a, 'k) aformula => bool"
+Found termination order: "size <*mlex*> {}"
+consts
+  nullable :: "('a, 'k) aformula => bool"
+Found termination order:
+  "(%p. size (fst p)) <*mlex*> (%p. size (snd p)) <*mlex*> {}"
+Found termination order:
+  "(%p. size (fst p)) <*mlex*> (%p. size (snd p)) <*mlex*> {}"
+Found termination order: "(%p. size (snd p)) <*mlex*> {}"
+Found termination order: "(%p. size (snd p)) <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+consts
+  deriv :: "'x => ('a, 'k) aformula => ('a, 'k) aformula"
+locale Formula
+  fixes SUC :: "'k => 'n => 'n"
+    and LESS :: "'k => nat => 'n => bool"
+    and
+    assigns :: "nat => 'i => 'k => 'v"
+      (\<open>_\<^bsup>_\<^esup>_\<close> [900, 999, 999] 999)
+    and nvars :: "'i => 'n"  (\<open>#\<^sub>V _\<close> [1000] 900)
+    and Extend :: "'k => nat => 'i => 'v => 'i"
+    and CONS :: "'x => 'i => 'i"
+    and SNOC :: "'x => 'i => 'i"
+    and Length :: "'i => nat"
+    and extend :: "'k => bool => 'x => 'x"
+    and size :: "'x => 'n"
+    and zero :: "'n => 'x"
+    and alphabet :: "'n => 'x list"
+    and eval :: "'v => nat => bool"
+    and downshift :: "'v => 'v"
+    and upshift :: "'v => 'v"
+    and add :: "nat => 'v => 'v"
+    and cut :: "nat => 'v => 'v"
+    and len :: "'v => nat"
+    and restrict :: "'k => 'v => bool"
+    and Restrict :: "'k => nat => ('a, 'k) aformula"
+    and lformula0 :: "'a => bool"
+    and FV0 :: "'k => 'a => nat set"
+    and find0 :: "'k => nat => 'a => bool"
+    and wf0 :: "'n => 'a => bool"
+    and decr0 :: "'k => nat => 'a => 'a"
+    and
+    satisfies0 :: "'i => 'a => bool"
+      (infix \<open>\<Turnstile>\<^sub>0\<close> 50)
+    and nullable0 :: "'a => bool"
+    and lderiv0 :: "'x => 'a => ('a, 'k) aformula"
+    and rderiv0 :: "'x => 'a => ('a, 'k) aformula"
+    and TYPEVARS :: "'a * 'i * 'k * 'n * 'x * 'v"
+  assumes
+    "Formula SUC LESS assigns nvars Extend CONS SNOC Length extend size zero
+      alphabet eval downshift upshift add cut len restrict Restrict
+      lformula0 FV0 find0 wf0 decr0 (\<Turnstile>\<^sub>0) nullable0 lderiv0
+      rderiv0"
+locale Formula
+  fixes SUC :: "'k => 'n => 'n"
+    and LESS :: "'k => nat => 'n => bool"
+    and
+    assigns :: "nat => 'i => 'k => 'v"
+      (\<open>_\<^bsup>_\<^esup>_\<close> [900, 999, 999] 999)
+    and nvars :: "'i => 'n"  (\<open>#\<^sub>V _\<close> [1000] 900)
+    and Extend :: "'k => nat => 'i => 'v => 'i"
+    and CONS :: "'x => 'i => 'i"
+    and SNOC :: "'x => 'i => 'i"
+    and Length :: "'i => nat"
+    and extend :: "'k => bool => 'x => 'x"
+    and size :: "'x => 'n"
+    and zero :: "'n => 'x"
+    and alphabet :: "'n => 'x list"
+    and eval :: "'v => nat => bool"
+    and downshift :: "'v => 'v"
+    and upshift :: "'v => 'v"
+    and add :: "nat => 'v => 'v"
+    and cut :: "nat => 'v => 'v"
+    and len :: "'v => nat"
+    and restrict :: "'k => 'v => bool"
+    and Restrict :: "'k => nat => ('a, 'k) aformula"
+    and lformula0 :: "'a => bool"
+    and FV0 :: "'k => 'a => nat set"
+    and find0 :: "'k => nat => 'a => bool"
+    and wf0 :: "'n => 'a => bool"
+    and decr0 :: "'k => nat => 'a => 'a"
+    and
+    satisfies0 :: "'i => 'a => bool"
+      (infix \<open>\<Turnstile>\<^sub>0\<close> 50)
+    and nullable0 :: "'a => bool"
+    and lderiv0 :: "'x => 'a => ('a, 'k) aformula"
+    and rderiv0 :: "'x => 'a => ('a, 'k) aformula"
+    and TYPEVARS :: "'a * 'i * 'k * 'n * 'x * 'v"
+  assumes
+    "Formula SUC LESS assigns nvars Extend CONS SNOC Length extend size zero
+      alphabet eval downshift upshift add cut len restrict Restrict
+      lformula0 FV0 find0 wf0 decr0 (\<Turnstile>\<^sub>0) nullable0 lderiv0
+      rderiv0"
+Found termination order: "(%p. size (snd p)) <*mlex*> {}"
+consts
+  L :: "'n => 'i set => 'x language"
+### theory "Draft.Abstract_Formula"
+### 23.568s elapsed time, 35.629s cpu time, 7.689s GC time
+Loading theory "Draft.Presburger_Formula" (required by "Draft.Presburger_FormulaMoreTemplates")
+Found termination order: "size <*mlex*> {}"
+deriving "linorder" instance for type "List.list"
+deriving "linorder" instance for type "Presburger_Formula.presb"
+generating comparator for type "Presburger_Formula.presb"
+consts
+  wf0 :: "nat => presb => bool"
+Found termination order: "{}"
+consts
+  decr0 :: "unit => nat => presb => presb"
+consts
+  satisfies0 :: "interp => presb => bool"
+Proofs for inductive predicate(s) "lformula0"
+  Proving monotonicity ...
+Found termination order: "{}"
+Found termination order: "{}"
+consts
+  nullable0 :: "presb => bool"
+### theory "Draft.Presburger_Formula"
+### 7.110s elapsed time, 9.160s cpu time, 2.799s GC time
+Loading theory "Draft.Presburger_FormulaMoreTemplates"
+val templateLemmas =
+   [("Presburger_Formula.comparator_presb_pointwise",
+     "peq_comp comparator_presb ?x\<^sub>0",
+     template_predicate
+      (
+         template_app
+          (template_app (template_hole 1, template_hole 0), template_var 0)
+         )),
+    ("Presburger_Formula.comparator_presb_pointwise",
+     "psym_comp comparator_presb ?x\<^sub>0",
+     template_predicate
+      (
+         template_app
+          (template_app (template_hole 1, template_hole 0), template_var 0)
+         )),
+    ("Presburger_Formula.comparator_presb_pointwise",
+     "ptrans_comp comparator_presb ?x\<^sub>0",
+     template_predicate
+      (
+         template_app
+          (template_app (template_hole 1, template_hole 0), template_var 0)
+         )),
+    ("Presburger_Formula.finite_FV0", "finite (FV0 ?k ?a)",
+     template_predicate
+      (
+         template_app
+          (template_hole 1,
+           template_app
+            (template_app (template_hole 0, template_var 1),
+             template_var 0))
+         )),
+    ("Presburger_Formula.Presb_simps", "~ test_bit (upshift ?P) 0",
+     template_negation
+      (
+         template_predicate
+          (
+             template_app
+              (template_app
+                (template_hole 2,
+                 template_app (template_hole 1, template_var 0)),
+               template_hole 0)
+             )
+         )),
+    ("Presburger_Formula.scalar_product_Nil", "scalar_product [] ?xs = 0",
+     template_equation
+      (template_app
+        (template_app (template_hole 2, template_hole 1), template_var 0),
+       template_hole 0)),
+    ("Presburger_Formula.scalar_product_Nil2", "scalar_product ?xs [] = 0",
+     template_equation
+      (template_app
+        (template_app (template_hole 2, template_var 0), template_hole 1),
+       template_hole 0)),
+    ("Presburger_Formula.Presb_simps", "downshift (upshift ?P) = ?P",
+     template_equation
+      (template_app
+        (template_hole 1, template_app (template_hole 0, template_var 0)),
+       template_var 0)),
+    ("Presburger_Formula.Presb_simps", "test_bit (set_bit ?n ?P) ?n",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_hole 1,
+             template_app
+              (template_app (template_hole 0, template_var 1),
+               template_var 0)),
+           template_var 1)
+         )),
+    ("Presburger_Formula.Presb_simps", "len (cut_bits ?n ?P) <= ?n",
+     template_inequation
+      (less_equals,
+       template_app
+        (template_hole 1,
+         template_app
+          (template_app (template_hole 0, template_var 1), template_var 0)),
+       template_var 1)),
+    ("Presburger_Formula.Presb_simps",
+     "downshift (set_bit 0 ?P) = downshift ?P",
+     template_equation
+      (template_app
+        (template_hole 2,
+         template_app
+          (template_app (template_hole 1, template_hole 0),
+           template_var 0)),
+       template_app (template_hole 2, template_var 0))),
+    ("Presburger_Formula.nvars_CONS",
+     "#\<^sub>V (CONS ?x ?\<AA>) = #\<^sub>V ?\<AA>",
+     template_equation
+      (template_app
+        (template_hole 1,
+         template_app
+          (template_app (template_hole 0, template_var 1), template_var 0)),
+       template_app (template_hole 1, template_var 0))),
+    ("Presburger_Formula.nvars_SNOC",
+     "#\<^sub>V (SNOC ?x ?\<AA>) = #\<^sub>V ?\<AA>",
+     template_equation
+      (template_app
+        (template_hole 1,
+         template_app
+          (template_app (template_hole 0, template_var 1), template_var 0)),
+       template_app (template_hole 1, template_var 0))),
+    ("Presburger_Formula.Length_CONS",
+     "Length (CONS ?x ?\<AA>) = Suc (Length ?\<AA>)",
+     template_equation
+      (template_app
+        (template_hole 2,
+         template_app
+          (template_app (template_hole 1, template_var 1), template_var 0)),
+       template_app
+        (template_hole 0, template_app (template_hole 2, template_var 0)))),
+    ("Presburger_Formula.Length_SNOC",
+     "Length (SNOC ?x ?\<AA>) = Suc (Length ?\<AA>)",
+     template_equation
+      (template_app
+        (template_hole 2,
+         template_app
+          (template_app (template_hole 1, template_var 1), template_var 0)),
+       template_app
+        (template_hole 0, template_app (template_hole 2, template_var 0)))),
+    ("Presburger_Formula.len_eq0_iff", "(len ?n = 0) = (?n = 0)",
+     template_bimplication
+      (template_equation
+        (template_app (template_hole 1, template_var 0), template_hole 0),
+       template_equation (template_var 0, template_hole 0))),
+    ("Presburger_Formula.less_pow2_len", "?x < 2 ^ len ?x",
+     template_inequation
+      (less_than, template_var 0,
+       template_app
+        (template_app
+          (template_hole 4,
+           template_app
+            (template_hole 3,
+             template_app (template_hole 2, template_hole 1))),
+         template_app (template_hole 0, template_var 0)))),
+    ("Presburger_Formula.lformula0_iI",
+     "lformula0 ?x ==> pred.eval (lformula0_i ?x) ()",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 3, template_var 0))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 2,
+               template_app (template_hole 1, template_var 0)),
+             template_hole 0)
+           ))),
+    ("Presburger_Formula.Presb_simps",
+     "length (extend ?k ?b ?x) = Suc (length ?x)",
+     template_equation
+      (template_app
+        (template_hole 2,
+         template_app
+          (template_app
+            (template_app (template_hole 1, template_var 2),
+             template_var 1),
+           template_var 0)),
+       template_app
+        (template_hole 0, template_app (template_hole 2, template_var 0)))),
+    ("Presburger_Formula.len_pow2", "len (2 ^ ?x) = Suc ?x",
+     template_equation
+      (template_app
+        (template_hole 5,
+         template_app
+          (template_app
+            (template_hole 4,
+             template_app
+              (template_hole 3,
+               template_app (template_hole 2, template_hole 1))),
+           template_var 0)),
+       template_app (template_hole 0, template_var 0))),
+    ("Presburger_Formula.lformula_lderiv0",
+     "lformula0 ?a ==>
+      Formula_Operations.lformula lformula0 (lderiv0 ?x ?a)",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 2, template_var 1))],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 1, template_hole 2),
+             template_app
+              (template_app (template_hole 0, template_var 0),
+               template_var 1))
+           ))),
+    ("Presburger_Formula.lformula0_decr0",
+     "lformula0 ?a ==> lformula0 (decr0 ?k ?l ?a)",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 1, template_var 2))],
+       template_predicate
+        (
+           template_app
+            (template_hole 1,
+             template_app
+              (template_app
+                (template_app (template_hole 0, template_var 1),
+                 template_var 0),
+               template_var 2))
+           ))),
+    ("Presburger_Formula.scalar_product_trim",
+     "scalar_product ?ns ?xs = scalar_product (take (length ?xs) ?ns) ?xs",
+     template_equation
+      (template_app
+        (template_app (template_hole 2, template_var 1), template_var 0),
+       template_app
+        (template_app
+          (template_hole 2,
+           template_app
+            (template_app
+              (template_hole 1,
+               template_app (template_hole 0, template_var 0)),
+             template_var 1)),
+         template_var 0))),
+    ("Presburger_Formula.Presb_simps",
+     "len (downshift ?P) = (case len ?P of 0 => 0 | Suc n => n)",
+     template_equation
+      (template_app
+        (template_hole 3, template_app (template_hole 2, template_var 0)),
+       template_app
+        (template_app
+          (template_app (template_hole 1, template_hole 0), t_empty),
+         template_app (template_hole 3, template_var 0)))),
+    ("Presburger_Formula.len_set_bit",
+     "len (set_bit ?m ?P) = max (Suc ?m) (len ?P)",
+     template_equation
+      (template_app
+        (template_hole 3,
+         template_app
+          (template_app (template_hole 2, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 1, template_app (template_hole 0, template_var 1)),
+         template_app (template_hole 3, template_var 0)))),
+    ("Presburger_Formula.nvars_Extend",
+     "#\<^sub>V (Extend () ?i ?\<AA> ?P) = Suc (#\<^sub>V ?\<AA>)",
+     template_equation
+      (template_app
+        (template_hole 3,
+         template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 2, template_hole 1),
+               template_var 2),
+             template_var 1),
+           template_var 0)),
+       template_app
+        (template_hole 0, template_app (template_hole 3, template_var 1)))),
+    ("Presburger_Formula.len_mono", "?x <= ?y ==> len ?x <= len ?y",
+     template_implication
+      ([template_inequation (less_equals, template_var 1, template_var 0)],
+       template_inequation
+        (less_equals, template_app (template_hole 0, template_var 1),
+         template_app (template_hole 0, template_var 0)))),
+    ("Presburger_Formula.Presb_simps", "len ?P <= ?p ==> ~ test_bit ?P ?p",
+     template_implication
+      ([template_inequation
+         (less_equals, template_app (template_hole 2, template_var 1),
+          template_var 0)],
+       template_negation
+        (
+           template_predicate
+            (
+               template_app
+                (template_app (template_hole 0, template_var 1),
+                 template_var 0)
+               )
+           ))),
+    ("Presburger_Formula.ex_Length0",
+     "EX \<AA>. Length \<AA> = 0 & #\<^sub>V \<AA> = ?idx",
+     template_predicate (template_app (template_hole 5, t_empty))),
+    ("Presburger_Formula.len_div2", "len (?x div 2) = len ?x - 1",
+     template_equation
+      (template_app
+        (template_hole 6,
+         template_app
+          (template_app (template_hole 5, template_var 0),
+           template_app
+            (template_hole 4,
+             template_app (template_hole 3, template_hole 2)))),
+       template_app
+        (template_app
+          (template_hole 1, template_app (template_hole 6, template_var 0)),
+         template_hole 0))),
+    ("Presburger_Formula.len_Suc_mult2",
+     "len (Suc (2 * ?x)) = Suc (len ?x)",
+     template_equation
+      (template_app
+        (template_hole 5,
+         template_app
+          (template_hole 4,
+           template_app
+            (template_app
+              (template_hole 3,
+               template_app
+                (template_hole 2,
+                 template_app (template_hole 1, template_hole 0))),
+             template_var 0))),
+       template_app
+        (template_hole 4, template_app (template_hole 5, template_var 0)))),
+    ("Presburger_Formula.Length_eq0_eval_tm_eq0",
+     "Length ?\<AA> = 0 ==> eval_tm ?\<AA> ?is = 0",
+     template_implication
+      ([template_equation
+         (template_app (template_hole 4, template_var 1), template_hole 3)],
+       template_equation
+        (template_app
+          (template_app (template_hole 1, template_var 1), template_var 0),
+         template_hole 0))),
+    ("Presburger_Formula.Presb_simps",
+     "len ?P <= ?n ==> cut_bits ?n ?P = ?P",
+     template_implication
+      ([template_inequation
+         (less_equals, template_app (template_hole 2, template_var 1),
+          template_var 0)],
+       template_equation
+        (template_app
+          (template_app (template_hole 0, template_var 0), template_var 1),
+         template_var 1))),
+    ("Presburger_Formula.len_alt", "len ?x = (LEAST i. ?x < 2 ^ i)",
+     template_equation
+      (template_app (template_hole 6, template_var 0),
+       template_app (template_hole 5, t_empty))),
+    ("Presburger_Formula.Presb_simps",
+     "len (upshift ?P) = (case len ?P of 0 => 0 | Suc n => Suc (Suc n))",
+     template_equation
+      (template_app
+        (template_hole 4, template_app (template_hole 3, template_var 0)),
+       template_app
+        (template_app
+          (template_app (template_hole 2, template_hole 1), t_empty),
+         template_app (template_hole 4, template_var 0)))),
+    ("Presburger_Formula.Length_Extend",
+     "Length (Extend () ?i ?\<AA> ?P) = max (Length ?\<AA>) (len ?P)",
+     template_equation
+      (template_app
+        (template_hole 4,
+         template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 3, template_hole 2),
+               template_var 2),
+             template_var 1),
+           template_var 0)),
+       template_app
+        (template_app
+          (template_hole 1, template_app (template_hole 4, template_var 1)),
+         template_app (template_hole 0, template_var 0)))),
+    ("Presburger_Formula.len_le_iff", "(len ?x <= ?l) = (?x < 2 ^ ?l)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 6, template_app (template_hole 5, template_var 1)),
+         template_var 0),
+       template_app
+        (template_app (template_hole 4, template_var 1),
+         template_app
+          (template_app
+            (template_hole 3,
+             template_app
+              (template_hole 2,
+               template_app (template_hole 1, template_hole 0))),
+           template_var 0)))),
+    ("Presburger_Formula.nullable0_satisfies0",
+     "Length ?\<AA> = 0 ==> nullable0 ?a = ?\<AA> \<Turnstile>0 ?a",
+     template_implication
+      ([template_equation
+         (template_app (template_hole 4, template_var 1), template_hole 3)],
+       template_equation
+        (template_app (template_hole 1, template_var 0),
+         template_app
+          (template_app (template_hole 0, template_var 1),
+           template_var 0)))),
+    ("Presburger_Formula.len_div_pow2", "len (?x div 2 ^ ?m) = len ?x - ?m",
+     template_equation
+      (template_app
+        (template_hole 6,
+         template_app
+          (template_app (template_hole 5, template_var 1),
+           template_app
+            (template_app
+              (template_hole 4,
+               template_app
+                (template_hole 3,
+                 template_app (template_hole 2, template_hole 1))),
+             template_var 0))),
+       template_app
+        (template_app
+          (template_hole 0, template_app (template_hole 6, template_var 1)),
+         template_var 0))),
+    ("Presburger_Formula.map_index'_Suc",
+     "map_index' (Suc ?i) ?f ?xs = map_index' ?i (%i. ?f (Suc i)) ?xs",
+     template_equation
+      (template_app
+        (template_app
+          (template_app
+            (template_hole 1,
+             template_app (template_hole 0, template_var 2)),
+           template_var 1),
+         template_var 0),
+       template_app
+        (template_app
+          (template_app (template_hole 1, template_var 2), t_empty),
+         template_var 0))),
+    ("Presburger_Formula.wf_rderiv0",
+     "wf0 ?idx ?a ==>
+      Formula_Operations.wf (%_. Suc) wf0 ?idx (rderiv0 ?x ?a)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 3, template_var 2),
+              template_var 1)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 2, t_empty), template_hole 3),
+               template_var 2),
+             template_app
+              (template_app (template_hole 0, template_var 0),
+               template_var 1))
+           ))),
+    ("Presburger_Formula.finite_rderiv0",
+     "finite {\<phi>. EX xs. \<phi> = fold Presb.rderiv xs (FBase ?a)}",
+     template_predicate
+      (
+         template_app
+          (template_hole 8, template_app (template_hole 7, t_empty))
+         )),
+    ("Presburger_Formula.odd_neq_even", "(2 * ?y = Suc (2 * ?x)) = False",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 6,
+           template_app
+            (template_app
+              (template_hole 5,
+               template_app
+                (template_hole 4,
+                 template_app (template_hole 3, template_hole 2))),
+             template_var 1)),
+         template_app
+          (template_hole 1,
+           template_app
+            (template_app
+              (template_hole 5,
+               template_app
+                (template_hole 4,
+                 template_app (template_hole 3, template_hole 2))),
+             template_var 0))),
+       template_hole 0)),
+    ("Presburger_Formula.odd_neq_even", "(Suc (2 * ?x) = 2 * ?y) = False",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 6,
+           template_app
+            (template_hole 5,
+             template_app
+              (template_app
+                (template_hole 4,
+                 template_app
+                  (template_hole 3,
+                   template_app (template_hole 2, template_hole 1))),
+               template_var 1))),
+         template_app
+          (template_app
+            (template_hole 4,
+             template_app
+              (template_hole 3,
+               template_app (template_hole 2, template_hole 1))),
+           template_var 0)),
+       template_hole 0)),
+    ("Presburger_Formula.scalar_product_eq0",
+     "ALL c:set ?ns. c = 0 ==> scalar_product ?ns ?is = 0",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 6,
+                template_app (template_hole 5, template_var 1)),
+              t_empty)
+            )],
+       template_equation
+        (template_app
+          (template_app (template_hole 1, template_var 1), template_var 0),
+         template_hole 0))),
+    ("Presburger_Formula.lformula0_iE",
+     "[| pred.eval (lformula0_i ?x) ?y; lformula0 ?x ==> ?P |] ==> ?P",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 2,
+                template_app (template_hole 1, template_var 2)),
+              template_var 1)
+            ),
+        template_implication
+         ([template_predicate
+            (template_app (template_hole 0, template_var 2))],
+          template_predicate (template_var 0))],
+       template_predicate (template_var 0))),
+    ("Presburger_Formula.len_mult2'",
+     "len (?x * 2) = (if ?x = 0 then 0 else Suc (len ?x))",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_hole 7,
+              template_app
+               (template_app (template_hole 6, template_var 0),
+                template_app
+                 (template_hole 5,
+                  template_app (template_hole 4, template_hole 3))))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_hole 2,
+                 template_app
+                  (template_app (template_hole 8, template_var 0),
+                   template_hole 1)),
+               template_hole 1),
+             template_app
+              (template_hole 0,
+               template_app (template_hole 7, template_var 0)))
+           ))),
+    ("Presburger_Formula.len_mult2",
+     "len (2 * ?x) = (if ?x = 0 then 0 else Suc (len ?x))",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_hole 7,
+              template_app
+               (template_app
+                 (template_hole 6,
+                  template_app
+                   (template_hole 5,
+                    template_app (template_hole 4, template_hole 3))),
+                template_var 0))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_hole 2,
+                 template_app
+                  (template_app (template_hole 8, template_var 0),
+                   template_hole 1)),
+               template_hole 1),
+             template_app
+              (template_hole 0,
+               template_app (template_hole 7, template_var 0)))
+           ))),
+    ("Presburger_Formula.Suc0_div_pow2_eq",
+     "Suc 0 div 2 ^ ?i = (if ?i = 0 then 1 else 0)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 8,
+                template_app (template_hole 7, template_hole 6)),
+              template_app
+               (template_app
+                 (template_hole 5,
+                  template_app
+                   (template_hole 4,
+                    template_app (template_hole 3, template_hole 2))),
+                template_var 0))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_hole 1,
+                 template_app
+                  (template_app (template_hole 9, template_var 0),
+                   template_hole 6)),
+               template_hole 0),
+             template_hole 6)
+           ))),
+    ("Presburger_Formula.FV0_less",
+     "[| wf0 ?idx ?a; ?v : FV0 ?k ?a |] ==> ?v < ?idx",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 3, template_var 3),
+              template_var 2)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 2, template_var 1),
+              template_app
+               (template_app (template_hole 1, template_var 0),
+                template_var 2))
+            )],
+       template_inequation (less_than, template_var 1, template_var 3))),
+    ("Presburger_Formula.less_pow2", "?x < 2 ^ ?a ==> int ?x < 2 ^ ?a",
+     template_implication
+      ([template_inequation
+         (less_than, template_var 1,
+          template_app
+           (template_app
+             (template_hole 7,
+              template_app
+               (template_hole 6,
+                template_app (template_hole 5, template_hole 4))),
+            template_var 0))],
+       template_inequation
+        (less_than, template_app (template_hole 2, template_var 1),
+         template_app
+          (template_app
+            (template_hole 1,
+             template_app
+              (template_hole 0,
+               template_app (template_hole 5, template_hole 4))),
+           template_var 0)))),
+    ("Presburger_Formula.wf_lderiv0",
+     "[| wf0 ?idx ?a; lformula0 ?a |]
+      ==> Formula_Operations.wf (%_. Suc) wf0 ?idx (lderiv0 ?x ?a)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 4, template_var 2),
+              template_var 1)
+            ),
+        template_predicate
+         (template_app (template_hole 3, template_var 1))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 2, t_empty), template_hole 4),
+               template_var 2),
+             template_app
+              (template_app (template_hole 0, template_var 0),
+               template_var 1))
+           ))),
+    ("Presburger_Formula.cut_bits_set_bit",
+     "cut_bits ?n (set_bit ?m ?p) =
+      (if ?n <= ?m then cut_bits ?n ?p else set_bit ?m (cut_bits ?n ?p))",
+     template_equation
+      (template_app
+        (template_app (template_hole 3, template_var 2),
+         template_app
+          (template_app (template_hole 2, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_app
+            (template_hole 1,
+             template_app
+              (template_app (template_hole 0, template_var 2),
+               template_var 1)),
+           template_app
+            (template_app (template_hole 3, template_var 2),
+             template_var 0)),
+         template_app
+          (template_app (template_hole 2, template_var 1),
+           template_app
+            (template_app (template_hole 3, template_var 2),
+             template_var 0))))),
+    ("Presburger_Formula.len_mult_pow2",
+     "len (?x * 2 ^ ?m) = (if ?x = 0 then 0 else len ?x + ?m)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_hole 8,
+              template_app
+               (template_app (template_hole 7, template_var 1),
+                template_app
+                 (template_app
+                   (template_hole 6,
+                    template_app
+                     (template_hole 5,
+                      template_app (template_hole 4, template_hole 3))),
+                  template_var 0)))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_hole 2,
+                 template_app
+                  (template_app (template_hole 9, template_var 1),
+                   template_hole 1)),
+               template_hole 1),
+             template_app
+              (template_app
+                (template_hole 0,
+                 template_app (template_hole 8, template_var 1)),
+               template_var 0))
+           ))),
+    ("Presburger_Formula.finite_lderiv0",
+     "lformula0 ?a ==>
+      finite {\<phi>. EX xs. \<phi> = fold Presb.lderiv xs (FBase ?a)}",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 9, template_var 0))],
+       template_predicate
+        (
+           template_app
+            (template_hole 8, template_app (template_hole 7, t_empty))
+           ))),
+    ("Presburger_Formula.scalar_product_append",
+     "scalar_product ?ns (?xs @ ?ys) =
+      scalar_product (take (length ?xs) ?ns) ?xs +
+      scalar_product (drop (length ?xs) ?ns) ?ys",
+     template_equation
+      (template_app
+        (template_app (template_hole 5, template_var 2),
+         template_app
+          (template_app (template_hole 4, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 3,
+           template_app
+            (template_app
+              (template_hole 5,
+               template_app
+                (template_app
+                  (template_hole 2,
+                   template_app (template_hole 1, template_var 1)),
+                 template_var 2)),
+             template_var 1)),
+         template_app
+          (template_app
+            (template_hole 5,
+             template_app
+              (template_app
+                (template_hole 0,
+                 template_app (template_hole 1, template_var 1)),
+               template_var 2)),
+           template_var 0)))),
+    ("Presburger_Formula.scalar_product_Cons",
+     "scalar_product ?xs (?y # ?ys) =
+      (case ?xs of [] => 0 | x # xs => int x * ?y + scalar_product xs ?ys)",
+     template_equation
+      (template_app
+        (template_app (template_hole 6, template_var 2),
+         template_app
+          (template_app (template_hole 5, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_app (template_hole 4, template_hole 3), t_empty),
+         template_var 2))),
+    ("Presburger_Formula.assigns_SNOC_zero",
+     "?m < #\<^sub>V ?\<AA> ==>
+      ?m\<^bsup>SNOC (replicate (#\<^sub>V ?\<AA>) False) ?\<AA>\<^esup>?k =
+      ?m\<^bsup>?\<AA>\<^esup>?k",
+     template_implication
+      ([template_inequation
+         (less_than, template_var 2,
+          template_app (template_hole 5, template_var 1))],
+       template_equation
+        (template_app
+          (template_app
+            (template_app (template_hole 3, template_var 2),
+             template_app
+              (template_app
+                (template_hole 2,
+                 template_app
+                  (template_app
+                    (template_hole 1,
+                     template_app (template_hole 5, template_var 1)),
+                   template_hole 0)),
+               template_var 1)),
+           template_var 0),
+         template_app
+          (template_app
+            (template_app (template_hole 3, template_var 2),
+             template_var 1),
+           template_var 0)))),
+    ("Presburger_Formula.find0_FV0",
+     "[| wf0 ?idx ?a; ?l < ?idx |] ==> find0 ?k ?l ?a = (?l : FV0 ?k ?a)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 5, template_var 3),
+              template_var 2)
+            ),
+        template_inequation (less_than, template_var 1, template_var 3)],
+       template_equation
+        (template_app
+          (template_app
+            (template_app (template_hole 2, template_var 0),
+             template_var 1),
+           template_var 2),
+         template_app
+          (template_app (template_hole 1, template_var 1),
+           template_app
+            (template_app (template_hole 0, template_var 0),
+             template_var 2))))),
+    ("Presburger_Formula.FV0_code",
+     "FV0 ?x (presb.Eq ?is ?i ?off) =
+      Option.these
+       (set (map_index (%i x. if x = 0 then None else Some i) ?is))",
+     template_equation
+      (template_app
+        (template_app (template_hole 10, template_var 3),
+         template_app
+          (template_app
+            (template_app (template_hole 9, template_var 2),
+             template_var 1),
+           template_var 0)),
+       template_app
+        (template_hole 8,
+         template_app
+          (template_hole 7,
+           template_app
+            (template_app
+              (template_app (template_hole 6, template_hole 5), t_empty),
+             template_var 2))))),
+    ("Presburger_Formula.mod_2_Suc_iff",
+     "(?x mod 2 = Suc 0) = (?x = Suc (2 * (?x div 2)))",
+     template_bimplication
+      (template_equation
+        (template_app
+          (template_app (template_hole 7, template_var 0),
+           template_app
+            (template_hole 6,
+             template_app (template_hole 5, template_hole 4))),
+         template_app (template_hole 3, template_hole 2)),
+       template_equation
+        (template_var 0,
+         template_app
+          (template_hole 3,
+           template_app
+            (template_app
+              (template_hole 1,
+               template_app
+                (template_hole 6,
+                 template_app (template_hole 5, template_hole 4))),
+             template_app
+              (template_app (template_hole 0, template_var 0),
+               template_app
+                (template_hole 6,
+                 template_app (template_hole 5, template_hole 4)))))))),
+    ("Presburger_Formula.mod_lemma",
+     "[| 0 < ?c; ?r < ?b |] ==> ?b * (?q mod ?c) + ?r < ?b * ?c",
+     template_implication
+      ([template_inequation (less_than, template_hole 3, template_var 3),
+        template_inequation (less_than, template_var 2, template_var 1)],
+       template_inequation
+        (less_than,
+         template_app
+          (template_app
+            (template_hole 2,
+             template_app
+              (template_app (template_hole 1, template_var 1),
+               template_app
+                (template_app (template_hole 0, template_var 0),
+                 template_var 3))),
+           template_var 2),
+         template_app
+          (template_app (template_hole 1, template_var 1),
+           template_var 3)))),
+    ("Presburger_Formula.Length0_inj",
+     "[| Length ?\<AA> = 0; Length ?\<BB> = 0;
+         #\<^sub>V ?\<AA> = #\<^sub>V ?\<BB> |]
+      ==> ?\<AA> = ?\<BB>",
+     template_implication
+      ([template_equation
+         (template_app (template_hole 3, template_var 1), template_hole 2),
+        template_equation
+         (template_app (template_hole 3, template_var 0), template_hole 2),
+        template_equation
+         (template_app (template_hole 1, template_var 1),
+          template_app (template_hole 1, template_var 0))],
+       template_equation (template_var 1, template_var 0))),
+    ("Presburger_Formula.Extend_commute_unsafe",
+     "?k ~= ?k' ==>
+      Extend ?k ?j (Extend ?k' ?i ?\<AA> ?P) ?Q =
+      Extend ?k' ?i (Extend ?k ?j ?\<AA> ?Q) ?P",
+     template_implication
+      ([template_negation
+         (template_equation (template_var 6, template_var 5))],
+       template_equation
+        (template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 0, template_var 6),
+               template_var 4),
+             template_app
+              (template_app
+                (template_app
+                  (template_app (template_hole 0, template_var 5),
+                   template_var 3),
+                 template_var 2),
+               template_var 1)),
+           template_var 0),
+         template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 0, template_var 5),
+               template_var 3),
+             template_app
+              (template_app
+                (template_app
+                  (template_app (template_hole 0, template_var 6),
+                   template_var 4),
+                 template_var 2),
+               template_var 0)),
+           template_var 1)))),
+    ("Presburger_Formula.wf0_decr0",
+     "[| wf0 (Suc ?idx) ?a; ?l < Suc ?idx; ~ find0 ?k ?l ?a |]
+      ==> wf0 ?idx (decr0 ?k ?l ?a)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 5,
+                template_app (template_hole 4, template_var 3)),
+              template_var 2)
+            ),
+        template_inequation
+         (less_than, template_var 1,
+          template_app (template_hole 4, template_var 3)),
+        template_negation
+         (
+            template_predicate
+             (
+                template_app
+                 (template_app
+                   (template_app (template_hole 1, template_var 0),
+                    template_var 1),
+                  template_var 2)
+                )
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 5, template_var 3),
+             template_app
+              (template_app
+                (template_app (template_hole 0, template_var 0),
+                 template_var 1),
+               template_var 2))
+           ))),
+    ("Presburger_Formula.comparator_presb_simps",
+     "comparator_presb (presb.Eq ?x ?xa ?xb) (presb.Eq ?y ?ya ?yb) =
+      (case comparator_list comparator_of ?x ?y of
+       order.Eq =>
+         case comparator_of ?xa ?ya of order.Eq => comparator_of ?xb ?yb
+         | Lt => Lt | Gt => Gt
+       | Lt => Lt | Gt => Gt)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 6,
+           template_app
+            (template_app
+              (template_app (template_hole 5, template_var 5),
+               template_var 4),
+             template_var 3)),
+         template_app
+          (template_app
+            (template_app (template_hole 5, template_var 2),
+             template_var 1),
+           template_var 0)),
+       template_app
+        (template_app
+          (template_app
+            (template_app
+              (template_hole 4,
+               template_app
+                (template_app
+                  (template_app
+                    (template_app
+                      (template_hole 4,
+                       template_app
+                        (template_app (template_hole 3, template_var 3),
+                         template_var 0)),
+                     template_hole 2),
+                   template_hole 1),
+                 template_app
+                  (template_app (template_hole 3, template_var 4),
+                   template_var 1))),
+             template_hole 2),
+           template_hole 1),
+         template_app
+          (template_app
+            (template_app (template_hole 0, template_hole 3),
+             template_var 5),
+           template_var 2)))),
+    ("Presburger_Formula.eval_tm_upper_bound",
+     "eval_tm ?\<AA> ?is
+      <= (2 ^ Length ?\<AA> - 1) *
+         sum_list (concat (map (%i. if 0 < i then [i] else []) ?is))",
+     template_inequation
+      (less_equals,
+       template_app
+        (template_app (template_hole 16, template_var 1), template_var 0),
+       template_app
+        (template_app
+          (template_hole 15,
+           template_app
+            (template_app
+              (template_hole 14,
+               template_app
+                (template_app
+                  (template_hole 13,
+                   template_app
+                    (template_hole 12,
+                     template_app (template_hole 11, template_hole 10))),
+                 template_app (template_hole 9, template_var 1))),
+             template_hole 8)),
+         template_app
+          (template_hole 7,
+           template_app
+            (template_hole 6,
+             template_app
+              (template_app (template_hole 5, t_empty),
+               template_var 0)))))),
+    ("Presburger_Formula.eval_tm_lower_bound",
+     "(2 ^ Length ?\<AA> - 1) *
+      sum_list (concat (map (%i. if i < 0 then [i] else []) ?is))
+      <= eval_tm ?\<AA> ?is",
+     template_inequation
+      (less_equals,
+       template_app
+        (template_app
+          (template_hole 16,
+           template_app
+            (template_app
+              (template_hole 15,
+               template_app
+                (template_app
+                  (template_hole 14,
+                   template_app
+                    (template_hole 13,
+                     template_app (template_hole 12, template_hole 11))),
+                 template_app (template_hole 10, template_var 1))),
+             template_hole 9)),
+         template_app
+          (template_hole 8,
+           template_app
+            (template_hole 7,
+             template_app
+              (template_app (template_hole 6, t_empty), template_var 0)))),
+       template_app
+        (template_app (template_hole 0, template_var 1), template_var 0))),
+    ("Presburger_Formula.irrelevant_set_bit",
+     "?n <= ?m ==> (?p + 2 ^ ?m) mod 2 ^ ?n = ?p mod 2 ^ ?n",
+     template_implication
+      ([template_inequation (less_equals, template_var 2, template_var 1)],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 5,
+             template_app
+              (template_app (template_hole 4, template_var 0),
+               template_app
+                (template_app
+                  (template_hole 3,
+                   template_app
+                    (template_hole 2,
+                     template_app (template_hole 1, template_hole 0))),
+                 template_var 1))),
+           template_app
+            (template_app
+              (template_hole 3,
+               template_app
+                (template_hole 2,
+                 template_app (template_hole 1, template_hole 0))),
+             template_var 2)),
+         template_app
+          (template_app (template_hole 5, template_var 0),
+           template_app
+            (template_app
+              (template_hole 3,
+               template_app
+                (template_hole 2,
+                 template_app (template_hole 1, template_hole 0))),
+             template_var 2))))),
+    ("Presburger_Formula.CONS_surj",
+     "Length ?\<AA> ~= 0 ==>
+      EX x \<BB>.
+         ?\<AA> = CONS x \<BB> &
+         #\<^sub>V \<BB> = #\<^sub>V ?\<AA> & length x = #\<^sub>V ?\<AA>",
+     template_implication
+      ([template_negation
+         (
+            template_equation
+             (template_app (template_hole 8, template_var 0),
+              template_hole 7)
+            )],
+       template_predicate (template_app (template_hole 6, t_empty)))),
+    ("Presburger_Formula.Extend_CONS",
+     "#\<^sub>V ?\<AA> = length ?x ==>
+      Extend ?k 0 (CONS ?x ?\<AA>) ?P =
+      CONS (extend ?k (test_bit ?P 0) ?x)
+       (Extend ?k 0 ?\<AA> (downshift ?P))",
+     template_implication
+      ([template_equation
+         (template_app (template_hole 8, template_var 3),
+          template_app (template_hole 7, template_var 2))],
+       template_equation
+        (template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 5, template_var 1),
+               template_hole 4),
+             template_app
+              (template_app (template_hole 3, template_var 2),
+               template_var 3)),
+           template_var 0),
+         template_app
+          (template_app
+            (template_hole 3,
+             template_app
+              (template_app
+                (template_app (template_hole 2, template_var 1),
+                 template_app
+                  (template_app (template_hole 1, template_var 0),
+                   template_hole 4)),
+               template_var 2)),
+           template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 5, template_var 1),
+                 template_hole 4),
+               template_var 3),
+             template_app (template_hole 0, template_var 0)))))),
+    ("Presburger_Formula.Extend_commute_safe",
+     "[| ?j <= ?i; ?i < Suc (#\<^sub>V ?\<AA>) |]
+      ==> Extend ?k ?j (Extend ?k ?i ?\<AA> ?P) ?Q =
+          Extend ?k (Suc ?i) (Extend ?k ?j ?\<AA> ?Q) ?P",
+     template_implication
+      ([template_inequation (less_equals, template_var 5, template_var 4),
+        template_inequation
+         (less_than, template_var 4,
+          template_app
+           (template_hole 3,
+            template_app (template_hole 2, template_var 3)))],
+       template_equation
+        (template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 0, template_var 2),
+               template_var 5),
+             template_app
+              (template_app
+                (template_app
+                  (template_app (template_hole 0, template_var 2),
+                   template_var 4),
+                 template_var 3),
+               template_var 1)),
+           template_var 0),
+         template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 0, template_var 2),
+               template_app (template_hole 3, template_var 4)),
+             template_app
+              (template_app
+                (template_app
+                  (template_app (template_hole 0, template_var 2),
+                   template_var 5),
+                 template_var 3),
+               template_var 0)),
+           template_var 1)))),
+    ("Presburger_Formula.eval_tm_CONS",
+     "[| length ?is <= #\<^sub>V ?\<AA>; #\<^sub>V ?\<AA> = length ?x |]
+      ==> eval_tm (CONS ?x ?\<AA>) ?is =
+          scalar_product (map of_bool ?x) ?is + 2 * eval_tm ?\<AA> ?is",
+     template_implication
+      ([template_inequation
+         (less_equals, template_app (template_hole 14, template_var 2),
+          template_app (template_hole 13, template_var 1)),
+        template_equation
+         (template_app (template_hole 13, template_var 1),
+          template_app (template_hole 11, template_var 0))],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 9,
+             template_app
+              (template_app (template_hole 8, template_var 0),
+               template_var 1)),
+           template_var 2),
+         template_app
+          (template_app
+            (template_hole 7,
+             template_app
+              (template_app
+                (template_hole 6,
+                 template_app
+                  (template_app (template_hole 5, template_hole 4),
+                   template_var 0)),
+               template_var 2)),
+           template_app
+            (template_app
+              (template_hole 3,
+               template_app
+                (template_hole 2,
+                 template_app (template_hole 1, template_hole 0))),
+             template_app
+              (template_app (template_hole 9, template_var 1),
+               template_var 2)))))),
+    ("Presburger_Formula.mod_pow2_div_pow2",
+     "?m < ?n ==>
+      ?p mod 2 ^ ?n div 2 ^ ?m = ?p div 2 ^ ?m mod 2 ^ (?n - ?m)",
+     template_implication
+      ([template_inequation (less_than, template_var 2, template_var 1)],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 6,
+             template_app
+              (template_app (template_hole 5, template_var 0),
+               template_app
+                (template_app
+                  (template_hole 4,
+                   template_app
+                    (template_hole 3,
+                     template_app (template_hole 2, template_hole 1))),
+                 template_var 1))),
+           template_app
+            (template_app
+              (template_hole 4,
+               template_app
+                (template_hole 3,
+                 template_app (template_hole 2, template_hole 1))),
+             template_var 2)),
+         template_app
+          (template_app
+            (template_hole 5,
+             template_app
+              (template_app (template_hole 6, template_var 0),
+               template_app
+                (template_app
+                  (template_hole 4,
+                   template_app
+                    (template_hole 3,
+                     template_app (template_hole 2, template_hole 1))),
+                 template_var 2))),
+           template_app
+            (template_app
+              (template_hole 4,
+               template_app
+                (template_hole 3,
+                 template_app (template_hole 2, template_hole 1))),
+             template_app
+              (template_app (template_hole 0, template_var 1),
+               template_var 2)))))),
+    ("Presburger_Formula.satisfies_bounded_rderiv0",
+     "[| wf0 (#\<^sub>V ?\<AA>) ?a; #\<^sub>V ?\<AA> = length ?x |]
+      ==> Presb.satisfies_bounded ?\<AA> (rderiv0 ?x ?a) =
+          SNOC ?x ?\<AA> \<Turnstile>0 ?a",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 12,
+                template_app (template_hole 11, template_var 2)),
+              template_var 1)
+            ),
+        template_equation
+         (template_app (template_hole 11, template_var 2),
+          template_app (template_hole 9, template_var 0))],
+       template_equation
+        (template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_app (template_hole 7, template_hole 6),
+                   template_hole 5),
+                 template_hole 4),
+               t_empty),
+             template_var 2),
+           template_app
+            (template_app (template_hole 1, template_var 0),
+             template_var 1)),
+         template_app
+          (template_app
+            (template_hole 4,
+             template_app
+              (template_app (template_hole 0, template_var 0),
+               template_var 2)),
+           template_var 1)))),
+    ("Presburger_Formula.assigns_Extend",
+     "?i < Suc (#\<^sub>V ?\<AA>) ==>
+      ?m\<^bsup>Extend ?k ?i ?\<AA> ?P\<^esup>?k' =
+      (if ?k = ?k'
+       then if ?m = ?i then ?P else dec ?i ?m\<^bsup>?\<AA>\<^esup>?k
+       else ?m\<^bsup>?\<AA>\<^esup>?k')",
+     template_implication
+      ([template_inequation
+         (less_than, template_var 5,
+          template_app
+           (template_hole 7,
+            template_app (template_hole 6, template_var 4)))],
+       template_implication
+        ([template_predicate
+           (
+              template_app
+               (template_app
+                 (template_app (template_hole 4, template_var 3),
+                  template_app
+                   (template_app
+                     (template_app
+                       (template_app (template_hole 3, template_var 2),
+                        template_var 5),
+                      template_var 4),
+                    template_var 1)),
+                template_var 0)
+              )],
+         template_predicate
+          (
+             template_app
+              (template_app
+                (template_app
+                  (template_hole 2,
+                   template_app
+                    (template_app (template_hole 1, template_var 2),
+                     template_var 0)),
+                 template_app
+                  (template_app
+                    (template_app
+                      (template_hole 2,
+                       template_app
+                        (template_app (template_hole 5, template_var 3),
+                         template_var 5)),
+                     template_var 1),
+                   template_app
+                    (template_app
+                      (template_app
+                        (template_hole 4,
+                         template_app
+                          (template_app (template_hole 0, template_var 5),
+                           template_var 3)),
+                       template_var 4),
+                     template_var 2))),
+               template_app
+                (template_app
+                  (template_app (template_hole 4, template_var 3),
+                   template_var 4),
+                 template_var 0))
+             )))),
+    ("Presburger_Formula.scalar_product_upper_bound",
+     "ALL x:set ?b. len x <= ?a ==>
+      scalar_product ?b ?is
+      <= (2 ^ ?a - 1) *
+         sum_list (concat (map (%i. if 0 < i then [i] else []) ?is))",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 20,
+                template_app (template_hole 19, template_var 2)),
+              t_empty)
+            )],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_app (template_hole 15, template_var 2), template_var 0),
+         template_app
+          (template_app
+            (template_hole 14,
+             template_app
+              (template_app
+                (template_hole 13,
+                 template_app
+                  (template_app
+                    (template_hole 12,
+                     template_app
+                      (template_hole 11,
+                       template_app (template_hole 10, template_hole 9))),
+                   template_var 1)),
+               template_hole 8)),
+           template_app
+            (template_hole 7,
+             template_app
+              (template_hole 6,
+               template_app
+                (template_app (template_hole 5, t_empty),
+                 template_var 0))))))),
+    ("Presburger_Formula.scalar_product_lower_bound",
+     "ALL x:set ?b. len x <= ?a ==>
+      (2 ^ ?a - 1) *
+      sum_list (concat (map (%i. if i < 0 then [i] else []) ?is))
+      <= scalar_product ?b ?is",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 20,
+                template_app (template_hole 19, template_var 2)),
+              t_empty)
+            )],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_app
+            (template_hole 15,
+             template_app
+              (template_app
+                (template_hole 14,
+                 template_app
+                  (template_app
+                    (template_hole 13,
+                     template_app
+                      (template_hole 12,
+                       template_app (template_hole 11, template_hole 10))),
+                   template_var 1)),
+               template_hole 9)),
+           template_app
+            (template_hole 8,
+             template_app
+              (template_hole 7,
+               template_app
+                (template_app (template_hole 6, t_empty),
+                 template_var 0)))),
+         template_app
+          (template_app (template_hole 0, template_var 2),
+           template_var 0)))),
+    ("Presburger_Formula.check_eqv_sound",
+     "[| #\<^sub>V ?\<AA> = ?idx; check_eqv ?idx ?\<phi> ?\<psi> |]
+      ==> Presb.sat ?\<AA> ?\<phi> = Presb.sat ?\<AA> ?\<psi>",
+     template_implication
+      ([template_equation
+         (template_app (template_hole 9, template_var 3), template_var 2),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 8, template_var 2),
+                template_var 1),
+              template_var 0)
+            )],
+       template_equation
+        (template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_app
+                    (template_app
+                      (template_app (template_hole 6, template_hole 5),
+                       template_hole 4),
+                     template_hole 3),
+                   t_empty),
+                 template_hole 1),
+               template_hole 0),
+             template_var 3),
+           template_var 1),
+         template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_app
+                    (template_app
+                      (template_app (template_hole 6, template_hole 5),
+                       template_hole 4),
+                     template_hole 3),
+                   t_empty),
+                 template_hole 1),
+               template_hole 0),
+             template_var 3),
+           template_var 0)))),
+    ("Presburger_Formula.set_unset_bit_preserves_len",
+     "[| ?x div 2 ^ ?m = 2 * ?q; ?m < len ?x |]
+      ==> ?x + 2 ^ ?m < 2 ^ len ?x",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app (template_hole 8, template_var 2),
+            template_app
+             (template_app
+               (template_hole 7,
+                template_app
+                 (template_hole 6,
+                  template_app (template_hole 5, template_hole 4))),
+              template_var 1)),
+          template_app
+           (template_app
+             (template_hole 3,
+              template_app
+               (template_hole 6,
+                template_app (template_hole 5, template_hole 4))),
+            template_var 0)),
+        template_inequation
+         (less_than, template_var 1,
+          template_app (template_hole 1, template_var 2))],
+       template_inequation
+        (less_than,
+         template_app
+          (template_app (template_hole 0, template_var 2),
+           template_app
+            (template_app
+              (template_hole 7,
+               template_app
+                (template_hole 6,
+                 template_app (template_hole 5, template_hole 4))),
+             template_var 1)),
+         template_app
+          (template_app
+            (template_hole 7,
+             template_app
+              (template_hole 6,
+               template_app (template_hole 5, template_hole 4))),
+           template_app (template_hole 1, template_var 2))))),
+    ("Presburger_Formula.satisfies_lderiv0",
+     "[| wf0 (#\<^sub>V ?\<AA>) ?a; #\<^sub>V ?\<AA> = length ?x;
+         lformula0 ?a |]
+      ==> Presb.satisfies ?\<AA> (lderiv0 ?x ?a) =
+          CONS ?x ?\<AA> \<Turnstile>0 ?a",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 12,
+                template_app (template_hole 11, template_var 2)),
+              template_var 1)
+            ),
+        template_equation
+         (template_app (template_hole 11, template_var 2),
+          template_app (template_hole 9, template_var 0)),
+        template_predicate
+         (template_app (template_hole 8, template_var 1))],
+       template_equation
+        (template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_app (template_hole 6, template_hole 5),
+                   template_hole 4),
+                 template_hole 3),
+               t_empty),
+             template_var 2),
+           template_app
+            (template_app (template_hole 1, template_var 0),
+             template_var 1)),
+         template_app
+          (template_app
+            (template_hole 3,
+             template_app
+              (template_app (template_hole 0, template_var 0),
+               template_var 2)),
+           template_var 1)))),
+    ("Presburger_Formula.eval_tm_SNOC",
+     "[| length ?is <= #\<^sub>V ?\<AA>; #\<^sub>V ?\<AA> = length ?x |]
+      ==> eval_tm (SNOC ?x ?\<AA>) ?is =
+          eval_tm ?\<AA> ?is +
+          2 ^ Length ?\<AA> * scalar_product (map of_bool ?x) ?is",
+     template_implication
+      ([template_inequation
+         (less_equals, template_app (template_hole 16, template_var 2),
+          template_app (template_hole 15, template_var 1)),
+        template_equation
+         (template_app (template_hole 15, template_var 1),
+          template_app (template_hole 13, template_var 0))],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 11,
+             template_app
+              (template_app (template_hole 10, template_var 0),
+               template_var 1)),
+           template_var 2),
+         template_app
+          (template_app
+            (template_hole 9,
+             template_app
+              (template_app (template_hole 11, template_var 1),
+               template_var 2)),
+           template_app
+            (template_app
+              (template_hole 8,
+               template_app
+                (template_app
+                  (template_hole 7,
+                   template_app
+                    (template_hole 6,
+                     template_app (template_hole 5, template_hole 4))),
+                 template_app (template_hole 3, template_var 1))),
+             template_app
+              (template_app
+                (template_hole 2,
+                 template_app
+                  (template_app (template_hole 1, template_hole 0),
+                   template_var 0)),
+               template_var 2)))))),
+    ("Presburger_Formula.CONS_inj",
+     "[| length ?x = #\<^sub>V ?\<AA>; length ?y = #\<^sub>V ?\<AA>;
+         #\<^sub>V ?\<AA> = #\<^sub>V ?\<BB> |]
+      ==> (CONS ?x ?\<AA> = CONS ?y ?\<BB>) = (?x = ?y & ?\<AA> = ?\<BB>)",
+     template_implication
+      ([template_equation
+         (template_app (template_hole 6, template_var 3),
+          template_app (template_hole 5, template_var 2)),
+        template_equation
+         (template_app (template_hole 6, template_var 1),
+          template_app (template_hole 5, template_var 2)),
+        template_equation
+         (template_app (template_hole 5, template_var 2),
+          template_app (template_hole 5, template_var 0))],
+       template_bimplication
+        (template_equation
+          (template_app
+            (template_app (template_hole 2, template_var 3),
+             template_var 2),
+           template_app
+            (template_app (template_hole 2, template_var 1),
+             template_var 0)),
+         template_predicate
+          (
+             template_app
+              (template_app
+                (template_hole 1,
+                 template_app
+                  (template_app (template_hole 0, template_var 3),
+                   template_var 1)),
+               template_app
+                (template_app (template_hole 3, template_var 2),
+                 template_var 0))
+             )))),
+    ("Presburger_Formula.bounded_check_eqv_sound",
+     "[| #\<^sub>V ?\<AA> = ?idx; bounded_check_eqv ?idx ?\<phi> ?\<psi> |]
+      ==> Presb.sat\<^sub>b ?\<AA> ?\<phi> =
+          Presb.sat\<^sub>b ?\<AA> ?\<psi>",
+     template_implication
+      ([template_equation
+         (template_app (template_hole 10, template_var 3), template_var 2),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 9, template_var 2),
+                template_var 1),
+              template_var 0)
+            )],
+       template_equation
+        (template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_app
+                    (template_app
+                      (template_app
+                        (template_app (template_hole 7, template_hole 6),
+                         template_hole 5),
+                       template_hole 4),
+                     template_hole 3),
+                   t_empty),
+                 template_hole 1),
+               template_hole 0),
+             template_var 3),
+           template_var 1),
+         template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_app
+                    (template_app
+                      (template_app
+                        (template_app (template_hole 7, template_hole 6),
+                         template_hole 5),
+                       template_hole 4),
+                     template_hole 3),
+                   t_empty),
+                 template_hole 1),
+               template_hole 0),
+             template_var 3),
+           template_var 0)))),
+    ("Presburger_Formula.satisfies_bounded_lderiv0",
+     "[| wf0 (#\<^sub>V ?\<AA>) ?a; #\<^sub>V ?\<AA> = length ?x;
+         lformula0 ?a |]
+      ==> Presb.satisfies_bounded ?\<AA> (lderiv0 ?x ?a) =
+          CONS ?x ?\<AA> \<Turnstile>0 ?a",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 13,
+                template_app (template_hole 12, template_var 2)),
+              template_var 1)
+            ),
+        template_equation
+         (template_app (template_hole 12, template_var 2),
+          template_app (template_hole 10, template_var 0)),
+        template_predicate
+         (template_app (template_hole 9, template_var 1))],
+       template_equation
+        (template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_app (template_hole 7, template_hole 6),
+                   template_hole 5),
+                 template_hole 4),
+               t_empty),
+             template_var 2),
+           template_app
+            (template_app (template_hole 1, template_var 0),
+             template_var 1)),
+         template_app
+          (template_app
+            (template_hole 4,
+             template_app
+              (template_app (template_hole 0, template_var 0),
+               template_var 2)),
+           template_var 1)))),
+    ("Presburger_Formula.Extend_satisfies0_decr0",
+     "[| ~ find0 ?k ?i ?a; ?i < Suc (#\<^sub>V ?\<AA>);
+         lformula0 ?a | len ?P <= Length ?\<AA> |]
+      ==> Extend ?k ?i ?\<AA> ?P \<Turnstile>0 ?a =
+          ?\<AA> \<Turnstile>0 decr0 ?k ?i ?a",
+     template_implication
+      ([template_negation
+         (
+            template_predicate
+             (
+                template_app
+                 (template_app
+                   (template_app (template_hole 12, template_var 4),
+                    template_var 3),
+                  template_var 2)
+                )
+            ),
+        template_inequation
+         (less_than, template_var 3,
+          template_app
+           (template_hole 10,
+            template_app (template_hole 9, template_var 1))),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 8,
+                template_app (template_hole 7, template_var 2)),
+              template_app
+               (template_app
+                 (template_hole 6,
+                  template_app (template_hole 5, template_var 0)),
+                template_app (template_hole 4, template_var 1)))
+            )],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 2,
+             template_app
+              (template_app
+                (template_app
+                  (template_app (template_hole 1, template_var 4),
+                   template_var 3),
+                 template_var 1),
+               template_var 0)),
+           template_var 2),
+         template_app
+          (template_app (template_hole 2, template_var 1),
+           template_app
+            (template_app
+              (template_app (template_hole 0, template_var 4),
+               template_var 3),
+             template_var 2))))),
+    ("Presburger_Formula.scalar_product_CONS",
+     "length ?xs = length ?bs ==>
+      scalar_product (map_index (%i n. 2 * n + map of_bool ?bs ! i) ?xs)
+       ?is =
+      scalar_product (map of_bool ?bs) ?is + 2 * scalar_product ?xs ?is",
+     template_implication
+      ([template_equation
+         (template_app (template_hole 16, template_var 2),
+          template_app (template_hole 15, template_var 1))],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 13,
+             template_app
+              (template_app
+                (template_app (template_hole 12, template_hole 11),
+                 t_empty),
+               template_var 2)),
+           template_var 0),
+         template_app
+          (template_app
+            (template_hole 2,
+             template_app
+              (template_app
+                (template_hole 13,
+                 template_app
+                  (template_app (template_hole 4, template_hole 3),
+                   template_var 1)),
+               template_var 0)),
+           template_app
+            (template_app
+              (template_hole 1,
+               template_app
+                (template_hole 0,
+                 template_app (template_hole 7, template_hole 6))),
+             template_app
+              (template_app (template_hole 13, template_var 2),
+               template_var 0)))))),
+    ("Presburger_Formula.Extend_SNOC",
+     "[| #\<^sub>V ?\<AA> = length ?x; len ?P <= Length (SNOC ?x ?\<AA>) |]
+      ==> Extend ?k 0 (SNOC ?x ?\<AA>) ?P =
+          SNOC (extend ?k (test_bit ?P (Length ?\<AA>)) ?x)
+           (Extend ?k 0 ?\<AA> (cut_bits (Length ?\<AA>) ?P))",
+     template_implication
+      ([template_equation
+         (template_app (template_hole 11, template_var 3),
+          template_app (template_hole 10, template_var 2)),
+        template_inequation
+         (less_equals, template_app (template_hole 8, template_var 1),
+          template_app
+           (template_hole 7,
+            template_app
+             (template_app (template_hole 6, template_var 2),
+              template_var 3)))],
+       template_equation
+        (template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 4, template_var 0),
+               template_hole 3),
+             template_app
+              (template_app (template_hole 6, template_var 2),
+               template_var 3)),
+           template_var 1),
+         template_app
+          (template_app
+            (template_hole 6,
+             template_app
+              (template_app
+                (template_app (template_hole 2, template_var 0),
+                 template_app
+                  (template_app (template_hole 1, template_var 1),
+                   template_app (template_hole 7, template_var 3))),
+               template_var 2)),
+           template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 4, template_var 0),
+                 template_hole 3),
+               template_var 3),
+             template_app
+              (template_app
+                (template_hole 0,
+                 template_app (template_hole 7, template_var 3)),
+               template_var 1)))))),
+    ("Presburger_Formula.scalar_product_SNOC",
+     "length ?xs = length ?bs ==>
+      scalar_product
+       (map_index (%i m. m + 2 ^ ?a * map of_bool ?bs ! i) ?xs) ?is =
+      scalar_product ?xs ?is +
+      2 ^ ?a * scalar_product (map of_bool ?bs) ?is",
+     template_implication
+      ([template_equation
+         (template_app (template_hole 18, template_var 3),
+          template_app (template_hole 17, template_var 2))],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 15,
+             template_app
+              (template_app
+                (template_app (template_hole 14, template_hole 13),
+                 t_empty),
+               template_var 3)),
+           template_var 0),
+         template_app
+          (template_app
+            (template_hole 3,
+             template_app
+              (template_app (template_hole 15, template_var 3),
+               template_var 0)),
+           template_app
+            (template_app
+              (template_hole 2,
+               template_app
+                (template_app
+                  (template_hole 1,
+                   template_app
+                    (template_hole 0,
+                     template_app (template_hole 8, template_hole 7))),
+                 template_var 1)),
+             template_app
+              (template_app
+                (template_hole 15,
+                 template_app
+                  (template_app (template_hole 5, template_hole 4),
+                   template_var 2)),
+               template_var 0)))))),
+    ("Presburger_Formula.satisfies0_cong",
+     "[| wf0 (#\<^sub>V ?\<BB>) ?a; #\<^sub>V ?\<AA> = #\<^sub>V ?\<BB>;
+         lformula0 ?a;
+         !!m k.
+            m < #\<^sub>V ?\<BB> ==>
+            m\<^bsup>?\<AA>\<^esup>k = m\<^bsup>?\<BB>\<^esup>k |]
+      ==> ?\<AA> \<Turnstile>0 ?a = ?\<BB> \<Turnstile>0 ?a",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 9,
+                template_app (template_hole 8, template_var 2)),
+              template_var 1)
+            ),
+        template_equation
+         (template_app (template_hole 8, template_var 0),
+          template_app (template_hole 8, template_var 2)),
+        template_predicate (template_app (template_hole 6, template_var 1)),
+        template_predicate (template_app (template_hole 5, t_empty))],
+       template_equation
+        (template_app
+          (template_app (template_hole 0, template_var 0), template_var 1),
+         template_app
+          (template_app (template_hole 0, template_var 2),
+           template_var 1)))),
+    ("Presburger_Formula.relevant_set_bit",
+     "[| ?m < ?n; ?p div 2 ^ ?m = 2 * ?q |]
+      ==> (?p + 2 ^ ?m) mod 2 ^ ?n = ?p mod 2 ^ ?n + 2 ^ ?m",
+     template_implication
+      ([template_inequation (less_than, template_var 3, template_var 2),
+        template_equation
+         (template_app
+           (template_app (template_hole 7, template_var 1),
+            template_app
+             (template_app
+               (template_hole 6,
+                template_app
+                 (template_hole 5,
+                  template_app (template_hole 4, template_hole 3))),
+              template_var 3)),
+          template_app
+           (template_app
+             (template_hole 2,
+              template_app
+               (template_hole 5,
+                template_app (template_hole 4, template_hole 3))),
+            template_var 0))],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 1,
+             template_app
+              (template_app (template_hole 0, template_var 1),
+               template_app
+                (template_app
+                  (template_hole 6,
+                   template_app
+                    (template_hole 5,
+                     template_app (template_hole 4, template_hole 3))),
+                 template_var 3))),
+           template_app
+            (template_app
+              (template_hole 6,
+               template_app
+                (template_hole 5,
+                 template_app (template_hole 4, template_hole 3))),
+             template_var 2)),
+         template_app
+          (template_app
+            (template_hole 0,
+             template_app
+              (template_app (template_hole 1, template_var 1),
+               template_app
+                (template_app
+                  (template_hole 6,
+                   template_app
+                    (template_hole 5,
+                     template_app (template_hole 4, template_hole 3))),
+                 template_var 2))),
+           template_app
+            (template_app
+              (template_hole 6,
+               template_app
+                (template_hole 5,
+                 template_app (template_hole 4, template_hole 3))),
+             template_var 3))))),
+    ("Presburger_Formula.check_eqv_code",
+     "check_eqv ?idx ?r ?s =
+      ((presb_wf ?idx ?r & presb_lformula ?r) &
+       (presb_wf ?idx ?s & presb_lformula ?s) &
+       (case rtrancl_while (%(p, q). final ?idx p = final ?idx q)
+              (%(p, q).
+                  map (%a. (Presburger_Formula.norm (deriv lderiv0 a p),
+                            Presburger_Formula.norm (deriv lderiv0 a q)))
+                   (\<sigma> ?idx))
+              (Presburger_Formula.norm (RESTRICT ?r),
+               Presburger_Formula.norm (RESTRICT ?s)) of
+        None => False | Some ([], x) => True
+        | Some (a # list, x) => False))",
+     template_equation
+      (template_app
+        (template_app
+          (template_app (template_hole 19, template_var 2), template_var 1),
+         template_var 0),
+       template_app
+        (template_app
+          (template_hole 18,
+           template_app
+            (template_app
+              (template_hole 18,
+               template_app
+                (template_app (template_hole 17, template_var 2),
+                 template_var 1)),
+             template_app (template_hole 16, template_var 1))),
+         template_app
+          (template_app
+            (template_hole 18,
+             template_app
+              (template_app
+                (template_hole 18,
+                 template_app
+                  (template_app (template_hole 17, template_var 2),
+                   template_var 0)),
+               template_app (template_hole 16, template_var 0))),
+           template_app
+            (template_app
+              (template_app (template_hole 15, template_hole 14), t_empty),
+             template_app
+              (template_app
+                (template_app
+                  (template_hole 10,
+                   template_app (template_hole 9, t_empty)),
+                 template_app (template_hole 7, t_empty)),
+               template_app
+                (template_app
+                  (template_hole 5,
+                   template_app
+                    (template_hole 4,
+                     template_app (template_hole 0, template_var 1))),
+                 template_app
+                  (template_hole 4,
+                   template_app (template_hole 0, template_var 0)))))))))]:
+   (string * thm * template) list
+### theory "Draft.Presburger_FormulaMoreTemplates"
+### 0.463s elapsed time, 0.925s cpu time, 0.070s GC time
+val it = (): unit

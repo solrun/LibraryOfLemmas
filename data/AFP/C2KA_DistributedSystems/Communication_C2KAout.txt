@@ -1,0 +1,333 @@
+Loading theory "Draft.CKA" (required by "Draft.Communication_C2KAMoreTemplates" via "Draft.Communication_C2KA" via "Draft.Topology_C2KA" via "Draft.C2KA")
+Loading theory "Draft.Stimuli" (required by "Draft.Communication_C2KAMoreTemplates" via "Draft.Communication_C2KA" via "Draft.Topology_C2KA" via "Draft.C2KA")
+Loading theory "HOL-Library.Function_Algebras" (required by "Draft.Communication_C2KAMoreTemplates" via "Draft.ExtrEqs" via "HOL-Library.BigO")
+Loading theory "HOL-Library.Nat_Bijection" (required by "Draft.Communication_C2KAMoreTemplates" via "Draft.ExtrEqs" via "HOL-Library.Stream")
+instantiation
+  fun :: (type, plus) plus
+  plus_fun == plus :: ('a => 'b) => ('a => 'b) => 'a => 'b
+instantiation
+  fun :: (type, zero) zero
+  zero_fun == zero_class.zero :: 'a => 'b
+instantiation
+  fun :: (type, times) times
+  times_fun == times :: ('a => 'b) => ('a => 'b) => 'a => 'b
+instantiation
+  fun :: (type, one) one
+  one_fun == one_class.one :: 'a => 'b
+class plus_ord = type +
+  fixes leq :: "'a => 'a => bool"
+    and add :: "'a => 'a => 'a"
+  assumes "leq_def": "!!x y. (x \<le>\<^sub>\<S> y) = (x \<oplus> y = y)"
+    and
+    "add_assoc":
+      "!!x y z. x \<oplus> y \<oplus> z = x \<oplus> (y \<oplus> z)"
+    and "add_comm": "!!x y. x \<oplus> y = y \<oplus> x"
+Found termination order: "(%p. size (snd p)) <*mlex*> {}"
+### theory "HOL-Library.Function_Algebras"
+### 0.129s elapsed time, 0.537s cpu time, 0.027s GC time
+Loading theory "HOL-Library.Set_Algebras" (required by "Draft.Communication_C2KAMoreTemplates" via "Draft.ExtrEqs" via "HOL-Library.BigO")
+instantiation
+  set :: (plus) plus
+  plus_set == plus :: 'a set => 'a set => 'a set
+instantiation
+  set :: (times) times
+  times_set == times :: 'a set => 'a set => 'a set
+instantiation
+  set :: (zero) zero
+  zero_set == zero_class.zero :: 'a set
+instantiation
+  set :: (one) one
+  one_set == one_class.one :: 'a set
+class stimuli = plus_ord +
+  fixes seq_comp :: "'a => 'a => 'a"
+    and neutral :: "'a"
+    and deactivation :: "'a"
+    and basic :: "'a set"
+  assumes "stim_idem": "!!x. x \<oplus> x = x"
+    and "seq_nl": "!!x. \<nn> \<odot> x = x"
+    and "seq_nr": "!!x. x \<odot> \<nn> = x"
+    and "add_zero": "!!x. \<dd> \<oplus> x = x"
+    and "absorbingl": "!!x. \<dd> \<odot> x = \<dd>"
+    and "absorbingr": "!!x. x \<odot> \<dd> = \<dd>"
+    and "zero_not_basic": "\<dd> ~: \<S>\<^sub>a"
+### theory "Draft.Stimuli"
+### 0.199s elapsed time, 0.818s cpu time, 0.027s GC time
+Loading theory "HOL-Library.Tree" (required by "Draft.Communication_C2KAMoreTemplates" via "Draft.ExtrEqs" via "Draft.Templates")
+Found termination order: "size_list size <*mlex*> {}"
+### theory "HOL-Library.Nat_Bijection"
+### 0.334s elapsed time, 1.336s cpu time, 0.115s GC time
+Loading theory "HOL-Library.Stream" (required by "Draft.Communication_C2KAMoreTemplates" via "Draft.ExtrEqs")
+class join_semilattice = ordered_ab_semigroup_add +
+  assumes "leq_def": "!!x y. (x <= y) = (x + y = y)"
+    and "le_def": "!!x y. (x < y) = (x <= y & x ~= y)"
+    and "add_idem": "!!x. x + x = x"
+### theory "HOL-Library.Set_Algebras"
+### 0.218s elapsed time, 0.859s cpu time, 0.087s GC time
+Loading theory "HOL-Library.BigO" (required by "Draft.Communication_C2KAMoreTemplates" via "Draft.ExtrEqs")
+class CKA.dioid = join_semilattice + one + zero + semiring +
+  assumes "par_onel": "!!x. (1::'a) * x = x"
+    and "par_oner": "!!x. x * (1::'a) = x"
+    and "add_zerol": "!!x. (0::'a) + x = x"
+    and "annil": "!!x. (0::'a) * x = (0::'a)"
+    and "annir": "!!x. x * (0::'a) = (0::'a)"
+consts
+  shift :: "'a list => 'a stream => 'a stream"
+consts
+  left :: "'a tree => 'a tree"
+consts
+  right :: "'a tree => 'a tree"
+Proofs for coinductive predicate(s) "streamsp"
+  Proving monotonicity ...
+Found termination order: "size <*mlex*> {}"
+consts
+  snth :: "'a stream => nat => 'a"
+consts
+  stake :: "nat => 'a stream => 'a list"
+Found termination order: "size <*mlex*> {}"
+class kleene_algebra = CKA.dioid +
+  fixes star :: "'a => 'a"
+  assumes "star_unfoldl": "!!x. (1::'a) + x * x\<^sup>* <= x\<^sup>*"
+    and "star_unfoldr": "!!x. (1::'a) + x\<^sup>* * x <= x\<^sup>*"
+    and "star_inductl": "!!z x y. z + x * y <= y ==> x\<^sup>* * z <= y"
+    and "star_inductr": "!!z y x. z + y * x <= y ==> z * x\<^sup>* <= y"
+consts
+  sdrop :: "nat => 'a stream => 'a stream"
+consts
+  sfilter :: "('a => bool) => 'a stream => 'a stream"
+Found termination order: "size <*mlex*> {}"
+consts
+  cycle :: "'a list => 'a stream"
+class height = type +
+  fixes height :: "'a => nat"
+instantiation
+  tree :: (type) height
+  height_tree == height :: 'a tree => nat
+consts
+  siterate :: "('a => 'a) => 'a => 'a stream"
+Found termination order: "size <*mlex*> {}"
+consts
+  flat :: "'a list stream => 'a stream"
+consts
+  sinterleave :: "'a stream => 'a stream => 'a stream"
+Found termination order: "size <*mlex*> {}"
+consts
+  szip :: "'a stream => 'b stream => ('a * 'b) stream"
+class cka = kleene_algebra +
+  fixes seq :: "'a => 'a => 'a"
+    and seqstar :: "'a => 'a"
+  assumes "seq_assoc": "!!x y z. x ; (y ; z) = x ; y ; z"
+    and "seq_rident": "!!x. x ; (1::'a) = x"
+    and "seq_lident": "!!x. (1::'a) ; x = x"
+    and "seq_rdistrib": "!!x y z. (x + y) ; z = x ; z + y ; z"
+    and "seq_ldistrib": "!!x y z. x ; (y + z) = x ; y + x ; z"
+    and "seq_annir": "!!x. x ; (0::'a) = (0::'a)"
+    and "seq_annil": "!!x. (0::'a) ; x = (0::'a)"
+    and "seqstar_unfoldl": "!!x. (1::'a) + x ; x\<^sup>; <= x\<^sup>;"
+    and "seqstar_unfoldr": "!!x. (1::'a) + x\<^sup>; ; x <= x\<^sup>;"
+    and "seqstar_inductl": "!!z x y. z + x ; y <= y ==> x\<^sup>; ; z <= y"
+    and "seqstar_inductr": "!!z y x. z + y ; x <= y ==> z ; x\<^sup>; <= y"
+    and "exchange": "!!a b c d. a * b ; (c * d) <= b ; c * (a ; d)"
+consts
+  smap2 :: "('a => 'b => 'c) => 'a stream => 'b stream => 'c stream"
+### theory "HOL-Library.BigO"
+### 0.968s elapsed time, 3.594s cpu time, 0.853s GC time
+Found termination order: "size <*mlex*> {}"
+### theory "HOL-Library.Stream"
+### 1.021s elapsed time, 3.773s cpu time, 0.853s GC time
+### theory "Draft.CKA"
+### 1.380s elapsed time, 5.201s cpu time, 1.006s GC time
+Loading theory "Draft.C2KA" (required by "Draft.Communication_C2KAMoreTemplates" via "Draft.Communication_C2KA" via "Draft.Topology_C2KA")
+Found termination order: "size <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+Found termination order: "(%p. size (fst p)) <*mlex*> {}"
+locale c2ka
+  fixes
+    next_behaviour :: "'b => 'a => 'a"  (infixr \<open>\<circ>\<close> 75)
+    and next_stimulus :: "'b * 'a => 'b"  (\<open>\<lambda>\<close>)
+  assumes "c2ka (\<circ>) \<lambda>"
+### theory "Draft.C2KA"
+### 0.331s elapsed time, 0.702s cpu time, 0.060s GC time
+Loading theory "Draft.Topology_C2KA" (required by "Draft.Communication_C2KAMoreTemplates" via "Draft.Communication_C2KA")
+Found termination order: "size <*mlex*> {}"
+locale topology_c2ka
+  fixes
+    next_behaviour :: "'b => 'a => 'a"  (infixr \<open>\<circ>\<close> 75)
+    and next_stimulus :: "'b * 'a => 'b"  (\<open>\<lambda>\<close>)
+    and orbit :: "'a => 'a set"  (\<open>Orb\<close>)
+    and strong_orbit :: "'a => 'a set"  (\<open>Orb\<^sub>S\<close>)
+    and stabiliser :: "'a => 'b set"  (\<open>Stab\<close>)
+    and fixed :: "'a => bool"
+    and
+    encompassing_relation_behaviours :: "'a set => 'a set => bool"
+      (infix \<open>\<lless>\<^sub>\<K>\<close> 50)
+    and
+    encompassing_relation_stimuli :: "'b set => 'b set => bool"
+      (infix \<open>\<lless>\<^sub>\<S>\<close> 50)
+    and induced :: "'a => 'a => bool"  (infix \<open>\<lhd>\<close> 50)
+    and
+    orbit_equivalent :: "'a => 'a => bool"
+      (infix \<open>\<sim>\<^sub>\<K>\<close> 50)
+  assumes
+    "topology_c2ka (\<circ>) \<lambda> Orb Orb\<^sub>S Stab fixed
+      (\<lless>\<^sub>\<K>) (\<lless>\<^sub>\<S>) (\<lhd>)
+      (\<sim>\<^sub>\<K>)"
+### theory "Draft.Topology_C2KA"
+### 0.091s elapsed time, 0.183s cpu time, 0.000s GC time
+Loading theory "Draft.Communication_C2KA" (required by "Draft.Communication_C2KAMoreTemplates")
+Found termination order: "(%p. size (snd p)) <*mlex*> {}"
+locale communication_c2ka
+  fixes
+    next_behaviour :: "'b => 'a => 'a"  (infixr \<open>\<circ>\<close> 75)
+    and next_stimulus :: "'b * 'a => 'b"  (\<open>\<lambda>\<close>)
+    and orbit :: "'a => 'a set"  (\<open>Orb\<close>)
+    and strong_orbit :: "'a => 'a set"  (\<open>Orb\<^sub>S\<close>)
+    and stabiliser :: "'a => 'b set"  (\<open>Stab\<close>)
+    and fixed :: "'a => bool"
+    and
+    encompassing_relation_behaviours :: "'a set => 'a set => bool"
+      (infix \<open>\<lless>\<^sub>\<K>\<close> 50)
+    and
+    encompassing_relation_stimuli :: "'b set => 'b set => bool"
+      (infix \<open>\<lless>\<^sub>\<S>\<close> 50)
+    and induced :: "'a => 'a => bool"  (infix \<open>\<lhd>\<close> 50)
+    and
+    orbit_equivalent :: "'a => 'a => bool"
+      (infix \<open>\<sim>\<^sub>\<K>\<close> 50)
+    and
+    dcs :: "'a => 'a => bool"
+      (infix \<open>\<rightarrow>\<^sub>\<S>\<close> 50)
+    and
+    pcs :: "'a => 'a => bool"
+      (infix \<open>\<rightarrow>\<^sub>\<S>\<^sup>+\<close> 50)
+    and
+    dce :: "'a => 'a => bool"
+      (infix \<open>\<rightarrow>\<^sub>\<E>\<close> 50)
+    and
+    pce :: "'a => 'a => bool"
+      (infix \<open>\<rightarrow>\<^sub>\<E>\<^sup>+\<close> 50)
+    and pdc :: "'a => 'a => bool"  (infix \<open>\<leadsto>\<close> 50)
+    and
+    pfc :: "'a => 'a => bool"  (infix \<open>\<leadsto>\<^sup>+\<close> 50)
+    and stimuli_connected :: "'a set => bool"
+    and universally_influential :: "'a * 'a set => bool"
+  assumes
+    "communication_c2ka (\<circ>) \<lambda> Orb Orb\<^sub>S Stab fixed
+      (\<lless>\<^sub>\<K>) (\<lless>\<^sub>\<S>) (\<lhd>)
+      (\<sim>\<^sub>\<K>) (\<rightarrow>\<^sub>\<S>)
+      (\<rightarrow>\<^sub>\<S>\<^sup>+) (\<rightarrow>\<^sub>\<E>)
+      (\<leadsto>) stimuli_connected universally_influential"
+### theory "Draft.Communication_C2KA"
+### 0.135s elapsed time, 0.301s cpu time, 0.065s GC time
+Found termination order: "size <*mlex*> {}"
+### theory "HOL-Library.Tree"
+### 1.954s elapsed time, 5.790s cpu time, 1.104s GC time
+Loading theory "Draft.Templates" (required by "Draft.Communication_C2KAMoreTemplates" via "Draft.ExtrEqs")
+datatype template_term
+=
+     t_empty
+   | template_app of template_term * template_term
+   | template_hole of int
+   | template_var of int
+datatype sign
+= equals | greater_equals | greater_than | less_equals | less_than
+datatype template
+=
+     template_bimplication of template * template
+   | template_dunno
+   | template_equation of template_term * template_term
+   | template_implication of template list * template
+   | template_inequation of sign * template_term * template_term
+   | template_negation of template
+   | template_predicate of template_term
+constructor t_empty: template_term
+constructor template_app: template_term * template_term -> template_term
+constructor template_hole: int -> template_term
+constructor template_var: int -> template_term
+constructor equals: sign
+constructor greater_equals: sign
+constructor greater_than: sign
+constructor less_equals: sign
+constructor less_than: sign
+constructor template_bimplication: template * template -> template
+constructor template_dunno: template
+constructor template_equation: template_term * template_term -> template
+constructor template_implication: template list * template -> template
+constructor template_inequation:
+   sign * template_term * template_term -> template
+constructor template_negation: template -> template
+constructor template_predicate: template_term -> template
+val vfs = fn: term -> (indexname * typ) list * (string * typ) list
+val indexOf = fn: ''a list -> ''a -> int -> int
+val has_eq = fn: term -> bool
+val term2template = fn:
+   (indexname * typ) list -> (string * typ) list -> term -> template_term
+val lemma2predicate = fn: term -> term -> template
+val makeTemplatewithContext = fn: term -> term -> template
+val lemma2template = fn: term -> template
+val thm2template = fn: thm -> template
+val tterm2string = fn: template_term -> string
+val template2string = fn: template -> string
+val t = "height ?t <= size ?t": thm
+val th =
+   Const ("HOL.Trueprop", "bool => prop") $
+     (Const ("Orderings.ord_class.less_eq", "nat => nat => bool") $
+       (Const ("Tree.height_class.height", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree")) $
+       (Const ("Nat.size_class.size", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree"))):
+   term
+### theory "Draft.Templates"
+### 0.048s elapsed time, 0.063s cpu time, 0.000s GC time
+Loading theory "Draft.ExtrEqs" (required by "Draft.Communication_C2KAMoreTemplates")
+val eqpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Var (("_dummy_", 2), "?'a"))
+       ):
+   term Find_Theorems.criterion
+val badeqpattern = Pattern (Const ("Pure.eq", "?'a => ?'a => prop")):
+   term Find_Theorems.criterion
+val undefpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Const ("HOL.undefined", "?'a"))
+       ):
+   term Find_Theorems.criterion
+val thmpattern =
+   Pattern
+    (Const ("HOL.Trueprop", "bool => prop") $ Var (("_dummy_", 1), "bool")):
+   term Find_Theorems.criterion
+val badnames =
+   ["*nitpick*", "*Nitpick*", "*full_exhaustive*", "*_def*", "Enum.finite*",
+    "*Quickcheck*", "ATP*", "*Nunchaku*", "*Code*", "*BNF*", "*SMT*",
+    "*.*.*"]:
+   string list
+val unwanted_names =
+   [(false, Name "*nitpick*"), (false, Name "*Nitpick*"),
+    (false, Name "*full_exhaustive*"), (false, Name "*_def*"),
+    (false, Name "Enum.finite*"), (false, Name "*Quickcheck*"),
+    (false, Name "ATP*"), (false, Name "*Nunchaku*"),
+    (false, Name "*Code*"), (false, Name "*BNF*"), (false, Name "*SMT*"),
+    (false, Name "*.*.*")]:
+   (bool * term Find_Theorems.criterion) list
+val has_vars = fn: term -> bool
+val get_all_eqs = fn: string -> Proof.context -> (string * thm) list
+val get_all_thms = fn: string -> Proof.context -> (string * thm) list
+val get_noneq_thms = fn: string -> Proof.context -> (string * thm) list
+val template_eqs = fn:
+   string -> Proof.context -> (string * thm * template) list
+val template_thms = fn:
+   string -> Proof.context -> (string * thm * template) list
+### theory "Draft.ExtrEqs"
+### 0.453s elapsed time, 0.492s cpu time, 0.044s GC time
+Loading theory "Draft.Communication_C2KAMoreTemplates"
+val templateLemmas = []: (string * thm * template) list
+### theory "Draft.Communication_C2KAMoreTemplates"
+### 0.317s elapsed time, 0.455s cpu time, 0.073s GC time
+val it = (): unit

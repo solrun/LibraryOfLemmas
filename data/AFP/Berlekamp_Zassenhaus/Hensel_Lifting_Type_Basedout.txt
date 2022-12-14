@@ -1,0 +1,1134 @@
+Loading theory "Draft.Arithmetic_Record_Based" (required by "Draft.Hensel_Lifting_Type_BasedTemplates" via "Draft.Hensel_Lifting_Type_Based" via "Draft.Hensel_Lifting" via "Draft.Poly_Mod_Finite_Field_Record_Based" via "Draft.Finite_Field_Record_Based")
+Loading theory "Draft.Karatsuba_Multiplication" (required by "Draft.Hensel_Lifting_Type_BasedTemplates" via "Draft.Hensel_Lifting_Type_Based" via "Draft.Hensel_Lifting" via "Draft.Poly_Mod_Finite_Field_Record_Based" via "Draft.Polynomial_Record_Based")
+Loading theory "Draft.Templates" (required by "Draft.Hensel_Lifting_Type_BasedTemplates" via "Draft.ExtrEqs")
+Loading theory "Draft.More_Missing_Multiset" (required by "Draft.Hensel_Lifting_Type_BasedTemplates" via "Draft.Hensel_Lifting_Type_Based" via "Draft.Hensel_Lifting" via "Draft.Poly_Mod_Finite_Field_Record_Based" via "Draft.Poly_Mod_Finite_Field")
+datatype template_term
+=
+     t_empty
+   | template_app of template_term * template_term
+   | template_hole of int
+   | template_var of int
+datatype sign
+= equals | greater_equals | greater_than | less_equals | less_than
+datatype template
+=
+     template_bimplication of template * template
+   | template_dunno
+   | template_equation of template_term * template_term
+   | template_implication of template list * template
+   | template_inequation of sign * template_term * template_term
+   | template_negation of template
+   | template_predicate of template_term
+constructor t_empty: template_term
+constructor template_app: template_term * template_term -> template_term
+constructor template_hole: int -> template_term
+constructor template_var: int -> template_term
+constructor equals: sign
+constructor greater_equals: sign
+constructor greater_than: sign
+constructor less_equals: sign
+constructor less_than: sign
+constructor template_bimplication: template * template -> template
+constructor template_dunno: template
+constructor template_equation: template_term * template_term -> template
+constructor template_implication: template list * template -> template
+constructor template_inequation:
+   sign * template_term * template_term -> template
+constructor template_negation: template -> template
+constructor template_predicate: template_term -> template
+val vfs = fn: term -> (indexname * typ) list * (string * typ) list
+val indexOf = fn: ''a list -> ''a -> int -> int
+val has_eq = fn: term -> bool
+val term2template = fn:
+   (indexname * typ) list -> (string * typ) list -> term -> template_term
+val lemma2predicate = fn: term -> term -> template
+val makeTemplatewithContext = fn: term -> term -> template
+val lemma2template = fn: term -> template
+val thm2template = fn: thm -> template
+val tterm2string = fn: template_term -> string
+val template2string = fn: template -> string
+val t = "height ?t <= size ?t": thm
+val th =
+   Const ("HOL.Trueprop", "bool => prop") $
+     (Const ("Orderings.ord_class.less_eq", "nat => nat => bool") $
+       (Const ("Tree.height_class.height", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree")) $
+       (Const ("Nat.size_class.size", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree"))):
+   term
+### theory "Draft.Templates"
+### 0.091s elapsed time, 0.401s cpu time, 0.000s GC time
+Loading theory "Draft.ExtrEqs" (required by "Draft.Hensel_Lifting_Type_BasedTemplates")
+### theory "Draft.More_Missing_Multiset"
+### 0.206s elapsed time, 0.797s cpu time, 0.045s GC time
+Loading theory "Draft.Unique_Factorization" (required by "Draft.Hensel_Lifting_Type_BasedTemplates" via "Draft.Hensel_Lifting_Type_Based" via "Draft.Hensel_Lifting" via "Draft.Poly_Mod_Finite_Field_Record_Based" via "Draft.Poly_Mod_Finite_Field" via "Draft.Poly_Mod" via "Draft.Unique_Factorization_Poly")
+Found termination order: "(%p. length (snd p)) <*mlex*> {}"
+val eqpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Var (("_dummy_", 2), "?'a"))
+       ):
+   term Find_Theorems.criterion
+val badeqpattern = Pattern (Const ("Pure.eq", "?'a => ?'a => prop")):
+   term Find_Theorems.criterion
+val undefpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Const ("HOL.undefined", "?'a"))
+       ):
+   term Find_Theorems.criterion
+val thmpattern =
+   Pattern
+    (Const ("HOL.Trueprop", "bool => prop") $ Var (("_dummy_", 1), "bool")):
+   term Find_Theorems.criterion
+val badnames =
+   ["*nitpick*", "*Nitpick*", "*full_exhaustive*", "*_def*", "Enum.finite*",
+    "*Quickcheck*", "ATP*", "*Nunchaku*", "*Code*", "*BNF*", "*SMT*",
+    "*.*.*"]:
+   string list
+val unwanted_names =
+   [(false, Name "*nitpick*"), (false, Name "*Nitpick*"),
+    (false, Name "*full_exhaustive*"), (false, Name "*_def*"),
+    (false, Name "Enum.finite*"), (false, Name "*Quickcheck*"),
+    (false, Name "ATP*"), (false, Name "*Nunchaku*"),
+    (false, Name "*Code*"), (false, Name "*BNF*"), (false, Name "*SMT*"),
+    (false, Name "*.*.*")]:
+   (bool * term Find_Theorems.criterion) list
+val has_vars = fn: term -> bool
+val get_all_eqs = fn: string -> Proof.context -> (string * thm) list
+val get_all_thms = fn: string -> Proof.context -> (string * thm) list
+val get_noneq_thms = fn: string -> Proof.context -> (string * thm) list
+val template_eqs = fn:
+   string -> Proof.context -> (string * thm * template) list
+val template_thms = fn:
+   string -> Proof.context -> (string * thm * template) list
+### theory "Draft.ExtrEqs"
+### 0.700s elapsed time, 2.510s cpu time, 0.308s GC time
+Loading theory "Draft.Finite_Field" (required by "Draft.Hensel_Lifting_Type_BasedTemplates" via "Draft.Hensel_Lifting_Type_Based" via "Draft.Hensel_Lifting" via "Draft.Poly_Mod_Finite_Field_Record_Based" via "Draft.Poly_Mod_Finite_Field")
+class comm_monoid_mult = ab_semigroup_mult + monoid_mult + dvd +
+  assumes "mult_1": "!!a. (1::'a) * a = a"
+locale comm_monoid_mult_isom
+  fixes hom :: "'a => 'b"
+  assumes "comm_monoid_mult_isom hom"
+Found termination order: "(%p. length (snd p)) <*mlex*> {}"
+locale arith_ops
+  fixes ops :: "'i arith_ops_record"  (structure)
+class comm_monoid_mult = ab_semigroup_mult + monoid_mult + dvd +
+  assumes "mult_1": "!!a. (1::'a) * a = a"
+locale ring_ops
+  fixes ops :: "'i arith_ops_record"
+    and R :: "'i => 'a => bool"
+  assumes "ring_ops ops R"
+locale idom_ops
+  fixes ops :: "'i arith_ops_record"
+    and R :: "'i => 'a => bool"
+  assumes "idom_ops ops R"
+locale idom_divide_ops
+  fixes ops :: "'i arith_ops_record"
+    and R :: "'i => 'a => bool"
+  assumes "idom_divide_ops ops R"
+locale euclidean_semiring_ops
+  fixes ops :: "'i arith_ops_record"
+    and R :: "'i => 'a => bool"
+  assumes "euclidean_semiring_ops ops R"
+instantiation
+  mod_ring :: (finite) equal
+  equal_mod_ring == equal_class.equal :: 'a mod_ring => 'a mod_ring => bool
+locale euclidean_ring_ops
+  fixes ops :: "'i arith_ops_record"
+    and R :: "'i => 'a => bool"
+  assumes "euclidean_ring_ops ops R"
+instantiation
+  mod_ring :: (finite) comm_ring
+  uminus_mod_ring == uminus :: 'a mod_ring => 'a mod_ring
+  times_mod_ring == times :: 'a mod_ring => 'a mod_ring => 'a mod_ring
+  zero_mod_ring == zero_class.zero :: 'a mod_ring
+  minus_mod_ring == minus :: 'a mod_ring => 'a mod_ring => 'a mod_ring
+  plus_mod_ring == plus :: 'a mod_ring => 'a mod_ring => 'a mod_ring
+locale field_ops
+  fixes ops :: "'i arith_ops_record"
+    and R :: "'i => 'a => bool"
+  assumes "field_ops ops R"
+### theory "Draft.Arithmetic_Record_Based"
+### 2.045s elapsed time, 7.353s cpu time, 1.048s GC time
+### Additional type variable(s) in locale specification "nontriv": 'a
+class nontriv = type +
+  assumes "nontriv": "1 < CARD('a)"
+instantiation
+  mod_ring :: (nontriv) comm_ring_1
+  one_mod_ring == one_class.one :: 'a mod_ring
+### Additional type variable(s) in locale specification "prime_card": 'a
+class prime_card = type +
+  assumes "prime_card": "prime CARD('a)"
+Found termination order:
+  "(%p. size (snd (snd (snd p)))) <*mlex*>
+   (%p. size (fst (snd p))) <*mlex*> {}"
+class ufd = idom +
+  assumes
+    "mset_factors_exist":
+      "!!x. [| x ~= (0::'a); ~ x dvd (1::'a) |] ==> EX F. mset_factors F x"
+    and
+    "mset_factors_unique":
+      "!!x F G.
+          [| mset_factors F x; mset_factors G x |] ==> rel_mset (ddvd) F G"
+### theory "Draft.Karatsuba_Multiplication"
+### 2.734s elapsed time, 9.316s cpu time, 1.145s GC time
+Loading theory "Draft.Polynomial_Record_Based" (required by "Draft.Hensel_Lifting_Type_BasedTemplates" via "Draft.Hensel_Lifting_Type_Based" via "Draft.Hensel_Lifting" via "Draft.Poly_Mod_Finite_Field_Record_Based")
+instantiation
+  mod_ring :: (prime_card) field
+  inverse_mod_ring == inverse :: 'a mod_ring => 'a mod_ring
+  divide_mod_ring == divide :: 'a mod_ring => 'a mod_ring => 'a mod_ring
+instantiation
+  mod_ring :: (prime_card) {normalization_euclidean_semiring,euclidean_ring}
+  normalize_mod_ring == normalize :: 'a mod_ring => 'a mod_ring
+  unit_factor_mod_ring == unit_factor :: 'a mod_ring => 'a mod_ring
+  euclidean_size_mod_ring == euclidean_size :: 'a mod_ring => nat
+  modulo_mod_ring == modulo :: 'a mod_ring => 'a mod_ring => 'a mod_ring
+instantiation
+  mod_ring :: (prime_card) euclidean_ring_gcd
+  Gcd_mod_ring == Gcd :: 'a mod_ring set => 'a mod_ring
+  Lcm_mod_ring == Lcm :: 'a mod_ring set => 'a mod_ring
+  gcd_mod_ring == gcd :: 'a mod_ring => 'a mod_ring => 'a mod_ring
+  lcm_mod_ring == lcm :: 'a mod_ring => 'a mod_ring => 'a mod_ring
+instantiation
+  mod_ring :: (prime_card) unique_euclidean_ring
+  division_segment_mod_ring == division_segment ::
+    'a mod_ring => 'a mod_ring
+### theory "Draft.Finite_Field"
+### 2.419s elapsed time, 7.836s cpu time, 1.493s GC time
+Loading theory "Draft.Finite_Field_Record_Based" (required by "Draft.Hensel_Lifting_Type_BasedTemplates" via "Draft.Hensel_Lifting_Type_Based" via "Draft.Hensel_Lifting" via "Draft.Poly_Mod_Finite_Field_Record_Based")
+class ufd = idom +
+  assumes
+    "mset_factors_exist":
+      "!!x. [| x ~= (0::'a); ~ x dvd (1::'a) |] ==> EX F. mset_factors F x"
+    and
+    "mset_factors_unique":
+      "!!x F G.
+          [| mset_factors F x; mset_factors G x |] ==> rel_mset (ddvd) F G"
+Found termination order: "(%p. length (snd p)) <*mlex*> {}"
+Found termination order: "(%p. length (snd p)) <*mlex*> {}"
+locale comm_semiring_1_hom
+  fixes hom :: "'a => 'b"
+  assumes "comm_semiring_1_hom hom"
+locale irreducibility_hom
+  fixes hom :: "'a => 'b"
+  assumes "irreducibility_hom hom"
+locale unit_preserving_hom
+  fixes hom :: "'a => 'b"
+  assumes "unit_preserving_hom hom"
+Found termination order: "(%p. length (snd p)) <*mlex*> {}"
+locale factor_preserving_hom
+  fixes hom :: "'a => 'b"
+  assumes "factor_preserving_hom hom"
+locale comm_semiring_isom
+  fixes hom :: "'a => 'b"
+  assumes "comm_semiring_isom hom"
+class comm_monoid_gcd = gcd + comm_semiring_1 +
+  assumes "gcd_dvd1": "!!a b. gcd a b dvd a"
+    and "gcd_dvd2": "!!a b. gcd a b dvd b"
+    and "gcd_greatest": "!!c a b. [| c dvd a; c dvd b |] ==> c dvd gcd a b"
+Found termination order: "(%p. size (snd p)) <*mlex*> {}"
+locale mod_ring_locale
+  fixes p :: "int"
+    and ty :: "'a itself"
+  assumes "mod_ring_locale TYPE('a) p"
+locale prime_field
+  fixes p :: "int"
+    and ty :: "'a itself"
+  assumes "prime_field TYPE('a) p"
+locale mod_ring_locale
+  fixes p :: "int"
+    and ty :: "'a itself"
+  assumes "mod_ring_locale TYPE('a) p"
+locale prime_field
+  fixes p :: "int"
+    and ty :: "'a itself"
+  assumes "prime_field TYPE('a) p"
+class comm_monoid_gcd = gcd + comm_semiring_1 +
+  assumes "gcd_dvd1": "!!a b. gcd a b dvd a"
+    and "gcd_dvd2": "!!a b. gcd a b dvd b"
+    and "gcd_greatest": "!!c a b. [| c dvd a; c dvd b |] ==> c dvd gcd a b"
+locale mod_ring_locale
+  fixes p :: "int"
+    and ty :: "'a itself"
+  assumes "mod_ring_locale TYPE('a) p"
+locale prime_field
+  fixes p :: "int"
+    and ty :: "'a itself"
+  assumes "prime_field TYPE('a) p"
+locale mod_ring_locale
+  fixes p :: "int"
+    and ty :: "'a itself"
+  assumes "mod_ring_locale TYPE('a) p"
+Found termination order:
+  "(%p. size (snd (snd (snd p)))) <*mlex*>
+   (%p. size (fst (snd p))) <*mlex*> {}"
+locale prime_field
+  fixes p :: "int"
+    and ty :: "'a itself"
+  assumes "prime_field TYPE('a) p"
+locale prime_field
+  fixes p :: "int"
+    and ty :: "'a itself"
+  assumes "prime_field TYPE('a) p"
+[| p = int_of_uint64 ?pp; p <= 4294967295 |]
+==> field_ops (finite_field_ops64 ?pp) mod_ring_rel64
+[| p = int_of_uint32 ?pp; p <= 65535 |]
+==> field_ops (finite_field_ops32 ?pp) mod_ring_rel32
+p = int_of_integer ?pp ==>
+field_ops (finite_field_ops_integer ?pp) mod_ring_rel_integer
+field_ops (finite_field_ops_int p) mod_ring_rel
+locale mod_ring_locale
+  fixes p :: "int"
+    and ty :: "'a itself"
+  assumes "mod_ring_locale TYPE('a) p"
+[| p = int_of_uint64 ?pp; p <= 4294967295 |]
+==> ring_ops (finite_field_ops64 ?pp) mod_ring_rel64
+[| p = int_of_uint32 ?pp; p <= 65535 |]
+==> ring_ops (finite_field_ops32 ?pp) mod_ring_rel32
+p = int_of_integer ?pp ==>
+ring_ops (finite_field_ops_integer ?pp) mod_ring_rel_integer
+ring_ops (finite_field_ops_int p) mod_ring_rel
+### theory "Draft.Finite_Field_Record_Based"
+### 3.492s elapsed time, 9.923s cpu time, 1.678s GC time
+Found termination order: "(%p. length (snd p)) <*mlex*> {}"
+Found termination order: "(%p. size (snd (snd (snd p)))) <*mlex*> {}"
+Found termination order: "(%p. size (snd (snd p))) <*mlex*> {}"
+Found termination order: "(%p. length (snd p)) <*mlex*> {}"
+locale ring_ops
+  fixes ops :: "'i arith_ops_record"
+    and R :: "'i => 'a => bool"
+  assumes "ring_ops ops R"
+locale idom_ops
+  fixes ops :: "'i arith_ops_record"
+    and R :: "'i => 'a => bool"
+  assumes "idom_ops ops R"
+locale idom_divide_ops
+  fixes ops :: "'i arith_ops_record"
+    and R :: "'i => 'a => bool"
+  assumes "idom_divide_ops ops R"
+locale field_ops
+  fixes ops :: "'i arith_ops_record"
+    and R :: "'i => 'a => bool"
+  assumes "field_ops ops R"
+locale ring_ops
+  fixes ops :: "'i arith_ops_record"
+    and R :: "'i => 'a => bool"
+  assumes "ring_ops ops R"
+### theory "Draft.Polynomial_Record_Based"
+### 4.788s elapsed time, 13.028s cpu time, 2.486s GC time
+locale gcd_condition
+  fixes ty :: "'a itself"
+  assumes "gcd_condition TYPE('a)"
+### Cannot skip proof of schematic goal statement
+### theory "Draft.Unique_Factorization"
+### 8.073s elapsed time, 22.334s cpu time, 3.681s GC time
+Loading theory "Draft.Unique_Factorization_Poly" (required by "Draft.Hensel_Lifting_Type_BasedTemplates" via "Draft.Hensel_Lifting_Type_Based" via "Draft.Hensel_Lifting" via "Draft.Poly_Mod_Finite_Field_Record_Based" via "Draft.Poly_Mod_Finite_Field" via "Draft.Poly_Mod")
+instantiation
+  fract :: (idom) {normalization_euclidean_semiring,euclidean_ring}
+  normalize_fract == normalize :: 'a fract => 'a fract
+  unit_factor_fract == unit_factor :: 'a fract => 'a fract
+  euclidean_size_fract == euclidean_size :: 'a fract => nat
+  modulo_fract == modulo :: 'a fract => 'a fract => 'a fract
+instantiation
+  fract :: (idom) euclidean_ring_gcd
+  Gcd_fract == Gcd :: 'a fract set => 'a fract
+  Lcm_fract == Lcm :: 'a fract set => 'a fract
+  gcd_fract == gcd :: 'a fract => 'a fract => 'a fract
+  lcm_fract == lcm :: 'a fract => 'a fract => 'a fract
+instantiation
+  fract :: (idom) unique_euclidean_ring
+  division_segment_fract == division_segment :: 'a fract => 'a fract
+### theory "Draft.Unique_Factorization_Poly"
+### 1.090s elapsed time, 1.180s cpu time, 0.119s GC time
+Loading theory "Draft.Poly_Mod" (required by "Draft.Hensel_Lifting_Type_BasedTemplates" via "Draft.Hensel_Lifting_Type_Based" via "Draft.Hensel_Lifting" via "Draft.Poly_Mod_Finite_Field_Record_Based" via "Draft.Poly_Mod_Finite_Field")
+locale poly_mod
+  fixes m :: "int"
+locale poly_mod
+  fixes m :: "int"
+locale poly_mod_2
+  fixes m :: "int"
+  assumes "poly_mod_2 m"
+locale poly_mod
+  fixes m :: "int"
+locale poly_mod_2
+  fixes m :: "int"
+  assumes "poly_mod_2 m"
+locale poly_mod
+  fixes m :: "int"
+locale poly_mod_2
+  fixes m :: "int"
+  assumes "poly_mod_2 m"
+locale poly_mod_prime
+  fixes p :: "int"
+  assumes "poly_mod_prime p"
+locale poly_mod
+  fixes m :: "int"
+locale poly_mod_2
+  fixes m :: "int"
+  assumes "poly_mod_2 m"
+### theory "Draft.Poly_Mod"
+### 1.297s elapsed time, 1.459s cpu time, 0.253s GC time
+Loading theory "Draft.Poly_Mod_Finite_Field" (required by "Draft.Hensel_Lifting_Type_BasedTemplates" via "Draft.Hensel_Lifting_Type_Based" via "Draft.Hensel_Lifting" via "Draft.Poly_Mod_Finite_Field_Record_Based")
+locale poly_mod_type
+  fixes m :: "int"
+    and ty :: "'a itself"
+  assumes "poly_mod_type TYPE('a) m"
+locale poly_mod_2
+  fixes m :: "int"
+  assumes "poly_mod_2 m"
+locale poly_mod_prime_type
+  fixes m :: "int"
+    and ty :: "'a itself"
+  assumes "poly_mod_prime_type TYPE('a) m"
+locale poly_mod_prime
+  fixes p :: "int"
+  assumes "poly_mod_prime p"
+### theory "Draft.Poly_Mod_Finite_Field"
+### 1.112s elapsed time, 1.193s cpu time, 0.147s GC time
+Loading theory "Draft.Poly_Mod_Finite_Field_Record_Based" (required by "Draft.Hensel_Lifting_Type_BasedTemplates" via "Draft.Hensel_Lifting_Type_Based" via "Draft.Hensel_Lifting")
+locale arith_ops_record
+  fixes ops :: "'i arith_ops_record"
+    and m :: "int"
+locale mod_ring_gen
+  fixes ff_ops :: "'i arith_ops_record"
+    and R :: "'i => 'a mod_ring => bool"
+    and p :: "int"
+  assumes "mod_ring_gen ff_ops R p"
+locale prime_field_gen
+  fixes ff_ops :: "'i arith_ops_record"
+    and R :: "'i => 'a mod_ring => bool"
+    and p :: "int"
+  assumes "prime_field_gen ff_ops R p"
+locale prime_field
+  fixes p :: "int"
+    and ty :: "'a itself"
+  assumes "prime_field TYPE('a) p"
+locale mod_ring_locale
+  fixes p :: "int"
+    and ty :: "'a itself"
+  assumes "mod_ring_locale TYPE('a) p"
+### theory "Draft.Poly_Mod_Finite_Field_Record_Based"
+### 1.284s elapsed time, 1.384s cpu time, 0.188s GC time
+Loading theory "Draft.Hensel_Lifting" (required by "Draft.Hensel_Lifting_Type_BasedTemplates" via "Draft.Hensel_Lifting_Type_Based")
+locale ring_ops
+  fixes ops :: "'i arith_ops_record"
+    and R :: "'i => 'a => bool"
+  assumes "ring_ops ops R"
+locale mod_ring_gen
+  fixes ff_ops :: "'i arith_ops_record"
+    and R :: "'i => 'a mod_ring => bool"
+    and p :: "int"
+  assumes "mod_ring_gen ff_ops R p"
+locale poly_mod_2
+  fixes m :: "int"
+  assumes "poly_mod_2 m"
+locale poly_mod
+  fixes m :: "int"
+locale prime_field_gen
+  fixes ff_ops :: "'i arith_ops_record"
+    and R :: "'i => 'a mod_ring => bool"
+    and p :: "int"
+  assumes "prime_field_gen ff_ops R p"
+locale poly_mod_prime
+  fixes p :: "int"
+  assumes "poly_mod_prime p"
+Found termination order: "size <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+Found termination order: "{}"
+Found termination order: "size <*mlex*> {}"
+Found termination order: "(%p. size (snd p)) <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+Found termination order: "length <*mlex*> {}"
+Found termination order:
+  "(%p. size_list (%p. size (snd p)) (snd p)) <*mlex*> {}"
+Found termination order: "length <*mlex*> {}"
+Found termination order: "(%p. size (snd p)) <*mlex*> {}"
+locale poly_mod_prime
+  fixes p :: "int"
+  assumes "poly_mod_prime p"
+### theory "Draft.Hensel_Lifting"
+### 2.693s elapsed time, 2.899s cpu time, 0.387s GC time
+Loading theory "Draft.Hensel_Lifting_Type_Based" (required by "Draft.Hensel_Lifting_Type_BasedTemplates")
+locale ring_hom
+  fixes hom :: "'a => 'b"
+  assumes "Ring_Hom.ring_hom hom"
+locale rebase_ge
+  fixes ty1 :: "'a itself"
+    and ty2 :: "'b itself"
+  assumes "rebase_ge TYPE('a) TYPE('b)"
+locale rebase_dvd
+  fixes ty1 :: "'a itself"
+    and ty2 :: "'b itself"
+  assumes "rebase_dvd TYPE('a) TYPE('b)"
+locale rebase_mult
+  fixes ty1 :: "'a itself"
+    and ty2 :: "'b itself"
+    and ty3 :: "'d itself"
+  assumes "rebase_mult TYPE('a) TYPE('b) TYPE('d)"
+locale Knuth_ex_4_6_2_22_base
+  fixes ty_p :: "'p itself"
+    and ty_q :: "'q itself"
+    and ty_pq :: "'pq itself"
+  assumes "Knuth_ex_4_6_2_22_base TYPE('p) TYPE('q) TYPE('pq)"
+locale Knuth_ex_4_6_2_22_main
+  fixes p_ty :: "'p itself"
+    and q_ty :: "'q itself"
+    and pq_ty :: "'pq itself"
+    and a :: "'p mod_ring poly"
+    and b :: "'p mod_ring poly"
+    and u :: "'pq mod_ring poly"
+    and v :: "'q mod_ring poly"
+    and w :: "'q mod_ring poly"
+  assumes "Knuth_ex_4_6_2_22_main a b u v w"
+locale Knuth_ex_4_6_2_22_prime
+  fixes ty_p :: "'p itself"
+    and ty_q :: "'q itself"
+    and ty_pq :: "'pq itself"
+    and a :: "'p mod_ring poly"
+    and b :: "'p mod_ring poly"
+    and u :: "'pq mod_ring poly"
+    and v :: "'q mod_ring poly"
+    and w :: "'q mod_ring poly"
+  assumes "Knuth_ex_4_6_2_22_prime a b u v w"
+### theory "Draft.Hensel_Lifting_Type_Based"
+### 1.478s elapsed time, 1.562s cpu time, 0.207s GC time
+Loading theory "Draft.Hensel_Lifting_Type_BasedTemplates"
+val templateLemmas =
+   [("Hensel_Lifting_Type_Based.rebase_self", "@?x = ?x",
+     template_equation
+      (template_app
+        (template_hole 1, template_app (template_hole 0, template_var 0)),
+       template_var 0)),
+    ("Hensel_Lifting_Type_Based.rebase_poly_self", "#?p = ?p",
+     template_equation
+      (template_app
+        (template_app (template_hole 3, template_hole 2),
+         template_app
+          (template_app (template_hole 1, template_hole 0),
+           template_var 0)),
+       template_var 0)),
+    ("Hensel_Lifting_Type_Based.degree_rebase_poly_le",
+     "degree (#?p) <= degree ?p",
+     template_inequation
+      (less_equals,
+       template_app
+        (template_hole 5,
+         template_app
+          (template_app (template_hole 4, template_hole 3),
+           template_app
+            (template_app (template_hole 2, template_hole 1),
+             template_var 0))),
+       template_app (template_hole 0, template_var 0))),
+    ("Hensel_Lifting_Type_Based.of_nat_zero",
+     "CARD(?'a) dvd ?n ==> of_nat ?n = 0",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 5,
+                template_app (template_hole 4, template_hole 3)),
+              template_var 0)
+            )],
+       template_equation
+        (template_app (template_hole 1, template_var 0), template_hole 0))),
+    ("Hensel_Lifting_Type_Based.mod_mod_nat",
+     "?a mod ?b mod (?b * ?c) = ?a mod ?b",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 1,
+           template_app
+            (template_app (template_hole 1, template_var 2),
+             template_var 1)),
+         template_app
+          (template_app (template_hole 0, template_var 1), template_var 0)),
+       template_app
+        (template_app (template_hole 1, template_var 2), template_var 1))),
+    ("Hensel_Lifting_Type_Based.map_poly_rebase",
+     "map_poly rebase ?p = #?p",
+     template_equation
+      (template_app
+        (template_app (template_hole 4, t_empty), template_var 0),
+       template_app
+        (template_app (template_hole 1, template_hole 3),
+         template_app
+          (template_app (template_hole 0, template_hole 2),
+           template_var 0)))),
+    ("Hensel_Lifting_Type_Based.rebase_poly_eq_0_iff",
+     "(#?p = 0) = (ALL i. @poly.coeff ?p i = 0)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 9,
+           template_app
+            (template_app (template_hole 8, template_hole 7),
+             template_app
+              (template_app (template_hole 6, template_hole 5),
+               template_var 0))),
+         template_hole 4),
+       template_app (template_hole 3, t_empty))),
+    ("Hensel_Lifting_Type_Based.rebase_poly_pCons",
+     "#pCons ?a ?p = pCons (@?a) (#?p)",
+     template_equation
+      (template_app
+        (template_app (template_hole 5, template_hole 4),
+         template_app
+          (template_app (template_hole 3, template_hole 2),
+           template_app
+            (template_app (template_hole 1, template_var 1),
+             template_var 0))),
+       template_app
+        (template_app
+          (template_hole 0,
+           template_app
+            (template_hole 4,
+             template_app (template_hole 2, template_var 1))),
+         template_app
+          (template_app (template_hole 5, template_hole 4),
+           template_app
+            (template_app (template_hole 3, template_hole 2),
+             template_var 0))))),
+    ("Hensel_Lifting_Type_Based.degree_smult_eq_iff",
+     "(degree (Polynomial.smult ?a ?p) = degree ?p) =
+      (degree ?p = 0 | ?a * lead_coeff ?p ~= (0::?'a))",
+     template_bimplication
+      (template_equation
+        (template_app
+          (template_hole 8,
+           template_app
+            (template_app (template_hole 7, template_var 1),
+             template_var 0)),
+         template_app (template_hole 8, template_var 0)),
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 6,
+               template_app
+                (template_app
+                  (template_hole 9,
+                   template_app (template_hole 8, template_var 0)),
+                 template_hole 5)),
+             template_app
+              (template_hole 4,
+               template_app
+                (template_app
+                  (template_hole 3,
+                   template_app
+                    (template_app (template_hole 2, template_var 1),
+                     template_app
+                      (template_app (template_hole 1, template_var 0),
+                       template_app (template_hole 8, template_var 0)))),
+                 template_hole 0)))
+           ))),
+    ("Hensel_Lifting_Type_Based.degree_mult_eq2",
+     "lead_coeff ?p * lead_coeff ?q ~= (0::?'a) ==>
+      degree (?p * ?q) = degree ?p + degree ?q",
+     template_implication
+      ([template_negation
+         (
+            template_equation
+             (template_app
+               (template_app
+                 (template_hole 6,
+                  template_app
+                   (template_app (template_hole 5, template_var 1),
+                    template_app (template_hole 4, template_var 1))),
+                template_app
+                 (template_app (template_hole 5, template_var 0),
+                  template_app (template_hole 4, template_var 0))),
+              template_hole 3)
+            )],
+       template_equation
+        (template_app
+          (template_hole 4,
+           template_app
+            (template_app (template_hole 1, template_var 1),
+             template_var 0)),
+         template_app
+          (template_app
+            (template_hole 0,
+             template_app (template_hole 4, template_var 1)),
+           template_app (template_hole 4, template_var 0))))),
+    ("Hensel_Lifting_Type_Based.degree_mult_eq_left_unit",
+     "[| lead_coeff ?p dvd (1::?'a); ?q ~= 0 |]
+      ==> degree (?p * ?q) = degree ?p + degree ?q",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 9,
+                template_app
+                 (template_app (template_hole 8, template_var 1),
+                  template_app (template_hole 7, template_var 1))),
+              template_hole 6)
+            ),
+        template_negation
+         (template_equation (template_var 0, template_hole 3))],
+       template_equation
+        (template_app
+          (template_hole 7,
+           template_app
+            (template_app (template_hole 1, template_var 1),
+             template_var 0)),
+         template_app
+          (template_app
+            (template_hole 0,
+             template_app (template_hole 7, template_var 1)),
+           template_app (template_hole 7, template_var 0))))),
+    ("Hensel_Lifting_Type_Based.mod_mod_le",
+     "[| ?a <= ?b; 0 < ?a; 0 <= ?c |] ==> ?c mod ?a mod ?b = ?c mod ?a",
+     template_implication
+      ([template_inequation (less_equals, template_var 2, template_var 1),
+        template_inequation (less_than, template_hole 2, template_var 2),
+        template_inequation (less_equals, template_hole 2, template_var 0)],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 0,
+             template_app
+              (template_app (template_hole 0, template_var 0),
+               template_var 2)),
+           template_var 1),
+         template_app
+          (template_app (template_hole 0, template_var 0),
+           template_var 2)))),
+    ("Hensel_Lifting_Type_Based.degree_smult_eqI",
+     "(degree ?p ~= 0 ==> ?a * lead_coeff ?p ~= (0::?'a)) ==>
+      degree (Polynomial.smult ?a ?p) = degree ?p",
+     template_implication
+      ([template_implication
+         ([template_negation
+            (
+               template_equation
+                (template_app (template_hole 6, template_var 1),
+                 template_hole 5)
+               )],
+          template_negation
+           (
+              template_equation
+               (template_app
+                 (template_app (template_hole 3, template_var 0),
+                  template_app
+                   (template_app (template_hole 2, template_var 1),
+                    template_app (template_hole 6, template_var 1))),
+                template_hole 1)
+              ))],
+       template_equation
+        (template_app
+          (template_hole 6,
+           template_app
+            (template_app (template_hole 0, template_var 0),
+             template_var 1)),
+         template_app (template_hole 6, template_var 1)))),
+    ("Hensel_Lifting_Type_Based.dupe_monic",
+     "[| ?D * ?S + ?H * ?T = 1; monic ?D;
+         Hensel_Lifting_Type_Based.dupe_monic ?D ?H ?S ?T ?U = (?A, ?B) |]
+      ==> ?B = 0 | degree ?B < degree ?D",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app
+             (template_hole 12,
+              template_app
+               (template_app (template_hole 11, template_var 6),
+                template_var 5)),
+            template_app
+             (template_app (template_hole 11, template_var 4),
+              template_var 3)),
+          template_hole 10),
+        template_equation
+         (template_app
+           (template_app (template_hole 8, template_var 6),
+            template_app (template_hole 7, template_var 6)),
+          template_hole 6),
+        template_equation
+         (template_app
+           (template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 4, template_var 6),
+                  template_var 4),
+                template_var 5),
+              template_var 3),
+            template_var 2),
+          template_app
+           (template_app (template_hole 3, template_var 1),
+            template_var 0))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 2,
+               template_app
+                (template_app (template_hole 13, template_var 0),
+                 template_hole 1)),
+             template_app
+              (template_app
+                (template_hole 0,
+                 template_app (template_hole 7, template_var 0)),
+               template_app (template_hole 7, template_var 6)))
+           ))),
+    ("Hensel_Lifting_Type_Based.dupe_monic",
+     "[| ?D * ?S + ?H * ?T = 1; monic ?D;
+         Hensel_Lifting_Type_Based.dupe_monic ?D ?H ?S ?T ?U = (?A, ?B) |]
+      ==> ?A * ?D + ?B * ?H = ?U",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app
+             (template_hole 9,
+              template_app
+               (template_app (template_hole 8, template_var 6),
+                template_var 5)),
+            template_app
+             (template_app (template_hole 8, template_var 4),
+              template_var 3)),
+          template_hole 7),
+        template_equation
+         (template_app
+           (template_app (template_hole 5, template_var 6),
+            template_app (template_hole 4, template_var 6)),
+          template_hole 3),
+        template_equation
+         (template_app
+           (template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 1, template_var 6),
+                  template_var 4),
+                template_var 5),
+              template_var 3),
+            template_var 2),
+          template_app
+           (template_app (template_hole 0, template_var 1),
+            template_var 0))],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 9,
+             template_app
+              (template_app (template_hole 8, template_var 1),
+               template_var 6)),
+           template_app
+            (template_app (template_hole 8, template_var 0),
+             template_var 4)),
+         template_var 2))),
+    ("Hensel_Lifting_Type_Based.dupe_monic",
+     "[| ?D * ?S + ?H * ?T = 1; monic ?D;
+         Hensel_Lifting_Type_Based.dupe_monic ?D ?H ?S ?T ?U = (?A, ?B);
+         comm_monoid_mult_class.coprime ?D ?H; ?A' * ?D + ?B' * ?H = ?U;
+         ?B' = 0 | degree ?B' < degree ?D |]
+      ==> ?A' = ?A & ?B' = ?B",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app
+             (template_hole 14,
+              template_app
+               (template_app (template_hole 13, template_var 8),
+                template_var 7)),
+            template_app
+             (template_app (template_hole 13, template_var 6),
+              template_var 5)),
+          template_hole 12),
+        template_equation
+         (template_app
+           (template_app (template_hole 10, template_var 8),
+            template_app (template_hole 9, template_var 8)),
+          template_hole 8),
+        template_equation
+         (template_app
+           (template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 6, template_var 8),
+                  template_var 6),
+                template_var 7),
+              template_var 5),
+            template_var 4),
+          template_app
+           (template_app (template_hole 5, template_var 3),
+            template_var 2)),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 4, template_var 8),
+              template_var 6)
+            ),
+        template_equation
+         (template_app
+           (template_app
+             (template_hole 14,
+              template_app
+               (template_app (template_hole 13, template_var 1),
+                template_var 8)),
+            template_app
+             (template_app (template_hole 13, template_var 0),
+              template_var 6)),
+          template_var 4),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 3,
+                template_app
+                 (template_app (template_hole 15, template_var 0),
+                  template_hole 2)),
+              template_app
+               (template_app
+                 (template_hole 1,
+                  template_app (template_hole 9, template_var 0)),
+                template_app (template_hole 9, template_var 8)))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 0,
+               template_app
+                (template_app (template_hole 15, template_var 1),
+                 template_var 3)),
+             template_app
+              (template_app (template_hole 15, template_var 0),
+               template_var 2))
+           ))),
+    ("Hensel_Lifting_Type_Based.hensel_1",
+     "[| CARD(?'pq) = CARD(?'p) * CARD(?'q); CARD(?'p) dvd CARD(?'q);
+         #?u = ?v * ?w; degree ?u = degree ?v + degree ?w; monic ?v;
+         comm_monoid_mult_class.coprime (#?v) (#?w);
+         hensel_1 TYPE(?'p) ?u ?v ?w = (?V', ?W') |]
+      ==> ?u = ?V' * ?W' &
+          ?v = #?V' &
+          ?w = #?W' &
+          degree ?V' = degree ?v &
+          degree ?W' = degree ?w &
+          monic ?V' & comm_monoid_mult_class.coprime (#?V') (#?W')",
+     template_implication
+      ([template_equation
+         (template_app (template_hole 34, template_hole 33),
+          template_app
+           (template_app
+             (template_hole 32,
+              template_app (template_hole 31, template_hole 30)),
+            template_app (template_hole 29, template_hole 28))),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 27,
+                template_app (template_hole 31, template_hole 30)),
+              template_app (template_hole 29, template_hole 28))
+            ),
+        template_equation
+         (template_app
+           (template_app (template_hole 25, template_hole 24),
+            template_app
+             (template_app (template_hole 23, template_hole 22),
+              template_var 4)),
+          template_app
+           (template_app (template_hole 21, template_var 3),
+            template_var 2)),
+        template_equation
+         (template_app (template_hole 20, template_var 4),
+          template_app
+           (template_app
+             (template_hole 19,
+              template_app (template_hole 18, template_var 3)),
+            template_app (template_hole 18, template_var 2))),
+        template_equation
+         (template_app
+           (template_app (template_hole 16, template_var 3),
+            template_app (template_hole 18, template_var 3)),
+          template_hole 15),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 14,
+                template_app
+                 (template_app (template_hole 13, template_hole 12),
+                  template_app
+                   (template_app (template_hole 11, template_hole 10),
+                    template_var 3))),
+              template_app
+               (template_app (template_hole 13, template_hole 12),
+                template_app
+                 (template_app (template_hole 11, template_hole 10),
+                  template_var 2)))
+            ),
+        template_equation
+         (template_app
+           (template_app
+             (template_app
+               (template_app (template_hole 8, template_hole 7),
+                template_var 4),
+              template_var 3),
+            template_var 2),
+          template_app
+           (template_app (template_hole 6, template_var 1),
+            template_var 0))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 5,
+               template_app
+                (template_app (template_hole 4, template_var 4),
+                 template_app
+                  (template_app (template_hole 3, template_var 1),
+                   template_var 0))),
+             template_app
+              (template_app
+                (template_hole 5,
+                 template_app
+                  (template_app (template_hole 26, template_var 3),
+                   template_app
+                    (template_app (template_hole 25, template_hole 24),
+                     template_app
+                      (template_app (template_hole 23, template_hole 22),
+                       template_var 1)))),
+               template_app
+                (template_app
+                  (template_hole 5,
+                   template_app
+                    (template_app (template_hole 26, template_var 2),
+                     template_app
+                      (template_app (template_hole 25, template_hole 24),
+                       template_app
+                        (template_app (template_hole 23, template_hole 22),
+                         template_var 0)))),
+                 template_app
+                  (template_app
+                    (template_hole 5,
+                     template_app
+                      (template_app
+                        (template_hole 35,
+                         template_app (template_hole 20, template_var 1)),
+                       template_app (template_hole 18, template_var 3))),
+                   template_app
+                    (template_app
+                      (template_hole 5,
+                       template_app
+                        (template_app
+                          (template_hole 35,
+                           template_app (template_hole 20, template_var 0)),
+                         template_app (template_hole 18, template_var 2))),
+                     template_app
+                      (template_app
+                        (template_hole 5,
+                         template_app
+                          (template_app
+                            (template_hole 2,
+                             template_app
+                              (template_app
+                                (template_hole 1, template_var 1),
+                               template_app
+                                (template_hole 20, template_var 1))),
+                           template_hole 0)),
+                       template_app
+                        (template_app
+                          (template_hole 14,
+                           template_app
+                            (template_app
+                              (template_hole 13, template_hole 12),
+                             template_app
+                              (template_app
+                                (template_hole 23, template_hole 22),
+                               template_var 1))),
+                         template_app
+                          (template_app
+                            (template_hole 13, template_hole 12),
+                           template_app
+                            (template_app
+                              (template_hole 23, template_hole 22),
+                             template_var 0)))))))))
+           ))),
+    ("Hensel_Lifting_Type_Based.hensel_1",
+     "[| CARD(?'pq) = CARD(?'p) * CARD(?'q); CARD(?'p) dvd CARD(?'q);
+         #?u = ?v * ?w; degree ?u = degree ?v + degree ?w; monic ?v;
+         comm_monoid_mult_class.coprime (#?v) (#?w);
+         hensel_1 TYPE(?'p) ?u ?v ?w = (?V', ?W') |]
+      ==> ALL V'' W''.
+             ?u = V'' * W'' -->
+             ?v = #V'' -->
+             ?w = #W'' -->
+             degree V'' = degree ?v -->
+             degree W'' = degree ?w -->
+             lead_coeff V'' = @lead_coeff ?v --> V'' = ?V' & W'' = ?W'",
+     template_implication
+      ([template_equation
+         (template_app (template_hole 36, template_hole 35),
+          template_app
+           (template_app
+             (template_hole 34,
+              template_app (template_hole 33, template_hole 32)),
+            template_app (template_hole 31, template_hole 30))),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 29,
+                template_app (template_hole 33, template_hole 32)),
+              template_app (template_hole 31, template_hole 30))
+            ),
+        template_equation
+         (template_app
+           (template_app (template_hole 27, template_hole 26),
+            template_app
+             (template_app (template_hole 25, template_hole 24),
+              template_var 4)),
+          template_app
+           (template_app (template_hole 23, template_var 3),
+            template_var 2)),
+        template_equation
+         (template_app (template_hole 22, template_var 4),
+          template_app
+           (template_app
+             (template_hole 21,
+              template_app (template_hole 20, template_var 3)),
+            template_app (template_hole 20, template_var 2))),
+        template_equation
+         (template_app
+           (template_app (template_hole 18, template_var 3),
+            template_app (template_hole 20, template_var 3)),
+          template_hole 17),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 16,
+                template_app
+                 (template_app (template_hole 15, template_hole 14),
+                  template_app
+                   (template_app (template_hole 13, template_hole 12),
+                    template_var 3))),
+              template_app
+               (template_app (template_hole 15, template_hole 14),
+                template_app
+                 (template_app (template_hole 13, template_hole 12),
+                  template_var 2)))
+            ),
+        template_equation
+         (template_app
+           (template_app
+             (template_app
+               (template_app (template_hole 10, template_hole 9),
+                template_var 4),
+              template_var 3),
+            template_var 2),
+          template_app
+           (template_app (template_hole 8, template_var 1),
+            template_var 0))],
+       template_predicate (template_app (template_hole 7, t_empty))))]:
+   (string * thm * template) list
+### theory "Draft.Hensel_Lifting_Type_BasedTemplates"
+### 1.302s elapsed time, 1.541s cpu time, 0.195s GC time
+val it = (): unit

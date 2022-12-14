@@ -1,0 +1,4256 @@
+Loading theory "Draft.Cache_Tactics" (required by "Draft.OG_TacticsMoreTemplates" via "Draft.OG_Tactics")
+Loading theory "Draft.Language" (required by "Draft.OG_TacticsMoreTemplates" via "Draft.OG_Tactics" via "Draft.OG_Soundness" via "Draft.OG_Hoare" via "Draft.OG_Annotations" via "Draft.SmallStep")
+Loading theory "HOL-Library.Function_Algebras" (required by "Draft.OG_TacticsMoreTemplates" via "Draft.ExtrEqs" via "HOL-Library.BigO")
+Loading theory "HOL-Library.Nat_Bijection" (required by "Draft.OG_TacticsMoreTemplates" via "Draft.ExtrEqs" via "HOL-Library.Stream")
+instantiation
+  fun :: (type, plus) plus
+  plus_fun == plus :: ('a => 'b) => ('a => 'b) => 'a => 'b
+signature CACHE_TACTICS =
+  sig
+    val PARALLEL_GOALS_CACHE: cache_id -> tactic -> tactic
+    val SUBGOAL_CACHE: cache_id -> (term * int -> tactic) -> int -> tactic
+    eqtype cache_id
+    val cacheify_tactic:
+       int ->
+         (Proof.context * cache_id list -> int -> tactic) ->
+           Proof.context -> int -> tactic
+    val clear_subgoal_cache: cache_id -> unit
+    val new_subgoal_cache: unit -> cache_id
+  end
+instantiation
+  fun :: (type, zero) zero
+  zero_fun == zero_class.zero :: 'a => 'b
+instantiation
+  fun :: (type, times) times
+  times_fun == times :: ('a => 'b) => ('a => 'b) => 'a => 'b
+instantiation
+  fun :: (type, one) one
+  one_fun == one_class.one :: 'a => 'b
+structure Cache_Tactics: CACHE_TACTICS
+### theory "Draft.Cache_Tactics"
+### 0.074s elapsed time, 0.331s cpu time, 0.000s GC time
+Loading theory "HOL-Library.Set_Algebras" (required by "Draft.OG_TacticsMoreTemplates" via "Draft.ExtrEqs" via "HOL-Library.BigO")
+Found termination order: "(%p. size (snd p)) <*mlex*> {}"
+instantiation
+  set :: (plus) plus
+  plus_set == plus :: 'a set => 'a set => 'a set
+instantiation
+  set :: (times) times
+  times_set == times :: 'a set => 'a set => 'a set
+instantiation
+  set :: (zero) zero
+  zero_set == zero_class.zero :: 'a set
+### theory "HOL-Library.Function_Algebras"
+### 0.125s elapsed time, 0.525s cpu time, 0.035s GC time
+Loading theory "HOL-Library.Tree" (required by "Draft.OG_TacticsMoreTemplates" via "Draft.ExtrEqs" via "Draft.Templates")
+instantiation
+  set :: (one) one
+  one_set == one_class.one :: 'a set
+Found termination order: "size_list size <*mlex*> {}"
+### theory "HOL-Library.Set_Algebras"
+### 0.222s elapsed time, 0.866s cpu time, 0.126s GC time
+Loading theory "HOL-Library.BigO" (required by "Draft.OG_TacticsMoreTemplates" via "Draft.ExtrEqs")
+### theory "HOL-Library.Nat_Bijection"
+### 0.331s elapsed time, 1.330s cpu time, 0.126s GC time
+Loading theory "HOL-Library.Stream" (required by "Draft.OG_TacticsMoreTemplates" via "Draft.ExtrEqs")
+consts
+  left :: "'a tree => 'a tree"
+consts
+  right :: "'a tree => 'a tree"
+Found termination order: "size <*mlex*> {}"
+consts
+  shift :: "'a list => 'a stream => 'a stream"
+Proofs for coinductive predicate(s) "streamsp"
+  Proving monotonicity ...
+Found termination order: "size <*mlex*> {}"
+consts
+  snth :: "'a stream => nat => 'a"
+Found termination order: "size <*mlex*> {}"
+consts
+  stake :: "nat => 'a stream => 'a list"
+consts
+  sdrop :: "nat => 'a stream => 'a stream"
+class height = type +
+  fixes height :: "'a => nat"
+instantiation
+  tree :: (type) height
+  height_tree == height :: 'a tree => nat
+consts
+  sfilter :: "('a => bool) => 'a stream => 'a stream"
+Found termination order: "size <*mlex*> {}"
+consts
+  cycle :: "'a list => 'a stream"
+consts
+  siterate :: "('a => 'a) => 'a => 'a stream"
+Found termination order: "size <*mlex*> {}"
+consts
+  flat :: "'a list stream => 'a stream"
+Found termination order: "size <*mlex*> {}"
+### theory "HOL-Library.BigO"
+### 1.003s elapsed time, 3.783s cpu time, 0.827s GC time
+consts
+  sinterleave :: "'a stream => 'a stream => 'a stream"
+consts
+  szip :: "'a stream => 'b stream => ('a * 'b) stream"
+Found termination order: "size <*mlex*> {}"
+consts
+  smap2 :: "('a => 'b => 'c) => 'a stream => 'b stream => 'c stream"
+### theory "HOL-Library.Stream"
+### 1.095s elapsed time, 4.034s cpu time, 0.827s GC time
+Found termination order: "size <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+Found termination order: "(%p. size (fst p)) <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+Found termination order: "(%p. size (snd p)) <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+### theory "HOL-Library.Tree"
+### 2.013s elapsed time, 6.383s cpu time, 1.147s GC time
+Loading theory "Draft.Templates" (required by "Draft.OG_TacticsMoreTemplates" via "Draft.ExtrEqs")
+datatype template_term
+=
+     t_empty
+   | template_app of template_term * template_term
+   | template_hole of int
+   | template_var of int
+datatype sign
+= equals | greater_equals | greater_than | less_equals | less_than
+datatype template
+=
+     template_bimplication of template * template
+   | template_dunno
+   | template_equation of template_term * template_term
+   | template_implication of template list * template
+   | template_inequation of sign * template_term * template_term
+   | template_negation of template
+   | template_predicate of template_term
+constructor t_empty: template_term
+constructor template_app: template_term * template_term -> template_term
+constructor template_hole: int -> template_term
+constructor template_var: int -> template_term
+constructor equals: sign
+constructor greater_equals: sign
+constructor greater_than: sign
+constructor less_equals: sign
+constructor less_than: sign
+constructor template_bimplication: template * template -> template
+constructor template_dunno: template
+constructor template_equation: template_term * template_term -> template
+constructor template_implication: template list * template -> template
+constructor template_inequation:
+   sign * template_term * template_term -> template
+constructor template_negation: template -> template
+constructor template_predicate: template_term -> template
+val vfs = fn: term -> (indexname * typ) list * (string * typ) list
+val indexOf = fn: ''a list -> ''a -> int -> int
+val has_eq = fn: term -> bool
+val term2template = fn:
+   (indexname * typ) list -> (string * typ) list -> term -> template_term
+val lemma2predicate = fn: term -> term -> template
+val makeTemplatewithContext = fn: term -> term -> template
+val lemma2template = fn: term -> template
+val thm2template = fn: thm -> template
+val tterm2string = fn: template_term -> string
+val template2string = fn: template -> string
+val t = "height ?t <= size ?t": thm
+val th =
+   Const ("HOL.Trueprop", "bool => prop") $
+     (Const ("Orderings.ord_class.less_eq", "nat => nat => bool") $
+       (Const ("Tree.height_class.height", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree")) $
+       (Const ("Nat.size_class.size", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree"))):
+   term
+### theory "Draft.Templates"
+### 0.052s elapsed time, 0.100s cpu time, 0.000s GC time
+Loading theory "Draft.ExtrEqs" (required by "Draft.OG_TacticsMoreTemplates")
+consts
+  switch ::
+    "('s => 'v) => ('v set * ('s, 'p, 'f) com) list => ('s, 'p, 'f) com"
+consts
+  guards :: "('f * 's set) list => ('s, 'p, 'f) com => ('s, 'p, 'f) com"
+### theory "Draft.Language"
+### 2.488s elapsed time, 7.641s cpu time, 1.237s GC time
+Loading theory "Draft.SmallStep" (required by "Draft.OG_TacticsMoreTemplates" via "Draft.OG_Tactics" via "Draft.OG_Soundness" via "Draft.OG_Hoare" via "Draft.OG_Annotations")
+val eqpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Var (("_dummy_", 2), "?'a"))
+       ):
+   term Find_Theorems.criterion
+val badeqpattern = Pattern (Const ("Pure.eq", "?'a => ?'a => prop")):
+   term Find_Theorems.criterion
+val undefpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Const ("HOL.undefined", "?'a"))
+       ):
+   term Find_Theorems.criterion
+val thmpattern =
+   Pattern
+    (Const ("HOL.Trueprop", "bool => prop") $ Var (("_dummy_", 1), "bool")):
+   term Find_Theorems.criterion
+val badnames =
+   ["*nitpick*", "*Nitpick*", "*full_exhaustive*", "*_def*", "Enum.finite*",
+    "*Quickcheck*", "ATP*", "*Nunchaku*", "*Code*", "*BNF*", "*SMT*",
+    "*.*.*"]:
+   string list
+val unwanted_names =
+   [(false, Name "*nitpick*"), (false, Name "*Nitpick*"),
+    (false, Name "*full_exhaustive*"), (false, Name "*_def*"),
+    (false, Name "Enum.finite*"), (false, Name "*Quickcheck*"),
+    (false, Name "ATP*"), (false, Name "*Nunchaku*"),
+    (false, Name "*Code*"), (false, Name "*BNF*"), (false, Name "*SMT*"),
+    (false, Name "*.*.*")]:
+   (bool * term Find_Theorems.criterion) list
+val has_vars = fn: term -> bool
+val get_all_eqs = fn: string -> Proof.context -> (string * thm) list
+val get_all_thms = fn: string -> Proof.context -> (string * thm) list
+val get_noneq_thms = fn: string -> Proof.context -> (string * thm) list
+val template_eqs = fn:
+   string -> Proof.context -> (string * thm * template) list
+val template_thms = fn:
+   string -> Proof.context -> (string * thm * template) list
+### theory "Draft.ExtrEqs"
+### 0.533s elapsed time, 1.121s cpu time, 0.110s GC time
+consts
+  redex :: "('s, 'p, 'f) com => ('s, 'p, 'f) com"
+consts
+  atom_com :: "('s, 'p, 'f) com => bool"
+Proofs for inductive predicate(s) "step"
+  Proving monotonicity ...
+### theory "Draft.SmallStep"
+### 3.685s elapsed time, 4.273s cpu time, 0.301s GC time
+Loading theory "Draft.OG_Annotations" (required by "Draft.OG_TacticsMoreTemplates" via "Draft.OG_Tactics" via "Draft.OG_Soundness" via "Draft.OG_Hoare")
+Loading theory "Draft.SeqCatch_decomp" (required by "Draft.OG_TacticsMoreTemplates" via "Draft.OG_Tactics" via "Draft.OG_Soundness")
+### theory "Draft.SeqCatch_decomp"
+### 0.178s elapsed time, 0.398s cpu time, 0.052s GC time
+Found termination order: "size <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+Found termination order: "(%p. size (fst p)) <*mlex*> {}"
+Found termination order: "(%p. size (fst p)) <*mlex*> {}"
+Proofs for inductive predicate(s) "ann_matches"
+  Proving monotonicity ...
+consts
+  ann_guards ::
+    "'s set => ('f * 's set) list => ('s, 'p, 'f) ann => ('s, 'p, 'f) ann"
+### theory "Draft.OG_Annotations"
+### 1.278s elapsed time, 1.680s cpu time, 0.194s GC time
+Loading theory "Draft.OG_Hoare" (required by "Draft.OG_TacticsMoreTemplates" via "Draft.OG_Tactics" via "Draft.OG_Soundness")
+Proofs for inductive predicate(s) "atomicsR"
+  Proving monotonicity ...
+Proofs for inductive predicate(s) "assertionsR"
+  Proving monotonicity ...
+Proofs for inductive predicate(s) "oghoare", "oghoare_seq"
+  Proving monotonicity ...
+### theory "Draft.OG_Hoare"
+### 0.769s elapsed time, 0.863s cpu time, 0.081s GC time
+Loading theory "Draft.OG_Soundness" (required by "Draft.OG_TacticsMoreTemplates" via "Draft.OG_Tactics")
+### Ambiguous input (line 101 of "$AFP/Complx/OG_Soundness.thy") produces 6 parse trees:
+### ("\<^const>Pure.imp"
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^const>OG_Hoare.oghoare" ("_position" \<Gamma>)
+###       ("_position" \<Theta>) ("_position" F) ("_position" P) ("_position" x)
+###       ("_position" Q) ("_position" A)))
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^const>HOL.All_binder" ("_idts" ("_position" b) ("_position" c))
+###       ("\<^const>HOL.implies"
+###         ("\<^const>HOL.eq" ("_position" x)
+###           ("_applC" ("_position" Await)
+###             ("_cargs" ("_position" b) ("_position" c))))
+###         ("\<^const>HOL.Ex_binder"
+###           ("_idts" ("_position" r)
+###             ("_idts" ("_position" P')
+###               ("_idts" ("_position" Q') ("_position" A'))))
+###           ("\<^const>HOL.conj"
+###             ("\<^const>HOL.eq" ("_position" P)
+###               ("_applC" ("_position" AnnRec)
+###                 ("_cargs" ("_position" r) ("_position" P'))))
+###             ("\<^const>Set.subset_eq"
+###               ("\<^const>OG_Hoare.oghoare_seq" ("_position" \<Gamma>)
+###                 ("_position" \<Theta>) ("_position" F)
+###                 ("\<^const>Set.inter" ("_position" r) ("_position" b))
+###                 ("_position" P') ("_position" c) ("_position" Q')
+###                 ("\<^const>HOL.conj" ("_position" A')
+###                   ("\<^const>HOL.conj"
+###                     ("_applC" ("_position" atom_com) ("_position" c))
+###                     ("\<^const>HOL.conj"
+###                       ("\<^const>Set.subset_eq" ("_position" Q')
+###                         ("_position" Q))
+###                       ("_position" A')))))
+###               ("_position" A))))))))
+### ("\<^const>Pure.imp"
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^const>OG_Hoare.oghoare" ("_position" \<Gamma>)
+###       ("_position" \<Theta>) ("_position" F) ("_position" P) ("_position" x)
+###       ("_position" Q) ("_position" A)))
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^const>HOL.All_binder" ("_idts" ("_position" b) ("_position" c))
+###       ("\<^const>HOL.implies"
+###         ("\<^const>HOL.eq" ("_position" x)
+###           ("_applC" ("_position" Await)
+###             ("_cargs" ("_position" b) ("_position" c))))
+###         ("\<^const>HOL.Ex_binder"
+###           ("_idts" ("_position" r)
+###             ("_idts" ("_position" P')
+###               ("_idts" ("_position" Q') ("_position" A'))))
+###           ("\<^const>HOL.conj"
+###             ("\<^const>HOL.eq" ("_position" P)
+###               ("_applC" ("_position" AnnRec)
+###                 ("_cargs" ("_position" r) ("_position" P'))))
+###             ("\<^const>HOL.conj"
+###               ("\<^const>OG_Hoare.oghoare_seq" ("_position" \<Gamma>)
+###                 ("_position" \<Theta>) ("_position" F)
+###                 ("\<^const>Set.inter" ("_position" r) ("_position" b))
+###                 ("_position" P') ("_position" c) ("_position" Q')
+###                 ("\<^const>HOL.conj" ("_position" A')
+###                   ("_applC" ("_position" atom_com) ("_position" c))))
+###               ("\<^const>HOL.conj"
+###                 ("\<^const>Set.subset_eq" ("_position" Q') ("_position" Q))
+###                 ("\<^const>Set.subset_eq" ("_position" A')
+###                   ("_position" A))))))))))
+### ("\<^const>Pure.imp"
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^const>OG_Hoare.oghoare" ("_position" \<Gamma>)
+###       ("_position" \<Theta>) ("_position" F) ("_position" P) ("_position" x)
+###       ("_position" Q) ("_position" A)))
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^const>HOL.All_binder" ("_idts" ("_position" b) ("_position" c))
+###       ("\<^const>HOL.implies"
+###         ("\<^const>HOL.eq" ("_position" x)
+###           ("_applC" ("_position" Await)
+###             ("_cargs" ("_position" b) ("_position" c))))
+###         ("\<^const>HOL.Ex_binder"
+###           ("_idts" ("_position" r)
+###             ("_idts" ("_position" P')
+###               ("_idts" ("_position" Q') ("_position" A'))))
+###           ("\<^const>HOL.conj"
+###             ("\<^const>HOL.eq" ("_position" P)
+###               ("_applC" ("_position" AnnRec)
+###                 ("_cargs" ("_position" r) ("_position" P'))))
+###             ("\<^const>OG_Hoare.oghoare_seq" ("_position" \<Gamma>)
+###               ("_position" \<Theta>) ("_position" F)
+###               ("\<^const>Set.inter" ("_position" r) ("_position" b))
+###               ("_position" P') ("_position" c) ("_position" Q')
+###               ("\<^const>HOL.conj" ("_position" A')
+###                 ("\<^const>HOL.conj"
+###                   ("_applC" ("_position" atom_com) ("_position" c))
+###                   ("\<^const>HOL.conj"
+###                     ("\<^const>Set.subset_eq" ("_position" Q')
+###                       ("_position" Q))
+###                     ("\<^const>Set.subset_eq" ("_position" A')
+###                       ("_position" A))))))))))))
+### ("\<^const>Pure.imp"
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^const>OG_Hoare.oghoare" ("_position" \<Gamma>)
+###       ("_position" \<Theta>) ("_position" F) ("_position" P) ("_position" x)
+###       ("_position" Q) ("_position" A)))
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^const>HOL.All_binder" ("_idts" ("_position" b) ("_position" c))
+###       ("\<^const>HOL.implies"
+###         ("\<^const>HOL.eq" ("_position" x)
+###           ("_applC" ("_position" Await)
+###             ("_cargs" ("_position" b) ("_position" c))))
+###         ("\<^const>HOL.Ex_binder"
+###           ("_idts" ("_position" r)
+###             ("_idts" ("_position" P')
+###               ("_idts" ("_position" Q') ("_position" A'))))
+###           ("\<^const>HOL.conj"
+###             ("\<^const>HOL.eq" ("_position" P)
+###               ("_applC" ("_position" AnnRec)
+###                 ("_cargs" ("_position" r) ("_position" P'))))
+###             ("\<^const>HOL.conj"
+###               ("\<^const>OG_Hoare.oghoare_seq" ("_position" \<Gamma>)
+###                 ("_position" \<Theta>) ("_position" F)
+###                 ("\<^const>Set.inter" ("_position" r) ("_position" b))
+###                 ("_position" P') ("_position" c) ("_position" Q')
+###                 ("_position" A'))
+###               ("\<^const>HOL.conj"
+###                 ("_applC" ("_position" atom_com) ("_position" c))
+###                 ("\<^const>HOL.conj"
+###                   ("\<^const>Set.subset_eq" ("_position" Q')
+###                     ("_position" Q))
+###                   ("\<^const>Set.subset_eq" ("_position" A')
+###                     ("_position" A)))))))))))
+### ("\<^const>Pure.imp"
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^const>OG_Hoare.oghoare" ("_position" \<Gamma>)
+###       ("_position" \<Theta>) ("_position" F) ("_position" P) ("_position" x)
+###       ("_position" Q) ("_position" A)))
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^const>HOL.All_binder" ("_idts" ("_position" b) ("_position" c))
+###       ("\<^const>HOL.implies"
+###         ("\<^const>HOL.eq" ("_position" x)
+###           ("_applC" ("_position" Await)
+###             ("_cargs" ("_position" b) ("_position" c))))
+###         ("\<^const>HOL.Ex_binder"
+###           ("_idts" ("_position" r)
+###             ("_idts" ("_position" P')
+###               ("_idts" ("_position" Q') ("_position" A'))))
+###           ("\<^const>HOL.conj"
+###             ("\<^const>HOL.eq" ("_position" P)
+###               ("_applC" ("_position" AnnRec)
+###                 ("_cargs" ("_position" r) ("_position" P'))))
+###             ("\<^const>HOL.conj"
+###               ("\<^const>OG_Hoare.oghoare_seq" ("_position" \<Gamma>)
+###                 ("_position" \<Theta>) ("_position" F)
+###                 ("\<^const>Set.inter" ("_position" r) ("_position" b))
+###                 ("_position" P') ("_position" c) ("_position" Q')
+###                 ("\<^const>HOL.conj" ("_position" A')
+###                   ("\<^const>HOL.conj"
+###                     ("_applC" ("_position" atom_com) ("_position" c))
+###                     ("\<^const>Set.subset_eq" ("_position" Q')
+###                       ("_position" Q)))))
+###               ("\<^const>Set.subset_eq" ("_position" A')
+###                 ("_position" A)))))))))
+### ("\<^const>Pure.imp"
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^const>OG_Hoare.oghoare" ("_position" \<Gamma>)
+###       ("_position" \<Theta>) ("_position" F) ("_position" P) ("_position" x)
+###       ("_position" Q) ("_position" A)))
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^const>HOL.All_binder" ("_idts" ("_position" b) ("_position" c))
+###       ("\<^const>HOL.implies"
+###         ("\<^const>HOL.eq" ("_position" x)
+###           ("_applC" ("_position" Await)
+###             ("_cargs" ("_position" b) ("_position" c))))
+###         ("\<^const>HOL.Ex_binder"
+###           ("_idts" ("_position" r)
+###             ("_idts" ("_position" P')
+###               ("_idts" ("_position" Q') ("_position" A'))))
+###           ("\<^const>HOL.conj"
+###             ("\<^const>HOL.eq" ("_position" P)
+###               ("_applC" ("_position" AnnRec)
+###                 ("_cargs" ("_position" r) ("_position" P'))))
+###             ("\<^const>HOL.conj"
+###               ("\<^const>Set.subset_eq"
+###                 ("\<^const>OG_Hoare.oghoare_seq" ("_position" \<Gamma>)
+###                   ("_position" \<Theta>) ("_position" F)
+###                   ("\<^const>Set.inter" ("_position" r) ("_position" b))
+###                   ("_position" P') ("_position" c) ("_position" Q')
+###                   ("\<^const>HOL.conj" ("_position" A')
+###                     ("\<^const>HOL.conj"
+###                       ("_applC" ("_position" atom_com) ("_position" c))
+###                       ("_position" Q'))))
+###                 ("_position" Q))
+###               ("\<^const>Set.subset_eq" ("_position" A')
+###                 ("_position" A)))))))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ambiguous input (line 1754 of "$AFP/Complx/OG_Soundness.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.conj"
+###     ("\<^const>HOL.implies"
+###       ("\<^const>OG_Hoare.oghoare" ("_position" \<Gamma>)
+###         ("_position" \<Theta>) ("_position" F) ("_position" P)
+###         ("_position" c) ("_position" Q) ("_position" A))
+###       ("\<^const>OG_Hoare.valid" ("_position" \<Gamma>) ("_position" F)
+###         ("_applC" ("_position" pre) ("_position" P)) ("_position" c)
+###         ("_position" Q) ("_position" A)))
+###     ("\<^const>HOL.implies"
+###       ("\<^const>OG_Hoare.oghoare_seq" ("_position" \<Gamma>)
+###         ("_position" \<Theta>) ("_position" F) ("_position" P')
+###         ("_position" P) ("_position" c) ("_position" Q) ("_position" A))
+###       ("\<^const>OG_Hoare.valid" ("_position" \<Gamma>) ("_position" F)
+###         ("_position" P') ("_position" c) ("_position" Q) ("_position" A)))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.conj"
+###     ("\<^const>HOL.implies"
+###       ("\<^const>OG_Hoare.oghoare" ("_position" \<Gamma>)
+###         ("_position" \<Theta>) ("_position" F) ("_position" P)
+###         ("_position" c) ("_position" Q) ("_position" A))
+###       ("\<^const>OG_Hoare.valid" ("_position" \<Gamma>) ("_position" F)
+###         ("_applC" ("_position" pre) ("_position" P)) ("_position" c)
+###         ("_position" Q) ("_position" A)))
+###     ("\<^const>OG_Hoare.oghoare_seq" ("_position" \<Gamma>)
+###       ("_position" \<Theta>) ("_position" F) ("_position" P')
+###       ("_position" P) ("_position" c) ("_position" Q)
+###       ("\<^const>HOL.implies" ("_position" A)
+###         ("\<^const>OG_Hoare.valid" ("_position" \<Gamma>) ("_position" F)
+###           ("_position" P') ("_position" c) ("_position" Q)
+###           ("_position" A))))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### theory "Draft.OG_Soundness"
+### 0.753s elapsed time, 1.546s cpu time, 1.099s GC time
+Loading theory "Draft.OG_Tactics" (required by "Draft.OG_TacticsMoreTemplates")
+val hyp_tac = fn: int -> tactic
+val remove_single_Bound_mem = fn: Proof.context -> int -> tactic
+### ML warning (line 598 of "$AFP/Complx/OG_Tactics.thy"):
+### Value identifier (args) has not been referenced.
+### ML warning (line 605 of "$AFP/Complx/OG_Tactics.thy"):
+### Value identifier (args) has not been referenced.
+### ML warning (line 614 of "$AFP/Complx/OG_Tactics.thy"):
+### Value identifier (args) has not been referenced.
+### ML warning (line 623 of "$AFP/Complx/OG_Tactics.thy"):
+### Value identifier (args) has not been referenced.
+### ML warning (line 633 of "$AFP/Complx/OG_Tactics.thy"):
+### Value identifier (args) has not been referenced.
+val rt = fn: Proof.context -> thm -> int -> tactic
+val rts = fn: Proof.context -> thm list -> int -> tactic
+val conjI_Tac = fn: Proof.context -> (int -> tactic) -> int -> tactic
+val get_oghoare_simps = fn: Proof.context -> thm list
+val simp = fn: Proof.context -> thm list -> int -> tactic
+val simp_only = fn: Proof.context -> thm list -> int -> tactic
+val prod_sel_simp = fn: Proof.context -> int -> tactic
+val oghoare_simp = fn: Proof.context -> int -> tactic
+val ParallelConseq = fn: Proof.context -> int -> tactic
+val enable_trace = false: bool
+val trace = fn: string -> unit
+val HoareRuleTac = fn: Proof.context * int list -> int -> tactic
+val Call_asm_inst = fn: Proof.context -> int -> tactic
+val ParallelTac = fn: Proof.context * int list -> int -> tactic
+val MapAnn_Tac = fn: Proof.context * int list -> int -> tactic
+val interfree_Tac = fn: Proof.context * int list -> int -> tactic
+val interfree_swap_Tac = fn: Proof.context * int list -> int -> tactic
+val inter_aux_Par_Tac = fn: Proof.context * int list -> int -> tactic
+val interfree_aux_Tac = fn: Proof.context * int list -> int -> tactic
+val dest_inter_aux_Tac = fn: Proof.context * int list -> int -> tactic
+val dest_inter_right_Tac = fn: Proof.context * int list -> int -> tactic
+val oghoare_tac = fn: Proof.context -> int -> tactic
+val oghoare_tac' = fn: Proof.context -> int -> thm -> thm Seq.seq
+val oghoare_parallel_tac = fn: Proof.context -> int -> tactic
+val oghoare_interfree_tac = fn: Proof.context -> int -> tactic
+val oghoare_interfree_aux_tac = fn: Proof.context -> int -> tactic
+### theory "Draft.OG_Tactics"
+### 0.689s elapsed time, 0.730s cpu time, 0.058s GC time
+Loading theory "Draft.OG_TacticsMoreTemplates"
+val templateLemmas =
+   [("OG_Tactics.my_simp_list", "?t = ?t",
+     template_equation (template_var 0, template_var 0)),
+    ("OG_Tactics.my_simp_list", "~ ?n < 0",
+     template_negation
+      (template_inequation (less_than, template_var 0, template_hole 0))),
+    ("OG_Tactics.my_simp_list", "rel_option ?R None None",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_app (template_hole 2, template_var 0),
+             template_hole 1),
+           template_hole 0)
+         )),
+    ("OG_Tactics.my_simp_list", "0 ~= Suc ?m",
+     template_negation
+      (
+         template_equation
+          (template_hole 1, template_app (template_hole 0, template_var 0))
+         )),
+    ("OG_Tactics.my_simp_list", "Suc ?m ~= 0",
+     template_negation
+      (
+         template_equation
+          (template_app (template_hole 1, template_var 0), template_hole 0)
+         )),
+    ("OG_Tactics.my_simp_list", "None ~= Some ?x2.0",
+     template_negation
+      (
+         template_equation
+          (template_hole 1, template_app (template_hole 0, template_var 0))
+         )),
+    ("OG_Tactics.my_simp_list", "Some ?x2.0 ~= None",
+     template_negation
+      (
+         template_equation
+          (template_app (template_hole 1, template_var 0), template_hole 0)
+         )),
+    ("OG_Tactics.my_simp_list", "pre (AnnExpr ?r) = ?r",
+     template_equation
+      (template_app
+        (template_hole 1, template_app (template_hole 0, template_var 0)),
+       template_var 0)),
+    ("OG_Tactics.oghoare_simps", "guards [] ?c = ?c",
+     template_equation
+      (template_app
+        (template_app (template_hole 1, template_hole 0), template_var 0),
+       template_var 0)),
+    ("OG_Tactics.my_simp_list", "map_option ?f None = None",
+     template_equation
+      (template_app
+        (template_app (template_hole 2, template_var 0), template_hole 1),
+       template_hole 0)),
+    ("OG_Tactics.my_simp_list", "~ rel_option ?R None (Some ?y2.0)",
+     template_negation
+      (
+         template_predicate
+          (
+             template_app
+              (template_app
+                (template_app (template_hole 2, template_var 1),
+                 template_hole 1),
+               template_app (template_hole 0, template_var 0))
+             )
+         )),
+    ("OG_Tactics.my_simp_list", "~ rel_option ?R (Some ?y2.0) None",
+     template_negation
+      (
+         template_predicate
+          (
+             template_app
+              (template_app
+                (template_app (template_hole 2, template_var 1),
+                 template_app (template_hole 1, template_var 0)),
+               template_hole 0)
+             )
+         )),
+    ("OG_Tactics.my_simp_list", "fst (?x1.0, ?x2.0) = ?x1.0",
+     template_equation
+      (template_app
+        (template_hole 1,
+         template_app
+          (template_app (template_hole 0, template_var 1), template_var 0)),
+       template_var 1)),
+    ("OG_Tactics.my_simp_list", "snd (?x1.0, ?x2.0) = ?x2.0",
+     template_equation
+      (template_app
+        (template_hole 1,
+         template_app
+          (template_app (template_hole 0, template_var 1), template_var 0)),
+       template_var 0)),
+    ("OG_Tactics.my_simp_list",
+     "(case None of None => ?f1.0 | Some x => ?f2.0 x) = ?f1.0",
+     template_equation
+      (template_app
+        (template_app
+          (template_app (template_hole 1, template_var 1), template_var 0),
+         template_hole 0),
+       template_var 1)),
+    ("OG_Tactics.my_simp_list", "rec_option ?f1.0 ?f2.0 None = ?f1.0",
+     template_equation
+      (template_app
+        (template_app
+          (template_app (template_hole 1, template_var 1), template_var 0),
+         template_hole 0),
+       template_var 1)),
+    ("OG_Tactics.my_simp_list", "pre (AnnCall ?r ?n) = ?r",
+     template_equation
+      (template_app
+        (template_hole 1,
+         template_app
+          (template_app (template_hole 0, template_var 1), template_var 0)),
+       template_var 1)),
+    ("OG_Tactics.my_simp_list", "pre (AnnRec ?r ?e) = ?r",
+     template_equation
+      (template_app
+        (template_hole 1,
+         template_app
+          (template_app (template_hole 0, template_var 1), template_var 0)),
+       template_var 1)),
+    ("OG_Tactics.oghoare_simps", "ann_guards ?uu [] ?c = ?c",
+     template_equation
+      (template_app
+        (template_app
+          (template_app (template_hole 1, template_var 1), template_hole 0),
+         template_var 0),
+       template_var 0)),
+    ("OG_Tactics.interfree_Empty", "interfree ?\<Gamma> ?\<Theta> ?F [] []",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 2, template_var 2),
+                 template_var 1),
+               template_var 0),
+             template_hole 1),
+           template_hole 0)
+         )),
+    ("OG_Tactics.MapAnnEmpty",
+     "?\<Gamma>,?\<Theta>[\<tturnstile>]\<^bsub>/?F \<^esub>[] []",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 2, template_var 2),
+                 template_var 1),
+               template_var 0),
+             template_hole 1),
+           template_hole 0)
+         )),
+    ("OG_Tactics.list_lemmas", "(?x # ?xs) ! 0 = ?x",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 2,
+           template_app
+            (template_app (template_hole 1, template_var 1),
+             template_var 0)),
+         template_hole 0),
+       template_var 1)),
+    ("OG_Tactics.ParallelConseq_list", "length (map ?f ?xs) = length ?xs",
+     template_equation
+      (template_app
+        (template_hole 2,
+         template_app
+          (template_app (template_hole 1, template_var 1), template_var 0)),
+       template_app (template_hole 0, template_var 0))),
+    ("OG_Tactics.my_simp_list", "set_option (Some ?x2.0) = {?x2.0}",
+     template_equation
+      (template_app
+        (template_hole 3, template_app (template_hole 2, template_var 0)),
+       template_app
+        (template_app (template_hole 1, template_var 0), template_hole 0))),
+    ("OG_Tactics.my_simp_list", "{x. x : ?A} = ?A",
+     template_equation
+      (template_app (template_hole 1, t_empty), template_var 0)),
+    ("OG_Tactics.my_simp_list",
+     "pre (AnnComp ?e\<^sub>1 ?e\<^sub>2) = pre ?e\<^sub>1",
+     template_equation
+      (template_app
+        (template_hole 1,
+         template_app
+          (template_app (template_hole 0, template_var 1), template_var 0)),
+       template_app (template_hole 1, template_var 1))),
+    ("OG_Tactics.my_simp_list",
+     "pre (AnnBin ?r ?e\<^sub>1 ?e\<^sub>2) = ?r",
+     template_equation
+      (template_app
+        (template_hole 1,
+         template_app
+          (template_app
+            (template_app (template_hole 0, template_var 2),
+             template_var 1),
+           template_var 0)),
+       template_var 2)),
+    ("OG_Tactics.my_simp_list", "pre (AnnWhile ?r ?i ?e) = ?r",
+     template_equation
+      (template_app
+        (template_hole 1,
+         template_app
+          (template_app
+            (template_app (template_hole 0, template_var 2),
+             template_var 1),
+           template_var 0)),
+       template_var 2)),
+    ("OG_Tactics.my_simp_list", "(ALL x:{}. ?P x) = True",
+     template_equation
+      (template_app
+        (template_app (template_hole 2, template_hole 1), t_empty),
+       template_hole 0)),
+    ("OG_Tactics.my_simp_list",
+     "strengthen_pre (AnnPar ?as) ?r' = AnnPar ?as",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 1, template_app (template_hole 0, template_var 1)),
+         template_var 0),
+       template_app (template_hole 0, template_var 1))),
+    ("OG_Tactics.my_simp_list",
+     "(case Some ?x2.0 of None => ?f1.0 | Some x => ?f2.0 x) = ?f2.0 ?x2.0",
+     template_equation
+      (template_app
+        (template_app
+          (template_app (template_hole 1, template_var 2), template_var 1),
+         template_app (template_hole 0, template_var 0)),
+       template_app (template_var 1, template_var 0))),
+    ("OG_Tactics.my_simp_list",
+     "rec_option ?f1.0 ?f2.0 (Some ?x2.0) = ?f2.0 ?x2.0",
+     template_equation
+      (template_app
+        (template_app
+          (template_app (template_hole 1, template_var 2), template_var 1),
+         template_app (template_hole 0, template_var 0)),
+       template_app (template_var 1, template_var 0))),
+    ("OG_Tactics.list_lemmas", "length (?x # ?xs) = Suc (length ?xs)",
+     template_equation
+      (template_app
+        (template_hole 2,
+         template_app
+          (template_app (template_hole 1, template_var 1), template_var 0)),
+       template_app
+        (template_hole 0, template_app (template_hole 2, template_var 0)))),
+    ("OG_Tactics.ParallelConseq_list", "length [?i..<?j] = ?j - ?i",
+     template_equation
+      (template_app
+        (template_hole 2,
+         template_app
+          (template_app (template_hole 1, template_var 1), template_var 0)),
+       template_app
+        (template_app (template_hole 0, template_var 0), template_var 1))),
+    ("OG_Tactics.my_simp_list",
+     "map_option ?f (Some ?x2.0) = Some (?f ?x2.0)",
+     template_equation
+      (template_app
+        (template_app (template_hole 2, template_var 1),
+         template_app (template_hole 1, template_var 0)),
+       template_app
+        (template_hole 0, template_app (template_var 1, template_var 0)))),
+    ("OG_Tactics.my_simp_list", "(Suc ?x2.0 = Suc ?y2.0) = (?x2.0 = ?y2.0)",
+     template_bimplication
+      (template_equation
+        (template_app (template_hole 0, template_var 1),
+         template_app (template_hole 0, template_var 0)),
+       template_equation (template_var 1, template_var 0))),
+    ("OG_Tactics.my_simp_list",
+     "(Some ?x2.0 = Some ?y2.0) = (?x2.0 = ?y2.0)",
+     template_bimplication
+      (template_equation
+        (template_app (template_hole 1, template_var 1),
+         template_app (template_hole 1, template_var 0)),
+       template_equation (template_var 1, template_var 0))),
+    ("OG_Tactics.my_simp_list",
+     "strengthen_pre (AnnExpr ?r) ?r' = AnnExpr (?r Int ?r')",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 2, template_app (template_hole 1, template_var 1)),
+         template_var 0),
+       template_app
+        (template_hole 1,
+         template_app
+          (template_app (template_hole 0, template_var 1),
+           template_var 0)))),
+    ("OG_Tactics.list_lemmas", "(?x # ?xs) ! Suc ?n = ?xs ! ?n",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 2,
+           template_app
+            (template_app (template_hole 1, template_var 2),
+             template_var 1)),
+         template_app (template_hole 0, template_var 0)),
+       template_app
+        (template_app (template_hole 2, template_var 1), template_var 0))),
+    ("OG_Tactics.ParallelConseq_list",
+     "length (?xs @ ?ys) = length ?xs + length ?ys",
+     template_equation
+      (template_app
+        (template_hole 2,
+         template_app
+          (template_app (template_hole 1, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 0, template_app (template_hole 2, template_var 1)),
+         template_app (template_hole 2, template_var 0)))),
+    ("OG_Tactics.my_simp_list", "(ALL x:UNIV. ?P x) = (ALL x. ?P x)",
+     template_equation
+      (template_app
+        (template_app (template_hole 2, template_hole 1), t_empty),
+       template_app (template_hole 0, t_empty))),
+    ("OG_Tactics.my_simp_list",
+     "rel_option ?R (Some ?x2.0) (Some ?y2.0) = ?R ?x2.0 ?y2.0",
+     template_equation
+      (template_app
+        (template_app
+          (template_app (template_hole 2, template_var 2),
+           template_app (template_hole 1, template_var 1)),
+         template_app (template_hole 0, template_var 0)),
+       template_app
+        (template_app (template_var 2, template_var 1), template_var 0))),
+    ("OG_Tactics.SeqThrowRule",
+     "?\<Gamma>, ?\<Theta>
+          \<tturnstile>\<^bsub>/?F\<^esub> ?A (AnnExpr ?x) Throw ?Q, ?A",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_app
+                    (template_app
+                      (template_app (template_hole 2, template_var 5),
+                       template_var 4),
+                     template_var 3),
+                   template_var 2),
+                 template_app (template_hole 1, template_var 1)),
+               template_hole 0),
+             template_var 0),
+           template_var 2)
+         )),
+    ("OG_Tactics.SeqSkipRule",
+     "?\<Gamma>, ?\<Theta>
+          \<tturnstile>\<^bsub>/?F\<^esub> ?Q (AnnExpr ?x) Skip ?Q, ?A",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_app
+                    (template_app
+                      (template_app (template_hole 2, template_var 5),
+                       template_var 4),
+                     template_var 3),
+                   template_var 2),
+                 template_app (template_hole 1, template_var 1)),
+               template_hole 0),
+             template_var 2),
+           template_var 0)
+         )),
+    ("OG_Tactics.my_simp_list",
+     "pre (AnnPar ?as) = \<Inter> (pre ` set (map fst ?as))",
+     template_equation
+      (template_app
+        (template_hole 6, template_app (template_hole 5, template_var 0)),
+       template_app
+        (template_hole 4,
+         template_app
+          (template_app (template_hole 3, template_hole 6),
+           template_app
+            (template_hole 2,
+             template_app
+              (template_app (template_hole 1, template_hole 0),
+               template_var 0)))))),
+    ("OG_Tactics.my_simp_list",
+     "strengthen_pre (AnnCall ?r ?n) ?r' = AnnCall (?r Int ?r') ?n",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 2,
+           template_app
+            (template_app (template_hole 1, template_var 2),
+             template_var 1)),
+         template_var 0),
+       template_app
+        (template_app
+          (template_hole 1,
+           template_app
+            (template_app (template_hole 0, template_var 2),
+             template_var 0)),
+         template_var 1))),
+    ("OG_Tactics.my_simp_list",
+     "strengthen_pre (AnnComp ?e\<^sub>1 ?e\<^sub>2) ?r' =
+      AnnComp (strengthen_pre ?e\<^sub>1 ?r') ?e\<^sub>2",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 1,
+           template_app
+            (template_app (template_hole 0, template_var 2),
+             template_var 1)),
+         template_var 0),
+       template_app
+        (template_app
+          (template_hole 0,
+           template_app
+            (template_app (template_hole 1, template_var 2),
+             template_var 0)),
+         template_var 1))),
+    ("OG_Tactics.my_simp_list",
+     "strengthen_pre (AnnRec ?r ?e) ?r' = AnnRec (?r Int ?r') ?e",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 2,
+           template_app
+            (template_app (template_hole 1, template_var 2),
+             template_var 1)),
+         template_var 0),
+       template_app
+        (template_app
+          (template_hole 1,
+           template_app
+            (template_app (template_hole 0, template_var 2),
+             template_var 0)),
+         template_var 1))),
+    ("OG_Tactics.inter_aux_Par_Empty",
+     "inter_aux_Par ?\<Gamma> ?\<Theta> ?F ([], [], ?c, ?a)",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 5, template_var 4),
+               template_var 3),
+             template_var 2),
+           template_app
+            (template_app (template_hole 4, template_hole 3),
+             template_app
+              (template_app (template_hole 2, template_hole 1),
+               template_app
+                (template_app (template_hole 0, template_var 1),
+                 template_var 0))))
+         )),
+    ("OG_Tactics.Parallel_inter_right_empty",
+     "interfree_aux_right ?\<Gamma> ?\<Theta> ?F
+       (?q, Parallel [], AnnPar [])",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 6, template_var 3),
+               template_var 2),
+             template_var 1),
+           template_app
+            (template_app (template_hole 5, template_var 0),
+             template_app
+              (template_app
+                (template_hole 4,
+                 template_app (template_hole 3, template_hole 2)),
+               template_app (template_hole 1, template_hole 0))))
+         )),
+    ("OG_Tactics.interfree_swap_Empty",
+     "interfree_swap ?\<Gamma> ?\<Theta> ?F (?x, ?a, [], [])",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 5, template_var 4),
+               template_var 3),
+             template_var 2),
+           template_app
+            (template_app (template_hole 4, template_var 1),
+             template_app
+              (template_app (template_hole 3, template_var 0),
+               template_app
+                (template_app (template_hole 2, template_hole 1),
+                 template_hole 0))))
+         )),
+    ("OG_Tactics.my_simp_list", "(~ (ALL x:?A. ?P x)) = (EX x:?A. ~ ?P x)",
+     template_equation
+      (template_app
+        (template_hole 2,
+         template_app
+          (template_app (template_hole 1, template_var 1), t_empty)),
+       template_app
+        (template_app (template_hole 0, template_var 1), t_empty))),
+    ("OG_Tactics.my_simp_list",
+     "strengthen_pre (AnnBin ?r ?e\<^sub>1 ?e\<^sub>2) ?r' =
+      AnnBin (?r Int ?r') ?e\<^sub>1 ?e\<^sub>2",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 2,
+           template_app
+            (template_app
+              (template_app (template_hole 1, template_var 3),
+               template_var 2),
+             template_var 1)),
+         template_var 0),
+       template_app
+        (template_app
+          (template_app
+            (template_hole 1,
+             template_app
+              (template_app (template_hole 0, template_var 3),
+               template_var 0)),
+           template_var 2),
+         template_var 1))),
+    ("OG_Tactics.my_simp_list",
+     "strengthen_pre (AnnWhile ?r ?i ?e) ?r' = AnnWhile (?r Int ?r') ?i ?e",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 2,
+           template_app
+            (template_app
+              (template_app (template_hole 1, template_var 3),
+               template_var 2),
+             template_var 1)),
+         template_var 0),
+       template_app
+        (template_app
+          (template_app
+            (template_hole 1,
+             template_app
+              (template_app (template_hole 0, template_var 3),
+               template_var 0)),
+           template_var 2),
+         template_var 1))),
+    ("OG_Tactics.le_Suc_eq_insert",
+     "{i. i < Suc ?n} = insert ?n {i. i < ?n}",
+     template_equation
+      (template_app (template_hole 3, t_empty),
+       template_app
+        (template_app (template_hole 0, template_var 0),
+         template_app (template_hole 3, t_empty)))),
+    ("OG_Tactics.my_simp_list",
+     "(ALL x:Collect ?Q. ?P x) = (ALL x. ?Q x --> ?P x)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 3, template_app (template_hole 2, template_var 1)),
+         t_empty),
+       template_app (template_hole 1, t_empty))),
+    ("OG_Tactics.my_simp_list",
+     "(ALL x:?f ` ?A. ?P x) = (ALL x:?A. ?P (?f x))",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 2,
+           template_app
+            (template_app (template_hole 1, template_var 2),
+             template_var 1)),
+         t_empty),
+       template_app
+        (template_app (template_hole 0, template_var 1), t_empty))),
+    ("OG_Tactics.oghoare_simps",
+     "guards (?g # ?gs) ?c = Guard (fst ?g) (snd ?g) (guards ?gs ?c)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 4,
+           template_app
+            (template_app (template_hole 3, template_var 2),
+             template_var 1)),
+         template_var 0),
+       template_app
+        (template_app
+          (template_app
+            (template_hole 2,
+             template_app (template_hole 1, template_var 2)),
+           template_app (template_hole 0, template_var 2)),
+         template_app
+          (template_app (template_hole 4, template_var 1),
+           template_var 0)))),
+    ("OG_Tactics.pre_strengthen",
+     "~ pre_par ?a ==> pre (strengthen_pre ?a ?a') = pre ?a Int ?a'",
+     template_implication
+      ([template_negation
+         (
+            template_predicate
+             (template_app (template_hole 4, template_var 1))
+            )],
+       template_equation
+        (template_app
+          (template_hole 2,
+           template_app
+            (template_app (template_hole 1, template_var 1),
+             template_var 0)),
+         template_app
+          (template_app
+            (template_hole 0,
+             template_app (template_hole 2, template_var 1)),
+           template_var 0)))),
+    ("OG_Tactics.atomcom_imp_not_prepare",
+     "[| ann_matches ?\<Gamma> ?\<Theta> ?a ?c; atom_com ?c |]
+      ==> ~ pre_par ?a",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 3, template_var 3),
+                  template_var 2),
+                template_var 1),
+              template_var 0)
+            ),
+        template_predicate
+         (template_app (template_hole 2, template_var 0))],
+       template_negation
+        (
+           template_predicate
+            (template_app (template_hole 0, template_var 1))
+           ))),
+    ("OG_Tactics.my_simp_list",
+     "(ALL x:?A. ?P x | ?Q) = ((ALL x:?A. ?P x) | ?Q)",
+     template_equation
+      (template_app
+        (template_app (template_hole 1, template_var 2), t_empty),
+       template_app
+        (template_app
+          (template_hole 0,
+           template_app
+            (template_app (template_hole 1, template_var 2), t_empty)),
+         template_var 0))),
+    ("OG_Tactics.my_simp_list",
+     "(ALL x:?A. ?P | ?Q x) = (?P | (ALL x:?A. ?Q x))",
+     template_equation
+      (template_app
+        (template_app (template_hole 1, template_var 2), t_empty),
+       template_app
+        (template_app (template_hole 0, template_var 1),
+         template_app
+          (template_app (template_hole 1, template_var 2), t_empty)))),
+    ("OG_Tactics.my_simp_list",
+     "(ALL x:?A. ?P --> ?Q x) = (?P --> (ALL x:?A. ?Q x))",
+     template_equation
+      (template_app
+        (template_app (template_hole 1, template_var 2), t_empty),
+       template_app
+        (template_app (template_hole 0, template_var 1),
+         template_app
+          (template_app (template_hole 1, template_var 2), t_empty)))),
+    ("OG_Tactics.my_simp_list",
+     "(ALL x:?A. ?P x --> ?Q) = ((EX x:?A. ?P x) --> ?Q)",
+     template_equation
+      (template_app
+        (template_app (template_hole 2, template_var 2), t_empty),
+       template_app
+        (template_app
+          (template_hole 1,
+           template_app
+            (template_app (template_hole 0, template_var 2), t_empty)),
+         template_var 0))),
+    ("OG_Tactics.ParallelConseq_list",
+     "\<Inter> (?B ` ?A) = {y. ALL x:?A. y : ?B x}",
+     template_equation
+      (template_app
+        (template_hole 4,
+         template_app
+          (template_app (template_hole 3, t_empty), template_var 0)),
+       template_app (template_hole 2, t_empty))),
+    ("OG_Tactics.my_simp_list",
+     "(ALL x:insert ?a ?B. ?P x) = (?P ?a & (ALL x:?B. ?P x))",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 2,
+           template_app
+            (template_app (template_hole 1, template_var 2),
+             template_var 1)),
+         t_empty),
+       template_app
+        (template_app
+          (template_hole 0, template_app (template_var 0, template_var 2)),
+         template_app
+          (template_app (template_hole 2, template_var 1), t_empty)))),
+    ("OG_Tactics.oghoare_simps",
+     "ann_guards ?r (?g # ?gs) ?c =
+      AnnRec ?r (ann_guards (?r Int snd ?g) ?gs ?c)",
+     template_equation
+      (template_app
+        (template_app
+          (template_app (template_hole 4, template_var 3),
+           template_app
+            (template_app (template_hole 3, template_var 2),
+             template_var 1)),
+         template_var 0),
+       template_app
+        (template_app (template_hole 2, template_var 3),
+         template_app
+          (template_app
+            (template_app
+              (template_hole 4,
+               template_app
+                (template_app (template_hole 1, template_var 3),
+                 template_app (template_hole 0, template_var 2))),
+             template_var 1),
+           template_var 0)))),
+    ("OG_Tactics.SeqBasicRule",
+     "?\<Gamma>, ?\<Theta>
+          \<tturnstile>\<^bsub>/?F\<^esub> {s. ?f s : ?Q} (AnnExpr ?x)
+     (Basic ?f) ?Q, ?A",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_app
+                    (template_app
+                      (template_app (template_hole 4, template_var 6),
+                       template_var 5),
+                     template_var 4),
+                   template_app (template_hole 3, t_empty)),
+                 template_app (template_hole 1, template_var 1)),
+               template_app (template_hole 0, template_var 3)),
+             template_var 2),
+           template_var 0)
+         )),
+    ("OG_Tactics.ParallelConseq_list",
+     "{x. ?P x & ?Q x} = {x. ?P x} Int {x. ?Q x}",
+     template_equation
+      (template_app (template_hole 2, t_empty),
+       template_app
+        (template_app
+          (template_hole 0, template_app (template_hole 2, t_empty)),
+         template_app (template_hole 2, t_empty)))),
+    ("OG_Tactics.Skip_inter_right",
+     "?\<Gamma>, ?\<Theta>
+          \<turnstile>\<^bsub>/?F\<^esub> (AnnExpr (?q Int ?r)) Skip
+    ?q, ?q ==>
+      interfree_aux_right ?\<Gamma> ?\<Theta> ?F (?q, Skip, AnnExpr ?r)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app
+                     (template_app
+                       (template_app (template_hole 6, template_var 4),
+                        template_var 3),
+                      template_var 2),
+                    template_app
+                     (template_hole 5,
+                      template_app
+                       (template_app (template_hole 4, template_var 1),
+                        template_var 0))),
+                  template_hole 3),
+                template_var 1),
+              template_var 1)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 2, template_var 4),
+                 template_var 3),
+               template_var 2),
+             template_app
+              (template_app (template_hole 1, template_var 1),
+               template_app
+                (template_app (template_hole 0, template_hole 3),
+                 template_app (template_hole 5, template_var 0))))
+           ))),
+    ("OG_Tactics.Throw_inter_right",
+     "?\<Gamma>, ?\<Theta>
+          \<turnstile>\<^bsub>/?F\<^esub> (AnnExpr (?q Int ?r)) Throw
+    ?q, ?q ==>
+      interfree_aux_right ?\<Gamma> ?\<Theta> ?F (?q, Throw, AnnExpr ?r)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app
+                     (template_app
+                       (template_app (template_hole 6, template_var 4),
+                        template_var 3),
+                      template_var 2),
+                    template_app
+                     (template_hole 5,
+                      template_app
+                       (template_app (template_hole 4, template_var 1),
+                        template_var 0))),
+                  template_hole 3),
+                template_var 1),
+              template_var 1)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 2, template_var 4),
+                 template_var 3),
+               template_var 2),
+             template_app
+              (template_app (template_hole 1, template_var 1),
+               template_app
+                (template_app (template_hole 0, template_hole 3),
+                 template_app (template_hole 5, template_var 0))))
+           ))),
+    ("OG_Tactics.valid_Await",
+     "[| atom_com ?c;
+         ?\<Gamma> \<Turnstile>\<^bsub>/?F\<^esub> (?P Int ?b) ?c ?Q, ?A |]
+      ==> ?\<Gamma> \<Turnstile>\<^bsub>/?F\<^esub> ?P Await ?b ?c ?Q, ?A",
+     template_implication
+      ([template_predicate (template_app (template_hole 3, template_var 6)),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app
+                     (template_app (template_hole 2, template_var 5),
+                      template_var 4),
+                    template_app
+                     (template_app (template_hole 1, template_var 3),
+                      template_var 2)),
+                  template_var 6),
+                template_var 1),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_app
+                    (template_app (template_hole 2, template_var 5),
+                     template_var 4),
+                   template_var 3),
+                 template_app
+                  (template_app (template_hole 0, template_var 2),
+                   template_var 6)),
+               template_var 1),
+             template_var 0)
+           ))),
+    ("OG_Tactics.While_inter_right",
+     "interfree_aux_right ?\<Gamma> ?\<Theta> ?F (?q, ?c, ?a) ==>
+      interfree_aux_right ?\<Gamma> ?\<Theta> ?F
+       (?q, While ?b ?c, AnnWhile ?r ?i ?a)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 4, template_var 8),
+                  template_var 7),
+                template_var 6),
+              template_app
+               (template_app (template_hole 3, template_var 5),
+                template_app
+                 (template_app (template_hole 2, template_var 4),
+                  template_var 3)))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 4, template_var 8),
+                 template_var 7),
+               template_var 6),
+             template_app
+              (template_app (template_hole 3, template_var 5),
+               template_app
+                (template_app
+                  (template_hole 2,
+                   template_app
+                    (template_app (template_hole 1, template_var 2),
+                     template_var 4)),
+                 template_app
+                  (template_app
+                    (template_app (template_hole 0, template_var 1),
+                     template_var 0),
+                   template_var 3))))
+           ))),
+    ("OG_Tactics.Guard_inter_right",
+     "interfree_aux_right ?\<Gamma> ?\<Theta> ?F (?q, ?c, ?a) ==>
+      interfree_aux_right ?\<Gamma> ?\<Theta> ?F
+       (?q, Guard ?f ?g ?c, AnnRec ?r ?a)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 4, template_var 8),
+                  template_var 7),
+                template_var 6),
+              template_app
+               (template_app (template_hole 3, template_var 5),
+                template_app
+                 (template_app (template_hole 2, template_var 4),
+                  template_var 3)))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 4, template_var 8),
+                 template_var 7),
+               template_var 6),
+             template_app
+              (template_app (template_hole 3, template_var 5),
+               template_app
+                (template_app
+                  (template_hole 2,
+                   template_app
+                    (template_app
+                      (template_app (template_hole 1, template_var 2),
+                       template_var 1),
+                     template_var 4)),
+                 template_app
+                  (template_app (template_hole 0, template_var 0),
+                   template_var 3))))
+           ))),
+    ("OG_Tactics.Basic_inter_right",
+     "?\<Gamma>, ?\<Theta>
+          \<turnstile>\<^bsub>/?F\<^esub> (AnnExpr (?q Int ?r)) (Basic ?f)
+    ?q, ?q ==>
+      interfree_aux_right ?\<Gamma> ?\<Theta> ?F
+       (?q, Basic ?f, AnnExpr ?r)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app
+                     (template_app
+                       (template_app (template_hole 6, template_var 5),
+                        template_var 4),
+                      template_var 3),
+                    template_app
+                     (template_hole 5,
+                      template_app
+                       (template_app (template_hole 4, template_var 2),
+                        template_var 1))),
+                  template_app (template_hole 3, template_var 0)),
+                template_var 2),
+              template_var 2)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 2, template_var 5),
+                 template_var 4),
+               template_var 3),
+             template_app
+              (template_app (template_hole 1, template_var 2),
+               template_app
+                (template_app
+                  (template_hole 0,
+                   template_app (template_hole 3, template_var 0)),
+                 template_app (template_hole 5, template_var 1))))
+           ))),
+    ("OG_Tactics.Spec_inter_right",
+     "?\<Gamma>, ?\<Theta>
+          \<turnstile>\<^bsub>/?F\<^esub> (AnnExpr (?q Int ?r)) (Spec ?rel)
+    ?q, ?q ==>
+      interfree_aux_right ?\<Gamma> ?\<Theta> ?F
+       (?q, Spec ?rel, AnnExpr ?r)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app
+                     (template_app
+                       (template_app (template_hole 6, template_var 5),
+                        template_var 4),
+                      template_var 3),
+                    template_app
+                     (template_hole 5,
+                      template_app
+                       (template_app (template_hole 4, template_var 2),
+                        template_var 1))),
+                  template_app (template_hole 3, template_var 0)),
+                template_var 2),
+              template_var 2)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 2, template_var 5),
+                 template_var 4),
+               template_var 3),
+             template_app
+              (template_app (template_hole 1, template_var 2),
+               template_app
+                (template_app
+                  (template_hole 0,
+                   template_app (template_hole 3, template_var 0)),
+                 template_app (template_hole 5, template_var 1))))
+           ))),
+    ("OG_Tactics.SeqSpecRule",
+     "?\<Gamma>, ?\<Theta>
+          \<tturnstile>\<^bsub>/?F\<^esub> {s.
+      (ALL t. (s, t) : ?r --> t : ?Q) & (EX t. (s, t) : ?r)}
+     (AnnExpr ?x) (Spec ?r) ?Q, ?A",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_app
+                    (template_app
+                      (template_app (template_hole 10, template_var 6),
+                       template_var 5),
+                     template_var 4),
+                   template_app (template_hole 9, t_empty)),
+                 template_app (template_hole 1, template_var 1)),
+               template_app (template_hole 0, template_var 3)),
+             template_var 2),
+           template_var 0)
+         )),
+    ("OG_Tactics.DynCom_inter_right",
+     "(!!s. s : ?r ==>
+            interfree_aux_right ?\<Gamma> ?\<Theta> ?F (?q, ?f s, ?P)) ==>
+      interfree_aux_right ?\<Gamma> ?\<Theta> ?F
+       (?q, DynCom ?f, AnnRec ?r ?P)",
+     template_implication
+      ([template_predicate (template_app (template_hole 7, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 4, template_var 5),
+                 template_var 4),
+               template_var 3),
+             template_app
+              (template_app (template_hole 3, template_var 2),
+               template_app
+                (template_app
+                  (template_hole 2,
+                   template_app (template_hole 1, template_var 1)),
+                 template_app
+                  (template_app (template_hole 0, template_var 6),
+                   template_var 0))))
+           ))),
+    ("OG_Tactics.interfree_List",
+     "[| interfree_swap ?\<Gamma> ?\<Theta> ?F (?x, ?a, ?xs, ?as);
+         interfree ?\<Gamma> ?\<Theta> ?F ?as ?xs |]
+      ==> interfree ?\<Gamma> ?\<Theta> ?F (?a # ?as) (?x # ?xs)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 6, template_var 6),
+                  template_var 5),
+                template_var 4),
+              template_app
+               (template_app (template_hole 5, template_var 3),
+                template_app
+                 (template_app (template_hole 4, template_var 2),
+                  template_app
+                   (template_app (template_hole 3, template_var 1),
+                    template_var 0))))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app (template_hole 2, template_var 6),
+                    template_var 5),
+                  template_var 4),
+                template_var 0),
+              template_var 1)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_app (template_hole 2, template_var 6),
+                   template_var 5),
+                 template_var 4),
+               template_app
+                (template_app (template_hole 1, template_var 2),
+                 template_var 0)),
+             template_app
+              (template_app (template_hole 0, template_var 3),
+               template_var 1))
+           ))),
+    ("OG_Tactics.MapAnnList",
+     "[| ?\<Gamma>, ?\<Theta> \<turnstile>\<^bsub>/?F\<^esub> ?P ?c ?Q, ?A;
+         ?\<Gamma>,?\<Theta>[\<tturnstile>]\<^bsub>/?F \<^esub>?Ps ?Ts |]
+      ==> ?\<Gamma>,?\<Theta>
+              [\<tturnstile>]\<^bsub>/?F \<^esub>((?P, ?Q, ?A) # ?Ps)
+           ?c # ?Ts",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app
+                     (template_app
+                       (template_app (template_hole 5, template_var 8),
+                        template_var 7),
+                      template_var 6),
+                    template_var 5),
+                  template_var 4),
+                template_var 3),
+              template_var 2)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app (template_hole 4, template_var 8),
+                    template_var 7),
+                  template_var 6),
+                template_var 1),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_app (template_hole 4, template_var 8),
+                   template_var 7),
+                 template_var 6),
+               template_app
+                (template_app
+                  (template_hole 3,
+                   template_app
+                    (template_app (template_hole 2, template_var 5),
+                     template_app
+                      (template_app (template_hole 1, template_var 3),
+                       template_var 2))),
+                 template_var 1)),
+             template_app
+              (template_app (template_hole 0, template_var 4),
+               template_var 0))
+           ))),
+    ("OG_Tactics.DynComRule",
+     "[| ?r <= pre ?a;
+         !!s. s : ?r ==>
+              ?\<Gamma>, ?\<Theta>
+                  \<turnstile>\<^bsub>/?F\<^esub> ?a (?c s) ?Q, ?A |]
+      ==> ?\<Gamma>, ?\<Theta>
+              \<turnstile>\<^bsub>/?F\<^esub> (AnnRec ?r ?a) (DynCom ?c)
+        ?Q, ?A",
+     template_implication
+      ([template_inequation
+         (less_equals, template_var 7,
+          template_app (template_hole 5, template_var 6)),
+        template_predicate (template_app (template_hole 4, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_app
+                    (template_app
+                      (template_app (template_hole 2, template_var 5),
+                       template_var 4),
+                     template_var 3),
+                   template_app
+                    (template_app (template_hole 1, template_var 7),
+                     template_var 6)),
+                 template_app (template_hole 0, template_var 2)),
+               template_var 1),
+             template_var 0)
+           ))),
+    ("OG_Tactics.SeqSeqRule",
+     "[| ?\<Gamma>, ?\<Theta>
+             \<tturnstile>\<^bsub>/?F\<^esub> ?R ?P\<^sub>2 ?c\<^sub>2
+        ?Q, ?A;
+         ?\<Gamma>, ?\<Theta>
+             \<tturnstile>\<^bsub>/?F\<^esub> ?P ?P\<^sub>1 ?c\<^sub>1
+        ?R, ?A |]
+      ==> ?\<Gamma>, ?\<Theta>
+              \<tturnstile>\<^bsub>/?F\<^esub> ?P
+         (AnnComp ?P\<^sub>1 ?P\<^sub>2) (Seq ?c\<^sub>1 ?c\<^sub>2)
+         ?Q, ?A",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app
+                     (template_app
+                       (template_app
+                         (template_app (template_hole 2, template_var 10),
+                          template_var 9),
+                        template_var 8),
+                      template_var 7),
+                    template_var 6),
+                  template_var 5),
+                template_var 4),
+              template_var 3)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app
+                     (template_app
+                       (template_app
+                         (template_app (template_hole 2, template_var 10),
+                          template_var 9),
+                        template_var 8),
+                      template_var 2),
+                    template_var 1),
+                  template_var 0),
+                template_var 7),
+              template_var 3)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_app
+                    (template_app
+                      (template_app
+                        (template_app (template_hole 2, template_var 10),
+                         template_var 9),
+                       template_var 8),
+                     template_var 2),
+                   template_app
+                    (template_app (template_hole 1, template_var 1),
+                     template_var 6)),
+                 template_app
+                  (template_app (template_hole 0, template_var 0),
+                   template_var 5)),
+               template_var 4),
+             template_var 3)
+           ))),
+    ("OG_Tactics.Catch_inter_right",
+     "[| interfree_aux_right ?\<Gamma> ?\<Theta> ?F (?q, ?c\<^sub>1, ?a1.0);
+         interfree_aux_right ?\<Gamma> ?\<Theta> ?F
+          (?q, ?c\<^sub>2, ?a2.0) |]
+      ==> interfree_aux_right ?\<Gamma> ?\<Theta> ?F
+           (?q, Catch ?c\<^sub>1 ?c\<^sub>2, AnnComp ?a1.0 ?a2.0)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 4, template_var 7),
+                  template_var 6),
+                template_var 5),
+              template_app
+               (template_app (template_hole 3, template_var 4),
+                template_app
+                 (template_app (template_hole 2, template_var 3),
+                  template_var 2)))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 4, template_var 7),
+                  template_var 6),
+                template_var 5),
+              template_app
+               (template_app (template_hole 3, template_var 4),
+                template_app
+                 (template_app (template_hole 2, template_var 1),
+                  template_var 0)))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 4, template_var 7),
+                 template_var 6),
+               template_var 5),
+             template_app
+              (template_app (template_hole 3, template_var 4),
+               template_app
+                (template_app
+                  (template_hole 2,
+                   template_app
+                    (template_app (template_hole 1, template_var 3),
+                     template_var 1)),
+                 template_app
+                  (template_app (template_hole 0, template_var 2),
+                   template_var 0))))
+           ))),
+    ("OG_Tactics.Seq_inter_right",
+     "[| interfree_aux_right ?\<Gamma> ?\<Theta> ?F (?q, ?c\<^sub>1, ?a1.0);
+         interfree_aux_right ?\<Gamma> ?\<Theta> ?F
+          (?q, ?c\<^sub>2, ?a2.0) |]
+      ==> interfree_aux_right ?\<Gamma> ?\<Theta> ?F
+           (?q, Seq ?c\<^sub>1 ?c\<^sub>2, AnnComp ?a1.0 ?a2.0)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 4, template_var 7),
+                  template_var 6),
+                template_var 5),
+              template_app
+               (template_app (template_hole 3, template_var 4),
+                template_app
+                 (template_app (template_hole 2, template_var 3),
+                  template_var 2)))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 4, template_var 7),
+                  template_var 6),
+                template_var 5),
+              template_app
+               (template_app (template_hole 3, template_var 4),
+                template_app
+                 (template_app (template_hole 2, template_var 1),
+                  template_var 0)))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 4, template_var 7),
+                 template_var 6),
+               template_var 5),
+             template_app
+              (template_app (template_hole 3, template_var 4),
+               template_app
+                (template_app
+                  (template_hole 2,
+                   template_app
+                    (template_app (template_hole 1, template_var 3),
+                     template_var 1)),
+                 template_app
+                  (template_app (template_hole 0, template_var 2),
+                   template_var 0))))
+           ))),
+    ("OG_Tactics.SeqWhileRule",
+     "[| ?\<Gamma>, ?\<Theta>
+             \<tturnstile>\<^bsub>/?F\<^esub> (?i Int ?b) ?a ?c ?i, ?A;
+         ?i Int - ?b <= ?Q |]
+      ==> ?\<Gamma>, ?\<Theta>
+              \<tturnstile>\<^bsub>/?F\<^esub> ?i (AnnWhile ?r ?i ?a)
+         (While ?b ?c) ?Q, ?A",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app
+                     (template_app
+                       (template_app
+                         (template_app (template_hole 5, template_var 9),
+                          template_var 8),
+                        template_var 7),
+                      template_app
+                       (template_app (template_hole 4, template_var 6),
+                        template_var 5)),
+                    template_var 4),
+                  template_var 3),
+                template_var 6),
+              template_var 2)
+            ),
+        template_inequation
+         (less_equals,
+          template_app
+           (template_app (template_hole 4, template_var 6),
+            template_app (template_hole 2, template_var 5)),
+          template_var 1)],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_app
+                    (template_app
+                      (template_app
+                        (template_app (template_hole 5, template_var 9),
+                         template_var 8),
+                       template_var 7),
+                     template_var 6),
+                   template_app
+                    (template_app
+                      (template_app (template_hole 1, template_var 0),
+                       template_var 6),
+                     template_var 4)),
+                 template_app
+                  (template_app (template_hole 0, template_var 5),
+                   template_var 3)),
+               template_var 1),
+             template_var 2)
+           ))),
+    ("OG_Tactics.While_inter_aux_any",
+     "interfree_aux ?\<Gamma> ?\<Theta> ?F
+       (?Any, (?AnyAnn, ?q, ?abr), ?c, ?P) ==>
+      interfree_aux ?\<Gamma> ?\<Theta> ?F
+       (?Any, (?AnyAnn, ?q, ?abr), While ?b ?c, AnnWhile ?R ?I ?P)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 7, template_var 11),
+                  template_var 10),
+                template_var 9),
+              template_app
+               (template_app (template_hole 6, template_var 8),
+                template_app
+                 (template_app
+                   (template_hole 5,
+                    template_app
+                     (template_app (template_hole 4, template_var 7),
+                      template_app
+                       (template_app (template_hole 3, template_var 6),
+                        template_var 5))),
+                  template_app
+                   (template_app (template_hole 2, template_var 4),
+                    template_var 3))))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 7, template_var 11),
+                 template_var 10),
+               template_var 9),
+             template_app
+              (template_app (template_hole 6, template_var 8),
+               template_app
+                (template_app
+                  (template_hole 5,
+                   template_app
+                    (template_app (template_hole 4, template_var 7),
+                     template_app
+                      (template_app (template_hole 3, template_var 6),
+                       template_var 5))),
+                 template_app
+                  (template_app
+                    (template_hole 2,
+                     template_app
+                      (template_app (template_hole 1, template_var 2),
+                       template_var 4)),
+                   template_app
+                    (template_app
+                      (template_app (template_hole 0, template_var 1),
+                       template_var 0),
+                     template_var 3)))))
+           ))),
+    ("OG_Tactics.Cond_inter_right",
+     "[| interfree_aux_right ?\<Gamma> ?\<Theta> ?F (?q, ?c\<^sub>1, ?a1.0);
+         interfree_aux_right ?\<Gamma> ?\<Theta> ?F
+          (?q, ?c\<^sub>2, ?a2.0) |]
+      ==> interfree_aux_right ?\<Gamma> ?\<Theta> ?F
+           (?q, Cond ?b ?c\<^sub>1 ?c\<^sub>2, AnnBin ?r ?a1.0 ?a2.0)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 4, template_var 9),
+                  template_var 8),
+                template_var 7),
+              template_app
+               (template_app (template_hole 3, template_var 6),
+                template_app
+                 (template_app (template_hole 2, template_var 5),
+                  template_var 4)))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 4, template_var 9),
+                  template_var 8),
+                template_var 7),
+              template_app
+               (template_app (template_hole 3, template_var 6),
+                template_app
+                 (template_app (template_hole 2, template_var 3),
+                  template_var 2)))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 4, template_var 9),
+                 template_var 8),
+               template_var 7),
+             template_app
+              (template_app (template_hole 3, template_var 6),
+               template_app
+                (template_app
+                  (template_hole 2,
+                   template_app
+                    (template_app
+                      (template_app (template_hole 1, template_var 1),
+                       template_var 5),
+                     template_var 3)),
+                 template_app
+                  (template_app
+                    (template_app (template_hole 0, template_var 0),
+                     template_var 4),
+                   template_var 2))))
+           ))),
+    ("OG_Tactics.Await_inter_right",
+     "[| atom_com ?c;
+         ?\<Gamma>, ?\<Theta>
+             \<tturnstile>\<^bsub>/?F\<^esub> ?P ?a ?c ?q, ?q;
+         ?q Int ?r Int ?b <= ?P |]
+      ==> interfree_aux_right ?\<Gamma> ?\<Theta> ?F
+           (?q, Await ?b ?c, AnnRec ?r ?a)",
+     template_implication
+      ([template_predicate (template_app (template_hole 8, template_var 8)),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app
+                     (template_app
+                       (template_app
+                         (template_app (template_hole 7, template_var 7),
+                          template_var 6),
+                        template_var 5),
+                      template_var 4),
+                    template_var 3),
+                  template_var 8),
+                template_var 2),
+              template_var 2)
+            ),
+        template_inequation
+         (less_equals,
+          template_app
+           (template_app
+             (template_hole 5,
+              template_app
+               (template_app (template_hole 5, template_var 2),
+                template_var 1)),
+            template_var 0),
+          template_var 4)],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 4, template_var 7),
+                 template_var 6),
+               template_var 5),
+             template_app
+              (template_app (template_hole 3, template_var 2),
+               template_app
+                (template_app
+                  (template_hole 2,
+                   template_app
+                    (template_app (template_hole 1, template_var 0),
+                     template_var 8)),
+                 template_app
+                  (template_app (template_hole 0, template_var 1),
+                   template_var 3))))
+           ))),
+    ("OG_Tactics.inter_aux_Par_List",
+     "[| interfree_aux ?\<Gamma> ?\<Theta> ?F (?x, ?a, ?y, ?a');
+         inter_aux_Par ?\<Gamma> ?\<Theta> ?F (?xs, ?as, ?y, ?a') |]
+      ==> inter_aux_Par ?\<Gamma> ?\<Theta> ?F
+           (?x # ?xs, ?a # ?as, ?y, ?a')",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 8, template_var 8),
+                  template_var 7),
+                template_var 6),
+              template_app
+               (template_app (template_hole 7, template_var 5),
+                template_app
+                 (template_app (template_hole 6, template_var 4),
+                  template_app
+                   (template_app (template_hole 5, template_var 3),
+                    template_var 2))))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 4, template_var 8),
+                  template_var 7),
+                template_var 6),
+              template_app
+               (template_app (template_hole 3, template_var 1),
+                template_app
+                 (template_app (template_hole 2, template_var 0),
+                  template_app
+                   (template_app (template_hole 5, template_var 3),
+                    template_var 2))))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 4, template_var 8),
+                 template_var 7),
+               template_var 6),
+             template_app
+              (template_app
+                (template_hole 3,
+                 template_app
+                  (template_app (template_hole 1, template_var 5),
+                   template_var 1)),
+               template_app
+                (template_app
+                  (template_hole 2,
+                   template_app
+                    (template_app (template_hole 0, template_var 4),
+                     template_var 0)),
+                 template_app
+                  (template_app (template_hole 5, template_var 3),
+                   template_var 2))))
+           ))),
+    ("OG_Tactics.SeqDynComRule",
+     "[| ?r <= pre ?a;
+         !!s. s : ?r ==>
+              ?\<Gamma>, ?\<Theta>
+                  \<tturnstile>\<^bsub>/?F\<^esub> ?P ?a (?c s) ?Q, ?A;
+         ?P <= ?r |]
+      ==> ?\<Gamma>, ?\<Theta>
+              \<tturnstile>\<^bsub>/?F\<^esub> ?P (AnnRec ?r ?a) (DynCom ?c)
+         ?Q, ?A",
+     template_implication
+      ([template_inequation
+         (less_equals, template_var 8,
+          template_app (template_hole 5, template_var 7)),
+        template_predicate (template_app (template_hole 4, t_empty)),
+        template_inequation (less_equals, template_var 3, template_var 8)],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_app
+                    (template_app
+                      (template_app
+                        (template_app (template_hole 2, template_var 6),
+                         template_var 5),
+                       template_var 4),
+                     template_var 3),
+                   template_app
+                    (template_app (template_hole 1, template_var 8),
+                     template_var 7)),
+                 template_app (template_hole 0, template_var 2)),
+               template_var 1),
+             template_var 0)
+           ))),
+    ("OG_Tactics.Parallel_inter_right_List",
+     "[| interfree_aux_right ?\<Gamma> ?\<Theta> ?F (?q, ?c, ?a);
+         interfree_aux_right ?\<Gamma> ?\<Theta> ?F
+          (?q, Parallel ?cs, AnnPar ?as) |]
+      ==> interfree_aux_right ?\<Gamma> ?\<Theta> ?F
+           (?q, Parallel (?c # ?cs), AnnPar ((?a, ?Q, ?A) # ?as))",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 8, template_var 9),
+                  template_var 8),
+                template_var 7),
+              template_app
+               (template_app (template_hole 7, template_var 6),
+                template_app
+                 (template_app (template_hole 6, template_var 5),
+                  template_var 4)))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 8, template_var 9),
+                  template_var 8),
+                template_var 7),
+              template_app
+               (template_app (template_hole 7, template_var 6),
+                template_app
+                 (template_app
+                   (template_hole 6,
+                    template_app (template_hole 5, template_var 3)),
+                  template_app (template_hole 4, template_var 2))))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 8, template_var 9),
+                 template_var 8),
+               template_var 7),
+             template_app
+              (template_app (template_hole 7, template_var 6),
+               template_app
+                (template_app
+                  (template_hole 6,
+                   template_app
+                    (template_hole 5,
+                     template_app
+                      (template_app (template_hole 3, template_var 5),
+                       template_var 3))),
+                 template_app
+                  (template_hole 4,
+                   template_app
+                    (template_app
+                      (template_hole 2,
+                       template_app
+                        (template_app (template_hole 1, template_var 4),
+                         template_app
+                          (template_app (template_hole 0, template_var 1),
+                           template_var 0))),
+                     template_var 2)))))
+           ))),
+    ("OG_Tactics.inter_aux_Par_Map",
+     "ALL k.
+         ?i <= k & k < ?j -->
+         interfree_aux ?\<Gamma> ?\<Theta> ?F (?c k, ?Q k, ?x, ?a) ==>
+      inter_aux_Par ?\<Gamma> ?\<Theta> ?F
+       (map ?c [?i..<?j], map ?Q [?i..<?j], ?x, ?a)",
+     template_implication
+      ([template_predicate (template_app (template_hole 14, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 5, template_var 6),
+                 template_var 5),
+               template_var 4),
+             template_app
+              (template_app
+                (template_hole 4,
+                 template_app
+                  (template_app (template_hole 3, template_var 3),
+                   template_app
+                    (template_app (template_hole 2, template_var 8),
+                     template_var 7))),
+               template_app
+                (template_app
+                  (template_hole 1,
+                   template_app
+                    (template_app (template_hole 0, template_var 2),
+                     template_app
+                      (template_app (template_hole 2, template_var 8),
+                       template_var 7))),
+                 template_app
+                  (template_app (template_hole 6, template_var 1),
+                   template_var 0))))
+           ))),
+    ("OG_Tactics.GuardRule",
+     "[| ?r Int ?g <= pre ?P; ?r Int - ?g ~= {} --> ?f : ?F;
+         ?\<Gamma>, ?\<Theta>
+             \<turnstile>\<^bsub>/?F\<^esub> ?P ?c ?Q, ?A |]
+      ==> ?\<Gamma>, ?\<Theta>
+              \<turnstile>\<^bsub>/?F\<^esub> (AnnRec ?r ?P)
+        (Guard ?f ?g ?c) ?Q, ?A",
+     template_implication
+      ([template_inequation
+         (less_equals,
+          template_app
+           (template_app (template_hole 10, template_var 9),
+            template_var 8),
+          template_app (template_hole 9, template_var 7)),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 8,
+                template_app
+                 (template_hole 7,
+                  template_app
+                   (template_app
+                     (template_hole 6,
+                      template_app
+                       (template_app (template_hole 10, template_var 9),
+                        template_app (template_hole 5, template_var 8))),
+                    template_hole 4))),
+              template_app
+               (template_app (template_hole 3, template_var 6),
+                template_var 5))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app
+                     (template_app
+                       (template_app (template_hole 2, template_var 4),
+                        template_var 3),
+                      template_var 5),
+                    template_var 7),
+                  template_var 2),
+                template_var 1),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_app
+                    (template_app
+                      (template_app (template_hole 2, template_var 4),
+                       template_var 3),
+                     template_var 5),
+                   template_app
+                    (template_app (template_hole 1, template_var 9),
+                     template_var 7)),
+                 template_app
+                  (template_app
+                    (template_app (template_hole 0, template_var 6),
+                     template_var 8),
+                   template_var 2)),
+               template_var 1),
+             template_var 0)
+           ))),
+    ("OG_Tactics.MapAnnMap",
+     "ALL k.
+         ?i <= k & k < ?j -->
+         ?\<Gamma>, ?\<Theta>
+             \<turnstile>\<^bsub>/?F\<^esub> (?P k) (?c k)
+       (?Q k), (?A k) ==>
+      ?\<Gamma>,?\<Theta>
+          [\<tturnstile>]\<^bsub>/?F \<^esub>(map (%k. (?P k, ?Q k, ?A k))
+         [?i..<?j])
+       map ?c [?i..<?j]",
+     template_implication
+      ([template_predicate (template_app (template_hole 11, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_app (template_hole 5, template_var 6),
+                   template_var 5),
+                 template_var 4),
+               template_app
+                (template_app (template_hole 4, t_empty),
+                 template_app
+                  (template_app (template_hole 1, template_var 8),
+                   template_var 7))),
+             template_app
+              (template_app (template_hole 0, template_var 2),
+               template_app
+                (template_app (template_hole 1, template_var 8),
+                 template_var 7)))
+           ))),
+    ("OG_Tactics.SeqGuardRule",
+     "[| ?P Int ?g <= ?P'; ?P Int - ?g ~= {} ==> ?f : ?F;
+         ?\<Gamma>, ?\<Theta>
+             \<tturnstile>\<^bsub>/?F\<^esub> ?P' ?a ?c ?Q, ?A |]
+      ==> ?\<Gamma>, ?\<Theta>
+              \<tturnstile>\<^bsub>/?F\<^esub> ?P (AnnRec ?r ?a)
+         (Guard ?f ?g ?c) ?Q, ?A",
+     template_implication
+      ([template_inequation
+         (less_equals,
+          template_app
+           (template_app (template_hole 8, template_var 11),
+            template_var 10),
+          template_var 9),
+        template_implication
+         ([template_negation
+            (
+               template_equation
+                (template_app
+                  (template_app (template_hole 8, template_var 11),
+                   template_app (template_hole 5, template_var 10)),
+                 template_hole 4)
+               )],
+          template_predicate
+           (
+              template_app
+               (template_app (template_hole 3, template_var 8),
+                template_var 7)
+              )),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app
+                     (template_app
+                       (template_app
+                         (template_app (template_hole 2, template_var 6),
+                          template_var 5),
+                        template_var 7),
+                      template_var 9),
+                    template_var 4),
+                  template_var 3),
+                template_var 2),
+              template_var 1)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_app
+                    (template_app
+                      (template_app
+                        (template_app (template_hole 2, template_var 6),
+                         template_var 5),
+                       template_var 7),
+                     template_var 11),
+                   template_app
+                    (template_app (template_hole 1, template_var 0),
+                     template_var 4)),
+                 template_app
+                  (template_app
+                    (template_app (template_hole 0, template_var 8),
+                     template_var 10),
+                   template_var 3)),
+               template_var 2),
+             template_var 1)
+           ))),
+    ("OG_Tactics.Parallel_inter_right_Map",
+     "ALL k.
+         ?i <= k & k < ?j -->
+         interfree_aux_right ?\<Gamma> ?\<Theta> ?F (?q, ?c k, ?a k) ==>
+      interfree_aux_right ?\<Gamma> ?\<Theta> ?F
+       (?q, Parallel (map ?c [?i..<?j]),
+        AnnPar (map (%i. (?a i, ?Q, ?A)) [?i..<?j]))",
+     template_implication
+      ([template_predicate (template_app (template_hole 14, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 9, template_var 7),
+                 template_var 6),
+               template_var 5),
+             template_app
+              (template_app (template_hole 8, template_var 4),
+               template_app
+                (template_app
+                  (template_hole 7,
+                   template_app
+                    (template_hole 6,
+                     template_app
+                      (template_app (template_hole 5, template_var 3),
+                       template_app
+                        (template_app (template_hole 4, template_var 9),
+                         template_var 8)))),
+                 template_app
+                  (template_hole 3,
+                   template_app
+                    (template_app (template_hole 2, t_empty),
+                     template_app
+                      (template_app (template_hole 4, template_var 9),
+                       template_var 8))))))
+           ))),
+    ("OG_Tactics.Skip_inter_aux",
+     "[| interfree_aux_right ?\<Gamma> ?\<Theta> ?F (?r, ?com, ?ann);
+         interfree_aux_right ?\<Gamma> ?\<Theta> ?F (?q, ?com, ?ann);
+         interfree_aux_right ?\<Gamma> ?\<Theta> ?F (?a, ?com, ?ann) |]
+      ==> interfree_aux ?\<Gamma> ?\<Theta> ?F
+           (Skip, (AnnExpr ?r, ?q, ?a), ?com, ?ann)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 9, template_var 7),
+                  template_var 6),
+                template_var 5),
+              template_app
+               (template_app (template_hole 8, template_var 4),
+                template_app
+                 (template_app (template_hole 7, template_var 3),
+                  template_var 2)))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 9, template_var 7),
+                  template_var 6),
+                template_var 5),
+              template_app
+               (template_app (template_hole 8, template_var 1),
+                template_app
+                 (template_app (template_hole 7, template_var 3),
+                  template_var 2)))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 9, template_var 7),
+                  template_var 6),
+                template_var 5),
+              template_app
+               (template_app (template_hole 8, template_var 0),
+                template_app
+                 (template_app (template_hole 7, template_var 3),
+                  template_var 2)))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 6, template_var 7),
+                 template_var 6),
+               template_var 5),
+             template_app
+              (template_app (template_hole 5, template_hole 4),
+               template_app
+                (template_app
+                  (template_hole 3,
+                   template_app
+                    (template_app
+                      (template_hole 2,
+                       template_app (template_hole 1, template_var 4)),
+                     template_app
+                      (template_app (template_hole 0, template_var 1),
+                       template_var 0))),
+                 template_app
+                  (template_app (template_hole 7, template_var 3),
+                   template_var 2))))
+           ))),
+    ("OG_Tactics.Throw_inter_aux",
+     "[| interfree_aux_right ?\<Gamma> ?\<Theta> ?F (?r, ?com, ?ann);
+         interfree_aux_right ?\<Gamma> ?\<Theta> ?F (?q, ?com, ?ann);
+         interfree_aux_right ?\<Gamma> ?\<Theta> ?F (?a, ?com, ?ann) |]
+      ==> interfree_aux ?\<Gamma> ?\<Theta> ?F
+           (Throw, (AnnExpr ?r, ?q, ?a), ?com, ?ann)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 9, template_var 7),
+                  template_var 6),
+                template_var 5),
+              template_app
+               (template_app (template_hole 8, template_var 4),
+                template_app
+                 (template_app (template_hole 7, template_var 3),
+                  template_var 2)))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 9, template_var 7),
+                  template_var 6),
+                template_var 5),
+              template_app
+               (template_app (template_hole 8, template_var 1),
+                template_app
+                 (template_app (template_hole 7, template_var 3),
+                  template_var 2)))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 9, template_var 7),
+                  template_var 6),
+                template_var 5),
+              template_app
+               (template_app (template_hole 8, template_var 0),
+                template_app
+                 (template_app (template_hole 7, template_var 3),
+                  template_var 2)))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 6, template_var 7),
+                 template_var 6),
+               template_var 5),
+             template_app
+              (template_app (template_hole 5, template_hole 4),
+               template_app
+                (template_app
+                  (template_hole 3,
+                   template_app
+                    (template_app
+                      (template_hole 2,
+                       template_app (template_hole 1, template_var 4)),
+                     template_app
+                      (template_app (template_hole 0, template_var 1),
+                       template_var 0))),
+                 template_app
+                  (template_app (template_hole 7, template_var 3),
+                   template_var 2))))
+           ))),
+    ("OG_Tactics.Basic_inter_aux",
+     "[| interfree_aux_right ?\<Gamma> ?\<Theta> ?F (?r, ?com, ?ann);
+         interfree_aux_right ?\<Gamma> ?\<Theta> ?F (?q, ?com, ?ann);
+         interfree_aux_right ?\<Gamma> ?\<Theta> ?F (?a, ?com, ?ann) |]
+      ==> interfree_aux ?\<Gamma> ?\<Theta> ?F
+           (Basic ?f, (AnnExpr ?r, ?q, ?a), ?com, ?ann)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 9, template_var 8),
+                  template_var 7),
+                template_var 6),
+              template_app
+               (template_app (template_hole 8, template_var 5),
+                template_app
+                 (template_app (template_hole 7, template_var 4),
+                  template_var 3)))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 9, template_var 8),
+                  template_var 7),
+                template_var 6),
+              template_app
+               (template_app (template_hole 8, template_var 2),
+                template_app
+                 (template_app (template_hole 7, template_var 4),
+                  template_var 3)))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 9, template_var 8),
+                  template_var 7),
+                template_var 6),
+              template_app
+               (template_app (template_hole 8, template_var 1),
+                template_app
+                 (template_app (template_hole 7, template_var 4),
+                  template_var 3)))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 6, template_var 8),
+                 template_var 7),
+               template_var 6),
+             template_app
+              (template_app
+                (template_hole 5,
+                 template_app (template_hole 4, template_var 0)),
+               template_app
+                (template_app
+                  (template_hole 3,
+                   template_app
+                    (template_app
+                      (template_hole 2,
+                       template_app (template_hole 1, template_var 5)),
+                     template_app
+                      (template_app (template_hole 0, template_var 2),
+                       template_var 1))),
+                 template_app
+                  (template_app (template_hole 7, template_var 4),
+                   template_var 3))))
+           ))),
+    ("OG_Tactics.Spec_inter_aux",
+     "[| interfree_aux_right ?\<Gamma> ?\<Theta> ?F (?r, ?com, ?ann);
+         interfree_aux_right ?\<Gamma> ?\<Theta> ?F (?q, ?com, ?ann);
+         interfree_aux_right ?\<Gamma> ?\<Theta> ?F (?a, ?com, ?ann) |]
+      ==> interfree_aux ?\<Gamma> ?\<Theta> ?F
+           (Spec ?rel, (AnnExpr ?r, ?q, ?a), ?com, ?ann)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 9, template_var 8),
+                  template_var 7),
+                template_var 6),
+              template_app
+               (template_app (template_hole 8, template_var 5),
+                template_app
+                 (template_app (template_hole 7, template_var 4),
+                  template_var 3)))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 9, template_var 8),
+                  template_var 7),
+                template_var 6),
+              template_app
+               (template_app (template_hole 8, template_var 2),
+                template_app
+                 (template_app (template_hole 7, template_var 4),
+                  template_var 3)))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 9, template_var 8),
+                  template_var 7),
+                template_var 6),
+              template_app
+               (template_app (template_hole 8, template_var 1),
+                template_app
+                 (template_app (template_hole 7, template_var 4),
+                  template_var 3)))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 6, template_var 8),
+                 template_var 7),
+               template_var 6),
+             template_app
+              (template_app
+                (template_hole 5,
+                 template_app (template_hole 4, template_var 0)),
+               template_app
+                (template_app
+                  (template_hole 3,
+                   template_app
+                    (template_app
+                      (template_hole 2,
+                       template_app (template_hole 1, template_var 5)),
+                     template_app
+                      (template_app (template_hole 0, template_var 2),
+                       template_var 1))),
+                 template_app
+                  (template_app (template_hole 7, template_var 4),
+                   template_var 3))))
+           ))),
+    ("OG_Tactics.Call_inter_right",
+     "[| interfree_aux_right ?\<Gamma> ?\<Theta> ?F (?q, ?f, ?P);
+         ?n < length ?as; ?\<Gamma> ?p = Some ?f; ?as ! ?n = ?P;
+         ?\<Theta> ?p = Some ?as |]
+      ==> interfree_aux_right ?\<Gamma> ?\<Theta> ?F
+           (?q, Call ?p, AnnCall ?r ?n)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 12, template_var 9),
+                  template_var 8),
+                template_var 7),
+              template_app
+               (template_app (template_hole 11, template_var 6),
+                template_app
+                 (template_app (template_hole 10, template_var 5),
+                  template_var 4)))
+            ),
+        template_inequation
+         (less_than, template_var 3,
+          template_app (template_hole 8, template_var 2)),
+        template_equation
+         (template_app (template_var 9, template_var 1),
+          template_app (template_hole 6, template_var 5)),
+        template_equation
+         (template_app
+           (template_app (template_hole 4, template_var 2), template_var 3),
+          template_var 4),
+        template_equation
+         (template_app (template_var 8, template_var 1),
+          template_app (template_hole 2, template_var 2))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 12, template_var 9),
+                 template_var 8),
+               template_var 7),
+             template_app
+              (template_app (template_hole 11, template_var 6),
+               template_app
+                (template_app
+                  (template_hole 10,
+                   template_app (template_hole 1, template_var 1)),
+                 template_app
+                  (template_app (template_hole 0, template_var 0),
+                   template_var 3))))
+           ))),
+    ("OG_Tactics.Await_inter_aux",
+     "[| interfree_aux_right ?\<Gamma> ?\<Theta> ?F (?r, ?com, ?ann);
+         interfree_aux_right ?\<Gamma> ?\<Theta> ?F (?Q, ?com, ?ann);
+         interfree_aux_right ?\<Gamma> ?\<Theta> ?F (?A, ?com, ?ann) |]
+      ==> interfree_aux ?\<Gamma> ?\<Theta> ?F
+           (Await ?b ?e, (AnnRec ?r ?ae, ?Q, ?A), ?com, ?ann)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 9, template_var 10),
+                  template_var 9),
+                template_var 8),
+              template_app
+               (template_app (template_hole 8, template_var 7),
+                template_app
+                 (template_app (template_hole 7, template_var 6),
+                  template_var 5)))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 9, template_var 10),
+                  template_var 9),
+                template_var 8),
+              template_app
+               (template_app (template_hole 8, template_var 4),
+                template_app
+                 (template_app (template_hole 7, template_var 6),
+                  template_var 5)))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 9, template_var 10),
+                  template_var 9),
+                template_var 8),
+              template_app
+               (template_app (template_hole 8, template_var 3),
+                template_app
+                 (template_app (template_hole 7, template_var 6),
+                  template_var 5)))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 6, template_var 10),
+                 template_var 9),
+               template_var 8),
+             template_app
+              (template_app
+                (template_hole 5,
+                 template_app
+                  (template_app (template_hole 4, template_var 2),
+                   template_var 1)),
+               template_app
+                (template_app
+                  (template_hole 3,
+                   template_app
+                    (template_app
+                      (template_hole 2,
+                       template_app
+                        (template_app (template_hole 1, template_var 7),
+                         template_var 0)),
+                     template_app
+                      (template_app (template_hole 0, template_var 4),
+                       template_var 3))),
+                 template_app
+                  (template_app (template_hole 7, template_var 6),
+                   template_var 5))))
+           ))),
+    ("OG_Tactics.SeqCondRule",
+     "[| ?\<Gamma>, ?\<Theta>
+             \<tturnstile>\<^bsub>/?F\<^esub> ?C1.0 ?P\<^sub>1 ?c\<^sub>1
+        ?Q, ?A;
+         ?\<Gamma>, ?\<Theta>
+             \<tturnstile>\<^bsub>/?F\<^esub> ?C2.0 ?P\<^sub>2 ?c\<^sub>2
+        ?Q, ?A |]
+      ==> ?\<Gamma>, ?\<Theta>
+              \<tturnstile>\<^bsub>/?F\<^esub> {s.
+          (s : ?b --> s : ?C1.0) & (s ~: ?b --> s : ?C2.0)}
+         (AnnBin ?r ?P\<^sub>1 ?P\<^sub>2) (Cond ?b ?c\<^sub>1 ?c\<^sub>2)
+         ?Q, ?A",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app
+                     (template_app
+                       (template_app
+                         (template_app (template_hole 7, template_var 12),
+                          template_var 11),
+                        template_var 10),
+                      template_var 9),
+                    template_var 8),
+                  template_var 7),
+                template_var 6),
+              template_var 5)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app
+                     (template_app
+                       (template_app
+                         (template_app (template_hole 7, template_var 12),
+                          template_var 11),
+                        template_var 10),
+                      template_var 4),
+                    template_var 3),
+                  template_var 2),
+                template_var 6),
+              template_var 5)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_app
+                    (template_app
+                      (template_app
+                        (template_app (template_hole 7, template_var 12),
+                         template_var 11),
+                       template_var 10),
+                     template_app (template_hole 6, t_empty)),
+                   template_app
+                    (template_app
+                      (template_app (template_hole 1, template_var 0),
+                       template_var 8),
+                     template_var 3)),
+                 template_app
+                  (template_app
+                    (template_app (template_hole 0, template_var 1),
+                     template_var 7),
+                   template_var 2)),
+               template_var 6),
+             template_var 5)
+           ))),
+    ("OG_Tactics.Catch_inter_aux",
+     "[| interfree_aux ?\<Gamma> ?\<Theta> ?F
+          (?c\<^sub>1, (?r\<^sub>1, ?Q, pre ?r\<^sub>2), ?com, ?ann);
+         interfree_aux ?\<Gamma> ?\<Theta> ?F
+          (?c\<^sub>2, (?r\<^sub>2, ?Q, ?A), ?com, ?ann) |]
+      ==> interfree_aux ?\<Gamma> ?\<Theta> ?F
+           (Catch ?c\<^sub>1 ?c\<^sub>2,
+            (AnnComp ?r\<^sub>1 ?r\<^sub>2, ?Q, ?A), ?com, ?ann)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 8, template_var 10),
+                  template_var 9),
+                template_var 8),
+              template_app
+               (template_app (template_hole 7, template_var 7),
+                template_app
+                 (template_app
+                   (template_hole 6,
+                    template_app
+                     (template_app (template_hole 5, template_var 6),
+                      template_app
+                       (template_app (template_hole 4, template_var 5),
+                        template_app (template_hole 3, template_var 4)))),
+                  template_app
+                   (template_app (template_hole 2, template_var 3),
+                    template_var 2))))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 8, template_var 10),
+                  template_var 9),
+                template_var 8),
+              template_app
+               (template_app (template_hole 7, template_var 1),
+                template_app
+                 (template_app
+                   (template_hole 6,
+                    template_app
+                     (template_app (template_hole 5, template_var 4),
+                      template_app
+                       (template_app (template_hole 4, template_var 5),
+                        template_var 0))),
+                  template_app
+                   (template_app (template_hole 2, template_var 3),
+                    template_var 2))))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 8, template_var 10),
+                 template_var 9),
+               template_var 8),
+             template_app
+              (template_app
+                (template_hole 7,
+                 template_app
+                  (template_app (template_hole 1, template_var 7),
+                   template_var 1)),
+               template_app
+                (template_app
+                  (template_hole 6,
+                   template_app
+                    (template_app
+                      (template_hole 5,
+                       template_app
+                        (template_app (template_hole 0, template_var 6),
+                         template_var 4)),
+                     template_app
+                      (template_app (template_hole 4, template_var 5),
+                       template_var 0))),
+                 template_app
+                  (template_app (template_hole 2, template_var 3),
+                   template_var 2))))
+           ))),
+    ("OG_Tactics.Seq_inter_aux",
+     "[| interfree_aux ?\<Gamma> ?\<Theta> ?F
+          (?c\<^sub>1, (?r\<^sub>1, pre ?r\<^sub>2, ?A), ?com, ?ann);
+         interfree_aux ?\<Gamma> ?\<Theta> ?F
+          (?c\<^sub>2, (?r\<^sub>2, ?Q, ?A), ?com, ?ann) |]
+      ==> interfree_aux ?\<Gamma> ?\<Theta> ?F
+           (Seq ?c\<^sub>1 ?c\<^sub>2,
+            (AnnComp ?r\<^sub>1 ?r\<^sub>2, ?Q, ?A), ?com, ?ann)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 8, template_var 10),
+                  template_var 9),
+                template_var 8),
+              template_app
+               (template_app (template_hole 7, template_var 7),
+                template_app
+                 (template_app
+                   (template_hole 6,
+                    template_app
+                     (template_app (template_hole 5, template_var 6),
+                      template_app
+                       (template_app
+                         (template_hole 4,
+                          template_app (template_hole 3, template_var 5)),
+                        template_var 4))),
+                  template_app
+                   (template_app (template_hole 2, template_var 3),
+                    template_var 2))))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 8, template_var 10),
+                  template_var 9),
+                template_var 8),
+              template_app
+               (template_app (template_hole 7, template_var 1),
+                template_app
+                 (template_app
+                   (template_hole 6,
+                    template_app
+                     (template_app (template_hole 5, template_var 5),
+                      template_app
+                       (template_app (template_hole 4, template_var 0),
+                        template_var 4))),
+                  template_app
+                   (template_app (template_hole 2, template_var 3),
+                    template_var 2))))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 8, template_var 10),
+                 template_var 9),
+               template_var 8),
+             template_app
+              (template_app
+                (template_hole 7,
+                 template_app
+                  (template_app (template_hole 1, template_var 7),
+                   template_var 1)),
+               template_app
+                (template_app
+                  (template_hole 6,
+                   template_app
+                    (template_app
+                      (template_hole 5,
+                       template_app
+                        (template_app (template_hole 0, template_var 6),
+                         template_var 5)),
+                     template_app
+                      (template_app (template_hole 4, template_var 0),
+                       template_var 4))),
+                 template_app
+                  (template_app (template_hole 2, template_var 3),
+                   template_var 2))))
+           ))),
+    ("OG_Tactics.CallRule",
+     "[| ?r <= pre ?P;
+         ?\<Gamma>, ?\<Theta> \<turnstile>\<^bsub>/?F\<^esub> ?P ?f ?Q, ?A;
+         ?n < length ?as; ?\<Gamma> ?p = Some ?f; ?as ! ?n = ?P;
+         ?\<Theta> ?p = Some ?as |]
+      ==> ?\<Gamma>, ?\<Theta>
+              \<turnstile>\<^bsub>/?F\<^esub> (AnnCall ?r ?n) (Call ?p)
+        ?Q, ?A",
+     template_implication
+      ([template_inequation
+         (less_equals, template_var 10,
+          template_app (template_hole 11, template_var 9)),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app
+                     (template_app
+                       (template_app (template_hole 10, template_var 8),
+                        template_var 7),
+                      template_var 6),
+                    template_var 9),
+                  template_var 5),
+                template_var 4),
+              template_var 3)
+            ),
+        template_inequation
+         (less_than, template_var 2,
+          template_app (template_hole 8, template_var 1)),
+        template_equation
+         (template_app (template_var 8, template_var 0),
+          template_app (template_hole 6, template_var 5)),
+        template_equation
+         (template_app
+           (template_app (template_hole 4, template_var 1), template_var 2),
+          template_var 9),
+        template_equation
+         (template_app (template_var 7, template_var 0),
+          template_app (template_hole 2, template_var 1))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_app
+                    (template_app
+                      (template_app (template_hole 10, template_var 8),
+                       template_var 7),
+                     template_var 6),
+                   template_app
+                    (template_app (template_hole 1, template_var 10),
+                     template_var 2)),
+                 template_app (template_hole 0, template_var 0)),
+               template_var 4),
+             template_var 3)
+           ))),
+    ("OG_Tactics.Cond_inter_aux_any",
+     "[| interfree_aux ?\<Gamma> ?\<Theta> ?F
+          (?Any, (?AnyAnn, ?q, ?a), ?c\<^sub>1, ?a1.0);
+         interfree_aux ?\<Gamma> ?\<Theta> ?F
+          (?Any, (?AnyAnn, ?q, ?a), ?c\<^sub>2, ?a2.0) |]
+      ==> interfree_aux ?\<Gamma> ?\<Theta> ?F
+           (?Any, (?AnyAnn, ?q, ?a), Cond ?b ?c\<^sub>1 ?c\<^sub>2,
+            AnnBin ?r ?a1.0 ?a2.0)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 7, template_var 12),
+                  template_var 11),
+                template_var 10),
+              template_app
+               (template_app (template_hole 6, template_var 9),
+                template_app
+                 (template_app
+                   (template_hole 5,
+                    template_app
+                     (template_app (template_hole 4, template_var 8),
+                      template_app
+                       (template_app (template_hole 3, template_var 7),
+                        template_var 6))),
+                  template_app
+                   (template_app (template_hole 2, template_var 5),
+                    template_var 4))))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 7, template_var 12),
+                  template_var 11),
+                template_var 10),
+              template_app
+               (template_app (template_hole 6, template_var 9),
+                template_app
+                 (template_app
+                   (template_hole 5,
+                    template_app
+                     (template_app (template_hole 4, template_var 8),
+                      template_app
+                       (template_app (template_hole 3, template_var 7),
+                        template_var 6))),
+                  template_app
+                   (template_app (template_hole 2, template_var 3),
+                    template_var 2))))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 7, template_var 12),
+                 template_var 11),
+               template_var 10),
+             template_app
+              (template_app (template_hole 6, template_var 9),
+               template_app
+                (template_app
+                  (template_hole 5,
+                   template_app
+                    (template_app (template_hole 4, template_var 8),
+                     template_app
+                      (template_app (template_hole 3, template_var 7),
+                       template_var 6))),
+                 template_app
+                  (template_app
+                    (template_hole 2,
+                     template_app
+                      (template_app
+                        (template_app (template_hole 1, template_var 1),
+                         template_var 5),
+                       template_var 3)),
+                   template_app
+                    (template_app
+                      (template_app (template_hole 0, template_var 0),
+                       template_var 4),
+                     template_var 2)))))
+           ))),
+    ("OG_Tactics.SeqCallRule",
+     "[| ?P' <= ?P;
+         ?\<Gamma>, ?\<Theta>
+             \<tturnstile>\<^bsub>/?F\<^esub> ?P ?P'' ?f ?Q, ?A;
+         ?n < length ?as; ?\<Gamma> ?p = Some ?f; ?as ! ?n = ?P'';
+         ?\<Theta> ?p = Some ?as |]
+      ==> ?\<Gamma>, ?\<Theta>
+              \<tturnstile>\<^bsub>/?F\<^esub> ?P' (AnnCall ?r ?n) (Call ?p)
+         ?Q, ?A",
+     template_implication
+      ([template_inequation (less_equals, template_var 12, template_var 11),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app
+                     (template_app
+                       (template_app
+                         (template_app (template_hole 10, template_var 10),
+                          template_var 9),
+                        template_var 8),
+                      template_var 11),
+                    template_var 7),
+                  template_var 6),
+                template_var 5),
+              template_var 4)
+            ),
+        template_inequation
+         (less_than, template_var 3,
+          template_app (template_hole 8, template_var 2)),
+        template_equation
+         (template_app (template_var 10, template_var 1),
+          template_app (template_hole 6, template_var 6)),
+        template_equation
+         (template_app
+           (template_app (template_hole 4, template_var 2), template_var 3),
+          template_var 7),
+        template_equation
+         (template_app (template_var 9, template_var 1),
+          template_app (template_hole 2, template_var 2))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_app
+                    (template_app
+                      (template_app
+                        (template_app (template_hole 10, template_var 10),
+                         template_var 9),
+                       template_var 8),
+                     template_var 12),
+                   template_app
+                    (template_app (template_hole 1, template_var 0),
+                     template_var 3)),
+                 template_app (template_hole 0, template_var 1)),
+               template_var 5),
+             template_var 4)
+           ))),
+    ("OG_Tactics.interfree_swap_List",
+     "[| interfree_aux ?\<Gamma> ?\<Theta> ?F (?x, ?a, ?y, fst ?a');
+         interfree_aux ?\<Gamma> ?\<Theta> ?F (?y, ?a', ?x, fst ?a);
+         interfree_swap ?\<Gamma> ?\<Theta> ?F (?x, ?a, ?xs, ?as) |]
+      ==> interfree_swap ?\<Gamma> ?\<Theta> ?F
+           (?x, ?a, ?y # ?xs, ?a' # ?as)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 10, template_var 8),
+                  template_var 7),
+                template_var 6),
+              template_app
+               (template_app (template_hole 9, template_var 5),
+                template_app
+                 (template_app (template_hole 8, template_var 4),
+                  template_app
+                   (template_app (template_hole 7, template_var 3),
+                    template_app (template_hole 6, template_var 2)))))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 10, template_var 8),
+                  template_var 7),
+                template_var 6),
+              template_app
+               (template_app (template_hole 9, template_var 3),
+                template_app
+                 (template_app (template_hole 8, template_var 2),
+                  template_app
+                   (template_app (template_hole 7, template_var 5),
+                    template_app (template_hole 6, template_var 4)))))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 5, template_var 8),
+                  template_var 7),
+                template_var 6),
+              template_app
+               (template_app (template_hole 4, template_var 5),
+                template_app
+                 (template_app (template_hole 3, template_var 4),
+                  template_app
+                   (template_app (template_hole 2, template_var 1),
+                    template_var 0))))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 5, template_var 8),
+                 template_var 7),
+               template_var 6),
+             template_app
+              (template_app (template_hole 4, template_var 5),
+               template_app
+                (template_app (template_hole 3, template_var 4),
+                 template_app
+                  (template_app
+                    (template_hole 2,
+                     template_app
+                      (template_app (template_hole 1, template_var 3),
+                       template_var 1)),
+                   template_app
+                    (template_app (template_hole 0, template_var 2),
+                     template_var 0)))))
+           ))),
+    ("OG_Tactics.ParallelRule",
+     "[| ?\<Gamma>,?\<Theta>[\<tturnstile>]\<^bsub>/?F \<^esub>?Ps ?Cs;
+         interfree ?\<Gamma> ?\<Theta> ?F ?Ps ?Cs;
+         length ?Cs = length ?Ps |]
+      ==> ?\<Gamma>, ?\<Theta>
+              \<turnstile>\<^bsub>/?F\<^esub> (AnnPar ?Ps) (Parallel ?Cs)
+        (INT i:{i. i < length ?Ps}.
+            fst (snd (?Ps !
+                      i))), (UN i:{i. i < length ?Ps}.
+                                snd (snd (?Ps ! i)))",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app (template_hole 16, template_var 4),
+                    template_var 3),
+                  template_var 2),
+                template_var 1),
+              template_var 0)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app (template_hole 15, template_var 4),
+                    template_var 3),
+                  template_var 2),
+                template_var 1),
+              template_var 0)
+            ),
+        template_equation
+         (template_app (template_hole 13, template_var 0),
+          template_app (template_hole 12, template_var 1))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_app
+                    (template_app
+                      (template_app (template_hole 11, template_var 4),
+                       template_var 3),
+                     template_var 2),
+                   template_app (template_hole 10, template_var 1)),
+                 template_app (template_hole 9, template_var 0)),
+               template_app
+                (template_hole 8,
+                 template_app
+                  (template_app (template_hole 7, t_empty),
+                   template_app (template_hole 3, t_empty)))),
+             template_app
+              (template_hole 1,
+               template_app
+                (template_app (template_hole 7, t_empty),
+                 template_app (template_hole 3, t_empty))))
+           ))),
+    ("OG_Tactics.Guard_inter_aux",
+     "[| interfree_aux_right ?\<Gamma> ?\<Theta> ?F (?r, ?com, ?ann);
+         interfree_aux_right ?\<Gamma> ?\<Theta> ?F (?Q, ?com, ?ann);
+         interfree_aux ?\<Gamma> ?\<Theta> ?F
+          (?c, (?P, ?Q, ?A), ?com, ?ann) |]
+      ==> interfree_aux ?\<Gamma> ?\<Theta> ?F
+           (Guard ?f ?g ?c, (AnnRec ?r ?P, ?Q, ?A), ?com, ?ann)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 9, template_var 11),
+                  template_var 10),
+                template_var 9),
+              template_app
+               (template_app (template_hole 8, template_var 8),
+                template_app
+                 (template_app (template_hole 7, template_var 7),
+                  template_var 6)))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 9, template_var 11),
+                  template_var 10),
+                template_var 9),
+              template_app
+               (template_app (template_hole 8, template_var 5),
+                template_app
+                 (template_app (template_hole 7, template_var 7),
+                  template_var 6)))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 6, template_var 11),
+                  template_var 10),
+                template_var 9),
+              template_app
+               (template_app (template_hole 5, template_var 4),
+                template_app
+                 (template_app
+                   (template_hole 4,
+                    template_app
+                     (template_app (template_hole 3, template_var 3),
+                      template_app
+                       (template_app (template_hole 2, template_var 5),
+                        template_var 2))),
+                  template_app
+                   (template_app (template_hole 7, template_var 7),
+                    template_var 6))))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 6, template_var 11),
+                 template_var 10),
+               template_var 9),
+             template_app
+              (template_app
+                (template_hole 5,
+                 template_app
+                  (template_app
+                    (template_app (template_hole 1, template_var 1),
+                     template_var 0),
+                   template_var 4)),
+               template_app
+                (template_app
+                  (template_hole 4,
+                   template_app
+                    (template_app
+                      (template_hole 3,
+                       template_app
+                        (template_app (template_hole 0, template_var 8),
+                         template_var 3)),
+                     template_app
+                      (template_app (template_hole 2, template_var 5),
+                       template_var 2))),
+                 template_app
+                  (template_app (template_hole 7, template_var 7),
+                   template_var 6))))
+           ))),
+    ("OG_Tactics.While_inter_aux",
+     "[| interfree_aux_right ?\<Gamma> ?\<Theta> ?F (?r, ?com, ?ann);
+         interfree_aux_right ?\<Gamma> ?\<Theta> ?F (?Q, ?com, ?ann);
+         interfree_aux ?\<Gamma> ?\<Theta> ?F
+          (?c, (?P, ?i, ?A), ?com, ?ann) |]
+      ==> interfree_aux ?\<Gamma> ?\<Theta> ?F
+           (While ?b ?c, (AnnWhile ?r ?i ?P, ?Q, ?A), ?com, ?ann)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 9, template_var 11),
+                  template_var 10),
+                template_var 9),
+              template_app
+               (template_app (template_hole 8, template_var 8),
+                template_app
+                 (template_app (template_hole 7, template_var 7),
+                  template_var 6)))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 9, template_var 11),
+                  template_var 10),
+                template_var 9),
+              template_app
+               (template_app (template_hole 8, template_var 5),
+                template_app
+                 (template_app (template_hole 7, template_var 7),
+                  template_var 6)))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 6, template_var 11),
+                  template_var 10),
+                template_var 9),
+              template_app
+               (template_app (template_hole 5, template_var 4),
+                template_app
+                 (template_app
+                   (template_hole 4,
+                    template_app
+                     (template_app (template_hole 3, template_var 3),
+                      template_app
+                       (template_app (template_hole 2, template_var 2),
+                        template_var 1))),
+                  template_app
+                   (template_app (template_hole 7, template_var 7),
+                    template_var 6))))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 6, template_var 11),
+                 template_var 10),
+               template_var 9),
+             template_app
+              (template_app
+                (template_hole 5,
+                 template_app
+                  (template_app (template_hole 1, template_var 0),
+                   template_var 4)),
+               template_app
+                (template_app
+                  (template_hole 4,
+                   template_app
+                    (template_app
+                      (template_hole 3,
+                       template_app
+                        (template_app
+                          (template_app (template_hole 0, template_var 8),
+                           template_var 2),
+                         template_var 3)),
+                     template_app
+                      (template_app (template_hole 2, template_var 5),
+                       template_var 1))),
+                 template_app
+                  (template_app (template_hole 7, template_var 7),
+                   template_var 6))))
+           ))),
+    ("OG_Tactics.interfree_swap_Map",
+     "ALL k.
+         ?i <= k & k < ?j -->
+         interfree_aux ?\<Gamma> ?\<Theta> ?F (?x, ?a, ?c k, fst (?Q k)) &
+         interfree_aux ?\<Gamma> ?\<Theta> ?F (?c k, ?Q k, ?x, fst ?a) ==>
+      interfree_swap ?\<Gamma> ?\<Theta> ?F
+       (?x, ?a, map ?c [?i..<?j], map ?Q [?i..<?j])",
+     template_implication
+      ([template_predicate (template_app (template_hole 16, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 6, template_var 6),
+                 template_var 5),
+               template_var 4),
+             template_app
+              (template_app (template_hole 5, template_var 3),
+               template_app
+                (template_app (template_hole 4, template_var 2),
+                 template_app
+                  (template_app
+                    (template_hole 3,
+                     template_app
+                      (template_app (template_hole 2, template_var 1),
+                       template_app
+                        (template_app (template_hole 1, template_var 8),
+                         template_var 7))),
+                   template_app
+                    (template_app (template_hole 0, template_var 0),
+                     template_app
+                      (template_app (template_hole 1, template_var 8),
+                       template_var 7))))))
+           ))),
+    ("OG_Tactics.interfree_Map",
+     "ALL i j.
+         ?a <= i & i < ?b & ?a <= j & j < ?b & i ~= j -->
+         interfree_aux ?\<Gamma> ?\<Theta> ?F
+          (?c i, ?A i, ?c j, fst (?A j)) ==>
+      interfree ?\<Gamma> ?\<Theta> ?F (map ?A [?a..<?b])
+       (map ?c [?a..<?b])",
+     template_implication
+      ([template_predicate (template_app (template_hole 15, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_app (template_hole 3, template_var 4),
+                   template_var 3),
+                 template_var 2),
+               template_app
+                (template_app (template_hole 2, t_empty),
+                 template_app
+                  (template_app (template_hole 1, template_var 6),
+                   template_var 5))),
+             template_app
+              (template_app (template_hole 0, t_empty),
+               template_app
+                (template_app (template_hole 1, template_var 6),
+                 template_var 5)))
+           ))),
+    ("OG_Tactics.Cond_inter_aux",
+     "[| interfree_aux_right ?\<Gamma> ?\<Theta> ?F (?r, ?com, ?ann);
+         interfree_aux ?\<Gamma> ?\<Theta> ?F
+          (?c\<^sub>1, (?r\<^sub>1, ?Q, ?A), ?com, ?ann);
+         interfree_aux ?\<Gamma> ?\<Theta> ?F
+          (?c\<^sub>2, (?r\<^sub>2, ?Q, ?A), ?com, ?ann) |]
+      ==> interfree_aux ?\<Gamma> ?\<Theta> ?F
+           (Cond ?b ?c\<^sub>1 ?c\<^sub>2,
+            (AnnBin ?r ?r\<^sub>1 ?r\<^sub>2, ?Q, ?A), ?com, ?ann)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 9, template_var 12),
+                  template_var 11),
+                template_var 10),
+              template_app
+               (template_app (template_hole 8, template_var 9),
+                template_app
+                 (template_app (template_hole 7, template_var 8),
+                  template_var 7)))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 6, template_var 12),
+                  template_var 11),
+                template_var 10),
+              template_app
+               (template_app (template_hole 5, template_var 6),
+                template_app
+                 (template_app
+                   (template_hole 4,
+                    template_app
+                     (template_app (template_hole 3, template_var 5),
+                      template_app
+                       (template_app (template_hole 2, template_var 4),
+                        template_var 3))),
+                  template_app
+                   (template_app (template_hole 7, template_var 8),
+                    template_var 7))))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 6, template_var 12),
+                  template_var 11),
+                template_var 10),
+              template_app
+               (template_app (template_hole 5, template_var 2),
+                template_app
+                 (template_app
+                   (template_hole 4,
+                    template_app
+                     (template_app (template_hole 3, template_var 1),
+                      template_app
+                       (template_app (template_hole 2, template_var 4),
+                        template_var 3))),
+                  template_app
+                   (template_app (template_hole 7, template_var 8),
+                    template_var 7))))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 6, template_var 12),
+                 template_var 11),
+               template_var 10),
+             template_app
+              (template_app
+                (template_hole 5,
+                 template_app
+                  (template_app
+                    (template_app (template_hole 1, template_var 0),
+                     template_var 6),
+                   template_var 2)),
+               template_app
+                (template_app
+                  (template_hole 4,
+                   template_app
+                    (template_app
+                      (template_hole 3,
+                       template_app
+                        (template_app
+                          (template_app (template_hole 0, template_var 9),
+                           template_var 5),
+                         template_var 1)),
+                     template_app
+                      (template_app (template_hole 2, template_var 4),
+                       template_var 3))),
+                 template_app
+                  (template_app (template_hole 7, template_var 8),
+                   template_var 7))))
+           ))),
+    ("OG_Tactics.Parallel_inter_aux",
+     "[| interfree_aux_right ?\<Gamma> ?\<Theta> ?F (?Q, ?com, ?ann);
+         interfree_aux_right ?\<Gamma> ?\<Theta> ?F (?A, ?com, ?ann);
+         interfree_aux_right ?\<Gamma> ?\<Theta> ?F
+          (\<Inter> (set (map (%a. fst (snd a)) ?as)), ?com, ?ann);
+         inter_aux_Par ?\<Gamma> ?\<Theta> ?F (?cs, ?as, ?com, ?ann) |]
+      ==> interfree_aux ?\<Gamma> ?\<Theta> ?F
+           (Parallel ?cs, (AnnPar ?as, ?Q, ?A), ?com, ?ann)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 17, template_var 8),
+                  template_var 7),
+                template_var 6),
+              template_app
+               (template_app (template_hole 16, template_var 5),
+                template_app
+                 (template_app (template_hole 15, template_var 4),
+                  template_var 3)))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 17, template_var 8),
+                  template_var 7),
+                template_var 6),
+              template_app
+               (template_app (template_hole 16, template_var 2),
+                template_app
+                 (template_app (template_hole 15, template_var 4),
+                  template_var 3)))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 17, template_var 8),
+                  template_var 7),
+                template_var 6),
+              template_app
+               (template_app
+                 (template_hole 16,
+                  template_app
+                   (template_hole 14,
+                    template_app
+                     (template_hole 13,
+                      template_app
+                       (template_app (template_hole 12, t_empty),
+                        template_var 1)))),
+                template_app
+                 (template_app (template_hole 15, template_var 4),
+                  template_var 3)))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 9, template_var 8),
+                  template_var 7),
+                template_var 6),
+              template_app
+               (template_app (template_hole 8, template_var 0),
+                template_app
+                 (template_app (template_hole 7, template_var 1),
+                  template_app
+                   (template_app (template_hole 15, template_var 4),
+                    template_var 3))))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 6, template_var 8),
+                 template_var 7),
+               template_var 6),
+             template_app
+              (template_app
+                (template_hole 5,
+                 template_app (template_hole 4, template_var 0)),
+               template_app
+                (template_app
+                  (template_hole 3,
+                   template_app
+                    (template_app
+                      (template_hole 2,
+                       template_app (template_hole 1, template_var 1)),
+                     template_app
+                      (template_app (template_hole 0, template_var 5),
+                       template_var 2))),
+                 template_app
+                  (template_app (template_hole 15, template_var 4),
+                   template_var 3))))
+           ))),
+    ("OG_Tactics.Call_inter_aux",
+     "[| interfree_aux_right ?\<Gamma> ?\<Theta> ?F (?r, ?com, ?ann);
+         interfree_aux ?\<Gamma> ?\<Theta> ?F
+          (?f, (?P, ?Q, ?A), ?com, ?ann);
+         ?n < length ?as; ?\<Gamma> ?p = Some ?f; ?as ! ?n = ?P;
+         ?\<Theta> ?p = Some ?as |]
+      ==> interfree_aux ?\<Gamma> ?\<Theta> ?F
+           (Call ?p, (AnnCall ?r ?n, ?Q, ?A), ?com, ?ann)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 17, template_var 12),
+                  template_var 11),
+                template_var 10),
+              template_app
+               (template_app (template_hole 16, template_var 9),
+                template_app
+                 (template_app (template_hole 15, template_var 8),
+                  template_var 7)))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 14, template_var 12),
+                  template_var 11),
+                template_var 10),
+              template_app
+               (template_app (template_hole 13, template_var 6),
+                template_app
+                 (template_app
+                   (template_hole 12,
+                    template_app
+                     (template_app (template_hole 11, template_var 5),
+                      template_app
+                       (template_app (template_hole 10, template_var 4),
+                        template_var 3))),
+                  template_app
+                   (template_app (template_hole 15, template_var 8),
+                    template_var 7))))
+            ),
+        template_inequation
+         (less_than, template_var 2,
+          template_app (template_hole 8, template_var 1)),
+        template_equation
+         (template_app (template_var 12, template_var 0),
+          template_app (template_hole 6, template_var 6)),
+        template_equation
+         (template_app
+           (template_app (template_hole 4, template_var 1), template_var 2),
+          template_var 5),
+        template_equation
+         (template_app (template_var 11, template_var 0),
+          template_app (template_hole 2, template_var 1))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 14, template_var 12),
+                 template_var 11),
+               template_var 10),
+             template_app
+              (template_app
+                (template_hole 13,
+                 template_app (template_hole 1, template_var 0)),
+               template_app
+                (template_app
+                  (template_hole 12,
+                   template_app
+                    (template_app
+                      (template_hole 11,
+                       template_app
+                        (template_app (template_hole 0, template_var 9),
+                         template_var 2)),
+                     template_app
+                      (template_app (template_hole 10, template_var 4),
+                       template_var 3))),
+                 template_app
+                  (template_app (template_hole 15, template_var 8),
+                   template_var 7))))
+           ))),
+    ("OG_Tactics.DynCom_inter_aux",
+     "[| interfree_aux_right ?\<Gamma> ?\<Theta> ?F (?r, ?com, ?ann);
+         interfree_aux_right ?\<Gamma> ?\<Theta> ?F (?Q, ?com, ?ann);
+         interfree_aux_right ?\<Gamma> ?\<Theta> ?F (?A, ?com, ?ann);
+         !!s. s : ?r ==>
+              interfree_aux ?\<Gamma> ?\<Theta> ?F
+               (?f s, (?P, ?Q, ?A), ?com, ?ann) |]
+      ==> interfree_aux ?\<Gamma> ?\<Theta> ?F
+           (DynCom ?f, (AnnRec ?r ?P, ?Q, ?A), ?com, ?ann)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 11, template_var 9),
+                  template_var 8),
+                template_var 7),
+              template_app
+               (template_app (template_hole 10, template_var 6),
+                template_app
+                 (template_app (template_hole 9, template_var 5),
+                  template_var 4)))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 11, template_var 9),
+                  template_var 8),
+                template_var 7),
+              template_app
+               (template_app (template_hole 10, template_var 3),
+                template_app
+                 (template_app (template_hole 9, template_var 5),
+                  template_var 4)))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 11, template_var 9),
+                  template_var 8),
+                template_var 7),
+              template_app
+               (template_app (template_hole 10, template_var 2),
+                template_app
+                 (template_app (template_hole 9, template_var 5),
+                  template_var 4)))
+            ),
+        template_predicate (template_app (template_hole 8, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 6, template_var 9),
+                 template_var 8),
+               template_var 7),
+             template_app
+              (template_app
+                (template_hole 5,
+                 template_app (template_hole 1, template_var 1)),
+               template_app
+                (template_app
+                  (template_hole 4,
+                   template_app
+                    (template_app
+                      (template_hole 3,
+                       template_app
+                        (template_app (template_hole 0, template_var 6),
+                         template_var 0)),
+                     template_app
+                      (template_app (template_hole 2, template_var 3),
+                       template_var 2))),
+                 template_app
+                  (template_app (template_hole 9, template_var 5),
+                   template_var 4))))
+           ))),
+    ("OG_Tactics.ParallelConseqRule",
+     "[| ?\<Gamma>, ?\<Theta>
+             \<turnstile>\<^bsub>/?F\<^esub> (AnnPar ?Ps) (Parallel ?Ts)
+       (INT i:{i. i < length ?Ps}.
+           fst (snd (?Ps !
+                     i))), (UN i:{i. i < length ?Ps}. snd (snd (?Ps ! i)));
+         (INT i:{i. i < length ?Ps}. fst (snd (?Ps ! i))) <= ?Q;
+         (UN i:{i. i < length ?Ps}. snd (snd (?Ps ! i))) <= ?A |]
+      ==> ?\<Gamma>, ?\<Theta>
+              \<turnstile>\<^bsub>/?F\<^esub> (AnnPar ?Ps) (Parallel ?Ts)
+        ?Q, ?A",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app
+                     (template_app
+                       (template_app (template_hole 13, template_var 6),
+                        template_var 5),
+                      template_var 4),
+                    template_app (template_hole 12, template_var 3)),
+                  template_app (template_hole 11, template_var 2)),
+                template_app
+                 (template_hole 10,
+                  template_app
+                   (template_app (template_hole 9, t_empty),
+                    template_app (template_hole 5, t_empty)))),
+              template_app
+               (template_hole 2,
+                template_app
+                 (template_app (template_hole 9, t_empty),
+                  template_app (template_hole 5, t_empty))))
+            ),
+        template_inequation
+         (less_equals,
+          template_app
+           (template_hole 10,
+            template_app
+             (template_app (template_hole 9, t_empty),
+              template_app (template_hole 5, t_empty))),
+          template_var 1),
+        template_inequation
+         (less_equals,
+          template_app
+           (template_hole 2,
+            template_app
+             (template_app (template_hole 9, t_empty),
+              template_app (template_hole 5, t_empty))),
+          template_var 0)],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_app
+                    (template_app
+                      (template_app (template_hole 13, template_var 6),
+                       template_var 5),
+                     template_var 4),
+                   template_app (template_hole 12, template_var 3)),
+                 template_app (template_hole 11, template_var 2)),
+               template_var 1),
+             template_var 0)
+           )))]:
+   (string * thm * template) list
+### theory "Draft.OG_TacticsMoreTemplates"
+### 0.393s elapsed time, 0.528s cpu time, 0.033s GC time
+val it = (): unit

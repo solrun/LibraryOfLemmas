@@ -1,0 +1,698 @@
+Loading theory "HOL-Library.Function_Algebras" (required by "Draft.Data_TupleTemplates" via "Draft.ExtrEqs" via "HOL-Library.BigO")
+Loading theory "HOL-Library.Set_Algebras" (required by "Draft.Data_TupleTemplates" via "Draft.ExtrEqs" via "HOL-Library.BigO")
+Loading theory "HOL-Library.Stream" (required by "Draft.Data_TupleTemplates" via "Draft.ExtrEqs")
+Loading theory "HOL-Library.Tree" (required by "Draft.Data_TupleTemplates" via "Draft.ExtrEqs" via "Draft.Templates")
+instantiation
+  fun :: (type, plus) plus
+  plus_fun == plus :: ('a => 'b) => ('a => 'b) => 'a => 'b
+instantiation
+  set :: (plus) plus
+  plus_set == plus :: 'a set => 'a set => 'a set
+instantiation
+  fun :: (type, zero) zero
+  zero_fun == zero_class.zero :: 'a => 'b
+instantiation
+  set :: (times) times
+  times_set == times :: 'a set => 'a set => 'a set
+instantiation
+  fun :: (type, times) times
+  times_fun == times :: ('a => 'b) => ('a => 'b) => 'a => 'b
+instantiation
+  set :: (zero) zero
+  zero_set == zero_class.zero :: 'a set
+instantiation
+  fun :: (type, one) one
+  one_fun == one_class.one :: 'a => 'b
+instantiation
+  set :: (one) one
+  one_set == one_class.one :: 'a set
+### theory "HOL-Library.Function_Algebras"
+### 0.153s elapsed time, 0.625s cpu time, 0.053s GC time
+Loading theory "Draft.HOLCF_Main" (required by "Draft.Data_TupleTemplates" via "Draft.Data_Tuple" via "Draft.Type_Classes")
+### theory "HOL-Library.Set_Algebras"
+### 0.213s elapsed time, 0.864s cpu time, 0.053s GC time
+Loading theory "HOL-Library.BigO" (required by "Draft.Data_TupleTemplates" via "Draft.ExtrEqs")
+consts
+  shift :: "'a list => 'a stream => 'a stream"
+Proofs for coinductive predicate(s) "streamsp"
+  Proving monotonicity ...
+consts
+  snth :: "'a stream => nat => 'a"
+consts
+  stake :: "nat => 'a stream => 'a list"
+consts
+  sdrop :: "nat => 'a stream => 'a stream"
+consts
+  left :: "'a tree => 'a tree"
+consts
+  right :: "'a tree => 'a tree"
+consts
+  sfilter :: "('a => bool) => 'a stream => 'a stream"
+consts
+  cycle :: "'a list => 'a stream"
+Found termination order: "size <*mlex*> {}"
+consts
+  siterate :: "('a => 'a) => 'a => 'a stream"
+Found termination order: "size <*mlex*> {}"
+consts
+  flat :: "'a list stream => 'a stream"
+Found termination order: "size <*mlex*> {}"
+consts
+  sinterleave :: "'a stream => 'a stream => 'a stream"
+consts
+  szip :: "'a stream => 'b stream => ('a * 'b) stream"
+class height = type +
+  fixes height :: "'a => nat"
+instantiation
+  tree :: (type) height
+  height_tree == height :: 'a tree => nat
+consts
+  smap2 :: "('a => 'b => 'c) => 'a stream => 'b stream => 'c stream"
+### theory "HOL-Library.Stream"
+### 0.971s elapsed time, 3.737s cpu time, 0.710s GC time
+Found termination order: "size <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+### theory "HOL-Library.BigO"
+### 0.898s elapsed time, 3.290s cpu time, 0.688s GC time
+Found termination order: "size <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+### theory "Draft.HOLCF_Main"
+### 1.201s elapsed time, 4.065s cpu time, 0.746s GC time
+Loading theory "Draft.Type_Classes" (required by "Draft.Data_TupleTemplates" via "Draft.Data_Tuple")
+Found termination order: "size <*mlex*> {}"
+class Eq = domain +
+  fixes eq :: "'a -> 'a -> tr"
+Found termination order: "(%p. size (fst p)) <*mlex*> {}"
+class Eq_strict = Eq +
+  assumes
+    "eq_strict": "!!x. eq$x$\<bottom> = \<bottom>"
+      "!!y. eq$\<bottom>$y = \<bottom>"
+Found termination order: "size <*mlex*> {}"
+class Eq_sym = Eq_strict +
+  assumes "eq_sym": "!!x y. eq$x$y = eq$y$x"
+Found termination order: "(%p. size (snd p)) <*mlex*> {}"
+class Eq_equiv = Eq_sym +
+  assumes "eq_self_neq_FF": "!!x. eq$x$x ~= FF"
+    and
+    "eq_trans": "!!x y z. [| eq$x$y = TT; eq$y$z = TT |] ==> eq$x$z = TT"
+class Eq_eq = Eq_sym +
+  assumes "eq_self_neq_FF'": "!!x. eq$x$x ~= FF"
+    and "eq_TT_dest": "!!x y. eq$x$y = TT ==> x = y"
+Found termination order: "size <*mlex*> {}"
+instantiation
+  lift :: (countable) Eq_eq
+  eq_lift == eq :: 'a lift -> 'a lift -> tr
+### theory "HOL-Library.Tree"
+### 1.928s elapsed time, 5.881s cpu time, 0.908s GC time
+Loading theory "Draft.Templates" (required by "Draft.Data_TupleTemplates" via "Draft.ExtrEqs")
+datatype template_term
+=
+     t_empty
+   | template_app of template_term * template_term
+   | template_hole of int
+   | template_var of int
+datatype sign
+= equals | greater_equals | greater_than | less_equals | less_than
+datatype template
+=
+     template_bimplication of template * template
+   | template_dunno
+   | template_equation of template_term * template_term
+   | template_implication of template list * template
+   | template_inequation of sign * template_term * template_term
+   | template_negation of template
+   | template_predicate of template_term
+constructor t_empty: template_term
+constructor template_app: template_term * template_term -> template_term
+constructor template_hole: int -> template_term
+constructor template_var: int -> template_term
+constructor equals: sign
+constructor greater_equals: sign
+constructor greater_than: sign
+constructor less_equals: sign
+constructor less_than: sign
+constructor template_bimplication: template * template -> template
+constructor template_dunno: template
+constructor template_equation: template_term * template_term -> template
+constructor template_implication: template list * template -> template
+constructor template_inequation:
+   sign * template_term * template_term -> template
+constructor template_negation: template -> template
+constructor template_predicate: template_term -> template
+val vfs = fn: term -> (indexname * typ) list * (string * typ) list
+val indexOf = fn: ''a list -> ''a -> int -> int
+val has_eq = fn: term -> bool
+val term2template = fn:
+   (indexname * typ) list -> (string * typ) list -> term -> template_term
+val lemma2predicate = fn: term -> term -> template
+val makeTemplatewithContext = fn: term -> term -> template
+val lemma2template = fn: term -> template
+val thm2template = fn: thm -> template
+val tterm2string = fn: template_term -> string
+val template2string = fn: template -> string
+val t = "height ?t <= size ?t": thm
+val th =
+   Const ("HOL.Trueprop", "bool => prop") $
+     (Const ("Orderings.ord_class.less_eq", "nat => nat => bool") $
+       (Const ("Tree.height_class.height", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree")) $
+       (Const ("Nat.size_class.size", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree"))):
+   term
+### theory "Draft.Templates"
+### 0.057s elapsed time, 0.128s cpu time, 0.000s GC time
+Loading theory "Draft.ExtrEqs" (required by "Draft.Data_TupleTemplates")
+Proving isomorphism properties of domain Ordering ...
+Proving induction properties of domain Ordering ...
+Proving finiteness rule for domain Ordering ...
+class Ord = Eq +
+  fixes compare :: "'a -> 'a -> Ordering"
+class Ord_strict = Ord +
+  assumes
+    "compare_strict": "!!y. compare$\<bottom>$y = \<bottom>"
+      "!!x. compare$x$\<bottom> = \<bottom>"
+class Ord_linear = Ord_strict +
+  assumes "eq_conv_compare": "!!x y. eq$x$y = is_EQ$(compare$x$y)"
+    and
+    "oppOrdering_compare": "!!x y. oppOrdering$(compare$x$y) = compare$y$x"
+    and "compare_EQ_dest": "!!x y. compare$x$y = EQ ==> x = y"
+    and "compare_self_below_EQ": "!!x. compare$x$x << EQ"
+    and
+    "compare_LT_trans":
+      "!!x y z.
+          [| compare$x$y = LT; compare$y$z = LT |] ==> compare$x$z = LT"
+val eqpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Var (("_dummy_", 2), "?'a"))
+       ):
+   term Find_Theorems.criterion
+val badeqpattern = Pattern (Const ("Pure.eq", "?'a => ?'a => prop")):
+   term Find_Theorems.criterion
+val undefpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Const ("HOL.undefined", "?'a"))
+       ):
+   term Find_Theorems.criterion
+val thmpattern =
+   Pattern
+    (Const ("HOL.Trueprop", "bool => prop") $ Var (("_dummy_", 1), "bool")):
+   term Find_Theorems.criterion
+val badnames =
+   ["*nitpick*", "*Nitpick*", "*full_exhaustive*", "*_def*", "Enum.finite*",
+    "*Quickcheck*", "ATP*", "*Nunchaku*", "*Code*", "*BNF*", "*SMT*",
+    "*.*.*"]:
+   string list
+val unwanted_names =
+   [(false, Name "*nitpick*"), (false, Name "*Nitpick*"),
+    (false, Name "*full_exhaustive*"), (false, Name "*_def*"),
+    (false, Name "Enum.finite*"), (false, Name "*Quickcheck*"),
+    (false, Name "ATP*"), (false, Name "*Nunchaku*"),
+    (false, Name "*Code*"), (false, Name "*BNF*"), (false, Name "*SMT*"),
+    (false, Name "*.*.*")]:
+   (bool * term Find_Theorems.criterion) list
+val has_vars = fn: term -> bool
+val get_all_eqs = fn: string -> Proof.context -> (string * thm) list
+val get_all_thms = fn: string -> Proof.context -> (string * thm) list
+val get_noneq_thms = fn: string -> Proof.context -> (string * thm) list
+val template_eqs = fn:
+   string -> Proof.context -> (string * thm * template) list
+val template_thms = fn:
+   string -> Proof.context -> (string * thm * template) list
+### theory "Draft.ExtrEqs"
+### 0.547s elapsed time, 1.127s cpu time, 0.065s GC time
+instantiation
+  lift :: ({countable,linorder}) Ord_linear
+  compare_lift == compare :: 'a lift -> 'a lift -> Ordering
+### theory "Draft.Type_Classes"
+### 1.202s elapsed time, 2.483s cpu time, 0.174s GC time
+Loading theory "Draft.Data_Bool" (required by "Draft.Data_TupleTemplates" via "Draft.Data_Tuple")
+### theory "Draft.Data_Bool"
+### 0.069s elapsed time, 0.117s cpu time, 0.058s GC time
+Loading theory "Draft.Data_Tuple" (required by "Draft.Data_TupleTemplates")
+Proving isomorphism properties of domain Unit ...
+Proving induction properties of domain Unit ...
+Proving finiteness rule for domain Unit ...
+Proving isomorphism properties of domain Tuple2 ...
+Proving induction properties of domain Tuple2 ...
+Proving finiteness rule for domain Tuple2 ...
+Proving isomorphism properties of domain Tuple3 ...
+Proving induction properties of domain Tuple3 ...
+Proving finiteness rule for domain Tuple3 ...
+instantiation
+  \<langle>\<rangle> :: Ord_linear
+  compare_Unit == compare ::
+    \<langle>\<rangle> -> \<langle>\<rangle> -> Ordering
+  eq_Unit == eq :: \<langle>\<rangle> -> \<langle>\<rangle> -> tr
+instantiation
+  Tuple2 :: (Eq, Eq) Eq_strict
+  eq_Tuple2 == eq ::
+    \<langle>'a, 'b\<rangle> -> \<langle>'a, 'b\<rangle> -> tr
+instantiation
+  Tuple2 :: (Ord, Ord) Ord_strict
+  compare_Tuple2 == compare ::
+    \<langle>'a, 'b\<rangle> -> \<langle>'a, 'b\<rangle> -> Ordering
+instantiation
+  Tuple3 :: (Eq, Eq, Eq) Eq_strict
+  eq_Tuple3 == eq ::
+    \<langle>'a, 'b, 'c\<rangle> -> \<langle>'a, 'b, 'c\<rangle> -> tr
+instantiation
+  Tuple3 :: (Ord, Ord, Ord) Ord_strict
+  compare_Tuple3 == compare ::
+    \<langle>'a, 'b, 'c\<rangle> -> \<langle>'a, 'b, 'c\<rangle> -> Ordering
+### theory "Draft.Data_Tuple"
+### 0.902s elapsed time, 0.933s cpu time, 0.044s GC time
+Loading theory "Draft.Data_TupleTemplates"
+val templateLemmas =
+   [("Data_Tuple.deflation_Tuple2_map",
+     "[| deflation ?a; deflation ?b |] ==> deflation (Tuple2_map$?a$?b)",
+     template_implication
+      ([template_predicate (template_app (template_hole 5, template_var 1)),
+        template_predicate
+         (template_app (template_hole 4, template_var 0))],
+       template_predicate
+        (
+           template_app
+            (template_hole 3,
+             template_app
+              (template_app
+                (template_hole 2,
+                 template_app
+                  (template_app (template_hole 1, template_hole 0),
+                   template_var 1)),
+               template_var 0))
+           ))),
+    ("Data_Tuple.deflation_Tuple3_map",
+     "[| deflation ?a; deflation ?b; deflation ?c |]
+      ==> deflation (Tuple3_map$?a$?b$?c)",
+     template_implication
+      ([template_predicate (template_app (template_hole 7, template_var 2)),
+        template_predicate (template_app (template_hole 6, template_var 1)),
+        template_predicate
+         (template_app (template_hole 5, template_var 0))],
+       template_predicate
+        (
+           template_app
+            (template_hole 4,
+             template_app
+              (template_app
+                (template_hole 3,
+                 template_app
+                  (template_app
+                    (template_hole 2,
+                     template_app
+                      (template_app (template_hole 1, template_hole 0),
+                       template_var 2)),
+                   template_var 1)),
+               template_var 0))
+           ))),
+    ("Data_Tuple.isodefl_Tuple2",
+     "[| isodefl ?fa ?da; isodefl ?fb ?db |]
+      ==> isodefl (Tuple2_map$?fa$?fb) (Tuple2_defl$?da$?db)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 8, template_var 3),
+              template_var 2)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 7, template_var 1),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 6,
+               template_app
+                (template_app
+                  (template_hole 5,
+                   template_app
+                    (template_app (template_hole 4, template_hole 3),
+                     template_var 3)),
+                 template_var 1)),
+             template_app
+              (template_app
+                (template_hole 2,
+                 template_app
+                  (template_app (template_hole 1, template_hole 0),
+                   template_var 2)),
+               template_var 0))
+           ))),
+    ("Data_Tuple.Tuple2_map_unfold",
+     "Tuple2_map$?a$?b =
+      Tuple2_abs oo sprod_map$(u_map$?a)$(u_map$?b) oo Tuple2_rep",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 17,
+           template_app
+            (template_app (template_hole 16, template_hole 15),
+             template_var 1)),
+         template_var 0),
+       template_app
+        (template_app
+          (template_hole 14,
+           template_app
+            (template_app (template_hole 13, template_hole 12),
+             template_hole 11)),
+         template_app
+          (template_app
+            (template_hole 10,
+             template_app
+              (template_app (template_hole 9, template_hole 8),
+               template_app
+                (template_app
+                  (template_hole 7,
+                   template_app
+                    (template_app (template_hole 6, template_hole 5),
+                     template_app
+                      (template_app (template_hole 4, template_hole 3),
+                       template_var 1))),
+                 template_app
+                  (template_app (template_hole 2, template_hole 1),
+                   template_var 0)))),
+           template_hole 0)))),
+    ("Data_Tuple.eq_Tuple2_simps",
+     "eq$\<langle>?x1.0, ?y1.0\<rangle>$\<langle>?x2.0, ?y2.0\<rangle> =
+      (eq$?x1.0$?x2.0 andalso eq$?y1.0$?y2.0)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 14,
+           template_app
+            (template_app (template_hole 13, template_hole 12),
+             template_app
+              (template_app
+                (template_hole 11,
+                 template_app
+                  (template_app (template_hole 10, template_hole 9),
+                   template_var 3)),
+               template_var 2))),
+         template_app
+          (template_app
+            (template_hole 11,
+             template_app
+              (template_app (template_hole 10, template_hole 9),
+               template_var 1)),
+           template_var 0)),
+       template_app
+        (template_app
+          (template_hole 8,
+           template_app
+            (template_app (template_hole 7, template_hole 6),
+             template_app
+              (template_app
+                (template_hole 5,
+                 template_app
+                  (template_app (template_hole 4, template_hole 3),
+                   template_var 3)),
+               template_var 1))),
+         template_app
+          (template_app
+            (template_hole 2,
+             template_app
+              (template_app (template_hole 1, template_hole 0),
+               template_var 2)),
+           template_var 0)))),
+    ("Data_Tuple.compare_Tuple2_simps",
+     "compare$\<langle>?x1.0, ?y1.0\<rangle>$
+      \<langle>?x2.0, ?y2.0\<rangle> =
+      thenOrdering$(compare$?x1.0$?x2.0)$(compare$?y1.0$?y2.0)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 14,
+           template_app
+            (template_app (template_hole 13, template_hole 12),
+             template_app
+              (template_app
+                (template_hole 11,
+                 template_app
+                  (template_app (template_hole 10, template_hole 9),
+                   template_var 3)),
+               template_var 2))),
+         template_app
+          (template_app
+            (template_hole 11,
+             template_app
+              (template_app (template_hole 10, template_hole 9),
+               template_var 1)),
+           template_var 0)),
+       template_app
+        (template_app
+          (template_hole 8,
+           template_app
+            (template_app (template_hole 7, template_hole 6),
+             template_app
+              (template_app
+                (template_hole 5,
+                 template_app
+                  (template_app (template_hole 4, template_hole 3),
+                   template_var 3)),
+               template_var 1))),
+         template_app
+          (template_app
+            (template_hole 2,
+             template_app
+              (template_app (template_hole 1, template_hole 0),
+               template_var 2)),
+           template_var 0)))),
+    ("Data_Tuple.isodefl_Tuple3",
+     "[| isodefl ?fa ?da; isodefl ?fb ?db; isodefl ?fc ?dc |]
+      ==> isodefl (Tuple3_map$?fa$?fb$?fc) (Tuple3_defl$?da$?db$?dc)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 11, template_var 5),
+              template_var 4)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 10, template_var 3),
+              template_var 2)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 9, template_var 1),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 8,
+               template_app
+                (template_app
+                  (template_hole 7,
+                   template_app
+                    (template_app
+                      (template_hole 6,
+                       template_app
+                        (template_app (template_hole 5, template_hole 4),
+                         template_var 5)),
+                     template_var 3)),
+                 template_var 1)),
+             template_app
+              (template_app
+                (template_hole 3,
+                 template_app
+                  (template_app
+                    (template_hole 2,
+                     template_app
+                      (template_app (template_hole 1, template_hole 0),
+                       template_var 4)),
+                   template_var 2)),
+               template_var 0))
+           ))),
+    ("Data_Tuple.Tuple3_map_unfold",
+     "Tuple3_map$?a$?b$?c =
+      Tuple3_abs oo
+      sprod_map$(u_map$?a)$(sprod_map$(u_map$?b)$(u_map$?c)) oo Tuple3_rep",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 23,
+           template_app
+            (template_app
+              (template_hole 22,
+               template_app
+                (template_app (template_hole 21, template_hole 20),
+                 template_var 2)),
+             template_var 1)),
+         template_var 0),
+       template_app
+        (template_app
+          (template_hole 19,
+           template_app
+            (template_app (template_hole 18, template_hole 17),
+             template_hole 16)),
+         template_app
+          (template_app
+            (template_hole 15,
+             template_app
+              (template_app (template_hole 14, template_hole 13),
+               template_app
+                (template_app
+                  (template_hole 12,
+                   template_app
+                    (template_app (template_hole 11, template_hole 10),
+                     template_app
+                      (template_app (template_hole 9, template_hole 8),
+                       template_var 2))),
+                 template_app
+                  (template_app
+                    (template_hole 7,
+                     template_app
+                      (template_app (template_hole 6, template_hole 5),
+                       template_app
+                        (template_app (template_hole 4, template_hole 3),
+                         template_var 1))),
+                   template_app
+                    (template_app (template_hole 2, template_hole 1),
+                     template_var 0))))),
+           template_hole 0)))),
+    ("Data_Tuple.eq_Tuple3_simps",
+     "eq$\<langle>?x1.0, ?y1.0, ?z1.0\<rangle>$
+      \<langle>?x2.0, ?y2.0, ?z2.0\<rangle> =
+      (eq$?x1.0$?x2.0 andalso eq$?y1.0$?y2.0 andalso eq$?z1.0$?z2.0)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 18,
+           template_app
+            (template_app (template_hole 17, template_hole 16),
+             template_app
+              (template_app
+                (template_hole 15,
+                 template_app
+                  (template_app
+                    (template_hole 14,
+                     template_app
+                      (template_app (template_hole 13, template_hole 12),
+                       template_var 5)),
+                   template_var 4)),
+               template_var 3))),
+         template_app
+          (template_app
+            (template_hole 15,
+             template_app
+              (template_app
+                (template_hole 14,
+                 template_app
+                  (template_app (template_hole 13, template_hole 12),
+                   template_var 2)),
+               template_var 1)),
+           template_var 0)),
+       template_app
+        (template_app
+          (template_hole 11,
+           template_app
+            (template_app (template_hole 10, template_hole 9),
+             template_app
+              (template_app
+                (template_hole 8,
+                 template_app
+                  (template_app (template_hole 7, template_hole 6),
+                   template_var 5)),
+               template_var 2))),
+         template_app
+          (template_app
+            (template_hole 11,
+             template_app
+              (template_app (template_hole 10, template_hole 9),
+               template_app
+                (template_app
+                  (template_hole 5,
+                   template_app
+                    (template_app (template_hole 4, template_hole 3),
+                     template_var 4)),
+                 template_var 1))),
+           template_app
+            (template_app
+              (template_hole 2,
+               template_app
+                (template_app (template_hole 1, template_hole 0),
+                 template_var 3)),
+             template_var 0))))),
+    ("Data_Tuple.compare_Tuple3_simps",
+     "compare$\<langle>?x1.0, ?y1.0, ?z1.0\<rangle>$
+      \<langle>?x2.0, ?y2.0, ?z2.0\<rangle> =
+      thenOrdering$(compare$?x1.0$?x2.0)$
+      (thenOrdering$(compare$?y1.0$?y2.0)$(compare$?z1.0$?z2.0))",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 18,
+           template_app
+            (template_app (template_hole 17, template_hole 16),
+             template_app
+              (template_app
+                (template_hole 15,
+                 template_app
+                  (template_app
+                    (template_hole 14,
+                     template_app
+                      (template_app (template_hole 13, template_hole 12),
+                       template_var 5)),
+                   template_var 4)),
+               template_var 3))),
+         template_app
+          (template_app
+            (template_hole 15,
+             template_app
+              (template_app
+                (template_hole 14,
+                 template_app
+                  (template_app (template_hole 13, template_hole 12),
+                   template_var 2)),
+               template_var 1)),
+           template_var 0)),
+       template_app
+        (template_app
+          (template_hole 11,
+           template_app
+            (template_app (template_hole 10, template_hole 9),
+             template_app
+              (template_app
+                (template_hole 8,
+                 template_app
+                  (template_app (template_hole 7, template_hole 6),
+                   template_var 5)),
+               template_var 2))),
+         template_app
+          (template_app
+            (template_hole 11,
+             template_app
+              (template_app (template_hole 10, template_hole 9),
+               template_app
+                (template_app
+                  (template_hole 5,
+                   template_app
+                    (template_app (template_hole 4, template_hole 3),
+                     template_var 4)),
+                 template_var 1))),
+           template_app
+            (template_app
+              (template_hole 2,
+               template_app
+                (template_app (template_hole 1, template_hole 0),
+                 template_var 3)),
+             template_var 0)))))]:
+   (string * thm * template) list
+### theory "Draft.Data_TupleTemplates"
+### 0.440s elapsed time, 0.623s cpu time, 0.085s GC time
+val it = (): unit

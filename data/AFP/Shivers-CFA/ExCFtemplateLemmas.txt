@@ -1,0 +1,381 @@
+   [("ExCF.nb_less", "(?b' < nb ?b ?c) = (?b' <= ?b)",
+     template_equation
+      (template_app
+        (template_app (template_hole 2, template_var 2),
+         template_app
+          (template_app (template_hole 1, template_var 1), template_var 0)),
+       template_app
+        (template_app (template_hole 0, template_var 2), template_var 1))),
+    ("ExCF.nb_le_less", "(nb ?b ?c <= ?b') = (?b < ?b')",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 2,
+           template_app
+            (template_app (template_hole 1, template_var 2),
+             template_var 1)),
+         template_var 0),
+       template_app
+        (template_app (template_hole 0, template_var 2), template_var 0))),
+    ("ExCF.cont2cont_case_lambda",
+     "(!!a b c. cont (%x. ?f x a b c)) ==>
+      cont (%x. case ?l of Lambda xa xb xc => ?f x xa xb xc)",
+     template_implication
+      ([template_predicate (template_app (template_hole 5, t_empty))],
+       template_predicate (template_app (template_hole 1, t_empty)))),
+    ("ExCF.cl_cases",
+     "(!!x1 x2 x1a x2a x3.
+          [| ?y = (x1, x2); x1 = Lambda x1a x2a x3 |] ==> ?P) ==>
+      ?P",
+     template_implication
+      ([template_predicate (template_app (template_hole 9, t_empty))],
+       template_predicate (template_var 0))),
+    ("ExCF.cont2cont_case_prim",
+     "[| !!y. cont (%x. ?f1.0 x y); !!y z. cont (%x. ?f2.0 x y z) |]
+      ==> cont
+           (%x. case ?p of Plus xa => ?f1.0 x xa
+                | prim.If xa xb => ?f2.0 x xa xb)",
+     template_implication
+      ([template_predicate (template_app (template_hole 3, t_empty)),
+        template_predicate (template_app (template_hole 3, t_empty))],
+       template_predicate (template_app (template_hole 1, t_empty)))),
+    ("ExCF.cont2cont_case_call",
+     "[| !!a b c. cont (%x. ?f1.0 x a b c);
+         !!a b c. cont (%x. ?f2.0 x a b c) |]
+      ==> cont
+           (%x. case ?c of App xa xb xc => ?f1.0 x xa xb xc
+                | call.Let xa xb xc => ?f2.0 x xa xb xc)",
+     template_implication
+      ([template_predicate (template_app (template_hole 7, t_empty)),
+        template_predicate (template_app (template_hole 7, t_empty))],
+       template_predicate (template_app (template_hole 3, t_empty)))),
+    ("ExCF.cont2cont_case_d",
+     "[| !!y. cont (%x. ?f1.0 x y); !!y. cont (%x. ?f2.0 x y);
+         !!y. cont (%x. ?f3.0 x y); cont ?f4.0 |]
+      ==> cont
+           (%x. case ?d of DI xa => ?f1.0 x xa | DC xa => ?f2.0 x xa
+                | DP xa => ?f3.0 x xa | Stop => ?f4.0 x)",
+     template_implication
+      ([template_predicate (template_app (template_hole 5, t_empty)),
+        template_predicate (template_app (template_hole 2, t_empty)),
+        template_predicate (template_app (template_hole 1, t_empty)),
+        template_predicate (template_app (template_hole 3, t_empty))],
+       template_predicate (template_app (template_hole 3, t_empty)))),
+    ("ExCF.ds_cases_stop",
+     "[| ?y = [] ==> ?P;
+         !!x21 x22 x1. [| ?y = x21 # x22; x21 = DI x1; x22 = [] |] ==> ?P;
+         !!x21 x22 x1 x21a x22a.
+            [| ?y = x21 # x22; x21 = DI x1; x22 = x21a # x22a |] ==> ?P;
+         !!x21 x22 x2. [| ?y = x21 # x22; x21 = DC x2 |] ==> ?P;
+         !!x21 x22 x3. [| ?y = x21 # x22; x21 = DP x3 |] ==> ?P;
+         !!x21 x22. [| ?y = x21 # x22; x21 = Stop |] ==> ?P |]
+      ==> ?P",
+     template_implication
+      ([template_implication
+         ([template_equation (template_var 1, template_hole 11)],
+          template_predicate (template_var 0)),
+        template_predicate (template_app (template_hole 10, t_empty)),
+        template_predicate (template_app (template_hole 10, t_empty)),
+        template_predicate (template_app (template_hole 10, t_empty)),
+        template_predicate (template_app (template_hole 10, t_empty)),
+        template_predicate (template_app (template_hole 10, t_empty))],
+       template_predicate (template_var 0))),
+    ("ExCF.ds_cases_if",
+     "[| ?y = [] ==> ?P;
+         !!x21 x22 x1. [| ?y = x21 # x22; x21 = DI x1; x22 = [] |] ==> ?P;
+         !!x21 x22 x1 x21a x22a.
+            [| ?y = x21 # x22; x21 = DI x1; x22 = x21a # x22a; x22a = [] |]
+            ==> ?P;
+         !!x21 x22 x1 x21a x22a x21aa x22aa.
+            [| ?y = x21 # x22; x21 = DI x1; x22 = x21a # x22a;
+               x22a = x21aa # x22aa; x22aa = [] |]
+            ==> ?P;
+         !!x21 x22 x1 x21a x22a x21aa x22aa x21aaa x22aaa.
+            [| ?y = x21 # x22; x21 = DI x1; x22 = x21a # x22a;
+               x22a = x21aa # x22aa; x22aa = x21aaa # x22aaa |]
+            ==> ?P;
+         !!x21 x22 x2. [| ?y = x21 # x22; x21 = DC x2 |] ==> ?P;
+         !!x21 x22 x3. [| ?y = x21 # x22; x21 = DP x3 |] ==> ?P;
+         !!x21 x22. [| ?y = x21 # x22; x21 = Stop |] ==> ?P |]
+      ==> ?P",
+     template_implication
+      ([template_implication
+         ([template_equation (template_var 1, template_hole 11)],
+          template_predicate (template_var 0)),
+        template_predicate (template_app (template_hole 10, t_empty)),
+        template_predicate (template_app (template_hole 10, t_empty)),
+        template_predicate (template_app (template_hole 10, t_empty)),
+        template_predicate (template_app (template_hole 10, t_empty)),
+        template_predicate (template_app (template_hole 10, t_empty)),
+        template_predicate (template_app (template_hole 10, t_empty)),
+        template_predicate (template_app (template_hole 10, t_empty))],
+       template_predicate (template_var 0))),
+    ("ExCF.ds_cases_plus",
+     "[| ?y = [] ==> ?P;
+         !!x21 x22 x1. [| ?y = x21 # x22; x21 = DI x1; x22 = [] |] ==> ?P;
+         !!x21 x22 x1 x21a x22a x1a.
+            [| ?y = x21 # x22; x21 = DI x1; x22 = x21a # x22a;
+               x21a = DI x1a; x22a = [] |]
+            ==> ?P;
+         !!x21 x22 x1 x21a x22a x1a x21b x22b.
+            [| ?y = x21 # x22; x21 = DI x1; x22 = x21a # x22a;
+               x21a = DI x1a; x22a = x21b # x22b; x22b = [] |]
+            ==> ?P;
+         !!x21 x22 x1 x21a x22a x1a x21b x22b x21c x22c.
+            [| ?y = x21 # x22; x21 = DI x1; x22 = x21a # x22a;
+               x21a = DI x1a; x22a = x21b # x22b; x22b = x21c # x22c |]
+            ==> ?P;
+         !!x21 x22 x1 x21a x22a x2.
+            [| ?y = x21 # x22; x21 = DI x1; x22 = x21a # x22a;
+               x21a = DC x2 |]
+            ==> ?P;
+         !!x21 x22 x1 x21a x22a x3.
+            [| ?y = x21 # x22; x21 = DI x1; x22 = x21a # x22a;
+               x21a = DP x3 |]
+            ==> ?P;
+         !!x21 x22 x1 x21a x22a.
+            [| ?y = x21 # x22; x21 = DI x1; x22 = x21a # x22a;
+               x21a = Stop |]
+            ==> ?P;
+         !!x21 x22 x2. [| ?y = x21 # x22; x21 = DC x2 |] ==> ?P;
+         !!x21 x22 x3. [| ?y = x21 # x22; x21 = DP x3 |] ==> ?P;
+         !!x21 x22. [| ?y = x21 # x22; x21 = Stop |] ==> ?P |]
+      ==> ?P",
+     template_implication
+      ([template_implication
+         ([template_equation (template_var 1, template_hole 11)],
+          template_predicate (template_var 0)),
+        template_predicate (template_app (template_hole 10, t_empty)),
+        template_predicate (template_app (template_hole 10, t_empty)),
+        template_predicate (template_app (template_hole 10, t_empty)),
+        template_predicate (template_app (template_hole 10, t_empty)),
+        template_predicate (template_app (template_hole 10, t_empty)),
+        template_predicate (template_app (template_hole 10, t_empty)),
+        template_predicate (template_app (template_hole 10, t_empty)),
+        template_predicate (template_app (template_hole 10, t_empty)),
+        template_predicate (template_app (template_hole 10, t_empty)),
+        template_predicate (template_app (template_hole 10, t_empty))],
+       template_predicate (template_var 0))),
+    ("ExCF.evalF_evalC_induct",
+     "[| adm (%(evalF, evalC). ?P evalF evalC); ?P \<bottom> \<bottom>;
+         !!a b.
+            ?P a b ==>
+            ?P (LAM fstate.
+                   case undiscr fstate of (DI int, ba) => \<bottom>
+                   | (DC (Lambda lab vs c, \<beta>), as, ve, ba) =>
+                       if length vs = length as
+                       then let \<beta>' = \<beta>(lab |-> ba);
+                                ve' = ve(map (%v. (v, ba)) vs [|->] as)
+                            in b$(Discr (c, \<beta>', ve', ba))
+                       else \<bottom>
+                   | (DP (Plus c), [], bb) => \<bottom>
+                   | (DP (Plus c), [DI a1], bb) => \<bottom>
+                   | (DP (Plus c), [DI a1, DI a2], bb) => \<bottom>
+                   | (DP (Plus c), [DI a1, DI a2, cnt], ve, b) =>
+                       if isProc cnt
+                       then let b' = nb b c; \<beta> = [c |-> b]
+                            in a$(Discr (cnt, [DI (a1 + a2)], ve, b')) Un
+                               {((c, \<beta>), cnt)}
+                       else \<bottom>
+                   | (DP (Plus c), DI a1 # DI a2 # cnt # aa # lista, bb) =>
+                       \<bottom>
+                   | (DP (Plus c), DI a1 # _ # lista, bb) => \<bottom>
+                   | (DP (Plus c), _ # list, bb) => \<bottom>
+                   | (DP (prim.If ct cf), [], bb) => \<bottom>
+                   | (DP (prim.If ct cf), [DI v], bb) => \<bottom>
+                   | (DP (prim.If ct cf), [DI v, contt], bb) => \<bottom>
+                   | (DP (prim.If ct cf), [DI v, contt, contf], ve, b) =>
+                       if isProc contt & isProc contf
+                       then if v ~= 0
+                            then let b' = nb b ct; \<beta> = [ct |-> b]
+                                 in a$(Discr (contt, [], ve, b')) Un
+                                    {((ct, \<beta>), contt)}
+                            else let b' = nb b cf; \<beta> = [cf |-> b]
+                                 in a$(Discr (contf, [], ve, b')) Un
+                                    {((cf, \<beta>), contf)}
+                       else \<bottom>
+                   | (DP (prim.If ct cf), DI v # contt # contf # ab # lista,
+                      bb) =>
+                       \<bottom>
+                   | (DP (prim.If ct cf), _ # list, bb) => \<bottom>
+                   | (Stop, [], bb) => \<bottom>
+                   | (Stop, [DI i], x, xa) => {}
+                   | (Stop, DI i # a # lista, bb) => \<bottom>
+                   | (Stop, _ # list, bb) => \<bottom>)
+             (LAM cstate.
+                 case undiscr cstate of
+                 (App lab f vs, \<beta>, ve, b) =>
+                   let f' = \<A> f \<beta> ve;
+                       as = map (%v. \<A> v \<beta> ve) vs; b' = nb b lab
+                   in if isProc f'
+                      then a$(Discr (f', as, ve, b')) Un
+                           {((lab, \<beta>), f')}
+                      else \<bottom>
+                 | (call.Let lab ls c', \<beta>, ve, ba) =>
+                     let b' = nb ba lab; \<beta>' = \<beta>(lab |-> b');
+                         ve' =
+                           ve ++
+                           map_of
+                            (map (%(v, l).
+                                     ((v, b'), \<A> (L l) \<beta>' ve))
+                              ls)
+                     in b$(Discr (c', \<beta>', ve', b'))) |]
+      ==> ?P \<F> \<C>",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_hole 70, template_app (template_hole 69, t_empty))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_var 0, template_hole 68),
+              template_hole 67)
+            ),
+        template_predicate (template_app (template_hole 66, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app (template_var 0, template_hole 1),
+             template_hole 0)
+           ))),
+    ("ExCF.fstate_case",
+     "[| !!a b c d x1. [| ?y = (a, b, c, d); a = DI x1 |] ==> ?thesis;
+         !!a b c d x2 x1 x2a x1a x2aa x3.
+            [| ?y = (a, b, c, d); a = DC x2; x2 = (x1, x2a);
+               x1 = Lambda x1a x2aa x3; length x2aa = length b |]
+            ==> ?thesis;
+         !!a b c d x2 x1 x2a x1a x2aa x3.
+            [| ?y = (a, b, c, d); a = DC x2; x2 = (x1, x2a);
+               x1 = Lambda x1a x2aa x3; length x2aa ~= length b |]
+            ==> ?thesis;
+         !!a b c d x3 x1.
+            [| ?y = (a, b, c, d); a = DP x3; x3 = Plus x1; b = [] |]
+            ==> ?thesis;
+         !!a b c d x3 x1 x21 x22 x1a.
+            [| ?y = (a, b, c, d); a = DP x3; x3 = Plus x1; b = x21 # x22;
+               x21 = DI x1a; x22 = [] |]
+            ==> ?thesis;
+         !!a b c d x3 x1 x21 x22 x1a x21a x22a x1aa.
+            [| ?y = (a, b, c, d); a = DP x3; x3 = Plus x1; b = x21 # x22;
+               x21 = DI x1a; x22 = x21a # x22a; x21a = DI x1aa; x22a = [] |]
+            ==> ?thesis;
+         !!a b c d x3 x1 x21 x22 x1a x21a x22a x1aa x21b x22b.
+            [| ?y = (a, b, c, d); a = DP x3; x3 = Plus x1; b = x21 # x22;
+               x21 = DI x1a; x22 = x21a # x22a; x21a = DI x1aa;
+               x22a = x21b # x22b; x22b = [] |]
+            ==> ?thesis;
+         !!a b c d x3 x1 x21 x22 x1a x21a x22a x1aa x21b x22b x21c x22c.
+            [| ?y = (a, b, c, d); a = DP x3; x3 = Plus x1; b = x21 # x22;
+               x21 = DI x1a; x22 = x21a # x22a; x21a = DI x1aa;
+               x22a = x21b # x22b; x22b = x21c # x22c |]
+            ==> ?thesis;
+         !!a b c d x3 x1 x21 x22 x1a x21a x22a x2.
+            [| ?y = (a, b, c, d); a = DP x3; x3 = Plus x1; b = x21 # x22;
+               x21 = DI x1a; x22 = x21a # x22a; x21a = DC x2 |]
+            ==> ?thesis;
+         !!a b c d x3 x1 x21 x22 x1a x21a x22a x3a.
+            [| ?y = (a, b, c, d); a = DP x3; x3 = Plus x1; b = x21 # x22;
+               x21 = DI x1a; x22 = x21a # x22a; x21a = DP x3a |]
+            ==> ?thesis;
+         !!a b c d x3 x1 x21 x22 x1a x21a x22a.
+            [| ?y = (a, b, c, d); a = DP x3; x3 = Plus x1; b = x21 # x22;
+               x21 = DI x1a; x22 = x21a # x22a; x21a = Stop |]
+            ==> ?thesis;
+         !!a b c d x3 x1 x21 x22 x2.
+            [| ?y = (a, b, c, d); a = DP x3; x3 = Plus x1; b = x21 # x22;
+               x21 = DC x2 |]
+            ==> ?thesis;
+         !!a b c d x3 x1 x21 x22 x3a.
+            [| ?y = (a, b, c, d); a = DP x3; x3 = Plus x1; b = x21 # x22;
+               x21 = DP x3a |]
+            ==> ?thesis;
+         !!a b c d x3 x1 x21 x22.
+            [| ?y = (a, b, c, d); a = DP x3; x3 = Plus x1; b = x21 # x22;
+               x21 = Stop |]
+            ==> ?thesis;
+         !!a b c d x3 x21 x22.
+            [| ?y = (a, b, c, d); a = DP x3; x3 = prim.If x21 x22; b = [] |]
+            ==> ?thesis;
+         !!a b c d x3 x21 x22 x21a x22a x1.
+            [| ?y = (a, b, c, d); a = DP x3; x3 = prim.If x21 x22;
+               b = x21a # x22a; x21a = DI x1; x22a = [] |]
+            ==> ?thesis;
+         !!a b c d x3 x21 x22 x21a x22a x1 x21aa x22aa.
+            [| ?y = (a, b, c, d); a = DP x3; x3 = prim.If x21 x22;
+               b = x21a # x22a; x21a = DI x1; x22a = x21aa # x22aa;
+               x22aa = [] |]
+            ==> ?thesis;
+         !!a b c d x3 x21 x22 x21a x22a x1 x21aa x22aa x21aaa x22aaa.
+            [| ?y = (a, b, c, d); a = DP x3; x3 = prim.If x21 x22;
+               b = x21a # x22a; x21a = DI x1; x22a = x21aa # x22aa;
+               x22aa = x21aaa # x22aaa; x22aaa = [] |]
+            ==> ?thesis;
+         !!a b c d x3 x21 x22 x21a x22a x1 x21aa x22aa x21aaa x22aaa x21aaaa
+            x22aaaa.
+            [| ?y = (a, b, c, d); a = DP x3; x3 = prim.If x21 x22;
+               b = x21a # x22a; x21a = DI x1; x22a = x21aa # x22aa;
+               x22aa = x21aaa # x22aaa; x22aaa = x21aaaa # x22aaaa |]
+            ==> ?thesis;
+         !!a b c d x3 x21 x22 x21a x22a x2.
+            [| ?y = (a, b, c, d); a = DP x3; x3 = prim.If x21 x22;
+               b = x21a # x22a; x21a = DC x2 |]
+            ==> ?thesis;
+         !!a b c d x3 x21 x22 x21a x22a x3a.
+            [| ?y = (a, b, c, d); a = DP x3; x3 = prim.If x21 x22;
+               b = x21a # x22a; x21a = DP x3a |]
+            ==> ?thesis;
+         !!a b c d x3 x21 x22 x21a x22a.
+            [| ?y = (a, b, c, d); a = DP x3; x3 = prim.If x21 x22;
+               b = x21a # x22a; x21a = Stop |]
+            ==> ?thesis;
+         !!a b c d. [| ?y = (a, b, c, d); a = Stop; b = [] |] ==> ?thesis;
+         !!a b c d x21 x22 x1.
+            [| ?y = (a, b, c, d); a = Stop; b = x21 # x22; x21 = DI x1;
+               x22 = [] |]
+            ==> ?thesis;
+         !!a b c d x21 x22 x1 x21a x22a.
+            [| ?y = (a, b, c, d); a = Stop; b = x21 # x22; x21 = DI x1;
+               x22 = x21a # x22a |]
+            ==> ?thesis;
+         !!a b c d x21 x22 x2.
+            [| ?y = (a, b, c, d); a = Stop; b = x21 # x22; x21 = DC x2 |]
+            ==> ?thesis;
+         !!a b c d x21 x22 x3.
+            [| ?y = (a, b, c, d); a = Stop; b = x21 # x22; x21 = DP x3 |]
+            ==> ?thesis;
+         !!a b c d x21 x22.
+            [| ?y = (a, b, c, d); a = Stop; b = x21 # x22; x21 = Stop |]
+            ==> ?thesis |]
+      ==> ?thesis",
+     template_implication
+      ([template_predicate (template_app (template_hole 35, t_empty)),
+        template_predicate (template_app (template_hole 35, t_empty)),
+        template_predicate (template_app (template_hole 35, t_empty)),
+        template_predicate (template_app (template_hole 35, t_empty)),
+        template_predicate (template_app (template_hole 35, t_empty)),
+        template_predicate (template_app (template_hole 35, t_empty)),
+        template_predicate (template_app (template_hole 35, t_empty)),
+        template_predicate (template_app (template_hole 35, t_empty)),
+        template_predicate (template_app (template_hole 35, t_empty)),
+        template_predicate (template_app (template_hole 35, t_empty)),
+        template_predicate (template_app (template_hole 35, t_empty)),
+        template_predicate (template_app (template_hole 35, t_empty)),
+        template_predicate (template_app (template_hole 35, t_empty)),
+        template_predicate (template_app (template_hole 35, t_empty)),
+        template_predicate (template_app (template_hole 35, t_empty)),
+        template_predicate (template_app (template_hole 35, t_empty)),
+        template_predicate (template_app (template_hole 35, t_empty)),
+        template_predicate (template_app (template_hole 35, t_empty)),
+        template_predicate (template_app (template_hole 35, t_empty)),
+        template_predicate (template_app (template_hole 35, t_empty)),
+        template_predicate (template_app (template_hole 35, t_empty)),
+        template_predicate (template_app (template_hole 35, t_empty)),
+        template_predicate (template_app (template_hole 35, t_empty)),
+        template_predicate (template_app (template_hole 35, t_empty)),
+        template_predicate (template_app (template_hole 35, t_empty)),
+        template_predicate (template_app (template_hole 35, t_empty)),
+        template_predicate (template_app (template_hole 35, t_empty)),
+        template_predicate (template_app (template_hole 35, t_empty))],
+       template_predicate (template_var 0)))]

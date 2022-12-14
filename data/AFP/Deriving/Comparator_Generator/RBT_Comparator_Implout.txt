@@ -1,0 +1,515 @@
+Loading theory "Draft.Comparator" (required by "Draft.RBT_Comparator_ImplTemplates" via "Draft.RBT_Comparator_Impl")
+Loading theory "Draft.Templates" (required by "Draft.RBT_Comparator_ImplTemplates" via "Draft.ExtrEqs")
+datatype template_term
+=
+     t_empty
+   | template_app of template_term * template_term
+   | template_hole of int
+   | template_var of int
+datatype sign
+= equals | greater_equals | greater_than | less_equals | less_than
+datatype template
+=
+     template_bimplication of template * template
+   | template_dunno
+   | template_equation of template_term * template_term
+   | template_implication of template list * template
+   | template_inequation of sign * template_term * template_term
+   | template_negation of template
+   | template_predicate of template_term
+constructor t_empty: template_term
+constructor template_app: template_term * template_term -> template_term
+constructor template_hole: int -> template_term
+constructor template_var: int -> template_term
+constructor equals: sign
+constructor greater_equals: sign
+constructor greater_than: sign
+constructor less_equals: sign
+constructor less_than: sign
+constructor template_bimplication: template * template -> template
+constructor template_dunno: template
+constructor template_equation: template_term * template_term -> template
+constructor template_implication: template list * template -> template
+constructor template_inequation:
+   sign * template_term * template_term -> template
+constructor template_negation: template -> template
+constructor template_predicate: template_term -> template
+val vfs = fn: term -> (indexname * typ) list * (string * typ) list
+val indexOf = fn: ''a list -> ''a -> int -> int
+val has_eq = fn: term -> bool
+val term2template = fn:
+   (indexname * typ) list -> (string * typ) list -> term -> template_term
+val lemma2predicate = fn: term -> term -> template
+val makeTemplatewithContext = fn: term -> term -> template
+val lemma2template = fn: term -> template
+val thm2template = fn: thm -> template
+val tterm2string = fn: template_term -> string
+val template2string = fn: template -> string
+val t = "height ?t <= size ?t": thm
+val th =
+   Const ("HOL.Trueprop", "bool => prop") $
+     (Const ("Orderings.ord_class.less_eq", "nat => nat => bool") $
+       (Const ("Tree.height_class.height", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree")) $
+       (Const ("Nat.size_class.size", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree"))):
+   term
+### theory "Draft.Templates"
+### 0.064s elapsed time, 0.154s cpu time, 0.000s GC time
+Loading theory "Draft.ExtrEqs" (required by "Draft.RBT_Comparator_ImplTemplates")
+Found termination order: "{}"
+locale comparator
+  fixes comp :: "'a => 'a => order"
+  assumes "comparator comp"
+### theory "Draft.Comparator"
+### 0.586s elapsed time, 1.220s cpu time, 0.082s GC time
+Loading theory "Draft.RBT_Comparator_Impl" (required by "Draft.RBT_Comparator_ImplTemplates")
+val eqpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Var (("_dummy_", 2), "?'a"))
+       ):
+   term Find_Theorems.criterion
+val badeqpattern = Pattern (Const ("Pure.eq", "?'a => ?'a => prop")):
+   term Find_Theorems.criterion
+val undefpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Const ("HOL.undefined", "?'a"))
+       ):
+   term Find_Theorems.criterion
+val thmpattern =
+   Pattern
+    (Const ("HOL.Trueprop", "bool => prop") $ Var (("_dummy_", 1), "bool")):
+   term Find_Theorems.criterion
+val badnames =
+   ["*nitpick*", "*Nitpick*", "*full_exhaustive*", "*_def*", "Enum.finite*",
+    "*Quickcheck*", "ATP*", "*Nunchaku*", "*Code*", "*BNF*", "*SMT*",
+    "*.*.*"]:
+   string list
+val unwanted_names =
+   [(false, Name "*nitpick*"), (false, Name "*Nitpick*"),
+    (false, Name "*full_exhaustive*"), (false, Name "*_def*"),
+    (false, Name "Enum.finite*"), (false, Name "*Quickcheck*"),
+    (false, Name "ATP*"), (false, Name "*Nunchaku*"),
+    (false, Name "*Code*"), (false, Name "*BNF*"), (false, Name "*SMT*"),
+    (false, Name "*.*.*")]:
+   (bool * term Find_Theorems.criterion) list
+val has_vars = fn: term -> bool
+val get_all_eqs = fn: string -> Proof.context -> (string * thm) list
+val get_all_thms = fn: string -> Proof.context -> (string * thm) list
+val get_noneq_thms = fn: string -> Proof.context -> (string * thm) list
+val template_eqs = fn:
+   string -> Proof.context -> (string * thm * template) list
+val template_thms = fn:
+   string -> Proof.context -> (string * thm * template) list
+### theory "Draft.ExtrEqs"
+### 0.543s elapsed time, 1.114s cpu time, 0.082s GC time
+consts
+  rbt_comp_lookup :: "('a, 'b) rbt => 'a => 'b option"
+Found termination order: "(%p. size (snd (snd (snd p)))) <*mlex*> {}"
+Found termination order:
+  "case_sum (%p. size (fst (snd p)))
+    (case_sum (%p. size (snd (snd (snd (snd p)))))
+      (%p. size (snd p))) <*mlex*>
+   case_sum (%x. Suc 0) (%x. 0) <*mlex*>
+   case_sum (%x. 0) (case_sum (%x. Suc 0) (%x. 0)) <*mlex*> {}"
+consts
+  rbt_comp_map_entry :: "'a => ('b => 'b) => ('a, 'b) rbt => ('a, 'b) rbt"
+Found termination order: "(%p. size (fst p)) <*mlex*> {}"
+Found termination order: "(%p. size (snd p)) <*mlex*> {}"
+### theory "Draft.RBT_Comparator_Impl"
+### 3.951s elapsed time, 4.582s cpu time, 0.814s GC time
+Loading theory "Draft.RBT_Comparator_ImplTemplates"
+val templateLemmas =
+   [("RBT_Comparator_Impl.rbt_comp_insert",
+     "comparator ?c ==>
+      rbt_comp_insert ?c = ord.rbt_insert (lt_of_comp ?c)",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 4, template_var 0))],
+       template_equation
+        (template_app (template_hole 2, template_var 0),
+         template_app
+          (template_hole 1,
+           template_app (template_hole 0, template_var 0))))),
+    ("RBT_Comparator_Impl.rbt_comp_map_entry",
+     "comparator ?c ==>
+      rbt_comp_map_entry ?c = ord.rbt_map_entry (lt_of_comp ?c)",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 4, template_var 0))],
+       template_equation
+        (template_app (template_hole 2, template_var 0),
+         template_app
+          (template_hole 1,
+           template_app (template_hole 0, template_var 0))))),
+    ("RBT_Comparator_Impl.rbt_comp_del",
+     "comparator ?c ==> rbt_comp_del ?c = ord.rbt_del (lt_of_comp ?c)",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 4, template_var 0))],
+       template_equation
+        (template_app (template_hole 2, template_var 0),
+         template_app
+          (template_hole 1,
+           template_app (template_hole 0, template_var 0))))),
+    ("RBT_Comparator_Impl.rbt_comp_delete",
+     "comparator ?c ==>
+      rbt_comp_delete ?c = ord.rbt_delete (lt_of_comp ?c)",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 4, template_var 0))],
+       template_equation
+        (template_app (template_hole 2, template_var 0),
+         template_app
+          (template_hole 1,
+           template_app (template_hole 0, template_var 0))))),
+    ("RBT_Comparator_Impl.rbt_comp_ins",
+     "comparator ?c ==> rbt_comp_ins ?c = ord.rbt_ins (lt_of_comp ?c)",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 4, template_var 0))],
+       template_equation
+        (template_app (template_hole 2, template_var 0),
+         template_app
+          (template_hole 1,
+           template_app (template_hole 0, template_var 0))))),
+    ("RBT_Comparator_Impl.rbt_comp_insert_with_key",
+     "comparator ?c ==>
+      rbt_comp_insert_with_key ?c =
+      ord.rbt_insert_with_key (lt_of_comp ?c)",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 4, template_var 0))],
+       template_equation
+        (template_app (template_hole 2, template_var 0),
+         template_app
+          (template_hole 1,
+           template_app (template_hole 0, template_var 0))))),
+    ("RBT_Comparator_Impl.comp_sinter_with",
+     "comparator ?c ==>
+      comp_sinter_with ?c = ord.sinter_with (lt_of_comp ?c)",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 4, template_var 0))],
+       template_equation
+        (template_app (template_hole 2, template_var 0),
+         template_app
+          (template_hole 1,
+           template_app (template_hole 0, template_var 0))))),
+    ("RBT_Comparator_Impl.comp_sunion_with",
+     "comparator ?c ==>
+      comp_sunion_with ?c = ord.sunion_with (lt_of_comp ?c)",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 4, template_var 0))],
+       template_equation
+        (template_app (template_hole 2, template_var 0),
+         template_app
+          (template_hole 1,
+           template_app (template_hole 0, template_var 0))))),
+    ("RBT_Comparator_Impl.rbt_comp_inter_with_key",
+     "comparator ?c ==>
+      rbt_comp_inter_with_key ?c = ord.rbt_inter_with_key (lt_of_comp ?c)",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 4, template_var 0))],
+       template_equation
+        (template_app (template_hole 2, template_var 0),
+         template_app
+          (template_hole 1,
+           template_app (template_hole 0, template_var 0))))),
+    ("RBT_Comparator_Impl.rbt_comp_union_with_key",
+     "comparator ?c ==>
+      rbt_comp_union_with_key ?c = ord.rbt_union_with_key (lt_of_comp ?c)",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 4, template_var 0))],
+       template_equation
+        (template_app (template_hole 2, template_var 0),
+         template_app
+          (template_hole 1,
+           template_app (template_hole 0, template_var 0))))),
+    ("RBT_Comparator_Impl.rbt_comp_bulkload",
+     "comparator ?c ==>
+      rbt_comp_bulkload ?c = ord.rbt_bulkload (lt_of_comp ?c)",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 4, template_var 0))],
+       template_equation
+        (template_app (template_hole 2, template_var 0),
+         template_app
+          (template_hole 1,
+           template_app (template_hole 0, template_var 0))))),
+    ("RBT_Comparator_Impl.rbt_comp_lookup",
+     "comparator ?c ==>
+      rbt_comp_lookup ?c = ord.rbt_lookup (lt_of_comp ?c)",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 4, template_var 0))],
+       template_equation
+        (template_app (template_hole 2, template_var 0),
+         template_app
+          (template_hole 1,
+           template_app (template_hole 0, template_var 0))))),
+    ("RBT_Comparator_Impl.rbt_comp_minus",
+     "comparator ?c ==> rbt_comp_minus ?c = ord.rbt_minus (lt_of_comp ?c)",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 4, template_var 0))],
+       template_equation
+        (template_app (template_hole 2, template_var 0),
+         template_app
+          (template_hole 1,
+           template_app (template_hole 0, template_var 0))))),
+    ("RBT_Comparator_Impl.comp_minus",
+     "comparator ?c ==>
+      comp_minus ?c ?t1.0 ?t2.0 =
+      ord.rbt_minus_rec (lt_of_comp ?c) ?t1.0 ?t2.0",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 4, template_var 2))],
+       template_equation
+        (template_app
+          (template_app
+            (template_app (template_hole 2, template_var 2),
+             template_var 1),
+           template_var 0),
+         template_app
+          (template_app
+            (template_app
+              (template_hole 1,
+               template_app (template_hole 0, template_var 2)),
+             template_var 1),
+           template_var 0)))),
+    ("RBT_Comparator_Impl.rbt_split_comp",
+     "comparator ?c ==>
+      rbt_split_comp ?c ?t ?x = ord.rbt_split (lt_of_comp ?c) ?t ?x",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 4, template_var 2))],
+       template_equation
+        (template_app
+          (template_app
+            (template_app (template_hole 2, template_var 2),
+             template_var 1),
+           template_var 0),
+         template_app
+          (template_app
+            (template_app
+              (template_hole 1,
+               template_app (template_hole 0, template_var 2)),
+             template_var 1),
+           template_var 0)))),
+    ("RBT_Comparator_Impl.comp_inter_with_key",
+     "comparator ?c ==>
+      rbt_comp_inter_rec ?c ?f ?t1.0 ?t2.0 =
+      ord.rbt_inter_rec (lt_of_comp ?c) ?f ?t1.0 ?t2.0",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 4, template_var 3))],
+       template_equation
+        (template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 2, template_var 3),
+               template_var 2),
+             template_var 1),
+           template_var 0),
+         template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_hole 1,
+                 template_app (template_hole 0, template_var 3)),
+               template_var 2),
+             template_var 1),
+           template_var 0)))),
+    ("RBT_Comparator_Impl.comp_union_with_key",
+     "comparator ?c ==>
+      rbt_comp_union_rec ?c ?f ?t1.0 ?t2.0 =
+      ord.rbt_union_rec (lt_of_comp ?c) ?f ?t1.0 ?t2.0",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 4, template_var 3))],
+       template_equation
+        (template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 2, template_var 3),
+               template_var 2),
+             template_var 1),
+           template_var 0),
+         template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_hole 1,
+                 template_app (template_hole 0, template_var 3)),
+               template_var 2),
+             template_var 1),
+           template_var 0)))),
+    ("RBT_Comparator_Impl.anti_sym",
+     "[| comparator ?c; lt_of_comp ?c ?a ?x; lt_of_comp ?c ?x ?a |]
+      ==> False",
+     template_implication
+      ([template_predicate (template_app (template_hole 2, template_var 2)),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 1, template_var 2),
+                template_var 1),
+              template_var 0)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 1, template_var 2),
+                template_var 0),
+              template_var 1)
+            )],
+       template_predicate (template_hole 0))),
+    ("RBT_Comparator_Impl.rbt_split_comp_size",
+     "(?l2.0, ?b, ?r2.0) = rbt_split_comp ?c ?t2.0 ?a ==>
+      size ?l2.0 + size ?r2.0 <= size ?t2.0",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app (template_hole 5, template_var 5),
+            template_app
+             (template_app (template_hole 4, template_var 4),
+              template_var 3)),
+          template_app
+           (template_app
+             (template_app (template_hole 3, template_var 2),
+              template_var 1),
+            template_var 0))],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_app
+            (template_hole 1,
+             template_app (template_hole 0, template_var 5)),
+           template_app (template_hole 0, template_var 3)),
+         template_app (template_hole 0, template_var 1)))),
+    ("RBT_Comparator_Impl.rbt_comp_inter_swap_rec",
+     "rbt_comp_inter_swap_rec ?c ?f ?\<gamma> ?t1.0 ?t2.0 =
+      rbt_comp_inter_rec ?c (if ?\<gamma> then %k v v'. ?f k v' v else ?f)
+       ?t1.0 ?t2.0",
+     template_equation
+      (template_app
+        (template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 2, template_var 4),
+               template_var 3),
+             template_var 2),
+           template_var 1),
+         template_var 0),
+       template_app
+        (template_app
+          (template_app
+            (template_app (template_hole 1, template_var 4),
+             template_app
+              (template_app
+                (template_app (template_hole 0, template_var 2), t_empty),
+               template_var 3)),
+           template_var 1),
+         template_var 0))),
+    ("RBT_Comparator_Impl.rbt_comp_union_swap_rec",
+     "rbt_comp_union_swap_rec ?c ?f ?\<gamma> ?t1.0 ?t2.0 =
+      rbt_comp_union_rec ?c (if ?\<gamma> then %k v v'. ?f k v' v else ?f)
+       ?t1.0 ?t2.0",
+     template_equation
+      (template_app
+        (template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 2, template_var 4),
+               template_var 3),
+             template_var 2),
+           template_var 1),
+         template_var 0),
+       template_app
+        (template_app
+          (template_app
+            (template_app (template_hole 1, template_var 4),
+             template_app
+              (template_app
+                (template_app (template_hole 0, template_var 2), t_empty),
+               template_var 3)),
+           template_var 1),
+         template_var 0))),
+    ("RBT_Comparator_Impl.rbt_comp_union_swap_rec_code",
+     "rbt_comp_union_swap_rec ?c ?f ?\<gamma> ?t1.0 ?t2.0 =
+      (let bh1 = bheight ?t1.0; bh2 = bheight ?t2.0;
+           (\<gamma>, t2, bh2, t1, bh1) =
+             if bh1 < bh2 then (~ ?\<gamma>, ?t1.0, bh1, ?t2.0, bh2)
+             else (?\<gamma>, ?t2.0, bh2, ?t1.0, bh1);
+           f' = if \<gamma> then %k v v'. ?f k v' v else ?f
+       in if bh2 < 4
+          then RBT_Impl.fold (rbt_comp_insert_with_key ?c f') t2 t1
+          else case t1 of rbt.Empty => t2
+               | Branch x l1 a b r1 =>
+                   case rbt_split_comp ?c t2 a of
+                   (l2, \<beta>, r2) =>
+                     rbt_join (rbt_comp_union_swap_rec ?c ?f \<gamma> l1 l2)
+                      a (case \<beta> of None => b | Some x => f' a b x)
+                      (rbt_comp_union_swap_rec ?c ?f \<gamma> r1 r2))",
+     template_equation
+      (template_app
+        (template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 28, template_var 4),
+               template_var 3),
+             template_var 2),
+           template_var 1),
+         template_var 0),
+       template_app
+        (template_app
+          (template_hole 27,
+           template_app (template_hole 26, template_var 1)),
+         t_empty))),
+    ("RBT_Comparator_Impl.comp_inter_with_key_code",
+     "rbt_comp_inter_swap_rec ?c ?f ?\<gamma> ?t1.0 ?t2.0 =
+      (let bh1 = bheight ?t1.0; bh2 = bheight ?t2.0;
+           (\<gamma>, t2, bh2, t1, bh1) =
+             if bh1 < bh2 then (~ ?\<gamma>, ?t1.0, bh1, ?t2.0, bh2)
+             else (?\<gamma>, ?t2.0, bh2, ?t1.0, bh1);
+           f' = if \<gamma> then %k v v'. ?f k v' v else ?f
+       in if bh2 < 4 then rbtreeify (map_filter_comp_inter ?c f' t1 t2)
+          else case t1 of rbt.Empty => rbt.Empty
+               | Branch x l1 a b r1 =>
+                   case rbt_split_comp ?c t2 a of
+                   (l2, \<beta>, r2) =>
+                     let l' = rbt_comp_inter_swap_rec ?c ?f \<gamma> l1 l2;
+                         r' = rbt_comp_inter_swap_rec ?c ?f \<gamma> r1 r2
+                     in case \<beta> of None => rbt_join2 l' r'
+                        | Some b' => rbt_join l' a (f' a b b') r')",
+     template_equation
+      (template_app
+        (template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 31, template_var 4),
+               template_var 3),
+             template_var 2),
+           template_var 1),
+         template_var 0),
+       template_app
+        (template_app
+          (template_hole 30,
+           template_app (template_hole 29, template_var 1)),
+         t_empty)))]:
+   (string * thm * template) list
+### theory "Draft.RBT_Comparator_ImplTemplates"
+### 0.367s elapsed time, 0.508s cpu time, 0.064s GC time
+val it = (): unit

@@ -1,0 +1,1248 @@
+Loading theory "Draft.Regular_Set" (required by "Draft.Regular_SetTemplates")
+Loading theory "Draft.Templates" (required by "Draft.Regular_SetTemplates" via "Draft.ExtrEqs")
+overloading
+  lang_pow \<equiv> compow :: nat => 'a list set => 'a list set
+consts
+  lang_pow :: "nat => 'a list set => 'a list set"
+datatype template_term
+=
+     t_empty
+   | template_app of template_term * template_term
+   | template_hole of int
+   | template_var of int
+datatype sign
+= equals | greater_equals | greater_than | less_equals | less_than
+datatype template
+=
+     template_bimplication of template * template
+   | template_dunno
+   | template_equation of template_term * template_term
+   | template_implication of template list * template
+   | template_inequation of sign * template_term * template_term
+   | template_negation of template
+   | template_predicate of template_term
+constructor t_empty: template_term
+constructor template_app: template_term * template_term -> template_term
+constructor template_hole: int -> template_term
+constructor template_var: int -> template_term
+constructor equals: sign
+constructor greater_equals: sign
+constructor greater_than: sign
+constructor less_equals: sign
+constructor less_than: sign
+constructor template_bimplication: template * template -> template
+constructor template_dunno: template
+constructor template_equation: template_term * template_term -> template
+constructor template_implication: template list * template -> template
+constructor template_inequation:
+   sign * template_term * template_term -> template
+constructor template_negation: template -> template
+constructor template_predicate: template_term -> template
+val vfs = fn: term -> (indexname * typ) list * (string * typ) list
+val indexOf = fn: ''a list -> ''a -> int -> int
+val has_eq = fn: term -> bool
+val term2template = fn:
+   (indexname * typ) list -> (string * typ) list -> term -> template_term
+val lemma2predicate = fn: term -> term -> template
+val makeTemplatewithContext = fn: term -> term -> template
+val lemma2template = fn: term -> template
+val thm2template = fn: thm -> template
+val tterm2string = fn: template_term -> string
+val template2string = fn: template -> string
+val t = "height ?t <= size ?t": thm
+val th =
+   Const ("HOL.Trueprop", "bool => prop") $
+     (Const ("Orderings.ord_class.less_eq", "nat => nat => bool") $
+       (Const ("Tree.height_class.height", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree")) $
+       (Const ("Nat.size_class.size", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree"))):
+   term
+### theory "Draft.Templates"
+### 0.071s elapsed time, 0.179s cpu time, 0.000s GC time
+Loading theory "Draft.ExtrEqs" (required by "Draft.Regular_SetTemplates")
+### theory "Draft.Regular_Set"
+### 0.205s elapsed time, 0.447s cpu time, 0.033s GC time
+val eqpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Var (("_dummy_", 2), "?'a"))
+       ):
+   term Find_Theorems.criterion
+val badeqpattern = Pattern (Const ("Pure.eq", "?'a => ?'a => prop")):
+   term Find_Theorems.criterion
+val undefpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Const ("HOL.undefined", "?'a"))
+       ):
+   term Find_Theorems.criterion
+val thmpattern =
+   Pattern
+    (Const ("HOL.Trueprop", "bool => prop") $ Var (("_dummy_", 1), "bool")):
+   term Find_Theorems.criterion
+val badnames =
+   ["*nitpick*", "*Nitpick*", "*full_exhaustive*", "*_def*", "Enum.finite*",
+    "*Quickcheck*", "ATP*", "*Nunchaku*", "*Code*", "*BNF*", "*SMT*",
+    "*.*.*"]:
+   string list
+val unwanted_names =
+   [(false, Name "*nitpick*"), (false, Name "*Nitpick*"),
+    (false, Name "*full_exhaustive*"), (false, Name "*_def*"),
+    (false, Name "Enum.finite*"), (false, Name "*Quickcheck*"),
+    (false, Name "ATP*"), (false, Name "*Nunchaku*"),
+    (false, Name "*Code*"), (false, Name "*BNF*"), (false, Name "*SMT*"),
+    (false, Name "*.*.*")]:
+   (bool * term Find_Theorems.criterion) list
+val has_vars = fn: term -> bool
+val get_all_eqs = fn: string -> Proof.context -> (string * thm) list
+val get_all_thms = fn: string -> Proof.context -> (string * thm) list
+val get_noneq_thms = fn: string -> Proof.context -> (string * thm) list
+val template_eqs = fn:
+   string -> Proof.context -> (string * thm * template) list
+val template_thms = fn:
+   string -> Proof.context -> (string * thm * template) list
+### theory "Draft.ExtrEqs"
+### 0.494s elapsed time, 0.646s cpu time, 0.033s GC time
+Loading theory "Draft.Regular_SetTemplates"
+val templateLemmas =
+   [("Regular_Set.Nil_in_star", "[] : star ?A",
+     template_predicate
+      (
+         template_app
+          (template_app (template_hole 2, template_hole 1),
+           template_app (template_hole 0, template_var 0))
+         )),
+    ("Regular_Set.Deriv_empty", "Deriv ?a {} = {}",
+     template_equation
+      (template_app
+        (template_app (template_hole 1, template_var 0), template_hole 0),
+       template_hole 0)),
+    ("Regular_Set.Derivs_simps", "Derivs [] ?A = ?A",
+     template_equation
+      (template_app
+        (template_app (template_hole 1, template_hole 0), template_var 0),
+       template_var 0)),
+    ("Regular_Set.Shuffle_empty", "?A \<parallel> {} = {}",
+     template_equation
+      (template_app
+        (template_app (template_hole 1, template_var 0), template_hole 0),
+       template_hole 0)),
+    ("Regular_Set.conc_empty", "?A @@ {} = {}",
+     template_equation
+      (template_app
+        (template_app (template_hole 1, template_var 0), template_hole 0),
+       template_hole 0)),
+    ("Regular_Set.conc_empty", "{} @@ ?A = {}",
+     template_equation
+      (template_app
+        (template_app (template_hole 1, template_hole 0), template_var 0),
+       template_hole 0)),
+    ("Regular_Set.Shuffle_empty", "{} \<parallel> ?B = {}",
+     template_equation
+      (template_app
+        (template_app (template_hole 1, template_hole 0), template_var 0),
+       template_hole 0)),
+    ("Regular_Set.star_idemp", "star (star ?A) = star ?A",
+     template_equation
+      (template_app
+        (template_hole 0, template_app (template_hole 0, template_var 0)),
+       template_app (template_hole 0, template_var 0))),
+    ("Regular_Set.lang_pow_empty_Suc", "{} ^^ Suc ?n = {}",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 2, template_app (template_hole 1, template_var 0)),
+         template_hole 0),
+       template_hole 0)),
+    ("Regular_Set.star_insert_eps", "star (insert [] ?A) = star ?A",
+     template_equation
+      (template_app
+        (template_hole 2,
+         template_app
+          (template_app (template_hole 1, template_hole 0),
+           template_var 0)),
+       template_app (template_hole 2, template_var 0))),
+    ("Regular_Set.Deriv_epsilon", "Deriv ?a {[]} = {}",
+     template_equation
+      (template_app
+        (template_app (template_hole 3, template_var 0),
+         template_app
+          (template_app (template_hole 2, template_hole 1),
+           template_hole 0)),
+       template_hole 0)),
+    ("Regular_Set.Shuffle_eps", "?A \<parallel> {[]} = ?A",
+     template_equation
+      (template_app
+        (template_app (template_hole 3, template_var 0),
+         template_app
+          (template_app (template_hole 2, template_hole 1),
+           template_hole 0)),
+       template_var 0)),
+    ("Regular_Set.conc_epsilon", "?A @@ {[]} = ?A",
+     template_equation
+      (template_app
+        (template_app (template_hole 3, template_var 0),
+         template_app
+          (template_app (template_hole 2, template_hole 1),
+           template_hole 0)),
+       template_var 0)),
+    ("Regular_Set.conc_epsilon", "{[]} @@ ?A = ?A",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 3,
+           template_app
+            (template_app (template_hole 2, template_hole 1),
+             template_hole 0)),
+         template_var 0),
+       template_var 0)),
+    ("Regular_Set.Shuffle_eps", "{[]} \<parallel> ?B = ?B",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 3,
+           template_app
+            (template_app (template_hole 2, template_hole 1),
+             template_hole 0)),
+         template_var 0),
+       template_var 0)),
+    ("Regular_Set.conc_star_star", "star ?A @@ star ?A = star ?A",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 1, template_app (template_hole 0, template_var 0)),
+         template_app (template_hole 0, template_var 0)),
+       template_app (template_hole 0, template_var 0))),
+    ("Regular_Set.Deriv_compl", "Deriv ?a (- ?A) = - Deriv ?a ?A",
+     template_equation
+      (template_app
+        (template_app (template_hole 1, template_var 1),
+         template_app (template_hole 0, template_var 0)),
+       template_app
+        (template_hole 0,
+         template_app
+          (template_app (template_hole 1, template_var 1),
+           template_var 0)))),
+    ("Regular_Set.conc_star_comm", "?A @@ star ?A = star ?A @@ ?A",
+     template_equation
+      (template_app
+        (template_app (template_hole 1, template_var 0),
+         template_app (template_hole 0, template_var 0)),
+       template_app
+        (template_app
+          (template_hole 1, template_app (template_hole 0, template_var 0)),
+         template_var 0))),
+    ("Regular_Set.star_if_lang", "?w : ?A ==> ?w : star ?A",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 1, template_var 1),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 1, template_var 1),
+             template_app (template_hole 0, template_var 0))
+           ))),
+    ("Regular_Set.Deriv_Union",
+     "Deriv ?a (\<Union> ?M) = \<Union> (Deriv ?a ` ?M)",
+     template_equation
+      (template_app
+        (template_app (template_hole 2, template_var 1),
+         template_app (template_hole 1, template_var 0)),
+       template_app
+        (template_hole 1,
+         template_app
+          (template_app
+            (template_hole 0,
+             template_app (template_hole 2, template_var 1)),
+           template_var 0)))),
+    ("Regular_Set.star_unfold_left", "star ?A = ?A @@ star ?A Un {[]}",
+     template_equation
+      (template_app (template_hole 5, template_var 0),
+       template_app
+        (template_app
+          (template_hole 4,
+           template_app
+            (template_app (template_hole 3, template_var 0),
+             template_app (template_hole 5, template_var 0))),
+         template_app
+          (template_app (template_hole 2, template_hole 1),
+           template_hole 0)))),
+    ("Regular_Set.Deriv_star",
+     "Deriv ?c (star ?A) = Deriv ?c ?A @@ star ?A",
+     template_equation
+      (template_app
+        (template_app (template_hole 2, template_var 1),
+         template_app (template_hole 1, template_var 0)),
+       template_app
+        (template_app
+          (template_hole 0,
+           template_app
+            (template_app (template_hole 2, template_var 1),
+             template_var 0)),
+         template_app (template_hole 1, template_var 0)))),
+    ("Regular_Set.Derivs_simps",
+     "Derivs (?s1.0 @ ?s2.0) ?A = Derivs ?s2.0 (Derivs ?s1.0 ?A)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 1,
+           template_app
+            (template_app (template_hole 0, template_var 2),
+             template_var 1)),
+         template_var 0),
+       template_app
+        (template_app (template_hole 1, template_var 1),
+         template_app
+          (template_app (template_hole 1, template_var 2),
+           template_var 0)))),
+    ("Regular_Set.Derivs_simps",
+     "Derivs (?c # ?s) ?A = Derivs ?s (Deriv ?c ?A)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 2,
+           template_app
+            (template_app (template_hole 1, template_var 2),
+             template_var 1)),
+         template_var 0),
+       template_app
+        (template_app (template_hole 2, template_var 1),
+         template_app
+          (template_app (template_hole 0, template_var 2),
+           template_var 0)))),
+    ("Regular_Set.conc_pow_comm", "?A @@ ?A ^^ ?n = ?A ^^ ?n @@ ?A",
+     template_equation
+      (template_app
+        (template_app (template_hole 1, template_var 1),
+         template_app
+          (template_app (template_hole 0, template_var 0), template_var 1)),
+       template_app
+        (template_app
+          (template_hole 1,
+           template_app
+            (template_app (template_hole 0, template_var 0),
+             template_var 1)),
+         template_var 1))),
+    ("Regular_Set.conc_assoc", "(?A @@ ?B) @@ ?C = ?A @@ ?B @@ ?C",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 0,
+           template_app
+            (template_app (template_hole 0, template_var 2),
+             template_var 1)),
+         template_var 0),
+       template_app
+        (template_app (template_hole 0, template_var 2),
+         template_app
+          (template_app (template_hole 0, template_var 1),
+           template_var 0)))),
+    ("Regular_Set.star_subset_lists",
+     "?A <= lists ?S ==> star ?A <= lists ?S",
+     template_implication
+      ([template_inequation
+         (less_equals, template_var 1,
+          template_app (template_hole 1, template_var 0))],
+       template_inequation
+        (less_equals, template_app (template_hole 0, template_var 1),
+         template_app (template_hole 1, template_var 0)))),
+    ("Regular_Set.concat_in_star", "set ?ws <= ?A ==> concat ?ws : star ?A",
+     template_implication
+      ([template_inequation
+         (less_equals, template_app (template_hole 3, template_var 1),
+          template_var 0)],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 2,
+               template_app (template_hole 1, template_var 1)),
+             template_app (template_hole 0, template_var 0))
+           ))),
+    ("Regular_Set.star_if_lang_pow", "?w : ?A ^^ ?n ==> ?w : star ?A",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 2, template_var 2),
+              template_app
+               (template_app (template_hole 1, template_var 1),
+                template_var 0))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 2, template_var 2),
+             template_app (template_hole 0, template_var 0))
+           ))),
+    ("Regular_Set.lang_pow_empty",
+     "{} ^^ ?n = (if ?n = 0 then {[]} else {})",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 6, template_var 0),
+              template_hole 5)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_hole 4,
+                 template_app
+                  (template_app (template_hole 3, template_var 0),
+                   template_hole 2)),
+               template_app
+                (template_app (template_hole 1, template_hole 0),
+                 template_hole 5)),
+             template_hole 5)
+           ))),
+    ("Regular_Set.in_fold_Deriv",
+     "(?v : fold Deriv ?w ?L) = (?w @ ?v : ?L)",
+     template_equation
+      (template_app
+        (template_app (template_hole 3, template_var 2),
+         template_app
+          (template_app
+            (template_app (template_hole 2, template_hole 1),
+             template_var 1),
+           template_var 0)),
+       template_app
+        (template_app
+          (template_hole 3,
+           template_app
+            (template_app (template_hole 0, template_var 1),
+             template_var 2)),
+         template_var 0))),
+    ("Regular_Set.Deriv_lists",
+     "?c : ?S ==> Deriv ?c (lists ?S) = lists ?S",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 3, template_var 1),
+              template_var 0)
+            )],
+       template_equation
+        (template_app
+          (template_app (template_hole 1, template_var 1),
+           template_app (template_hole 0, template_var 0)),
+         template_app (template_hole 0, template_var 0)))),
+    ("Regular_Set.lang_pow_subset_lists",
+     "?A <= lists ?S ==> ?A ^^ ?n <= lists ?S",
+     template_implication
+      ([template_inequation
+         (less_equals, template_var 2,
+          template_app (template_hole 1, template_var 1))],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_app (template_hole 0, template_var 0), template_var 2),
+         template_app (template_hole 1, template_var 1)))),
+    ("Regular_Set.lang_pow_add", "?A ^^ (?n + ?m) = ?A ^^ ?n @@ ?A ^^ ?m",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 2,
+           template_app
+            (template_app (template_hole 1, template_var 2),
+             template_var 1)),
+         template_var 0),
+       template_app
+        (template_app
+          (template_hole 0,
+           template_app
+            (template_app (template_hole 2, template_var 2),
+             template_var 0)),
+         template_app
+          (template_app (template_hole 2, template_var 1),
+           template_var 0)))),
+    ("Regular_Set.Deriv_inter",
+     "Deriv ?a (?A Int ?B) = Deriv ?a ?A Int Deriv ?a ?B",
+     template_equation
+      (template_app
+        (template_app (template_hole 1, template_var 2),
+         template_app
+          (template_app (template_hole 0, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 0,
+           template_app
+            (template_app (template_hole 1, template_var 2),
+             template_var 1)),
+         template_app
+          (template_app (template_hole 1, template_var 2),
+           template_var 0)))),
+    ("Regular_Set.Deriv_union",
+     "Deriv ?a (?A Un ?B) = Deriv ?a ?A Un Deriv ?a ?B",
+     template_equation
+      (template_app
+        (template_app (template_hole 1, template_var 2),
+         template_app
+          (template_app (template_hole 0, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 0,
+           template_app
+            (template_app (template_hole 1, template_var 2),
+             template_var 1)),
+         template_app
+          (template_app (template_hole 1, template_var 2),
+           template_var 0)))),
+    ("Regular_Set.Deriv_diff",
+     "Deriv ?c (?A - ?B) = Deriv ?c ?A - Deriv ?c ?B",
+     template_equation
+      (template_app
+        (template_app (template_hole 1, template_var 2),
+         template_app
+          (template_app (template_hole 0, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 0,
+           template_app
+            (template_app (template_hole 1, template_var 2),
+             template_var 1)),
+         template_app
+          (template_app (template_hole 1, template_var 2),
+           template_var 0)))),
+    ("Regular_Set.shuffle_Un_distrib",
+     "?A \<parallel> (?B Un ?C) = ?A \<parallel> ?B Un ?A \<parallel> ?C",
+     template_equation
+      (template_app
+        (template_app (template_hole 1, template_var 2),
+         template_app
+          (template_app (template_hole 0, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 0,
+           template_app
+            (template_app (template_hole 1, template_var 2),
+             template_var 1)),
+         template_app
+          (template_app (template_hole 1, template_var 2),
+           template_var 0)))),
+    ("Regular_Set.conc_Un_distrib",
+     "?A @@ (?B Un ?C) = ?A @@ ?B Un ?A @@ ?C",
+     template_equation
+      (template_app
+        (template_app (template_hole 1, template_var 2),
+         template_app
+          (template_app (template_hole 0, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 0,
+           template_app
+            (template_app (template_hole 1, template_var 2),
+             template_var 1)),
+         template_app
+          (template_app (template_hole 1, template_var 2),
+           template_var 0)))),
+    ("Regular_Set.conc_Un_distrib",
+     "(?A Un ?B) @@ ?C = ?A @@ ?C Un ?B @@ ?C",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 1,
+           template_app
+            (template_app (template_hole 0, template_var 2),
+             template_var 1)),
+         template_var 0),
+       template_app
+        (template_app
+          (template_hole 0,
+           template_app
+            (template_app (template_hole 1, template_var 2),
+             template_var 0)),
+         template_app
+          (template_app (template_hole 1, template_var 1),
+           template_var 0)))),
+    ("Regular_Set.Nil_in_Shuffle",
+     "([] : ?A \<parallel> ?B) = ([] : ?A & [] : ?B)",
+     template_equation
+      (template_app
+        (template_app (template_hole 3, template_hole 2),
+         template_app
+          (template_app (template_hole 1, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 0,
+           template_app
+            (template_app (template_hole 3, template_hole 2),
+             template_var 1)),
+         template_app
+          (template_app (template_hole 3, template_hole 2),
+           template_var 0)))),
+    ("Regular_Set.Nil_in_conc", "([] : ?A @@ ?B) = ([] : ?A & [] : ?B)",
+     template_equation
+      (template_app
+        (template_app (template_hole 3, template_hole 2),
+         template_app
+          (template_app (template_hole 1, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 0,
+           template_app
+            (template_app (template_hole 3, template_hole 2),
+             template_var 1)),
+         template_app
+          (template_app (template_hole 3, template_hole 2),
+           template_var 0)))),
+    ("Regular_Set.star_unfold_left_Nil",
+     "star ?A = (?A - {[]}) @@ star ?A Un {[]}",
+     template_equation
+      (template_app (template_hole 6, template_var 0),
+       template_app
+        (template_app
+          (template_hole 5,
+           template_app
+            (template_app
+              (template_hole 4,
+               template_app
+                (template_app (template_hole 3, template_var 0),
+                 template_app
+                  (template_app (template_hole 2, template_hole 1),
+                   template_hole 0))),
+             template_app (template_hole 6, template_var 0))),
+         template_app
+          (template_app (template_hole 2, template_hole 1),
+           template_hole 0)))),
+    ("Regular_Set.shuffle_UNION_distrib",
+     "?A \<parallel> \<Union> (?M ` ?I) = (UN i:?I. ?A \<parallel> ?M i)",
+     template_equation
+      (template_app
+        (template_app (template_hole 2, template_var 2),
+         template_app
+          (template_hole 1,
+           template_app
+            (template_app (template_hole 0, template_var 1),
+             template_var 0))),
+       template_app
+        (template_hole 1,
+         template_app
+          (template_app (template_hole 0, t_empty), template_var 0)))),
+    ("Regular_Set.shuffle_UNION_distrib",
+     "\<Union> (?M ` ?I) \<parallel> ?A = (UN i:?I. ?M i \<parallel> ?A)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 2,
+           template_app
+            (template_hole 1,
+             template_app
+              (template_app (template_hole 0, template_var 2),
+               template_var 1))),
+         template_var 0),
+       template_app
+        (template_hole 1,
+         template_app
+          (template_app (template_hole 0, t_empty), template_var 1)))),
+    ("Regular_Set.conc_UNION_distrib",
+     "?A @@ \<Union> (?M ` ?I) = (UN i:?I. ?A @@ ?M i)",
+     template_equation
+      (template_app
+        (template_app (template_hole 2, template_var 2),
+         template_app
+          (template_hole 1,
+           template_app
+            (template_app (template_hole 0, template_var 1),
+             template_var 0))),
+       template_app
+        (template_hole 1,
+         template_app
+          (template_app (template_hole 0, t_empty), template_var 0)))),
+    ("Regular_Set.conc_UNION_distrib",
+     "\<Union> (?M ` ?I) @@ ?A = (UN i:?I. ?M i @@ ?A)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 2,
+           template_app
+            (template_hole 1,
+             template_app
+              (template_app (template_hole 0, template_var 2),
+               template_var 1))),
+         template_var 0),
+       template_app
+        (template_hole 1,
+         template_app
+          (template_app (template_hole 0, t_empty), template_var 1)))),
+    ("Regular_Set.star_Diff_Nil_fold",
+     "(?A - {[]}) @@ star ?A = star ?A - {[]}",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 5,
+           template_app
+            (template_app (template_hole 4, template_var 0),
+             template_app
+              (template_app (template_hole 3, template_hole 2),
+               template_hole 1))),
+         template_app (template_hole 0, template_var 0)),
+       template_app
+        (template_app
+          (template_hole 4, template_app (template_hole 0, template_var 0)),
+         template_app
+          (template_app (template_hole 3, template_hole 2),
+           template_hole 1)))),
+    ("Regular_Set.concI_if_Nil1",
+     "[| [] : ?A; ?xs : ?B |] ==> ?xs : ?A @@ ?B",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 2, template_hole 1),
+              template_var 2)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 2, template_var 1),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 2, template_var 1),
+             template_app
+              (template_app (template_hole 0, template_var 2),
+               template_var 0))
+           ))),
+    ("Regular_Set.concI_if_Nil2",
+     "[| [] : ?B; ?xs : ?A |] ==> ?xs : ?A @@ ?B",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 2, template_hole 1),
+              template_var 2)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 2, template_var 1),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 2, template_var 1),
+             template_app
+              (template_app (template_hole 0, template_var 0),
+               template_var 2))
+           ))),
+    ("Regular_Set.star_conv_concat",
+     "star ?A = {concat ws |ws. set ws <= ?A}",
+     template_equation
+      (template_app (template_hole 7, template_var 0),
+       template_app (template_hole 6, t_empty))),
+    ("Regular_Set.Deriv_char",
+     "Deriv ?a {[?b]} = (if ?a = ?b then {[]} else {})",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 6, template_var 1),
+              template_app
+               (template_app
+                 (template_hole 5,
+                  template_app
+                   (template_app (template_hole 4, template_var 0),
+                    template_hole 3)),
+                template_hole 2))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_hole 1,
+                 template_app
+                  (template_app (template_hole 0, template_var 1),
+                   template_var 0)),
+               template_app
+                (template_app (template_hole 5, template_hole 3),
+                 template_hole 2)),
+             template_hole 2)
+           ))),
+    ("Regular_Set.in_star_iff_concat",
+     "(?w : star ?A) = (EX ws. set ws <= ?A & ?w = concat ws)",
+     template_equation
+      (template_app
+        (template_app (template_hole 7, template_var 1),
+         template_app (template_hole 6, template_var 0)),
+       template_app (template_hole 5, t_empty))),
+    ("Regular_Set.Deriv_code",
+     "Deriv ?x ?A =
+      tl `
+      Set.filter (%xs. case xs of [] => False | x' # xa => ?x = x') ?A",
+     template_equation
+      (template_app
+        (template_app (template_hole 6, template_var 1), template_var 0),
+       template_app
+        (template_app (template_hole 5, template_hole 4),
+         template_app
+          (template_app (template_hole 3, t_empty), template_var 0)))),
+    ("Regular_Set.Deriv_Shuffle",
+     "Deriv ?a (?A \<parallel> ?B) =
+      Deriv ?a ?A \<parallel> ?B Un ?A \<parallel> Deriv ?a ?B",
+     template_equation
+      (template_app
+        (template_app (template_hole 2, template_var 2),
+         template_app
+          (template_app (template_hole 1, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 0,
+           template_app
+            (template_app
+              (template_hole 1,
+               template_app
+                (template_app (template_hole 2, template_var 2),
+                 template_var 1)),
+             template_var 0)),
+         template_app
+          (template_app (template_hole 1, template_var 1),
+           template_app
+            (template_app (template_hole 2, template_var 2),
+             template_var 0))))),
+    ("Regular_Set.Deriv_UN",
+     "Deriv ?a (\<Union> (?S ` ?I)) = (UN x:?I. Deriv ?a (?S x))",
+     template_equation
+      (template_app
+        (template_app (template_hole 2, template_var 2),
+         template_app
+          (template_hole 1,
+           template_app
+            (template_app (template_hole 0, t_empty), template_var 0))),
+       template_app
+        (template_hole 1,
+         template_app
+          (template_app (template_hole 0, t_empty), template_var 0)))),
+    ("Regular_Set.conc_mono",
+     "[| ?A <= ?C; ?B <= ?D |] ==> ?A @@ ?B <= ?C @@ ?D",
+     template_implication
+      ([template_inequation (less_equals, template_var 3, template_var 2),
+        template_inequation (less_equals, template_var 1, template_var 0)],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_app (template_hole 0, template_var 3), template_var 1),
+         template_app
+          (template_app (template_hole 0, template_var 2),
+           template_var 0)))),
+    ("Regular_Set.concI", "[| ?u : ?A; ?v : ?B |] ==> ?u @ ?v : ?A @@ ?B",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 2, template_var 3),
+              template_var 2)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 2, template_var 1),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 2,
+               template_app
+                (template_app (template_hole 1, template_var 3),
+                 template_var 1)),
+             template_app
+              (template_app (template_hole 0, template_var 2),
+               template_var 0))
+           ))),
+    ("Regular_Set.conc_Diff_if_Nil1",
+     "[] : ?A ==> ?A @@ ?B = (?A - {[]}) @@ ?B Un ?B",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 7, template_hole 6),
+              template_var 1)
+            )],
+       template_equation
+        (template_app
+          (template_app (template_hole 4, template_var 1), template_var 0),
+         template_app
+          (template_app
+            (template_hole 3,
+             template_app
+              (template_app
+                (template_hole 4,
+                 template_app
+                  (template_app (template_hole 2, template_var 1),
+                   template_app
+                    (template_app (template_hole 1, template_hole 6),
+                     template_hole 0))),
+               template_var 0)),
+           template_var 0)))),
+    ("Regular_Set.conc_Diff_if_Nil2",
+     "[] : ?B ==> ?A @@ ?B = ?A @@ (?B - {[]}) Un ?A",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 7, template_hole 6),
+              template_var 1)
+            )],
+       template_equation
+        (template_app
+          (template_app (template_hole 4, template_var 0), template_var 1),
+         template_app
+          (template_app
+            (template_hole 3,
+             template_app
+              (template_app (template_hole 4, template_var 0),
+               template_app
+                (template_app (template_hole 2, template_var 1),
+                 template_app
+                  (template_app (template_hole 1, template_hole 6),
+                   template_hole 0)))),
+           template_var 0)))),
+    ("Regular_Set.shuffle_subset_lists",
+     "[| ?A <= lists ?S; ?B <= lists ?S |]
+      ==> ?A \<parallel> ?B <= lists ?S",
+     template_implication
+      ([template_inequation
+         (less_equals, template_var 2,
+          template_app (template_hole 1, template_var 1)),
+        template_inequation
+         (less_equals, template_var 0,
+          template_app (template_hole 1, template_var 1))],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_app (template_hole 0, template_var 2), template_var 0),
+         template_app (template_hole 1, template_var 1)))),
+    ("Regular_Set.conc_subset_lists",
+     "[| ?A <= lists ?S; ?B <= lists ?S |] ==> ?A @@ ?B <= lists ?S",
+     template_implication
+      ([template_inequation
+         (less_equals, template_var 2,
+          template_app (template_hole 1, template_var 1)),
+        template_inequation
+         (less_equals, template_var 0,
+          template_app (template_hole 1, template_var 1))],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_app (template_hole 0, template_var 2), template_var 0),
+         template_app (template_hole 1, template_var 1)))),
+    ("Regular_Set.append_in_starI",
+     "[| ?u : star ?A; ?v : star ?A |] ==> ?u @ ?v : star ?A",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 2, template_var 2),
+              template_app (template_hole 1, template_var 1))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 2, template_var 0),
+              template_app (template_hole 1, template_var 1))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 2,
+               template_app
+                (template_app (template_hole 0, template_var 2),
+                 template_var 0)),
+             template_app (template_hole 1, template_var 1))
+           ))),
+    ("Regular_Set.Der_conc",
+     "Deriv ?c (?A @@ ?B) =
+      Deriv ?c ?A @@ ?B Un (if [] : ?A then Deriv ?c ?B else {})",
+     template_equation
+      (template_app
+        (template_app (template_hole 6, template_var 2),
+         template_app
+          (template_app (template_hole 5, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 4,
+           template_app
+            (template_app
+              (template_hole 5,
+               template_app
+                (template_app (template_hole 6, template_var 2),
+                 template_var 1)),
+             template_var 0)),
+         template_app
+          (template_app
+            (template_app
+              (template_hole 3,
+               template_app
+                (template_app (template_hole 2, template_hole 1),
+                 template_var 1)),
+             template_app
+              (template_app (template_hole 6, template_var 2),
+               template_var 0)),
+           template_hole 0)))),
+    ("Regular_Set.Arden",
+     "[] ~: ?A ==> (?X = ?A @@ ?X Un ?B) = (?X = star ?A @@ ?B)",
+     template_implication
+      ([template_negation
+         (
+            template_predicate
+             (
+                template_app
+                 (template_app (template_hole 6, template_hole 5),
+                  template_var 2)
+                )
+            )],
+       template_bimplication
+        (template_equation
+          (template_var 1,
+           template_app
+            (template_app
+              (template_hole 2,
+               template_app
+                (template_app (template_hole 1, template_var 2),
+                 template_var 1)),
+             template_var 0)),
+         template_equation
+          (template_var 1,
+           template_app
+            (template_app
+              (template_hole 1,
+               template_app (template_hole 0, template_var 2)),
+             template_var 0))))),
+    ("Regular_Set.reversed_Arden",
+     "[] ~: ?A ==> (?X = ?X @@ ?A Un ?B) = (?X = ?B @@ star ?A)",
+     template_implication
+      ([template_negation
+         (
+            template_predicate
+             (
+                template_app
+                 (template_app (template_hole 6, template_hole 5),
+                  template_var 2)
+                )
+            )],
+       template_bimplication
+        (template_equation
+          (template_var 1,
+           template_app
+            (template_app
+              (template_hole 2,
+               template_app
+                (template_app (template_hole 1, template_var 1),
+                 template_var 2)),
+             template_var 0)),
+         template_equation
+          (template_var 1,
+           template_app
+            (template_app (template_hole 1, template_var 0),
+             template_app (template_hole 0, template_var 2)))))),
+    ("Regular_Set.length_lang_pow_lb",
+     "[| ALL w:?A. ?k <= length w; ?w : ?A ^^ ?n |]
+      ==> ?k * ?n <= length ?w",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 5, template_var 3), t_empty)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 2, template_var 1),
+              template_app
+               (template_app (template_hole 1, template_var 0),
+                template_var 3))
+            )],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_app (template_hole 0, template_var 2), template_var 0),
+         template_app (template_hole 3, template_var 1)))),
+    ("Regular_Set.length_lang_pow_ub",
+     "[| ALL w:?A. length w <= ?k; ?w : ?A ^^ ?n |]
+      ==> length ?w <= ?k * ?n",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 5, template_var 3), t_empty)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 2, template_var 1),
+              template_app
+               (template_app (template_hole 1, template_var 0),
+                template_var 3))
+            )],
+       template_inequation
+        (less_equals, template_app (template_hole 3, template_var 1),
+         template_app
+          (template_app (template_hole 0, template_var 2),
+           template_var 0)))),
+    ("Regular_Set.singleton_in_conc",
+     "([?x] : ?A @@ ?B) = ([?x] : ?A & [] : ?B | [] : ?A & [?x] : ?B)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 5,
+           template_app
+            (template_app (template_hole 4, template_var 2),
+             template_hole 3)),
+         template_app
+          (template_app (template_hole 2, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 1,
+           template_app
+            (template_app
+              (template_hole 0,
+               template_app
+                (template_app
+                  (template_hole 5,
+                   template_app
+                    (template_app (template_hole 4, template_var 2),
+                     template_hole 3)),
+                 template_var 1)),
+             template_app
+              (template_app (template_hole 5, template_hole 3),
+               template_var 0))),
+         template_app
+          (template_app
+            (template_hole 0,
+             template_app
+              (template_app (template_hole 5, template_hole 3),
+               template_var 1)),
+           template_app
+            (template_app
+              (template_hole 5,
+               template_app
+                (template_app (template_hole 4, template_var 2),
+                 template_hole 3)),
+             template_var 0))))),
+    ("Regular_Set.arden_helper",
+     "?X = ?A @@ ?X Un ?B ==>
+      ?X = ?A ^^ Suc ?n @@ ?X Un (UN m<=?n. ?A ^^ m @@ ?B)",
+     template_implication
+      ([template_equation
+         (template_var 3,
+          template_app
+           (template_app
+             (template_hole 6,
+              template_app
+               (template_app (template_hole 5, template_var 2),
+                template_var 3)),
+            template_var 1))],
+       template_equation
+        (template_var 3,
+         template_app
+          (template_app
+            (template_hole 6,
+             template_app
+              (template_app
+                (template_hole 5,
+                 template_app
+                  (template_app
+                    (template_hole 4,
+                     template_app (template_hole 3, template_var 0)),
+                   template_var 2)),
+               template_var 3)),
+           template_app
+            (template_hole 2,
+             template_app
+              (template_app (template_hole 1, t_empty),
+               template_app (template_hole 0, template_var 0))))))),
+    ("Regular_Set.reversed_arden_helper",
+     "?X = ?X @@ ?A Un ?B ==>
+      ?X = ?X @@ ?A ^^ Suc ?n Un (UN m<=?n. ?B @@ ?A ^^ m)",
+     template_implication
+      ([template_equation
+         (template_var 3,
+          template_app
+           (template_app
+             (template_hole 6,
+              template_app
+               (template_app (template_hole 5, template_var 3),
+                template_var 2)),
+            template_var 1))],
+       template_equation
+        (template_var 3,
+         template_app
+          (template_app
+            (template_hole 6,
+             template_app
+              (template_app (template_hole 5, template_var 3),
+               template_app
+                (template_app
+                  (template_hole 4,
+                   template_app (template_hole 3, template_var 0)),
+                 template_var 2))),
+           template_app
+            (template_hole 2,
+             template_app
+              (template_app (template_hole 1, t_empty),
+               template_app (template_hole 0, template_var 0))))))),
+    ("Regular_Set.concE",
+     "[| ?w : ?A @@ ?B;
+         !!u v. [| u : ?A; v : ?B; ?w = u @ v |] ==> ?thesis |]
+      ==> ?thesis",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 4, template_var 3),
+              template_app
+               (template_app (template_hole 3, template_var 2),
+                template_var 1))
+            ),
+        template_predicate (template_app (template_hole 2, t_empty))],
+       template_predicate (template_var 0))),
+    ("Regular_Set.star_decom",
+     "[| ?x : star ?A; ?x ~= [] |]
+      ==> EX a b. ?x = a @ b & a ~= [] & a : ?A & b : star ?A",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 7, template_var 1),
+              template_app (template_hole 6, template_var 0))
+            ),
+        template_negation
+         (template_equation (template_var 1, template_hole 3))],
+       template_predicate (template_app (template_hole 2, t_empty)))),
+    ("Regular_Set.star_induct",
+     "[| ?w : star ?A; ?P [];
+         !!u v. [| u : ?A; v : star ?A; ?P v |] ==> ?P (u @ v) |]
+      ==> ?P ?w",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 4, template_var 2),
+              template_app (template_hole 3, template_var 1))
+            ),
+        template_predicate (template_app (template_var 0, template_hole 2)),
+        template_predicate (template_app (template_hole 1, t_empty))],
+       template_predicate
+        (template_app (template_var 0, template_var 2))))]:
+   (string * thm * template) list
+### theory "Draft.Regular_SetTemplates"
+### 0.344s elapsed time, 0.462s cpu time, 0.058s GC time
+val it = (): unit

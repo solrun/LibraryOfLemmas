@@ -1,0 +1,225 @@
+Loading theory "Draft.Linear_Algebra_Complements" (required by "Draft.CHSH_InequalityTemplates" via "Draft.CHSH_Inequality" via "Draft.Projective_Measurements")
+Loading theory "Draft.Templates" (required by "Draft.CHSH_InequalityTemplates" via "Draft.ExtrEqs")
+Loading theory "HOL-Library.Function_Algebras" (required by "Draft.CHSH_InequalityTemplates" via "Draft.ExtrEqs" via "HOL-Library.BigO")
+instantiation
+  fun :: (type, plus) plus
+  plus_fun == plus :: ('a => 'b) => ('a => 'b) => 'a => 'b
+instantiation
+  fun :: (type, zero) zero
+  zero_fun == zero_class.zero :: 'a => 'b
+instantiation
+  fun :: (type, times) times
+  times_fun == times :: ('a => 'b) => ('a => 'b) => 'a => 'b
+instantiation
+  fun :: (type, one) one
+  one_fun == one_class.one :: 'a => 'b
+datatype template_term
+=
+     t_empty
+   | template_app of template_term * template_term
+   | template_hole of int
+   | template_var of int
+datatype sign
+= equals | greater_equals | greater_than | less_equals | less_than
+datatype template
+=
+     template_bimplication of template * template
+   | template_dunno
+   | template_equation of template_term * template_term
+   | template_implication of template list * template
+   | template_inequation of sign * template_term * template_term
+   | template_negation of template
+   | template_predicate of template_term
+constructor t_empty: template_term
+constructor template_app: template_term * template_term -> template_term
+constructor template_hole: int -> template_term
+constructor template_var: int -> template_term
+constructor equals: sign
+constructor greater_equals: sign
+constructor greater_than: sign
+constructor less_equals: sign
+constructor less_than: sign
+constructor template_bimplication: template * template -> template
+constructor template_dunno: template
+constructor template_equation: template_term * template_term -> template
+constructor template_implication: template list * template -> template
+constructor template_inequation:
+   sign * template_term * template_term -> template
+constructor template_negation: template -> template
+constructor template_predicate: template_term -> template
+val vfs = fn: term -> (indexname * typ) list * (string * typ) list
+val indexOf = fn: ''a list -> ''a -> int -> int
+val has_eq = fn: term -> bool
+val term2template = fn:
+   (indexname * typ) list -> (string * typ) list -> term -> template_term
+val lemma2predicate = fn: term -> term -> template
+val makeTemplatewithContext = fn: term -> term -> template
+val lemma2template = fn: term -> template
+val thm2template = fn: thm -> template
+val tterm2string = fn: template_term -> string
+val template2string = fn: template -> string
+val t = "height ?t <= size ?t": thm
+val th =
+   Const ("HOL.Trueprop", "bool => prop") $
+     (Const ("Orderings.ord_class.less_eq", "nat => nat => bool") $
+       (Const ("Tree.height_class.height", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree")) $
+       (Const ("Nat.size_class.size", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree"))):
+   term
+### theory "Draft.Templates"
+### 0.070s elapsed time, 0.246s cpu time, 0.000s GC time
+### theory "HOL-Library.Function_Algebras"
+### 0.129s elapsed time, 0.376s cpu time, 0.062s GC time
+Loading theory "HOL-Library.BigO" (required by "Draft.CHSH_InequalityTemplates" via "Draft.ExtrEqs")
+### theory "HOL-Library.BigO"
+### 0.602s elapsed time, 1.237s cpu time, 0.071s GC time
+Loading theory "Draft.ExtrEqs" (required by "Draft.CHSH_InequalityTemplates")
+val eqpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Var (("_dummy_", 2), "?'a"))
+       ):
+   term Find_Theorems.criterion
+val badeqpattern = Pattern (Const ("Pure.eq", "?'a => ?'a => prop")):
+   term Find_Theorems.criterion
+val undefpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Const ("HOL.undefined", "?'a"))
+       ):
+   term Find_Theorems.criterion
+val thmpattern =
+   Pattern
+    (Const ("HOL.Trueprop", "bool => prop") $ Var (("_dummy_", 1), "bool")):
+   term Find_Theorems.criterion
+val badnames =
+   ["*nitpick*", "*Nitpick*", "*full_exhaustive*", "*_def*", "Enum.finite*",
+    "*Quickcheck*", "ATP*", "*Nunchaku*", "*Code*", "*BNF*", "*SMT*",
+    "*.*.*"]:
+   string list
+val unwanted_names =
+   [(false, Name "*nitpick*"), (false, Name "*Nitpick*"),
+    (false, Name "*full_exhaustive*"), (false, Name "*_def*"),
+    (false, Name "Enum.finite*"), (false, Name "*Quickcheck*"),
+    (false, Name "ATP*"), (false, Name "*Nunchaku*"),
+    (false, Name "*Code*"), (false, Name "*BNF*"), (false, Name "*SMT*"),
+    (false, Name "*.*.*")]:
+   (bool * term Find_Theorems.criterion) list
+val has_vars = fn: term -> bool
+val get_all_eqs = fn: string -> Proof.context -> (string * thm) list
+val get_all_thms = fn: string -> Proof.context -> (string * thm) list
+val get_noneq_thms = fn: string -> Proof.context -> (string * thm) list
+val template_eqs = fn:
+   string -> Proof.context -> (string * thm * template) list
+val template_thms = fn:
+   string -> Proof.context -> (string * thm * template) list
+### theory "Draft.ExtrEqs"
+### 0.494s elapsed time, 1.015s cpu time, 0.090s GC time
+locale ab_group_add_on_with
+  fixes S :: "'a set"
+    and pls :: "'a => 'a => 'a"
+    and z :: "'a"
+    and mns :: "'a => 'a => 'a"
+    and um :: "'a => 'a"
+  assumes "ab_group_add_on_with S pls z mns um"
+locale fixed_carrier_mat
+  fixes fc_mats :: "'a Matrix.mat set"
+    and dimR :: "nat"
+    and dimC :: "nat"
+  assumes "fixed_carrier_mat fc_mats dimR dimC"
+locale cpx_sq_mat
+  fixes dimR :: "nat"
+    and dimC :: "nat"
+    and fc_mats :: "complex Matrix.mat set"
+  assumes "cpx_sq_mat dimR dimC fc_mats"
+### theory "Draft.Linear_Algebra_Complements"
+### 2.786s elapsed time, 4.516s cpu time, 0.816s GC time
+Loading theory "Draft.Projective_Measurements" (required by "Draft.CHSH_InequalityTemplates" via "Draft.CHSH_Inequality")
+### theory "Draft.Projective_Measurements"
+### 0.733s elapsed time, 0.837s cpu time, 0.158s GC time
+Loading theory "Draft.CHSH_Inequality" (required by "Draft.CHSH_InequalityTemplates")
+locale bin_cpx
+  fixes dimR :: "nat"
+    and dimC :: "nat"
+    and fc_mats :: "complex Matrix.mat set"
+  assumes "bin_cpx dimR dimC fc_mats"
+### theory "Draft.CHSH_Inequality"
+### 0.746s elapsed time, 0.839s cpu time, 0.142s GC time
+Loading theory "Draft.CHSH_InequalityTemplates"
+val templateLemmas =
+   [("CHSH_Inequality.chsh_real",
+     "[| \<bar>?A0.0 * ?B1.0\<bar> <= 1; \<bar>?A0.0 * ?B0.0\<bar> <= 1;
+         \<bar>?A1.0 * ?B0.0\<bar> <= 1; \<bar>?A1.0 * ?B1.0\<bar> <= 1 |]
+      ==> \<bar>?A0.0 * ?B1.0 - ?A0.0 * ?B0.0 + ?A1.0 * ?B0.0 +
+                ?A1.0 * ?B1.0\<bar>
+          <= 2",
+     template_implication
+      ([template_inequation
+         (less_equals,
+          template_app
+           (template_hole 7,
+            template_app
+             (template_app (template_hole 6, template_var 3),
+              template_var 2)),
+          template_hole 5),
+        template_inequation
+         (less_equals,
+          template_app
+           (template_hole 7,
+            template_app
+             (template_app (template_hole 6, template_var 3),
+              template_var 1)),
+          template_hole 5),
+        template_inequation
+         (less_equals,
+          template_app
+           (template_hole 7,
+            template_app
+             (template_app (template_hole 6, template_var 0),
+              template_var 1)),
+          template_hole 5),
+        template_inequation
+         (less_equals,
+          template_app
+           (template_hole 7,
+            template_app
+             (template_app (template_hole 6, template_var 0),
+              template_var 2)),
+          template_hole 5)],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_hole 7,
+           template_app
+            (template_app
+              (template_hole 4,
+               template_app
+                (template_app
+                  (template_hole 4,
+                   template_app
+                    (template_app
+                      (template_hole 3,
+                       template_app
+                        (template_app (template_hole 6, template_var 3),
+                         template_var 2)),
+                     template_app
+                      (template_app (template_hole 6, template_var 3),
+                       template_var 1))),
+                 template_app
+                  (template_app (template_hole 6, template_var 0),
+                   template_var 1))),
+             template_app
+              (template_app (template_hole 6, template_var 0),
+               template_var 2))),
+         template_app
+          (template_hole 2,
+           template_app (template_hole 1, template_hole 0)))))]:
+   (string * thm * template) list
+### theory "Draft.CHSH_InequalityTemplates"
+### 2.157s elapsed time, 3.062s cpu time, 1.005s GC time
+val it = (): unit

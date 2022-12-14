@@ -1,0 +1,546 @@
+Loading theory "Draft.Core_DOM_Basic_Datatypes" (required by "Draft.BaseMonadTemplates" via "Draft.BaseMonad" via "Draft.BaseClass")
+Loading theory "Draft.Hiding_Type_Variables" (required by "Draft.BaseMonadTemplates" via "Draft.BaseMonad" via "Draft.BaseClass" via "Draft.Ref")
+Loading theory "Draft.Templates" (required by "Draft.BaseMonadTemplates" via "Draft.ExtrEqs")
+locale l_dummy
+### theory "Draft.Core_DOM_Basic_Datatypes"
+### 0.033s elapsed time, 0.125s cpu time, 0.000s GC time
+datatype template_term
+=
+     t_empty
+   | template_app of template_term * template_term
+   | template_hole of int
+   | template_var of int
+datatype sign
+= equals | greater_equals | greater_than | less_equals | less_than
+datatype template
+=
+     template_bimplication of template * template
+   | template_dunno
+   | template_equation of template_term * template_term
+   | template_implication of template list * template
+   | template_inequation of sign * template_term * template_term
+   | template_negation of template
+   | template_predicate of template_term
+constructor t_empty: template_term
+constructor template_app: template_term * template_term -> template_term
+constructor template_hole: int -> template_term
+constructor template_var: int -> template_term
+constructor equals: sign
+constructor greater_equals: sign
+constructor greater_than: sign
+constructor less_equals: sign
+constructor less_than: sign
+constructor template_bimplication: template * template -> template
+constructor template_dunno: template
+constructor template_equation: template_term * template_term -> template
+constructor template_implication: template list * template -> template
+constructor template_inequation:
+   sign * template_term * template_term -> template
+constructor template_negation: template -> template
+constructor template_predicate: template_term -> template
+val vfs = fn: term -> (indexname * typ) list * (string * typ) list
+val indexOf = fn: ''a list -> ''a -> int -> int
+val has_eq = fn: term -> bool
+val term2template = fn:
+   (indexname * typ) list -> (string * typ) list -> term -> template_term
+val lemma2predicate = fn: term -> term -> template
+val makeTemplatewithContext = fn: term -> term -> template
+val lemma2template = fn: term -> template
+val thm2template = fn: thm -> template
+val tterm2string = fn: template_term -> string
+val template2string = fn: template -> string
+val t = "height ?t <= size ?t": thm
+val th =
+   Const ("HOL.Trueprop", "bool => prop") $
+     (Const ("Orderings.ord_class.less_eq", "nat => nat => bool") $
+       (Const ("Tree.height_class.height", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree")) $
+       (Const ("Nat.size_class.size", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree"))):
+   term
+### theory "Draft.Templates"
+### 0.065s elapsed time, 0.187s cpu time, 0.000s GC time
+Loading theory "Draft.ExtrEqs" (required by "Draft.BaseMonadTemplates")
+signature HIDE_TVAR =
+  sig
+    val hide_tvar_ast_tr: Proof.context -> Ast.ast list -> Ast.ast
+    val hide_tvar_subst_ast_tr:
+       tvar_subst -> Proof.context -> Ast.ast list -> Ast.ast
+    val hide_tvar_subst_return_ast_tr:
+       tvar_subst -> Proof.context -> Ast.ast list -> Ast.ast
+    val hide_tvar_tr': string -> Proof.context -> term list -> term
+    type hide_varT =
+       {name: string,
+        parse_mode: parse_mode,
+        print_mode: print_mode,
+        tvars: typ list,
+        typ_syn_tab: (string * typ list * string) Symtab.table}
+    val lookup: theory -> string -> hide_varT option
+    datatype parse_mode = noparse | parse
+    val parse_parse_mode: string -> parse_mode
+    val parse_print_mode: string -> print_mode
+    datatype print_mode = noprint | print | print_all
+    val register:
+       string -> print_mode option -> parse_mode option -> theory -> theory
+    datatype tvar_subst = left | right
+    val update_mode:
+       string -> print_mode option -> parse_mode option -> theory -> theory
+  end
+structure Hide_Tvar: HIDE_TVAR
+val modeP = fn: Token.T list -> (string * string) * Token.T list
+val typ_modeP = fn:
+   Token.T list -> (string * (string * string)) * Token.T list
+### theory "Draft.Hiding_Type_Variables"
+### 0.548s elapsed time, 1.174s cpu time, 0.093s GC time
+Loading theory "Draft.Ref" (required by "Draft.BaseMonadTemplates" via "Draft.BaseMonad" via "Draft.BaseClass")
+Loading theory "Draft.Heap_Error_Monad" (required by "Draft.BaseMonadTemplates" via "Draft.BaseMonad")
+val eqpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Var (("_dummy_", 2), "?'a"))
+       ):
+   term Find_Theorems.criterion
+val badeqpattern = Pattern (Const ("Pure.eq", "?'a => ?'a => prop")):
+   term Find_Theorems.criterion
+val undefpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Const ("HOL.undefined", "?'a"))
+       ):
+   term Find_Theorems.criterion
+val thmpattern =
+   Pattern
+    (Const ("HOL.Trueprop", "bool => prop") $ Var (("_dummy_", 1), "bool")):
+   term Find_Theorems.criterion
+val badnames =
+   ["*nitpick*", "*Nitpick*", "*full_exhaustive*", "*_def*", "Enum.finite*",
+    "*Quickcheck*", "ATP*", "*Nunchaku*", "*Code*", "*BNF*", "*SMT*",
+    "*.*.*"]:
+   string list
+val unwanted_names =
+   [(false, Name "*nitpick*"), (false, Name "*Nitpick*"),
+    (false, Name "*full_exhaustive*"), (false, Name "*_def*"),
+    (false, Name "Enum.finite*"), (false, Name "*Quickcheck*"),
+    (false, Name "ATP*"), (false, Name "*Nunchaku*"),
+    (false, Name "*Code*"), (false, Name "*BNF*"), (false, Name "*SMT*"),
+    (false, Name "*.*.*")]:
+   (bool * term Find_Theorems.criterion) list
+val has_vars = fn: term -> bool
+val get_all_eqs = fn: string -> Proof.context -> (string * thm) list
+val get_all_thms = fn: string -> Proof.context -> (string * thm) list
+val get_noneq_thms = fn: string -> Proof.context -> (string * thm) list
+val template_eqs = fn:
+   string -> Proof.context -> (string * thm * template) list
+val template_thms = fn:
+   string -> Proof.context -> (string * thm * template) list
+### theory "Draft.ExtrEqs"
+### 0.518s elapsed time, 1.099s cpu time, 0.093s GC time
+instantiation
+  sum :: (linorder, linorder) linorder
+  less_eq_sum == less_eq :: 'a + 'b => 'a + 'b => bool
+  less_sum == less :: 'a + 'b => 'a + 'b => bool
+### theory "Draft.Ref"
+### 0.118s elapsed time, 0.267s cpu time, 0.000s GC time
+Loading theory "Draft.BaseClass" (required by "Draft.BaseMonadTemplates" via "Draft.BaseMonad")
+locale l_type_wf
+  fixes type_wf :: "'heap => bool"
+locale l_known_ptr
+  fixes known_ptr :: "'ptr => bool"
+### theory "Draft.BaseClass"
+### 0.396s elapsed time, 0.814s cpu time, 0.061s GC time
+Found termination order: "{}"
+Found termination order: "{}"
+Found termination order: "{}"
+Found termination order: "(%p. length (snd p)) <*mlex*> {}"
+Found termination order: "(%p. length (snd p)) <*mlex*> {}"
+Found termination order: "(%p. length (snd (snd p))) <*mlex*> {}"
+Found termination order: "(%p. length (snd p)) <*mlex*> {}"
+### Ambiguous input (line 569 of "$AFP/Core_DOM/common/preliminaries/Heap_Error_Monad.thy") produces 2 parse trees:
+### ("\<^const>Pure.imp"
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^const>Heap_Error_Monad.returns_result" ("_position" h)
+###       ("_applC" ("_position" filter_M)
+###         ("_cargs" ("_position" P) ("_position" xs)))
+###       ("_position" ys)))
+###   ("\<^const>Pure.imp"
+###     ("\<^const>Pure.all_binder" ("_position" x)
+###       ("\<^const>Pure.imp"
+###         ("\<^const>HOL.Trueprop"
+###           ("\<^const>Set.member" ("_position" x)
+###             ("_applC" ("_position" set) ("_position" xs))))
+###         ("\<^const>HOL.Trueprop"
+###           ("_applC" ("_position" pure)
+###             ("_cargs" ("_applC" ("_position" P) ("_position" x))
+###               ("_position" h))))))
+###     ("\<^const>HOL.Trueprop"
+###       ("\<^const>HOL.conj"
+###         ("_Ball" ("_position" x)
+###           ("_applC" ("_position" set) ("_position" xs))
+###           ("_applC"
+###             ("\<^const>Heap_Error_Monad.is_OK" ("_position" h)
+###               ("_position" P))
+###             ("_position" x)))
+###         ("\<^const>HOL.eq" ("_position" ys)
+###           ("_applC" ("_position" filter)
+###             ("_cargs"
+###               ("_lambda" ("_position" x)
+###                 ("\<^const>Heap_Error_Monad.select_result"
+###                   ("\<^const>Heap_Error_Monad.execute" ("_position" h)
+###                     ("_applC" ("_position" P) ("_position" x)))))
+###               ("_position" xs))))))))
+### ("\<^const>Pure.imp"
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^const>Heap_Error_Monad.returns_result" ("_position" h)
+###       ("_applC" ("_position" filter_M)
+###         ("_cargs" ("_position" P) ("_position" xs)))
+###       ("_position" ys)))
+###   ("\<^const>Pure.imp"
+###     ("\<^const>Pure.all_binder" ("_position" x)
+###       ("\<^const>Pure.imp"
+###         ("\<^const>HOL.Trueprop"
+###           ("\<^const>Set.member" ("_position" x)
+###             ("_applC" ("_position" set) ("_position" xs))))
+###         ("\<^const>HOL.Trueprop"
+###           ("_applC" ("_position" pure)
+###             ("_cargs" ("_applC" ("_position" P) ("_position" x))
+###               ("_position" h))))))
+###     ("\<^const>HOL.Trueprop"
+###       ("\<^const>HOL.conj"
+###         ("_Ball" ("_position" x)
+###           ("_applC" ("_position" set) ("_position" xs))
+###           ("\<^const>Heap_Error_Monad.is_OK" ("_position" h)
+###             ("_applC" ("_position" P) ("_position" x))))
+###         ("\<^const>HOL.eq" ("_position" ys)
+###           ("_applC" ("_position" filter)
+###             ("_cargs"
+###               ("_lambda" ("_position" x)
+###                 ("\<^const>Heap_Error_Monad.select_result"
+###                   ("\<^const>Heap_Error_Monad.execute" ("_position" h)
+###                     ("_applC" ("_position" P) ("_position" x)))))
+###               ("_position" xs))))))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ambiguous input (line 574 of "$AFP/Core_DOM/common/preliminaries/Heap_Error_Monad.thy") produces 2 parse trees:
+### ("\<^const>Pure.imp"
+###   ("\<^const>Pure.all_binder" ("_position" x)
+###     ("\<^const>Pure.imp"
+###       ("\<^const>HOL.Trueprop"
+###         ("\<^const>Set.member" ("_position" x)
+###           ("_applC" ("_position" set) ("_position" xs))))
+###       ("\<^const>HOL.Trueprop"
+###         ("\<^const>HOL.conj"
+###           ("_applC" ("_position" pure)
+###             ("_cargs" ("_applC" ("_position" P) ("_position" x))
+###               ("_position" h)))
+###           ("_applC"
+###             ("\<^const>Heap_Error_Monad.is_OK" ("_position" h)
+###               ("_position" P))
+###             ("_position" x))))))
+###   ("\<^const>Pure.imp"
+###     ("\<^const>HOL.Trueprop"
+###       ("\<^const>HOL.eq"
+###         ("_applC" ("_position" filter)
+###           ("_cargs"
+###             ("_lambda" ("_position" x)
+###               ("\<^const>Heap_Error_Monad.select_result"
+###                 ("\<^const>Heap_Error_Monad.execute" ("_position" h)
+###                   ("_applC" ("_position" P) ("_position" x)))))
+###             ("_position" xs)))
+###         ("_position" ys)))
+###     ("\<^const>HOL.Trueprop"
+###       ("\<^const>Heap_Error_Monad.returns_result" ("_position" h)
+###         ("_applC" ("_position" filter_M)
+###           ("_cargs" ("_position" P) ("_position" xs)))
+###         ("_position" ys)))))
+### ("\<^const>Pure.imp"
+###   ("\<^const>Pure.all_binder" ("_position" x)
+###     ("\<^const>Pure.imp"
+###       ("\<^const>HOL.Trueprop"
+###         ("\<^const>Set.member" ("_position" x)
+###           ("_applC" ("_position" set) ("_position" xs))))
+###       ("\<^const>HOL.Trueprop"
+###         ("\<^const>HOL.conj"
+###           ("_applC" ("_position" pure)
+###             ("_cargs" ("_applC" ("_position" P) ("_position" x))
+###               ("_position" h)))
+###           ("\<^const>Heap_Error_Monad.is_OK" ("_position" h)
+###             ("_applC" ("_position" P) ("_position" x)))))))
+###   ("\<^const>Pure.imp"
+###     ("\<^const>HOL.Trueprop"
+###       ("\<^const>HOL.eq"
+###         ("_applC" ("_position" filter)
+###           ("_cargs"
+###             ("_lambda" ("_position" x)
+###               ("\<^const>Heap_Error_Monad.select_result"
+###                 ("\<^const>Heap_Error_Monad.execute" ("_position" h)
+###                   ("_applC" ("_position" P) ("_position" x)))))
+###             ("_position" xs)))
+###         ("_position" ys)))
+###     ("\<^const>HOL.Trueprop"
+###       ("\<^const>Heap_Error_Monad.returns_result" ("_position" h)
+###         ("_applC" ("_position" filter_M)
+###           ("_cargs" ("_position" P) ("_position" xs)))
+###         ("_position" ys)))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+Found termination order: "size_list size <*mlex*> {}"
+### Ambiguous input (line 681 of "$AFP/Core_DOM/common/preliminaries/Heap_Error_Monad.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("\<^const>Monad_Syntax.bind"
+###       ("\<^const>Heap_Error_Monad.execute" ("_position" h) ("_position" f))
+###       ("_position" g))
+###     ("\<^const>Heap_Error_Monad.execute" ("_position" h')
+###       ("_applC" ("_position" g) ("_position" x)))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("\<^const>Heap_Error_Monad.execute" ("_position" h)
+###       ("\<^const>Monad_Syntax.bind" ("_position" f) ("_position" g)))
+###     ("\<^const>Heap_Error_Monad.execute" ("_position" h')
+###       ("_applC" ("_position" g) ("_position" x)))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### theory "Draft.Heap_Error_Monad"
+### 1.559s elapsed time, 2.430s cpu time, 0.519s GC time
+Loading theory "Draft.BaseMonad" (required by "Draft.BaseMonadTemplates")
+locale l_ptr_kinds_M
+  fixes ptr_kinds :: "'heap => 'ptr fset"
+locale l_get_M
+  fixes get :: "'ptr => 'heap => 'obj option"
+    and type_wf :: "'heap => bool"
+    and ptr_kinds :: "'heap => 'ptr fset"
+  assumes "l_get_M get type_wf ptr_kinds"
+locale l_put_M
+  fixes type_wf :: "'heap => bool"
+    and ptr_kinds :: "'heap => 'ptr fset"
+    and get :: "'ptr => 'heap => 'obj option"
+    and put :: "'ptr => 'obj => 'heap => 'heap"
+  assumes "l_put_M type_wf ptr_kinds get"
+### Cannot skip proof of schematic goal statement
+### theory "Draft.BaseMonad"
+### 0.820s elapsed time, 0.895s cpu time, 0.103s GC time
+Loading theory "Draft.BaseMonadTemplates"
+val templateLemmas =
+   [("BaseMonad.finite_set_in", "(?x : fset ?FS) = (?x |\<in>| ?FS)",
+     template_equation
+      (template_app
+        (template_app (template_hole 2, template_var 1),
+         template_app (template_hole 1, template_var 0)),
+       template_app
+        (template_app (template_hole 0, template_var 1), template_var 0))),
+    ("BaseMonad.sorted_list_set_cong",
+     "(sorted_list_of_set (fset ?FS) = sorted_list_of_set (fset ?FS')) =
+      (?FS = ?FS')",
+     template_bimplication
+      (template_equation
+        (template_app
+          (template_hole 2, template_app (template_hole 1, template_var 1)),
+         template_app
+          (template_hole 2,
+           template_app (template_hole 1, template_var 0))),
+       template_equation (template_var 1, template_var 0))),
+    ("BaseMonad.sorted_list_of_set_eq",
+     "sorted_list_of_set (fset ?x) = sorted_list_of_set (fset ?y) ==>
+      ?x = ?y",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_hole 2,
+            template_app (template_hole 1, template_var 1)),
+          template_app
+           (template_hole 2,
+            template_app (template_hole 1, template_var 0)))],
+       template_equation (template_var 1, template_var 0))),
+    ("BaseMonad.dom_prog_ordI",
+     "(!!h. h \<turnstile> ?f
+            \<rightarrow>\<^sub>e NonTerminationException |
+            h \<turnstile> ?f = h \<turnstile> ?g) ==>
+      dom_prog_ord ?f ?g",
+     template_implication
+      ([template_predicate (template_app (template_hole 7, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 0, template_var 1), template_var 0)
+           ))),
+    ("BaseMonad.mono_dom_prog1",
+     "(!!x. mono_dom_prog (%f. ?g f x)) ==>
+      mono_dom_prog (%f. map_M (?g f) ?xs)",
+     template_implication
+      ([template_predicate (template_app (template_hole 7, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_hole 2,
+                 template_app (template_hole 4, template_hole 3)),
+               template_hole 1),
+             t_empty)
+           ))),
+    ("BaseMonad.mono_dom_prog2",
+     "(!!x. mono_dom_prog (%f. ?g f x)) ==>
+      mono_dom_prog (%f. forall_M (?g f) ?xs)",
+     template_implication
+      ([template_predicate (template_app (template_hole 7, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_hole 2,
+                 template_app (template_hole 4, template_hole 3)),
+               template_hole 1),
+             t_empty)
+           ))),
+    ("BaseMonad.dom_prog_ordE",
+     "[| dom_prog_ord ?x ?y;
+         ?h \<turnstile> ?x
+         \<rightarrow>\<^sub>e NonTerminationException ==>
+         ?thesis;
+         ?h \<turnstile> ?x = ?h \<turnstile> ?y ==> ?thesis |]
+      ==> ?thesis",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 4, template_var 3),
+              template_var 2)
+            ),
+        template_implication
+         ([template_predicate
+            (
+               template_app
+                (template_app
+                  (template_app (template_hole 3, template_var 1),
+                   template_var 3),
+                 template_hole 2)
+               )],
+          template_predicate (template_var 0)),
+        template_implication
+         ([template_equation
+            (template_app
+              (template_app (template_hole 0, template_var 1),
+               template_var 3),
+             template_app
+              (template_app (template_hole 0, template_var 1),
+               template_var 2))],
+          template_predicate (template_var 0))],
+       template_predicate (template_var 0))),
+    ("BaseMonad.admissible_dom_prog",
+     "dom_prog.admissible
+       (%f. ALL x h h' r.
+               h \<turnstile> f x \<rightarrow>\<^sub>r r -->
+               h \<turnstile> f x \<rightarrow>\<^sub>h h' -->
+               ?P x h h' r)",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_app
+              (template_hole 10,
+               template_app (template_hole 9, template_hole 8)),
+             template_app (template_hole 7, template_hole 6)),
+           t_empty)
+         )),
+    ("BaseMonad.execute_admissible",
+     "ccpo.admissible (fun_lub (flat_lub (Inl ?e)))
+       (fun_ord (flat_ord (Inl ?e)))
+       ((%a. ALL h h2 r. h \<turnstile> a = Inr (r, h2) --> ?P h h2 r) o
+        Prog)",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_app
+              (template_hole 14,
+               template_app
+                (template_hole 13,
+                 template_app
+                  (template_hole 12,
+                   template_app (template_hole 11, template_var 1)))),
+             template_app
+              (template_hole 10,
+               template_app
+                (template_hole 9,
+                 template_app (template_hole 11, template_var 1)))),
+           template_app
+            (template_app (template_hole 8, t_empty), template_hole 0))
+         )),
+    ("BaseMonad.bind_mono",
+     "[| mono_dom_prog ?B; !!y. mono_dom_prog (?C y) |]
+      ==> mono_dom_prog (%f. ?B f >>= (%y. ?C y f))",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_hole 7,
+                  template_app (template_hole 6, template_hole 5)),
+                template_hole 4),
+              template_var 1)
+            ),
+        template_predicate (template_app (template_hole 3, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_hole 2,
+                 template_app (template_hole 6, template_hole 5)),
+               template_hole 1),
+             t_empty)
+           ))),
+    ("BaseMonad.execute_admissible2",
+     "ccpo.admissible (fun_lub (flat_lub (Inl ?e)))
+       (fun_ord (flat_ord (Inl ?e)))
+       ((%a. ALL h h' h2 h2' r r'.
+                h \<turnstile> a = Inr (r, h2) -->
+                h' \<turnstile> a = Inr (r', h2') --> ?P h h' h2 h2' r r') o
+        Prog)",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_app
+              (template_hole 14,
+               template_app
+                (template_hole 13,
+                 template_app
+                  (template_hole 12,
+                   template_app (template_hole 11, template_var 1)))),
+             template_app
+              (template_hole 10,
+               template_app
+                (template_hole 9,
+                 template_app (template_hole 11, template_var 1)))),
+           template_app
+            (template_app (template_hole 8, t_empty), template_hole 0))
+         )),
+    ("BaseMonad.admissible_dom_prog2",
+     "dom_prog.admissible
+       (%f. ALL x h h2 h' h2' r r2.
+               h \<turnstile> f x \<rightarrow>\<^sub>r r -->
+               h \<turnstile> f x \<rightarrow>\<^sub>h h' -->
+               h2 \<turnstile> f x \<rightarrow>\<^sub>r r2 -->
+               h2 \<turnstile> f x \<rightarrow>\<^sub>h h2' -->
+               ?P x h h2 h' h2' r r2)",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_app
+              (template_hole 10,
+               template_app (template_hole 9, template_hole 8)),
+             template_app (template_hole 7, template_hole 6)),
+           t_empty)
+         ))]:
+   (string * thm * template) list
+### theory "Draft.BaseMonadTemplates"
+### 0.395s elapsed time, 0.559s cpu time, 0.076s GC time
+val it = (): unit

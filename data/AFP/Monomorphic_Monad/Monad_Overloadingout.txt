@@ -1,0 +1,1160 @@
+Loading theory "Draft.Monomorphic_Monad" (required by "Draft.Monad_OverloadingTemplates" via "Draft.Monad_Overloading")
+Loading theory "HOL-Library.Function_Algebras" (required by "Draft.Monad_OverloadingTemplates" via "Draft.ExtrEqs" via "HOL-Library.BigO")
+Loading theory "Draft.Templates" (required by "Draft.Monad_OverloadingTemplates" via "Draft.ExtrEqs")
+instantiation
+  fun :: (type, plus) plus
+  plus_fun == plus :: ('a => 'b) => ('a => 'b) => 'a => 'b
+instantiation
+  fun :: (type, zero) zero
+  zero_fun == zero_class.zero :: 'a => 'b
+instantiation
+  fun :: (type, times) times
+  times_fun == times :: ('a => 'b) => ('a => 'b) => 'a => 'b
+instantiation
+  fun :: (type, one) one
+  one_fun == one_class.one :: 'a => 'b
+datatype template_term
+=
+     t_empty
+   | template_app of template_term * template_term
+   | template_hole of int
+   | template_var of int
+datatype sign
+= equals | greater_equals | greater_than | less_equals | less_than
+datatype template
+=
+     template_bimplication of template * template
+   | template_dunno
+   | template_equation of template_term * template_term
+   | template_implication of template list * template
+   | template_inequation of sign * template_term * template_term
+   | template_negation of template
+   | template_predicate of template_term
+constructor t_empty: template_term
+constructor template_app: template_term * template_term -> template_term
+constructor template_hole: int -> template_term
+constructor template_var: int -> template_term
+constructor equals: sign
+constructor greater_equals: sign
+constructor greater_than: sign
+constructor less_equals: sign
+constructor less_than: sign
+constructor template_bimplication: template * template -> template
+constructor template_dunno: template
+constructor template_equation: template_term * template_term -> template
+constructor template_implication: template list * template -> template
+constructor template_inequation:
+   sign * template_term * template_term -> template
+constructor template_negation: template -> template
+constructor template_predicate: template_term -> template
+val vfs = fn: term -> (indexname * typ) list * (string * typ) list
+val indexOf = fn: ''a list -> ''a -> int -> int
+val has_eq = fn: term -> bool
+val term2template = fn:
+   (indexname * typ) list -> (string * typ) list -> term -> template_term
+val lemma2predicate = fn: term -> term -> template
+val makeTemplatewithContext = fn: term -> term -> template
+val lemma2template = fn: term -> template
+val thm2template = fn: thm -> template
+val tterm2string = fn: template_term -> string
+val template2string = fn: template -> string
+val t = "height ?t <= size ?t": thm
+val th =
+   Const ("HOL.Trueprop", "bool => prop") $
+     (Const ("Orderings.ord_class.less_eq", "nat => nat => bool") $
+       (Const ("Tree.height_class.height", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree")) $
+       (Const ("Nat.size_class.size", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree"))):
+   term
+### theory "Draft.Templates"
+### 0.071s elapsed time, 0.255s cpu time, 0.000s GC time
+### theory "HOL-Library.Function_Algebras"
+### 0.141s elapsed time, 0.408s cpu time, 0.057s GC time
+Loading theory "HOL-Library.BigO" (required by "Draft.Monad_OverloadingTemplates" via "Draft.ExtrEqs")
+Proofs for inductive predicate(s) "rel_itself"
+  Proving monotonicity ...
+### Ignoring duplicate rewrite rule:
+### cUnion (cimage csingle ?y) == ?y
+locale three
+  fixes tytok :: "'a itself"
+  assumes "three TYPE('a)"
+Proofs for inductive predicate(s) "rel_12_23"
+  Proving monotonicity ...
+Proofs for inductive predicate(s) "rel_12_21"
+  Proving monotonicity ...
+locale monad_base
+  fixes return :: "'a => 'm"
+    and bind :: "'m => ('a => 'm) => 'm"
+consts
+  sequence :: "'m list => ('a list => 'm) => 'm"
+### theory "HOL-Library.BigO"
+### 0.608s elapsed time, 1.242s cpu time, 0.053s GC time
+Loading theory "Draft.ExtrEqs" (required by "Draft.Monad_OverloadingTemplates")
+locale monad
+  fixes return :: "'a => 'm"
+    and bind :: "'m => ('a => 'm) => 'm"
+  assumes "monad return bind"
+locale monad_state_base
+  fixes return :: "'a => 'm"
+    and bind :: "'m => ('a => 'm) => 'm"
+    and get :: "('s => 'm) => 'm"
+    and put :: "'s => 'm => 'm"
+locale monad_state
+  fixes return :: "'a => 'm"
+    and bind :: "'m => ('a => 'm) => 'm"
+    and get :: "('s => 'm) => 'm"
+    and put :: "'s => 'm => 'm"
+  assumes "monad_state return bind get put"
+locale monad_fail_base
+  fixes return :: "'a => 'm"
+    and bind :: "'m => ('a => 'm) => 'm"
+    and fail :: "'m"
+locale monad_fail
+  fixes return :: "'a => 'm"
+    and bind :: "'m => ('a => 'm) => 'm"
+    and fail :: "'m"
+  assumes "monad_fail return bind fail"
+locale monad_catch_base
+  fixes return :: "'a => 'm"
+    and bind :: "'m => ('a => 'm) => 'm"
+    and fail :: "'m"
+    and catch :: "'m => 'm => 'm"
+locale monad_catch
+  fixes return :: "'a => 'm"
+    and bind :: "'m => ('a => 'm) => 'm"
+    and fail :: "'m"
+    and catch :: "'m => 'm => 'm"
+  assumes "monad_catch return bind fail catch"
+locale monad_catch_state
+  fixes return :: "'a => 'm"
+    and bind :: "'m => ('a => 'm) => 'm"
+    and fail :: "'m"
+    and catch :: "'m => 'm => 'm"
+    and get :: "('s => 'm) => 'm"
+    and put :: "'s => 'm => 'm"
+  assumes "monad_catch_state return bind fail catch get put"
+locale monad_reader_base
+  fixes return :: "'a => 'm"
+    and bind :: "'m => ('a => 'm) => 'm"
+    and ask :: "('r => 'm) => 'm"
+locale monad_reader
+  fixes return :: "'a => 'm"
+    and bind :: "'m => ('a => 'm) => 'm"
+    and ask :: "('r => 'm) => 'm"
+  assumes "monad_reader return bind ask"
+locale monad_reader_state
+  fixes return :: "'a => 'm"
+    and bind :: "'m => ('a => 'm) => 'm"
+    and ask :: "('r => 'm) => 'm"
+    and get :: "('s => 'm) => 'm"
+    and put :: "'s => 'm => 'm"
+  assumes "monad_reader_state return bind ask get put"
+locale monad_prob_base
+  fixes return :: "'a => 'm"
+    and bind :: "'m => ('a => 'm) => 'm"
+    and sample :: "'p pmf => ('p => 'm) => 'm"
+locale monad_prob
+  fixes return :: "'a => 'm"
+    and bind :: "'m => ('a => 'm) => 'm"
+    and sample :: "'p pmf => ('p => 'm) => 'm"
+  assumes "monad_prob return bind sample"
+locale monad_prob3
+  fixes return :: "'a => 'm"
+    and bind :: "'m => ('a => 'm) => 'm"
+    and sample :: "'p pmf => ('p => 'm) => 'm"
+  assumes "monad_prob3 return bind sample"
+locale monad_state_prob
+  fixes return :: "'a => 'm"
+    and bind :: "'m => ('a => 'm) => 'm"
+    and get :: "('s => 'm) => 'm"
+    and put :: "'s => 'm => 'm"
+    and sample :: "'p pmf => ('p => 'm) => 'm"
+  assumes "monad_state_prob return bind get put sample"
+locale monad_alt_base
+  fixes return :: "'a => 'm"
+    and bind :: "'m => ('a => 'm) => 'm"
+    and alt :: "'m => 'm => 'm"
+locale monad_alt
+  fixes return :: "'a => 'm"
+    and bind :: "'m => ('a => 'm) => 'm"
+    and alt :: "'m => 'm => 'm"
+  assumes "monad_alt return bind alt"
+locale monad_fail_alt
+  fixes return :: "'a => 'm"
+    and bind :: "'m => ('a => 'm) => 'm"
+    and fail :: "'m"
+    and alt :: "'m => 'm => 'm"
+  assumes "monad_fail_alt return bind fail alt"
+val eqpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Var (("_dummy_", 2), "?'a"))
+       ):
+   term Find_Theorems.criterion
+val badeqpattern = Pattern (Const ("Pure.eq", "?'a => ?'a => prop")):
+   term Find_Theorems.criterion
+val undefpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Const ("HOL.undefined", "?'a"))
+       ):
+   term Find_Theorems.criterion
+val thmpattern =
+   Pattern
+    (Const ("HOL.Trueprop", "bool => prop") $ Var (("_dummy_", 1), "bool")):
+   term Find_Theorems.criterion
+val badnames =
+   ["*nitpick*", "*Nitpick*", "*full_exhaustive*", "*_def*", "Enum.finite*",
+    "*Quickcheck*", "ATP*", "*Nunchaku*", "*Code*", "*BNF*", "*SMT*",
+    "*.*.*"]:
+   string list
+val unwanted_names =
+   [(false, Name "*nitpick*"), (false, Name "*Nitpick*"),
+    (false, Name "*full_exhaustive*"), (false, Name "*_def*"),
+    (false, Name "Enum.finite*"), (false, Name "*Quickcheck*"),
+    (false, Name "ATP*"), (false, Name "*Nunchaku*"),
+    (false, Name "*Code*"), (false, Name "*BNF*"), (false, Name "*SMT*"),
+    (false, Name "*.*.*")]:
+   (bool * term Find_Theorems.criterion) list
+val has_vars = fn: term -> bool
+val get_all_eqs = fn: string -> Proof.context -> (string * thm) list
+val get_all_thms = fn: string -> Proof.context -> (string * thm) list
+val get_noneq_thms = fn: string -> Proof.context -> (string * thm) list
+val template_eqs = fn:
+   string -> Proof.context -> (string * thm * template) list
+val template_thms = fn:
+   string -> Proof.context -> (string * thm * template) list
+### theory "Draft.ExtrEqs"
+### 0.527s elapsed time, 1.093s cpu time, 0.116s GC time
+locale monad_state_alt
+  fixes return :: "'a => 'm"
+    and bind :: "'m => ('a => 'm) => 'm"
+    and get :: "('s => 'm) => 'm"
+    and put :: "'s => 'm => 'm"
+    and alt :: "'m => 'm => 'm"
+  assumes "monad_state_alt return bind get put alt"
+locale monad_altc_base
+  fixes return :: "'a => 'm"
+    and bind :: "'m => ('a => 'm) => 'm"
+    and altc :: "'c cset => ('c => 'm) => 'm"
+locale monad_altc
+  fixes return :: "'a => 'm"
+    and bind :: "'m => ('a => 'm) => 'm"
+    and altc :: "'c cset => ('c => 'm) => 'm"
+  assumes "monad_altc return bind altc"
+locale monad_altc3
+  fixes return :: "'a => 'm"
+    and bind :: "'m => ('a => 'm) => 'm"
+    and altc :: "'c cset => ('c => 'm) => 'm"
+  assumes "monad_altc3 return bind altc"
+locale monad_state_altc
+  fixes return :: "'a => 'm"
+    and bind :: "'m => ('a => 'm) => 'm"
+    and get :: "('s => 'm) => 'm"
+    and put :: "'s => 'm => 'm"
+    and altc :: "'c cset => ('c => 'm) => 'm"
+  assumes "monad_state_altc return bind get put altc"
+locale monad_writer_base
+  fixes return :: "'a => 'm"
+    and bind :: "'m => ('a => 'm) => 'm"
+    and tell :: "'w => 'm => 'm"
+locale monad_writer
+  fixes return :: "'a => 'm"
+    and bind :: "'m => ('a => 'm) => 'm"
+    and tell :: "'w => 'm => 'm"
+  assumes "monad_writer return bind tell"
+locale monad_resumption_base
+  fixes return :: "'a => 'm"
+    and bind :: "'m => ('a => 'm) => 'm"
+    and pause :: "'o => ('i => 'm) => 'm"
+locale monad_resumption
+  fixes return :: "'a => 'm"
+    and bind :: "'m => ('a => 'm) => 'm"
+    and pause :: "'o => ('i => 'm) => 'm"
+  assumes "monad_resumption return bind pause"
+locale monad_commute
+  fixes return :: "'a => 'm"
+    and bind :: "'m => ('a => 'm) => 'm"
+  assumes "monad_commute return bind"
+locale monad_discard
+  fixes return :: "'a => 'm"
+    and bind :: "'m => ('a => 'm) => 'm"
+  assumes "monad_discard return bind"
+locale monad_duplicate
+  fixes return :: "'a => 'm"
+    and bind :: "'m => ('a => 'm) => 'm"
+  assumes "monad_duplicate return bind"
+consts
+  bind_id ::
+    "'a Monomorphic_Monad.id
+     => ('a => 'a Monomorphic_Monad.id) => 'a Monomorphic_Monad.id"
+consts
+  bind_resumption ::
+    "('o, 'i, 'a) resumption
+     => ('a => ('o, 'i, 'a) resumption) => ('o, 'i, 'a) resumption"
+consts
+  bind_option ::
+    "('a, 'm) optionT => ('a => ('a, 'm) optionT) => ('a, 'm) optionT"
+consts
+  put_option :: "'s => ('a, 'm) optionT => ('a, 'm) optionT"
+consts
+  bind_env :: "('r, 'm) envT => ('a => ('r, 'm) envT) => ('r, 'm) envT"
+locale nondetM_base
+  fixes return :: "'s => 'm"
+    and bind :: "'m => ('s => 'm) => 'm"
+    and merge :: "'s => ('a => 'm) => 'm"
+    and empty :: "'s"
+    and single :: "'a => 's"
+    and
+    union :: "'s => 's => 's"  (infixl \<open>\<^bold>\<union>\<close> 65)
+locale nondetM
+  fixes return :: "'s => 'm"
+    and bind :: "'m => ('s => 'm) => 'm"
+    and merge :: "'s => ('a => 'm) => 'm"
+    and empty :: "'s"
+    and single :: "'a => 's"
+    and
+    union :: "'s => 's => 's"  (infixl \<open>\<^bold>\<union>\<close> 65)
+  assumes "nondetM return bind merge empty single (\<^bold>\<union>)"
+locale nondetM_ask
+  fixes return :: "'s => 'm"
+    and bind :: "'m => ('s => 'm) => 'm"
+    and ask :: "('r => 'm) => 'm"
+    and merge :: "'s => ('a => 'm) => 'm"
+    and empty :: "'s"
+    and single :: "'a => 's"
+    and
+    union :: "'s => 's => 's"  (infixl \<open>\<^bold>\<union>\<close> 65)
+  assumes
+    "nondetM_ask return bind ask merge empty single (\<^bold>\<union>)"
+locale cset_nondetM_base
+  fixes return :: "'a cset => 'm"
+    and bind :: "'m => ('a cset => 'm) => 'm"
+    and merge :: "'a cset => ('a => 'm) => 'm"
+    and mergec :: "'c cset => ('c => 'm) => 'm"
+locale cset_nondetM
+  fixes return :: "'a cset => 'm"
+    and bind :: "'m => ('a cset => 'm) => 'm"
+    and merge :: "'a cset => ('a => 'm) => 'm"
+    and mergec :: "'c cset => ('c => 'm) => 'm"
+  assumes "cset_nondetM return bind merge mergec"
+locale cset_nondetM3
+  fixes return :: "'a cset => 'm"
+    and bind :: "'m => ('a cset => 'm) => 'm"
+    and merge :: "'a cset => ('a => 'm) => 'm"
+    and mergec :: "'c cset => ('c => 'm) => 'm"
+  assumes "cset_nondetM3 return bind merge mergec"
+consts
+  bind_state ::
+    "('s, 'm) stateT => ('a => ('s, 'm) stateT) => ('s, 'm) stateT"
+consts
+  put_state :: "'s => ('s, 'm) stateT => ('s, 'm) stateT"
+locale monad_hom
+  fixes return1 :: "'a => 'm1"
+    and bind1 :: "'m1 => ('a => 'm1) => 'm1"
+    and return2 :: "'a => 'm2"
+    and bind2 :: "'m2 => ('a => 'm2) => 'm2"
+    and h :: "'m1 => 'm2"
+  assumes "monad_hom return1 bind1 return2 bind2 h"
+locale monad_state_hom
+  fixes return1 :: "'a => 'm1"
+    and bind1 :: "'m1 => ('a => 'm1) => 'm1"
+    and get1 :: "('s => 'm1) => 'm1"
+    and put1 :: "'s => 'm1 => 'm1"
+    and return2 :: "'a => 'm2"
+    and bind2 :: "'m2 => ('a => 'm2) => 'm2"
+    and get2 :: "('s => 'm2) => 'm2"
+    and put2 :: "'s => 'm2 => 'm2"
+    and h :: "'m1 => 'm2"
+  assumes
+    "monad_state_hom return1 bind1 get1 put1 return2 bind2 get2 put2 h"
+locale monad_fail_hom
+  fixes return1 :: "'a => 'm1"
+    and bind1 :: "'m1 => ('a => 'm1) => 'm1"
+    and fail1 :: "'m1"
+    and return2 :: "'a => 'm2"
+    and bind2 :: "'m2 => ('a => 'm2) => 'm2"
+    and fail2 :: "'m2"
+    and h :: "'m1 => 'm2"
+  assumes "monad_fail_hom return1 bind1 fail1 return2 bind2 fail2 h"
+locale monad_catch_hom
+  fixes return1 :: "'a => 'm1"
+    and bind1 :: "'m1 => ('a => 'm1) => 'm1"
+    and fail1 :: "'m1"
+    and catch1 :: "'m1 => 'm1 => 'm1"
+    and return2 :: "'a => 'm2"
+    and bind2 :: "'m2 => ('a => 'm2) => 'm2"
+    and fail2 :: "'m2"
+    and catch2 :: "'m2 => 'm2 => 'm2"
+    and h :: "'m1 => 'm2"
+  assumes
+    "monad_catch_hom return1 bind1 fail1 catch1 return2 bind2 fail2 catch2
+      h"
+locale monad_reader_hom
+  fixes return1 :: "'a => 'm1"
+    and bind1 :: "'m1 => ('a => 'm1) => 'm1"
+    and ask1 :: "('r => 'm1) => 'm1"
+    and return2 :: "'a => 'm2"
+    and bind2 :: "'m2 => ('a => 'm2) => 'm2"
+    and ask2 :: "('r => 'm2) => 'm2"
+    and h :: "'m1 => 'm2"
+  assumes "monad_reader_hom return1 bind1 ask1 return2 bind2 ask2 h"
+locale monad_prob_hom
+  fixes return1 :: "'a => 'm1"
+    and bind1 :: "'m1 => ('a => 'm1) => 'm1"
+    and sample1 :: "'p pmf => ('p => 'm1) => 'm1"
+    and return2 :: "'a => 'm2"
+    and bind2 :: "'m2 => ('a => 'm2) => 'm2"
+    and sample2 :: "'p pmf => ('p => 'm2) => 'm2"
+    and h :: "'m1 => 'm2"
+  assumes "monad_prob_hom return1 bind1 sample1 return2 bind2 sample2 h"
+locale monad_alt_hom
+  fixes return1 :: "'a => 'm1"
+    and bind1 :: "'m1 => ('a => 'm1) => 'm1"
+    and alt1 :: "'m1 => 'm1 => 'm1"
+    and return2 :: "'a => 'm2"
+    and bind2 :: "'m2 => ('a => 'm2) => 'm2"
+    and alt2 :: "'m2 => 'm2 => 'm2"
+    and h :: "'m1 => 'm2"
+  assumes "monad_alt_hom return1 bind1 alt1 return2 bind2 alt2 h"
+locale monad_altc_hom
+  fixes return1 :: "'a => 'm1"
+    and bind1 :: "'m1 => ('a => 'm1) => 'm1"
+    and altc1 :: "'c cset => ('c => 'm1) => 'm1"
+    and return2 :: "'a => 'm2"
+    and bind2 :: "'m2 => ('a => 'm2) => 'm2"
+    and altc2 :: "'c cset => ('c => 'm2) => 'm2"
+    and h :: "'m1 => 'm2"
+  assumes "monad_altc_hom return1 bind1 altc1 return2 bind2 altc2 h"
+locale monad_writer_hom
+  fixes return1 :: "'a => 'm1"
+    and bind1 :: "'m1 => ('a => 'm1) => 'm1"
+    and tell1 :: "'w => 'm1 => 'm1"
+    and return2 :: "'a => 'm2"
+    and bind2 :: "'m2 => ('a => 'm2) => 'm2"
+    and tell2 :: "'w => 'm2 => 'm2"
+    and h :: "'m1 => 'm2"
+  assumes "monad_writer_hom return1 bind1 tell1 return2 bind2 tell2 h"
+locale monad_resumption_hom
+  fixes return1 :: "'a => 'm1"
+    and bind1 :: "'m1 => ('a => 'm1) => 'm1"
+    and pause1 :: "'o => ('i => 'm1) => 'm1"
+    and return2 :: "'a => 'm2"
+    and bind2 :: "'m2 => ('a => 'm2) => 'm2"
+    and pause2 :: "'o => ('i => 'm2) => 'm2"
+    and h :: "'m1 => 'm2"
+  assumes "monad_resumption_hom return1 bind1 pause1 return2 bind2 pause2 h"
+Proofs for inductive predicate(s) "cr_id_prob"
+  Proving monotonicity ...
+Proofs for inductive predicate(s) "cr_pmf_cset"
+  Proving monotonicity ...
+Proofs for inductive predicate(s) "cr_prob_ndi"
+  Proving monotonicity ...
+### theory "Draft.Monomorphic_Monad"
+### 9.961s elapsed time, 12.110s cpu time, 1.420s GC time
+Loading theory "Draft.Monad_Overloading" (required by "Draft.Monad_OverloadingTemplates")
+overloading
+  bind_id' \<equiv> Monad_Overloading.bind ::
+    'a Monomorphic_Monad.id
+    => ('a => 'a Monomorphic_Monad.id) => 'a Monomorphic_Monad.id
+  return_id \<equiv> Monad_Overloading.return ::
+    'a => 'a Monomorphic_Monad.id
+overloading
+  return_prob \<equiv> Monad_Overloading.return :: 'a => 'a pmf
+  bind_prob \<equiv> Monad_Overloading.bind ::
+    'a pmf => ('a => 'a pmf) => 'a pmf
+  sample_prob \<equiv> sample :: 'p pmf => ('p => 'a pmf) => 'a pmf
+overloading
+  return_nondetT \<equiv> Monad_Overloading.return :: 'a => ('a, 'm) nondetT
+  bind_nondetT \<equiv> Monad_Overloading.bind ::
+    ('a, 'm) nondetT => ('a => ('a, 'm) nondetT) => ('a, 'm) nondetT
+  fail_nondetT \<equiv> fail :: ('a, 'm) nondetT
+  ask_nondetT \<equiv> ask :: ('r => ('a, 'm) nondetT) => ('a, 'm) nondetT
+  get_nondetT \<equiv> get :: ('s => ('a, 'm) nondetT) => ('a, 'm) nondetT
+  put_nondetT \<equiv> put :: 's => ('a, 'm) nondetT => ('a, 'm) nondetT
+  alt_nondetT \<equiv> alt ::
+    ('a, 'm) nondetT => ('a, 'm) nondetT => ('a, 'm) nondetT
+  munionMT \<equiv> munionMT :: 'a itself => 'm => 'm => 'm
+  mUnionMT \<equiv> mUnionMT :: 'a itself => 'm multiset => 'm
+overloading
+  get_stateT \<equiv> get :: ('s => ('s, 'm) stateT) => ('s, 'm) stateT
+  put_stateT \<equiv> put :: 's => ('s, 'm) stateT => ('s, 'm) stateT
+  bind_stateT \<equiv> Monad_Overloading.bind ::
+    ('s, 'm) stateT => ('a => ('s, 'm) stateT) => ('s, 'm) stateT
+  return_stateT \<equiv> Monad_Overloading.return :: 'a => ('s, 'm) stateT
+  fail_stateT \<equiv> fail :: ('s, 'm) stateT
+  ask_stateT \<equiv> ask :: ('r => ('s, 'm) stateT) => ('s, 'm) stateT
+  sample_stateT \<equiv> sample ::
+    'p pmf => ('p => ('s, 'm) stateT) => ('s, 'm) stateT
+  tell_stateT \<equiv> tell :: 'w => ('s, 'm) stateT => ('s, 'm) stateT
+  alt_stateT \<equiv> alt ::
+    ('s, 'm) stateT => ('s, 'm) stateT => ('s, 'm) stateT
+  altc_stateT \<equiv> altc ::
+    'c cset => ('c => ('s, 'm) stateT) => ('s, 'm) stateT
+  pause_stateT \<equiv> pause ::
+    'o => ('i => ('s, 'm) stateT) => ('s, 'm) stateT
+overloading
+  return_optionT \<equiv> Monad_Overloading.return :: 'a => ('a, 'm) optionT
+  bind_optionT \<equiv> Monad_Overloading.bind ::
+    ('a, 'm) optionT => ('a => ('a, 'm) optionT) => ('a, 'm) optionT
+  fail_optionT \<equiv> fail :: ('a, 'm) optionT
+  catch_optionT \<equiv> catch ::
+    ('a, 'm) optionT => ('a, 'm) optionT => ('a, 'm) optionT
+  ask_optionT \<equiv> ask :: ('r => ('a, 'm) optionT) => ('a, 'm) optionT
+  get_optionT \<equiv> get :: ('s => ('a, 'm) optionT) => ('a, 'm) optionT
+  put_optionT \<equiv> put :: 's => ('a, 'm) optionT => ('a, 'm) optionT
+  sample_optionT \<equiv> sample ::
+    'p pmf => ('p => ('a, 'm) optionT) => ('a, 'm) optionT
+  tell_optionT \<equiv> tell :: 'w => ('a, 'm) optionT => ('a, 'm) optionT
+  alt_optionT \<equiv> alt ::
+    ('a, 'm) optionT => ('a, 'm) optionT => ('a, 'm) optionT
+  altc_optionT \<equiv> altc ::
+    'c cset => ('c => ('a, 'm) optionT) => ('a, 'm) optionT
+  pause_optionT \<equiv> pause ::
+    'o => ('i => ('a, 'm) optionT) => ('a, 'm) optionT
+overloading
+  return_envT \<equiv> Monad_Overloading.return :: 'a => ('r, 'm) envT
+  bind_envT \<equiv> Monad_Overloading.bind ::
+    ('r, 'm) envT => ('a => ('r, 'm) envT) => ('r, 'm) envT
+  fail_envT \<equiv> fail :: ('r, 'm) envT
+  get_envT \<equiv> get :: ('s => ('r, 'm) envT) => ('r, 'm) envT
+  put_envT \<equiv> put :: 's => ('r, 'm) envT => ('r, 'm) envT
+  sample_envT \<equiv> sample ::
+    'p pmf => ('p => ('r, 'm) envT) => ('r, 'm) envT
+  ask_envT \<equiv> ask :: ('r => ('r, 'm) envT) => ('r, 'm) envT
+  catch_envT \<equiv> catch ::
+    ('r, 'm) envT => ('r, 'm) envT => ('r, 'm) envT
+  alt_envT \<equiv> alt :: ('r, 'm) envT => ('r, 'm) envT => ('r, 'm) envT
+  altc_envT \<equiv> altc ::
+    'c cset => ('c => ('r, 'm) envT) => ('r, 'm) envT
+  pause_envT \<equiv> pause :: 'o => ('i => ('r, 'm) envT) => ('r, 'm) envT
+  tell_envT \<equiv> tell :: 'w => ('r, 'm) envT => ('r, 'm) envT
+overloading
+  return_writerT \<equiv> Monad_Overloading.return ::
+    'a => ('w, 'a, 'm) writerT
+  bind_writerT \<equiv> Monad_Overloading.bind ::
+    ('w, 'a, 'm) writerT
+    => ('a => ('w, 'a, 'm) writerT) => ('w, 'a, 'm) writerT
+  fail_writerT \<equiv> fail :: ('w, 'a, 'm) writerT
+  get_writerT \<equiv> get ::
+    ('s => ('w, 'a, 'm) writerT) => ('w, 'a, 'm) writerT
+  put_writerT \<equiv> put ::
+    's => ('w, 'a, 'm) writerT => ('w, 'a, 'm) writerT
+  sample_writerT \<equiv> sample ::
+    'p pmf => ('p => ('w, 'a, 'm) writerT) => ('w, 'a, 'm) writerT
+  ask_writerT \<equiv> ask ::
+    ('r => ('w, 'a, 'm) writerT) => ('w, 'a, 'm) writerT
+  alt_writerT \<equiv> alt ::
+    ('w, 'a, 'm) writerT => ('w, 'a, 'm) writerT => ('w, 'a, 'm) writerT
+  altc_writerT \<equiv> altc ::
+    'c cset => ('c => ('w, 'a, 'm) writerT) => ('w, 'a, 'm) writerT
+  pause_writerT \<equiv> pause ::
+    'o => ('i => ('w, 'a, 'm) writerT) => ('w, 'a, 'm) writerT
+  tell_writerT \<equiv> tell ::
+    'w => ('w, 'a, 'm) writerT => ('w, 'a, 'm) writerT
+overloading
+  return_contT \<equiv> Monad_Overloading.return :: 'a => ('a, 'm) contT
+  bind_contT \<equiv> Monad_Overloading.bind ::
+    ('a, 'm) contT => ('a => ('a, 'm) contT) => ('a, 'm) contT
+  fail_contT \<equiv> fail :: ('a, 'm) contT
+  get_contT \<equiv> get :: ('s => ('a, 'm) contT) => ('a, 'm) contT
+  put_contT \<equiv> put :: 's => ('a, 'm) contT => ('a, 'm) contT
+### theory "Draft.Monad_Overloading"
+### 0.818s elapsed time, 0.900s cpu time, 0.120s GC time
+Loading theory "Draft.Monad_OverloadingTemplates"
+val templateLemmas =
+   [("Monad_Overloading.run_fail_envT", "run_env fail ?r = fail",
+     template_equation
+      (template_app
+        (template_app (template_hole 2, template_hole 1), template_var 0),
+       template_hole 0)),
+    ("Monad_Overloading.extract_return",
+     "extract (Monad_Overloading.return ?x) = ?x",
+     template_equation
+      (template_app
+        (template_hole 1, template_app (template_hole 0, template_var 0)),
+       template_var 0)),
+    ("Monad_Overloading.run_fail_stateT", "run_state fail ?s = fail",
+     template_equation
+      (template_app
+        (template_app (template_hole 2, template_hole 1), template_var 0),
+       template_hole 0)),
+    ("Monad_Overloading.run_return_envT",
+     "run_env (Monad_Overloading.return ?x) ?r =
+      Monad_Overloading.return ?x",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 2, template_app (template_hole 1, template_var 1)),
+         template_var 0),
+       template_app (template_hole 0, template_var 1))),
+    ("Monad_Overloading.run_return_optionT",
+     "run_option (Monad_Overloading.return ?x) =
+      Monad_Overloading.return (Some ?x)",
+     template_equation
+      (template_app
+        (template_hole 3, template_app (template_hole 2, template_var 0)),
+       template_app
+        (template_hole 1, template_app (template_hole 0, template_var 0)))),
+    ("Monad_Overloading.run_return_nondetT",
+     "run_nondet (Monad_Overloading.return ?x) =
+      Monad_Overloading.return {#?x#}",
+     template_equation
+      (template_app
+        (template_hole 4, template_app (template_hole 3, template_var 0)),
+       template_app
+        (template_hole 2,
+         template_app
+          (template_app (template_hole 1, template_var 0),
+           template_hole 0)))),
+    ("Monad_Overloading.run_return_writerT",
+     "run_writer (Monad_Overloading.return ?x) =
+      Monad_Overloading.return (?x, [])",
+     template_equation
+      (template_app
+        (template_hole 4, template_app (template_hole 3, template_var 0)),
+       template_app
+        (template_hole 2,
+         template_app
+          (template_app (template_hole 1, template_var 0),
+           template_hole 0)))),
+    ("Monad_Overloading.run_ask_nondetT",
+     "run_nondet (ask ?f) = ask (%r. run_nondet (?f r))",
+     template_equation
+      (template_app
+        (template_hole 2, template_app (template_hole 1, template_var 0)),
+       template_app (template_hole 0, t_empty))),
+    ("Monad_Overloading.run_get_nondetT",
+     "run_nondet (get ?f) = get (%s. run_nondet (?f s))",
+     template_equation
+      (template_app
+        (template_hole 2, template_app (template_hole 1, template_var 0)),
+       template_app (template_hole 0, t_empty))),
+    ("Monad_Overloading.run_ask_optionT",
+     "run_option (ask ?f) = ask (%r. run_option (?f r))",
+     template_equation
+      (template_app
+        (template_hole 2, template_app (template_hole 1, template_var 0)),
+       template_app (template_hole 0, t_empty))),
+    ("Monad_Overloading.run_get_optionT",
+     "run_option (get ?f) = get (%s. run_option (?f s))",
+     template_equation
+      (template_app
+        (template_hole 2, template_app (template_hole 1, template_var 0)),
+       template_app (template_hole 0, t_empty))),
+    ("Monad_Overloading.run_ask_writerT",
+     "run_writer (ask ?f) = ask (%r. run_writer (?f r))",
+     template_equation
+      (template_app
+        (template_hole 2, template_app (template_hole 1, template_var 0)),
+       template_app (template_hole 0, t_empty))),
+    ("Monad_Overloading.run_get_writerT",
+     "run_writer (get ?f) = get (%s. run_writer (?f s))",
+     template_equation
+      (template_app
+        (template_hole 2, template_app (template_hole 1, template_var 0)),
+       template_app (template_hole 0, t_empty))),
+    ("Monad_Overloading.run_ask_envT",
+     "run_env (ask ?f) ?r = run_env (?f ?r) ?r",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 1, template_app (template_hole 0, template_var 1)),
+         template_var 0),
+       template_app
+        (template_app
+          (template_hole 1, template_app (template_var 1, template_var 0)),
+         template_var 0))),
+    ("Monad_Overloading.extract_bind'",
+     "extract (Monad_Overloading.bind ?x ?f) = extract (?f (extract ?x))",
+     template_equation
+      (template_app
+        (template_hole 1,
+         template_app
+          (template_app (template_hole 0, template_var 1), template_var 0)),
+       template_app
+        (template_hole 1,
+         template_app
+          (template_var 0,
+           template_app (template_hole 1, template_var 1))))),
+    ("Monad_Overloading.run_put_nondetT",
+     "run_nondet (put ?s ?m) = put ?s (run_nondet ?m)",
+     template_equation
+      (template_app
+        (template_hole 2,
+         template_app
+          (template_app (template_hole 1, template_var 1), template_var 0)),
+       template_app
+        (template_app (template_hole 0, template_var 1),
+         template_app (template_hole 2, template_var 0)))),
+    ("Monad_Overloading.run_put_optionT",
+     "run_option (put ?s ?m) = put ?s (run_option ?m)",
+     template_equation
+      (template_app
+        (template_hole 2,
+         template_app
+          (template_app (template_hole 1, template_var 1), template_var 0)),
+       template_app
+        (template_app (template_hole 0, template_var 1),
+         template_app (template_hole 2, template_var 0)))),
+    ("Monad_Overloading.run_tell_optionT",
+     "run_option (tell ?w ?m) = tell ?w (run_option ?m)",
+     template_equation
+      (template_app
+        (template_hole 2,
+         template_app
+          (template_app (template_hole 1, template_var 1), template_var 0)),
+       template_app
+        (template_app (template_hole 0, template_var 1),
+         template_app (template_hole 2, template_var 0)))),
+    ("Monad_Overloading.run_get_state",
+     "run_state (get ?f) ?s = run_state (?f ?s) ?s",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 1, template_app (template_hole 0, template_var 1)),
+         template_var 0),
+       template_app
+        (template_app
+          (template_hole 1, template_app (template_var 1, template_var 0)),
+         template_var 0))),
+    ("Monad_Overloading.run_return_stateT",
+     "run_state (Monad_Overloading.return ?x) ?s =
+      Monad_Overloading.return (?x, ?s)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 3, template_app (template_hole 2, template_var 1)),
+         template_var 0),
+       template_app
+        (template_hole 1,
+         template_app
+          (template_app (template_hole 0, template_var 1),
+           template_var 0)))),
+    ("Monad_Overloading.run_put_writerT",
+     "run_writer (put ?s ?m) = put ?s (run_writer ?m)",
+     template_equation
+      (template_app
+        (template_hole 2,
+         template_app
+          (template_app (template_hole 1, template_var 1), template_var 0)),
+       template_app
+        (template_app (template_hole 0, template_var 1),
+         template_app (template_hole 2, template_var 0)))),
+    ("Monad_Overloading.run_put_stateT",
+     "run_state (put ?s ?m) ?s' = run_state ?m ?s",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 1,
+           template_app
+            (template_app (template_hole 0, template_var 2),
+             template_var 1)),
+         template_var 0),
+       template_app
+        (template_app (template_hole 1, template_var 1), template_var 2))),
+    ("Monad_Overloading.run_alt_optionT",
+     "run_option (alt ?m ?m') = alt (run_option ?m) (run_option ?m')",
+     template_equation
+      (template_app
+        (template_hole 2,
+         template_app
+          (template_app (template_hole 1, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 0, template_app (template_hole 2, template_var 1)),
+         template_app (template_hole 2, template_var 0)))),
+    ("Monad_Overloading.run_altc_optionT",
+     "run_option (altc ?C ?f) = altc ?C (run_option o ?f)",
+     template_equation
+      (template_app
+        (template_hole 3,
+         template_app
+          (template_app (template_hole 2, template_var 1), template_var 0)),
+       template_app
+        (template_app (template_hole 1, template_var 1),
+         template_app
+          (template_app (template_hole 0, template_hole 3),
+           template_var 0)))),
+    ("Monad_Overloading.run_alt_writerT",
+     "run_writer (alt ?m ?m') = alt (run_writer ?m) (run_writer ?m')",
+     template_equation
+      (template_app
+        (template_hole 2,
+         template_app
+          (template_app (template_hole 1, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 0, template_app (template_hole 2, template_var 1)),
+         template_app (template_hole 2, template_var 0)))),
+    ("Monad_Overloading.run_altc_writerT",
+     "run_writer (altc ?C ?f) = altc ?C (run_writer o ?f)",
+     template_equation
+      (template_app
+        (template_hole 3,
+         template_app
+          (template_app (template_hole 2, template_var 1), template_var 0)),
+       template_app
+        (template_app (template_hole 1, template_var 1),
+         template_app
+          (template_app (template_hole 0, template_hole 3),
+           template_var 0)))),
+    ("Monad_Overloading.run_get_envT",
+     "run_env (get ?f) ?r = get (%s. run_env (?f s) ?r)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 2, template_app (template_hole 1, template_var 1)),
+         template_var 0),
+       template_app (template_hole 0, t_empty))),
+    ("Monad_Overloading.run_pause_optionT",
+     "run_option (pause ?out ?c) =
+      pause ?out (%input. run_option (?c input))",
+     template_equation
+      (template_app
+        (template_hole 2,
+         template_app
+          (template_app (template_hole 1, template_var 1), template_var 0)),
+       template_app
+        (template_app (template_hole 0, template_var 1), t_empty))),
+    ("Monad_Overloading.run_sample_optionT",
+     "run_option (sample ?p ?f) = sample ?p (%x. run_option (?f x))",
+     template_equation
+      (template_app
+        (template_hole 2,
+         template_app
+          (template_app (template_hole 1, template_var 1), template_var 0)),
+       template_app
+        (template_app (template_hole 0, template_var 1), t_empty))),
+    ("Monad_Overloading.run_ask_stateT",
+     "run_state (ask ?f) ?s = ask (%r. run_state (?f r) ?s)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 2, template_app (template_hole 1, template_var 1)),
+         template_var 0),
+       template_app (template_hole 0, t_empty))),
+    ("Monad_Overloading.run_pause_writerT",
+     "run_writer (pause ?out ?c) =
+      pause ?out (%input. run_writer (?c input))",
+     template_equation
+      (template_app
+        (template_hole 2,
+         template_app
+          (template_app (template_hole 1, template_var 1), template_var 0)),
+       template_app
+        (template_app (template_hole 0, template_var 1), t_empty))),
+    ("Monad_Overloading.run_sample_writerT",
+     "run_writer (sample ?p ?f) = sample ?p (%x. run_writer (?f x))",
+     template_equation
+      (template_app
+        (template_hole 2,
+         template_app
+          (template_app (template_hole 1, template_var 1), template_var 0)),
+       template_app
+        (template_app (template_hole 0, template_var 1), t_empty))),
+    ("Monad_Overloading.run_put_envT",
+     "run_env (put ?s ?m) ?r = put ?s (run_env ?m ?r)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 2,
+           template_app
+            (template_app (template_hole 1, template_var 2),
+             template_var 1)),
+         template_var 0),
+       template_app
+        (template_app (template_hole 0, template_var 2),
+         template_app
+          (template_app (template_hole 2, template_var 1),
+           template_var 0)))),
+    ("Monad_Overloading.run_tell_envT",
+     "run_env (tell ?s ?m) ?r = tell ?s (run_env ?m ?r)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 2,
+           template_app
+            (template_app (template_hole 1, template_var 2),
+             template_var 1)),
+         template_var 0),
+       template_app
+        (template_app (template_hole 0, template_var 2),
+         template_app
+          (template_app (template_hole 2, template_var 1),
+           template_var 0)))),
+    ("Monad_Overloading.run_tell_stateT",
+     "run_state (tell ?w ?m) ?s = tell ?w (run_state ?m ?s)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 2,
+           template_app
+            (template_app (template_hole 1, template_var 2),
+             template_var 1)),
+         template_var 0),
+       template_app
+        (template_app (template_hole 0, template_var 2),
+         template_app
+          (template_app (template_hole 2, template_var 1),
+           template_var 0)))),
+    ("Monad_Overloading.run_alt_envT",
+     "run_env (alt ?m ?m') ?r = alt (run_env ?m ?r) (run_env ?m' ?r)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 2,
+           template_app
+            (template_app (template_hole 1, template_var 2),
+             template_var 1)),
+         template_var 0),
+       template_app
+        (template_app
+          (template_hole 0,
+           template_app
+            (template_app (template_hole 2, template_var 2),
+             template_var 0)),
+         template_app
+          (template_app (template_hole 2, template_var 1),
+           template_var 0)))),
+    ("Monad_Overloading.run_altc_envT",
+     "run_env (altc ?C ?f) ?r = altc ?C (%x. run_env (?f x) ?r)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 2,
+           template_app
+            (template_app (template_hole 1, template_var 2),
+             template_var 1)),
+         template_var 0),
+       template_app
+        (template_app (template_hole 0, template_var 2), t_empty))),
+    ("Monad_Overloading.run_catch_envT",
+     "run_env (catch ?m ?h) ?r = catch (run_env ?m ?r) (run_env ?h ?r)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 2,
+           template_app
+            (template_app (template_hole 1, template_var 2),
+             template_var 1)),
+         template_var 0),
+       template_app
+        (template_app
+          (template_hole 0,
+           template_app
+            (template_app (template_hole 2, template_var 2),
+             template_var 0)),
+         template_app
+          (template_app (template_hole 2, template_var 1),
+           template_var 0)))),
+    ("Monad_Overloading.run_pause_envT",
+     "run_env (pause ?out ?c) ?r =
+      pause ?out (%input. run_env (?c input) ?r)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 2,
+           template_app
+            (template_app (template_hole 1, template_var 2),
+             template_var 1)),
+         template_var 0),
+       template_app
+        (template_app (template_hole 0, template_var 2), t_empty))),
+    ("Monad_Overloading.run_sample_envT",
+     "run_env (sample ?p ?f) ?r = sample ?p (%x. run_env (?f x) ?r)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 2,
+           template_app
+            (template_app (template_hole 1, template_var 2),
+             template_var 1)),
+         template_var 0),
+       template_app
+        (template_app (template_hole 0, template_var 2), t_empty))),
+    ("Monad_Overloading.run_alt_stateT",
+     "run_state (alt ?m ?m') ?s = alt (run_state ?m ?s) (run_state ?m' ?s)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 2,
+           template_app
+            (template_app (template_hole 1, template_var 2),
+             template_var 1)),
+         template_var 0),
+       template_app
+        (template_app
+          (template_hole 0,
+           template_app
+            (template_app (template_hole 2, template_var 2),
+             template_var 0)),
+         template_app
+          (template_app (template_hole 2, template_var 1),
+           template_var 0)))),
+    ("Monad_Overloading.run_altc_stateT",
+     "run_state (altc ?C ?f) ?s = altc ?C (%x. run_state (?f x) ?s)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 2,
+           template_app
+            (template_app (template_hole 1, template_var 2),
+             template_var 1)),
+         template_var 0),
+       template_app
+        (template_app (template_hole 0, template_var 2), t_empty))),
+    ("Monad_Overloading.run_pause_stateT",
+     "run_state (pause ?out ?c) ?s =
+      pause ?out (%input. run_state (?c input) ?s)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 2,
+           template_app
+            (template_app (template_hole 1, template_var 2),
+             template_var 1)),
+         template_var 0),
+       template_app
+        (template_app (template_hole 0, template_var 2), t_empty))),
+    ("Monad_Overloading.run_sample_stateT",
+     "run_state (sample ?p ?f) ?s = sample ?p (%x. run_state (?f x) ?s)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 2,
+           template_app
+            (template_app (template_hole 1, template_var 2),
+             template_var 1)),
+         template_var 0),
+       template_app
+        (template_app (template_hole 0, template_var 2), t_empty))),
+    ("Monad_Overloading.run_bind_envT",
+     "run_env (Monad_Overloading.bind ?x ?f) ?r =
+      Monad_Overloading.bind (run_env ?x ?r) (%y. run_env (?f y) ?r)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 2,
+           template_app
+            (template_app (template_hole 1, template_var 2),
+             template_var 1)),
+         template_var 0),
+       template_app
+        (template_app
+          (template_hole 0,
+           template_app
+            (template_app (template_hole 2, template_var 2),
+             template_var 0)),
+         t_empty))),
+    ("Monad_Overloading.run_bind_nondetT",
+     "run_nondet (Monad_Overloading.bind ?m ?f) =
+      Monad_Overloading.bind (run_nondet ?m)
+       (%A. mUnionMT TYPE(?'a) (image_mset (run_nondet o ?f) A))",
+     template_equation
+      (template_app
+        (template_hole 6,
+         template_app
+          (template_app (template_hole 5, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 4, template_app (template_hole 6, template_var 1)),
+         t_empty))),
+    ("Monad_Overloading.run_bind_stateT",
+     "run_state (Monad_Overloading.bind ?x ?f) ?s =
+      Monad_Overloading.bind (run_state ?x ?s)
+       (%(a, s'). run_state (?f a) s')",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 3,
+           template_app
+            (template_app (template_hole 2, template_var 2),
+             template_var 1)),
+         template_var 0),
+       template_app
+        (template_app
+          (template_hole 1,
+           template_app
+            (template_app (template_hole 3, template_var 2),
+             template_var 0)),
+         template_app (template_hole 0, t_empty)))),
+    ("Monad_Overloading.run_alt_nondetT",
+     "run_nondet (alt ?m ?m') =
+      Monad_Overloading.bind (run_nondet ?m)
+       (%A. Monad_Overloading.bind (run_nondet ?m')
+             (%B. Monad_Overloading.return (A + B)))",
+     template_equation
+      (template_app
+        (template_hole 4,
+         template_app
+          (template_app (template_hole 3, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 2, template_app (template_hole 4, template_var 1)),
+         t_empty))),
+    ("Monad_Overloading.run_bind_optionT",
+     "run_option (Monad_Overloading.bind ?x ?f) =
+      Monad_Overloading.bind (run_option ?x)
+       (%x. case x of None => Monad_Overloading.return None
+            | Some y => run_option (?f y))",
+     template_equation
+      (template_app
+        (template_hole 5,
+         template_app
+          (template_app (template_hole 4, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 3, template_app (template_hole 5, template_var 1)),
+         t_empty))),
+    ("Monad_Overloading.run_catch_optionT",
+     "run_option (catch ?m ?h) =
+      Monad_Overloading.bind (run_option ?m)
+       (%x. if x = None then run_option ?h
+            else Monad_Overloading.return x)",
+     template_equation
+      (template_app
+        (template_hole 6,
+         template_app
+          (template_app (template_hole 5, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 4, template_app (template_hole 6, template_var 1)),
+         t_empty))),
+    ("Monad_Overloading.run_tell_writerT",
+     "run_writer (tell ?w ?m) =
+      Monad_Overloading.bind (run_writer ?m)
+       (%(a, ws). Monad_Overloading.return (a, ?w # ws))",
+     template_equation
+      (template_app
+        (template_hole 6,
+         template_app
+          (template_app (template_hole 5, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 4, template_app (template_hole 6, template_var 0)),
+         template_app (template_hole 3, t_empty)))),
+    ("Monad_Overloading.run_bind_writerT",
+     "run_writer (Monad_Overloading.bind ?m ?f) =
+      Monad_Overloading.bind (run_writer ?m)
+       (%(a, ws).
+           Monad_Overloading.bind (run_writer (?f a))
+            (%(b, ws'). Monad_Overloading.return (b, ws @ ws')))",
+     template_equation
+      (template_app
+        (template_hole 6,
+         template_app
+          (template_app (template_hole 5, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 4, template_app (template_hole 6, template_var 1)),
+         template_app (template_hole 3, t_empty))))]:
+   (string * thm * template) list
+### theory "Draft.Monad_OverloadingTemplates"
+### 1.682s elapsed time, 2.618s cpu time, 0.998s GC time
+val it = (): unit

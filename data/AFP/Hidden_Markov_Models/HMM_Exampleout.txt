@@ -1,0 +1,665 @@
+Loading theory "Draft.Auxiliary" (required by "Draft.HMM_ExampleTemplates" via "Draft.HMM_Example" via "Draft.HMM_Implementation" via "Draft.Hidden_Markov_Model")
+Loading theory "HOL-Library.Function_Algebras" (required by "Draft.HMM_ExampleTemplates" via "Draft.ExtrEqs" via "HOL-Library.BigO")
+Loading theory "Draft.Templates" (required by "Draft.HMM_ExampleTemplates" via "Draft.ExtrEqs")
+instantiation
+  fun :: (type, plus) plus
+  plus_fun == plus :: ('a => 'b) => ('a => 'b) => 'a => 'b
+instantiation
+  fun :: (type, zero) zero
+  zero_fun == zero_class.zero :: 'a => 'b
+instantiation
+  fun :: (type, times) times
+  times_fun == times :: ('a => 'b) => ('a => 'b) => 'a => 'b
+instantiation
+  fun :: (type, one) one
+  one_fun == one_class.one :: 'a => 'b
+### Missing patterns in function definition:
+### !!a. argmax a [] = undefined
+datatype template_term
+=
+     t_empty
+   | template_app of template_term * template_term
+   | template_hole of int
+   | template_var of int
+datatype sign
+= equals | greater_equals | greater_than | less_equals | less_than
+datatype template
+=
+     template_bimplication of template * template
+   | template_dunno
+   | template_equation of template_term * template_term
+   | template_implication of template list * template
+   | template_inequation of sign * template_term * template_term
+   | template_negation of template
+   | template_predicate of template_term
+constructor t_empty: template_term
+constructor template_app: template_term * template_term -> template_term
+constructor template_hole: int -> template_term
+constructor template_var: int -> template_term
+constructor equals: sign
+constructor greater_equals: sign
+constructor greater_than: sign
+constructor less_equals: sign
+constructor less_than: sign
+constructor template_bimplication: template * template -> template
+constructor template_dunno: template
+constructor template_equation: template_term * template_term -> template
+constructor template_implication: template list * template -> template
+constructor template_inequation:
+   sign * template_term * template_term -> template
+constructor template_negation: template -> template
+constructor template_predicate: template_term -> template
+val vfs = fn: term -> (indexname * typ) list * (string * typ) list
+val indexOf = fn: ''a list -> ''a -> int -> int
+val has_eq = fn: term -> bool
+val term2template = fn:
+   (indexname * typ) list -> (string * typ) list -> term -> template_term
+val lemma2predicate = fn: term -> term -> template
+val makeTemplatewithContext = fn: term -> term -> template
+val lemma2template = fn: term -> template
+val thm2template = fn: thm -> template
+val tterm2string = fn: template_term -> string
+val template2string = fn: template -> string
+val t = "height ?t <= size ?t": thm
+val th =
+   Const ("HOL.Trueprop", "bool => prop") $
+     (Const ("Orderings.ord_class.less_eq", "nat => nat => bool") $
+       (Const ("Tree.height_class.height", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree")) $
+       (Const ("Nat.size_class.size", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree"))):
+   term
+### theory "Draft.Templates"
+### 0.079s elapsed time, 0.280s cpu time, 0.000s GC time
+### theory "HOL-Library.Function_Algebras"
+### 0.110s elapsed time, 0.343s cpu time, 0.000s GC time
+Loading theory "HOL-Library.BigO" (required by "Draft.HMM_ExampleTemplates" via "Draft.ExtrEqs")
+Found termination order: "{}"
+### theory "Draft.Auxiliary"
+### 0.172s elapsed time, 0.492s cpu time, 0.051s GC time
+Loading theory "Draft.Hidden_Markov_Model" (required by "Draft.HMM_ExampleTemplates" via "Draft.HMM_Example" via "Draft.HMM_Implementation")
+### theory "HOL-Library.BigO"
+### 0.611s elapsed time, 1.254s cpu time, 0.071s GC time
+Loading theory "Draft.ExtrEqs" (required by "Draft.HMM_ExampleTemplates")
+locale Closed_Kernel
+  fixes K :: "'s => 't pmf"
+    and S :: "'t set"
+  assumes "Closed_Kernel K S"
+locale HMM_defs
+  fixes \<K> :: "'s => 's pmf"
+    and \<O> :: "'s => 't pmf"
+    and \<O>\<^sub>s :: "'t set"
+locale HMM
+  fixes \<K> :: "'a => 'a pmf"
+    and \<O> :: "'a => 'b pmf"
+    and \<O>\<^sub>s :: "'b set"
+  assumes "HMM \<O> \<O>\<^sub>s"
+locale HMM2_defs
+  fixes \<O>\<^sub>s :: "'t set"
+    and \<K> :: "'s => 's pmf"
+    and \<O> :: "'s => 't pmf"
+    and \<S> :: "'s set"
+locale HMM2
+  fixes \<O>\<^sub>s :: "'a set"
+    and \<K> :: "'b => 'b pmf"
+    and \<O> :: "'b => 'a pmf"
+    and \<S> :: "'b set"
+  assumes "HMM2 \<O>\<^sub>s \<K> \<O> \<S>"
+locale HMM3_defs
+  fixes \<O> :: "'s => 't pmf"
+    and \<S> :: "'s set"
+    and \<O>\<^sub>s :: "'t set"
+    and \<K> :: "'s => 's pmf"
+    and state_list :: "'s list"
+locale HMM3
+  fixes \<O> :: "'s => 't pmf"
+    and \<S> :: "'s set"
+    and state_list :: "'s list"
+    and \<O>\<^sub>s :: "'t set"
+    and \<K> :: "'s => 's pmf"
+  assumes "HMM3 \<O> \<S> state_list \<O>\<^sub>s \<K>"
+locale HMM_defs
+  fixes \<K> :: "'s => 's pmf"
+    and \<O> :: "'s => 't pmf"
+    and \<O>\<^sub>s :: "'t set"
+val eqpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Var (("_dummy_", 2), "?'a"))
+       ):
+   term Find_Theorems.criterion
+val badeqpattern = Pattern (Const ("Pure.eq", "?'a => ?'a => prop")):
+   term Find_Theorems.criterion
+val undefpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Const ("HOL.undefined", "?'a"))
+       ):
+   term Find_Theorems.criterion
+val thmpattern =
+   Pattern
+    (Const ("HOL.Trueprop", "bool => prop") $ Var (("_dummy_", 1), "bool")):
+   term Find_Theorems.criterion
+val badnames =
+   ["*nitpick*", "*Nitpick*", "*full_exhaustive*", "*_def*", "Enum.finite*",
+    "*Quickcheck*", "ATP*", "*Nunchaku*", "*Code*", "*BNF*", "*SMT*",
+    "*.*.*"]:
+   string list
+val unwanted_names =
+   [(false, Name "*nitpick*"), (false, Name "*Nitpick*"),
+    (false, Name "*full_exhaustive*"), (false, Name "*_def*"),
+    (false, Name "Enum.finite*"), (false, Name "*Quickcheck*"),
+    (false, Name "ATP*"), (false, Name "*Nunchaku*"),
+    (false, Name "*Code*"), (false, Name "*BNF*"), (false, Name "*SMT*"),
+    (false, Name "*.*.*")]:
+   (bool * term Find_Theorems.criterion) list
+val has_vars = fn: term -> bool
+val get_all_eqs = fn: string -> Proof.context -> (string * thm) list
+val get_all_thms = fn: string -> Proof.context -> (string * thm) list
+val get_noneq_thms = fn: string -> Proof.context -> (string * thm) list
+val template_eqs = fn:
+   string -> Proof.context -> (string * thm * template) list
+val template_thms = fn:
+   string -> Proof.context -> (string * thm * template) list
+### theory "Draft.ExtrEqs"
+### 0.542s elapsed time, 1.125s cpu time, 0.161s GC time
+Found termination order: "(%p. length (snd p)) <*mlex*> {}"
+locale HMM2
+  fixes \<O>\<^sub>s :: "'a set"
+    and \<K> :: "'b => 'b pmf"
+    and \<O> :: "'b => 'a pmf"
+    and \<S> :: "'b set"
+  assumes "HMM2 \<O>\<^sub>s \<K> \<O> \<S>"
+Found termination order: "(%p. length (snd (snd p))) <*mlex*> {}"
+sum ?g {} = (0::?'a)
+[| finite ?A; ?x ~: ?A |] ==> sum ?g (insert ?x ?A) = ?g ?x + sum ?g ?A
+[| finite (sets (stream_space (count_space UNIV)));
+   {t} <= sets (stream_space (count_space UNIV));
+   ALL i:sets (stream_space (count_space UNIV)) - {t}. ?g i = (0::?'a) |]
+==> sum ?g (sets (stream_space (count_space UNIV))) = sum ?g {t}
+Found termination order: "(%p. length (snd (snd p))) <*mlex*> {}"
+locale HMM3
+  fixes \<O> :: "'s => 't pmf"
+    and \<S> :: "'s set"
+    and state_list :: "'s list"
+    and \<O>\<^sub>s :: "'t set"
+    and \<K> :: "'s => 's pmf"
+  assumes "HMM3 \<O> \<S> state_list \<O>\<^sub>s \<K>"
+Found termination order: "(%p. length (snd (snd p))) <*mlex*> {}"
+### Missing patterns in function definition:
+### !!a v va. val_of a (v # va) [] = undefined
+### !!a v va. val_of a [] (v # va) = undefined
+Found termination order: "(%p. length (snd (snd p))) <*mlex*> {}"
+### theory "Draft.Hidden_Markov_Model"
+### 12.655s elapsed time, 15.779s cpu time, 3.114s GC time
+Loading theory "Draft.HMM_Implementation" (required by "Draft.HMM_ExampleTemplates" via "Draft.HMM_Example")
+locale HMM4
+  fixes \<O> :: "'s => 't pmf"
+    and \<S> :: "'s set"
+    and state_list :: "'s list"
+    and \<O>\<^sub>s :: "'t set"
+    and \<K> :: "'s => 's pmf"
+  assumes "HMM4 \<O> \<S> state_list \<O>\<^sub>s \<K>"
+locale HMM3_defs
+  fixes \<O> :: "'s => 't pmf"
+    and \<S> :: "'s set"
+    and \<O>\<^sub>s :: "'t set"
+    and \<K> :: "'s => 's pmf"
+    and state_list :: "'s list"
+### Ambiguous input (line 27 of "$AFP/Hidden_Markov_Models/HMM_Implementation.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" forward_ix_rec)
+###       ("_cargs" ("_position" s)
+###         ("_cargs" ("_position" t_end) ("_position" n))))
+###     ("\<^const>HOL.If"
+###       ("\<^const>Orderings.ord_class.greater_eq" ("_position" n)
+###         ("_applC" ("_position" IArray.length) ("_position" os)))
+###       ("_applC" ("_position" indicator)
+###         ("_cargs" ("_Finset" ("_position" t_end)) ("_position" s)))
+###       ("_sum_list" ("_position" t) ("_position" state_list)
+###         ("\<^const>Groups.times_class.times"
+###           ("\<^const>Groups.times_class.times"
+###             ("_applC" ("_position" ennreal)
+###               ("_applC" ("_position" pmf)
+###                 ("_cargs" ("_applC" ("_position" \<O>) ("_position" t))
+###                   ("\<^const>Stream.snth" ("_position" os)
+###                     ("_position" n)))))
+###             ("_applC" ("_position" ennreal)
+###               ("_applC" ("_position" pmf)
+###                 ("_cargs" ("_applC" ("_position" \<K>) ("_position" s))
+###                   ("_position" t)))))
+###           ("_applC" ("_position" forward_ix_rec)
+###             ("_cargs" ("_position" t)
+###               ("_cargs" ("_position" t_end)
+###                 ("\<^const>Groups.plus_class.plus" ("_position" n)
+###                   ("\<^const>Groups.one_class.one"))))))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" forward_ix_rec)
+###       ("_cargs" ("_position" s)
+###         ("_cargs" ("_position" t_end) ("_position" n))))
+###     ("\<^const>HOL.If"
+###       ("\<^const>Orderings.ord_class.greater_eq" ("_position" n)
+###         ("_applC" ("_position" IArray.length) ("_position" os)))
+###       ("_applC" ("_position" indicator)
+###         ("_cargs" ("_Finset" ("_position" t_end)) ("_position" s)))
+###       ("_sum_list" ("_position" t) ("_position" state_list)
+###         ("\<^const>Groups.times_class.times"
+###           ("\<^const>Groups.times_class.times"
+###             ("_applC" ("_position" ennreal)
+###               ("_applC" ("_position" pmf)
+###                 ("_cargs" ("_applC" ("_position" \<O>) ("_position" t))
+###                   ("\<^const>IArray.sub" ("_position" os)
+###                     ("_position" n)))))
+###             ("_applC" ("_position" ennreal)
+###               ("_applC" ("_position" pmf)
+###                 ("_cargs" ("_applC" ("_position" \<K>) ("_position" s))
+###                   ("_position" t)))))
+###           ("_applC" ("_position" forward_ix_rec)
+###             ("_cargs" ("_position" t)
+###               ("_cargs" ("_position" t_end)
+###                 ("\<^const>Groups.plus_class.plus" ("_position" n)
+###                   ("\<^const>Groups.one_class.one"))))))))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+termination by replaying
+consts
+  forward_ix\<^sub>m' ::
+    "'s => 's => nat => (('s * 's * nat, ennreal) mapping, ennreal) state"
+  forward_ix\<^sub>m ::
+    "('c,
+      's => ('a,
+             's => ('b,
+                    nat
+                    => (('s * 's * nat, ennreal) mapping,
+                        ennreal) state) state) state) state"
+"forward_ix\<^sub>m'"
+  :: "'s => 's => nat => (('s * 's * nat, ennreal) mapping, ennreal) state"
+theorem
+  forward_ix\<^sub>m.crel:
+    dp_consistency.consistentDP
+     (%k. State_Monad.get >>= (%m. State_Monad.return (Mapping.lookup m k)))
+     (%_. True) (%(a, b, c). forward_ix_rec a b c)
+     (%(a, b, c). forward_ix\<^sub>m' a b c)
+theorem
+  forward_ix\<^sub>m.memoized_correct:
+    forward_ix_rec ?a ?b ?c =
+    fst (run_state (forward_ix\<^sub>m' ?a ?b ?c) Mapping.empty)
+forward_ix_rec ?a ?b ?c =
+fst (run_state (forward_ix\<^sub>m' ?a ?b ?c) Mapping.empty)
+forward_ix\<^sub>m' ?s ?t_end ?n =
+state_mem_defs.checkmem (%k. State_Monad.get >>= (%m. #Mapping.lookup m k#))
+ (%k v. State_Monad.get >>= (%m. State_Monad.set (Mapping.update k v m)))
+ (?s, ?t_end, ?n)
+ (State_Monad_Ext.if\<^sub>T #IArray.length os <= ?n#
+   #indicator {?t_end} ?s#
+   (#%a. #sum_list a## .
+    (map\<^sub>T .
+     #%t. #%a. #ennreal (pmf (\<O> t) (os !! ?n)) *
+                ennreal (pmf (\<K> ?s) t) *
+                a## .
+          (forward_ix\<^sub>m' t ?t_end (?n + 1))# .
+     #state_list#)))
+forward_ix\<^sub>m == #%uu_. #%uua_. #forward_ix\<^sub>m' uu_ uua_###
+locale HMM3_defs
+  fixes \<O> :: "'s => 't pmf"
+    and \<S> :: "'s set"
+    and \<O>\<^sub>s :: "'t set"
+    and \<K> :: "'s => 's pmf"
+    and state_list :: "'s list"
+### Ambiguous input (line 118 of "$AFP/Hidden_Markov_Models/HMM_Implementation.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" viterbi_ix_rec)
+###       ("_cargs" ("_position" s)
+###         ("_cargs" ("_position" t_end) ("_position" n))))
+###     ("\<^const>HOL.If"
+###       ("\<^const>Orderings.ord_class.greater_eq" ("_position" n)
+###         ("_applC" ("_position" IArray.length) ("_position" os)))
+###       ("_tuple" ("\<^const>List.list.Nil")
+###         ("_tuple_arg"
+###           ("_applC" ("_position" indicator)
+###             ("_cargs" ("_Finset" ("_position" t_end)) ("_position" s)))))
+###       ("_applC" ("_position" fst)
+###         ("_applC" ("_position" argmax)
+###           ("_cargs" ("_position" snd)
+###             ("_applC" ("_position" map)
+###               ("_cargs"
+###                 ("_lambda" ("_position" t)
+###                   ("_Let"
+###                     ("_bind" ("_pattern" ("_position" xs) ("_position" v))
+###                       ("_applC" ("_position" viterbi_ix_rec)
+###                         ("_cargs" ("_position" t)
+###                           ("_cargs" ("_position" t_end)
+###                             ("\<^const>Groups.plus_class.plus"
+###                               ("_position" n)
+###                               ("\<^const>Groups.one_class.one"))))))
+###                     ("_tuple"
+###                       ("\<^const>List.list.Cons" ("_position" t)
+###                         ("_position" xs))
+###                       ("_tuple_arg"
+###                         ("\<^const>Groups.times_class.times"
+###                           ("_applC" ("_position" ennreal)
+###                             ("\<^const>Groups.times_class.times"
+###                               ("_applC" ("_position" pmf)
+###                                 ("_cargs"
+###                                   ("_applC" ("_position" \<O>)
+###                                     ("_position" t))
+###                                   ("\<^const>Stream.snth" ("_position" os)
+###                                     ("_position" n))))
+###                               ("_applC" ("_position" pmf)
+###                                 ("_cargs"
+###                                   ("_applC" ("_position" \<K>)
+###                                     ("_position" s))
+###                                   ("_position" t)))))
+###                           ("_position" v))))))
+###                 ("_position" state_list)))))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" viterbi_ix_rec)
+###       ("_cargs" ("_position" s)
+###         ("_cargs" ("_position" t_end) ("_position" n))))
+###     ("\<^const>HOL.If"
+###       ("\<^const>Orderings.ord_class.greater_eq" ("_position" n)
+###         ("_applC" ("_position" IArray.length) ("_position" os)))
+###       ("_tuple" ("\<^const>List.list.Nil")
+###         ("_tuple_arg"
+###           ("_applC" ("_position" indicator)
+###             ("_cargs" ("_Finset" ("_position" t_end)) ("_position" s)))))
+###       ("_applC" ("_position" fst)
+###         ("_applC" ("_position" argmax)
+###           ("_cargs" ("_position" snd)
+###             ("_applC" ("_position" map)
+###               ("_cargs"
+###                 ("_lambda" ("_position" t)
+###                   ("_Let"
+###                     ("_bind" ("_pattern" ("_position" xs) ("_position" v))
+###                       ("_applC" ("_position" viterbi_ix_rec)
+###                         ("_cargs" ("_position" t)
+###                           ("_cargs" ("_position" t_end)
+###                             ("\<^const>Groups.plus_class.plus"
+###                               ("_position" n)
+###                               ("\<^const>Groups.one_class.one"))))))
+###                     ("_tuple"
+###                       ("\<^const>List.list.Cons" ("_position" t)
+###                         ("_position" xs))
+###                       ("_tuple_arg"
+###                         ("\<^const>Groups.times_class.times"
+###                           ("_applC" ("_position" ennreal)
+###                             ("\<^const>Groups.times_class.times"
+###                               ("_applC" ("_position" pmf)
+###                                 ("_cargs"
+###                                   ("_applC" ("_position" \<O>)
+###                                     ("_position" t))
+###                                   ("\<^const>IArray.sub" ("_position" os)
+###                                     ("_position" n))))
+###                               ("_applC" ("_position" pmf)
+###                                 ("_cargs"
+###                                   ("_applC" ("_position" \<K>)
+###                                     ("_position" s))
+###                                   ("_position" t)))))
+###                           ("_position" v))))))
+###                 ("_position" state_list)))))))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+termination by replaying
+consts
+  viterbi_ix\<^sub>m' ::
+    "'s => 's => nat
+                 => (('s * 's * nat, 's list * ennreal) mapping,
+                     's list * ennreal) state"
+  viterbi_ix\<^sub>m ::
+    "('c,
+      's => ('a,
+             's => ('b,
+                    nat
+                    => (('s * 's * nat, 's list * ennreal) mapping,
+                        's list * ennreal) state) state) state) state"
+theorem
+  viterbi_ix\<^sub>m.crel:
+    dp_consistency.consistentDP
+     (%k. State_Monad.get >>= (%m. State_Monad.return (Mapping.lookup m k)))
+     (%_. True) (%(a, b, c). viterbi_ix_rec a b c)
+     (%(a, b, c). viterbi_ix\<^sub>m' a b c)
+theorem
+  viterbi_ix\<^sub>m.memoized_correct:
+    viterbi_ix_rec ?a ?b ?c =
+    fst (run_state (viterbi_ix\<^sub>m' ?a ?b ?c) Mapping.empty)
+viterbi_ix_rec ?a ?b ?c =
+fst (run_state (viterbi_ix\<^sub>m' ?a ?b ?c) Mapping.empty)
+viterbi_ix\<^sub>m' ?s ?t_end ?n =
+state_mem_defs.checkmem (%k. State_Monad.get >>= (%m. #Mapping.lookup m k#))
+ (%k v. State_Monad.get >>= (%m. State_Monad.set (Mapping.update k v m)))
+ (?s, ?t_end, ?n)
+ (State_Monad_Ext.if\<^sub>T #IArray.length os <= ?n#
+   #([], indicator {?t_end} ?s)#
+   (#%a. #fst a## .
+    (#%a. #argmax snd a## .
+     (map\<^sub>T .
+      #%t. #%a. #case a of
+                 (xs, v) =>
+                   (t # xs,
+                    ennreal (pmf (\<O> t) (os !! ?n) * pmf (\<K> ?s) t) *
+                    v)## .
+           (viterbi_ix\<^sub>m' t ?t_end (?n + 1))# .
+      #state_list#))))
+viterbi_ix\<^sub>m == #%uu_. #%uua_. #viterbi_ix\<^sub>m' uu_ uua_###
+locale HMM3
+  fixes \<O> :: "'s => 't pmf"
+    and \<S> :: "'s set"
+    and state_list :: "'s list"
+    and \<O>\<^sub>s :: "'t set"
+    and \<K> :: "'s => 's pmf"
+  assumes "HMM3 \<O> \<S> state_list \<O>\<^sub>s \<K>"
+### Ambiguous input (line 192 of "$AFP/Hidden_Markov_Models/HMM_Implementation.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("_nn_integral" ("_position" x)
+###     ("_applC" ("_position" ennreal)
+###       ("_case_syntax"
+###         ("_applC" ("_position" map_of)
+###           ("_cargs" ("_position" \<mu>) ("_position" x)))
+###         ("_case2"
+###           ("_case1" ("_position" None) ("\<^const>Groups.zero_class.zero"))
+###           ("_case1" ("_applC" ("_position" Some) ("_position" p))
+###             ("_position" p)))))
+###     ("\<^const>HOL.eq"
+###       ("_applC" ("_position" count_space) ("_position" UNIV))
+###       ("\<^const>Groups.one_class.one"))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_nn_integral" ("_position" x)
+###       ("_applC" ("_position" ennreal)
+###         ("_case_syntax"
+###           ("_applC" ("_position" map_of)
+###             ("_cargs" ("_position" \<mu>) ("_position" x)))
+###           ("_case2"
+###             ("_case1" ("_position" None)
+###               ("\<^const>Groups.zero_class.zero"))
+###             ("_case1" ("_applC" ("_position" Some) ("_position" p))
+###               ("_position" p)))))
+###       ("_applC" ("_position" count_space) ("_position" UNIV)))
+###     ("\<^const>Groups.one_class.one")))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+locale Closed_Kernel_From
+  fixes K :: "('s * ('t * real) list) list"
+    and S :: "'t list"
+  assumes "Closed_Kernel_From K S"
+### Ambiguous input (line 287 of "$AFP/Hidden_Markov_Models/HMM_Implementation.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" pmf)
+###       ("_cargs" ("_applC" ("_position" K') ("_position" s))
+###         ("_position" t)))
+###     ("_case_syntax" ("_applC" ("_position" K1) ("_position" s))
+###       ("_case2"
+###         ("_case1" ("_position" None)
+###           ("\<^const>HOL.If"
+###             ("\<^const>HOL.eq" ("_position" t)
+###               ("_applC" ("_position" hd) ("_position" S)))
+###             ("\<^const>Groups.one_class.one")
+###             ("\<^const>Groups.zero_class.zero")))
+###         ("_case1" ("_applC" ("_position" Some) ("_position" \<mu>))
+###           ("_case_syntax" ("_applC" ("_position" \<mu>) ("_position" t))
+###             ("_case2"
+###               ("_case1" ("_position" None)
+###                 ("\<^const>Groups.zero_class.zero"))
+###               ("_case1" ("_applC" ("_position" Some) ("_position" p))
+###                 ("_position" p)))))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" pmf)
+###       ("_cargs" ("_applC" ("_position" K') ("_position" s))
+###         ("_position" t)))
+###     ("_case_syntax" ("_applC" ("_position" K1) ("_position" s))
+###       ("_case2"
+###         ("_case1" ("_position" None)
+###           ("\<^const>HOL.If"
+###             ("\<^const>HOL.eq" ("_position" t)
+###               ("_applC" ("_position" hd) ("_position" S)))
+###             ("\<^const>Groups.one_class.one")
+###             ("\<^const>Groups.zero_class.zero")))
+###         ("_case2"
+###           ("_case1" ("_applC" ("_position" Some) ("_position" \<mu>))
+###             ("_case_syntax" ("_applC" ("_position" \<mu>) ("_position" t))
+###               ("_case1" ("_position" None)
+###                 ("\<^const>Groups.zero_class.zero"))))
+###           ("_case1" ("_applC" ("_position" Some) ("_position" p))
+###             ("_position" p)))))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+locale Concrete_HMM_defs
+  fixes \<K> :: "('s * ('s * real) list) list"
+    and \<O> :: "('s * ('t * real) list) list"
+    and \<O>\<^sub>s :: "'t list"
+    and \<K>\<^sub>s :: "'s list"
+locale Concrete_HMM
+  fixes \<K> :: "('a * ('a * real) list) list"
+    and \<O> :: "('a * ('b * real) list) list"
+    and \<O>\<^sub>s :: "'b list"
+    and \<K>\<^sub>s :: "'a list"
+  assumes "Concrete_HMM \<K> \<O> \<O>\<^sub>s \<K>\<^sub>s"
+### theory "Draft.HMM_Implementation"
+### 13.940s elapsed time, 15.339s cpu time, 2.347s GC time
+Loading theory "Draft.HMM_Example" (required by "Draft.HMM_ExampleTemplates")
+### theory "Draft.HMM_Example"
+### 2.397s elapsed time, 2.652s cpu time, 0.445s GC time
+Loading theory "Draft.HMM_ExampleTemplates"
+"e2ennreal (ereal (11757 / 5000000))"
+  :: "ennreal"
+"Some (e2ennreal (ereal (11757 / 500000)))"
+  :: "ennreal option"
+"Some (e2ennreal (ereal (11757 / 5000000)))"
+  :: "ennreal option"
+"e2ennreal (ereal (61521 / 100000000))"
+  :: "ennreal"
+"e2ennreal (ereal (11913 / 5000000))"
+  :: "ennreal"
+"e2ennreal (ereal (2193 / 1000000))"
+  :: "ennreal"
+val templateLemmas =
+   [("HMM_Example.O_code",
+     "pmf (\<O>' ?s) ?t =
+      (case Closed_Kernel_From.K1 emissions ?s of
+       None => if ?t = hd observations then 1 else 0
+       | Some \<mu> => case \<mu> ?t of None => 0 | Some p => p)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 11,
+                template_app
+                 (template_app
+                   (template_app (template_hole 10, template_hole 9),
+                    template_hole 8),
+                  template_var 1)),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_hole 7,
+                 template_app
+                  (template_app
+                    (template_app
+                      (template_hole 6,
+                       template_app
+                        (template_app (template_hole 5, template_var 0),
+                         template_app (template_hole 4, template_hole 8))),
+                     template_hole 3),
+                   template_hole 2)),
+               t_empty),
+             template_app
+              (template_app (template_hole 0, template_hole 9),
+               template_var 1))
+           ))),
+    ("HMM_Example.K_code",
+     "pmf (\<K>' ?s) ?t =
+      (case Closed_Kernel_From.K1 kernel ?s of
+       None => if ?t = hd states then 1 else 0
+       | Some \<mu> => case \<mu> ?t of None => 0 | Some p => p)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 11,
+                template_app
+                 (template_app
+                   (template_app (template_hole 10, template_hole 9),
+                    template_hole 8),
+                  template_var 1)),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_hole 7,
+                 template_app
+                  (template_app
+                    (template_app
+                      (template_hole 6,
+                       template_app
+                        (template_app (template_hole 5, template_var 0),
+                         template_app (template_hole 4, template_hole 8))),
+                     template_hole 3),
+                   template_hole 2)),
+               t_empty),
+             template_app
+              (template_app (template_hole 0, template_hole 9),
+               template_var 1))
+           )))]:
+   (string * thm * template) list
+### theory "Draft.HMM_ExampleTemplates"
+### 2.136s elapsed time, 7.719s cpu time, 0.930s GC time
+"([''cold'', ''cold'', ''cold'', ''end''], e2ennreal (ereal (1 / 1600)))"
+  :: "char list list * ennreal"
+"([''hot'', ''hot'', ''hot'', ''end''], e2ennreal (ereal (72 / 78125)))"
+  :: "char list list * ennreal"
+"([''hot'', ''hot'', ''hot'', ''end''], e2ennreal (ereal (144 / 78125)))"
+  :: "char list list * ennreal"
+"([''hot'', ''hot'', ''hot'', ''cold'', ''end''],
+  e2ennreal (ereal (54 / 390625)))"
+  :: "char list list * ennreal"
+"([''hot'', ''hot'', ''hot'', ''cold'', ''end''],
+  e2ennreal (ereal (54 / 390625)))"
+  :: "char list list * ennreal"
+"([''cold'', ''cold'', ''cold'', ''cold'', ''cold'', ''cold'', ''cold'',
+   ''end''],
+  e2ennreal (ereal (1 / 409600)))"
+  :: "char list list * ennreal"
+"([''cold'', ''cold'', ''cold'', ''cold'', ''cold'', ''cold'', ''cold'',
+   ''cold''],
+  e2ennreal (ereal (1 / 163840)))"
+  :: "char list list * ennreal"
+val it = (): unit

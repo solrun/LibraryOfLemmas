@@ -1,0 +1,854 @@
+Loading theory "Draft.Code_Target_Rat" (required by "Draft.Syzygy_ExamplesTemplates" via "Draft.Syzygy_Examples")
+Loading theory "Draft.Templates" (required by "Draft.Syzygy_ExamplesTemplates" via "Draft.ExtrEqs")
+Loading theory "Draft.Confluence" (required by "Draft.Syzygy_ExamplesTemplates" via "Draft.Syzygy_Examples" via "Draft.Buchberger" via "Draft.Algorithm_Schema" via "Draft.Groebner_Bases" via "Draft.Reduction")
+Loading theory "Draft.General" (required by "Draft.Syzygy_ExamplesTemplates" via "Draft.Syzygy_Examples" via "Draft.Buchberger" via "Draft.Algorithm_Schema")
+datatype template_term
+=
+     t_empty
+   | template_app of template_term * template_term
+   | template_hole of int
+   | template_var of int
+datatype sign
+= equals | greater_equals | greater_than | less_equals | less_than
+datatype template
+=
+     template_bimplication of template * template
+   | template_dunno
+   | template_equation of template_term * template_term
+   | template_implication of template list * template
+   | template_inequation of sign * template_term * template_term
+   | template_negation of template
+   | template_predicate of template_term
+constructor t_empty: template_term
+constructor template_app: template_term * template_term -> template_term
+constructor template_hole: int -> template_term
+constructor template_var: int -> template_term
+constructor equals: sign
+constructor greater_equals: sign
+constructor greater_than: sign
+constructor less_equals: sign
+constructor less_than: sign
+constructor template_bimplication: template * template -> template
+constructor template_dunno: template
+constructor template_equation: template_term * template_term -> template
+constructor template_implication: template list * template -> template
+constructor template_inequation:
+   sign * template_term * template_term -> template
+constructor template_negation: template -> template
+constructor template_predicate: template_term -> template
+val vfs = fn: term -> (indexname * typ) list * (string * typ) list
+val indexOf = fn: ''a list -> ''a -> int -> int
+val has_eq = fn: term -> bool
+val term2template = fn:
+   (indexname * typ) list -> (string * typ) list -> term -> template_term
+val lemma2predicate = fn: term -> term -> template
+val makeTemplatewithContext = fn: term -> term -> template
+val lemma2template = fn: term -> template
+val thm2template = fn: thm -> template
+val tterm2string = fn: template_term -> string
+val template2string = fn: template -> string
+val t = "height ?t <= size ?t": thm
+val th =
+   Const ("HOL.Trueprop", "bool => prop") $
+     (Const ("Orderings.ord_class.less_eq", "nat => nat => bool") $
+       (Const ("Tree.height_class.height", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree")) $
+       (Const ("Nat.size_class.size", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree"))):
+   term
+### theory "Draft.Templates"
+### 0.079s elapsed time, 0.348s cpu time, 0.000s GC time
+Loading theory "Draft.ExtrEqs" (required by "Draft.Syzygy_ExamplesTemplates")
+### Missing patterns in function definition:
+### max_list [] = undefined
+locale relation
+  fixes r :: "'a => 'a => bool"  (infixl \<open>\<rightarrow>\<close> 50)
+### theory "Draft.Code_Target_Rat"
+### 0.263s elapsed time, 0.997s cpu time, 0.065s GC time
+Loading theory "Draft.Benchmarks" (required by "Draft.Syzygy_ExamplesTemplates" via "Draft.Syzygy_Examples" via "Draft.Algorithm_Schema_Impl")
+Found termination order: "length <*mlex*> {}"
+### theory "Draft.Benchmarks"
+### 0.202s elapsed time, 0.725s cpu time, 0.095s GC time
+class linorder = order +
+  assumes "linear": "!!x y. x <= y | y <= x"
+locale relation_order
+  fixes r :: "'a => 'a => bool"  (infixl \<open>\<rightarrow>\<close> 50)
+    and ord :: "'a => 'a => bool"
+    and A :: "'a set"
+  assumes "relation_order (\<rightarrow>) ord A"
+consts
+  insort_wrt :: "('c => 'c => bool) => 'c => 'c list => 'c list"
+### theory "Draft.Confluence"
+### 0.496s elapsed time, 1.799s cpu time, 0.161s GC time
+Loading theory "Draft.Reduction" (required by "Draft.Syzygy_ExamplesTemplates" via "Draft.Syzygy_Examples" via "Draft.Buchberger" via "Draft.Algorithm_Schema" via "Draft.Groebner_Bases")
+consts
+  remdups_wrt :: "('a => 'b) => 'a list => 'a list"
+consts
+  map_idx :: "('a => nat => 'b) => 'a list => nat => 'b list"
+consts
+  map_dup :: "('a => 'b) => ('a => 'b) => 'a list => 'b list"
+consts
+  filter_min_aux :: "'a list => 'a list => 'a list"
+### theory "Draft.General"
+### 0.697s elapsed time, 2.346s cpu time, 0.260s GC time
+Loading theory "Draft.More_MPoly_Type_Class" (required by "Draft.Syzygy_ExamplesTemplates" via "Draft.Syzygy_Examples" via "Draft.Syzygy")
+val eqpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Var (("_dummy_", 2), "?'a"))
+       ):
+   term Find_Theorems.criterion
+val badeqpattern = Pattern (Const ("Pure.eq", "?'a => ?'a => prop")):
+   term Find_Theorems.criterion
+val undefpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Const ("HOL.undefined", "?'a"))
+       ):
+   term Find_Theorems.criterion
+val thmpattern =
+   Pattern
+    (Const ("HOL.Trueprop", "bool => prop") $ Var (("_dummy_", 1), "bool")):
+   term Find_Theorems.criterion
+val badnames =
+   ["*nitpick*", "*Nitpick*", "*full_exhaustive*", "*_def*", "Enum.finite*",
+    "*Quickcheck*", "ATP*", "*Nunchaku*", "*Code*", "*BNF*", "*SMT*",
+    "*.*.*"]:
+   string list
+val unwanted_names =
+   [(false, Name "*nitpick*"), (false, Name "*Nitpick*"),
+    (false, Name "*full_exhaustive*"), (false, Name "*_def*"),
+    (false, Name "Enum.finite*"), (false, Name "*Quickcheck*"),
+    (false, Name "ATP*"), (false, Name "*Nunchaku*"),
+    (false, Name "*Code*"), (false, Name "*BNF*"), (false, Name "*SMT*"),
+    (false, Name "*.*.*")]:
+   (bool * term Find_Theorems.criterion) list
+val has_vars = fn: term -> bool
+val get_all_eqs = fn: string -> Proof.context -> (string * thm) list
+val get_all_thms = fn: string -> Proof.context -> (string * thm) list
+val get_noneq_thms = fn: string -> Proof.context -> (string * thm) list
+val template_eqs = fn:
+   string -> Proof.context -> (string * thm * template) list
+val template_thms = fn:
+   string -> Proof.context -> (string * thm * template) list
+### theory "Draft.ExtrEqs"
+### 0.657s elapsed time, 2.131s cpu time, 0.260s GC time
+locale module
+  fixes scale :: "'a => 'b => 'b"  (infixr \<open>*s\<close> 75)
+  assumes "module (*s)"
+locale ordered_term
+  fixes pair_of_term :: "'t => 'a * 'k"
+    and term_of_pair :: "'a * 'k => 't"
+    and ord :: "'a => 'a => bool"  (infixl \<open>\<preceq>\<close> 50)
+    and ord_strict :: "'a => 'a => bool"  (infixl \<open>\<prec>\<close> 50)
+    and
+    ord_term :: "'t => 't => bool"
+      (infixl \<open>\<preceq>\<^sub>t\<close> 50)
+    and
+    ord_term_strict :: "'t => 't => bool"
+      (infixl \<open>\<prec>\<^sub>t\<close> 50)
+  assumes
+    "ordered_term pair_of_term term_of_pair (\<preceq>) (\<prec>)
+      (\<preceq>\<^sub>t) (\<prec>\<^sub>t)"
+locale ordered_term
+  fixes pair_of_term :: "'t => 'a * 'k"
+    and term_of_pair :: "'a * 'k => 't"
+    and ord :: "'a => 'a => bool"  (infixl \<open>\<preceq>\<close> 50)
+    and ord_strict :: "'a => 'a => bool"  (infixl \<open>\<prec>\<close> 50)
+    and
+    ord_term :: "'t => 't => bool"
+      (infixl \<open>\<preceq>\<^sub>t\<close> 50)
+    and
+    ord_term_strict :: "'t => 't => bool"
+      (infixl \<open>\<prec>\<^sub>t\<close> 50)
+  assumes
+    "ordered_term pair_of_term term_of_pair (\<preceq>) (\<prec>)
+      (\<preceq>\<^sub>t) (\<prec>\<^sub>t)"
+### theory "Draft.More_MPoly_Type_Class"
+### 1.430s elapsed time, 3.045s cpu time, 0.990s GC time
+locale gd_term
+  fixes pair_of_term :: "'t => 'a * 'k"
+    and term_of_pair :: "'a * 'k => 't"
+    and ord :: "'a => 'a => bool"  (infixl \<open>\<preceq>\<close> 50)
+    and ord_strict :: "'a => 'a => bool"  (infixl \<open>\<prec>\<close> 50)
+    and
+    ord_term :: "'t => 't => bool"
+      (infixl \<open>\<preceq>\<^sub>t\<close> 50)
+    and
+    ord_term_strict :: "'t => 't => bool"
+      (infixl \<open>\<prec>\<^sub>t\<close> 50)
+  assumes
+    "gd_term pair_of_term term_of_pair (\<preceq>) (\<prec>)
+      (\<preceq>\<^sub>t) (\<prec>\<^sub>t)"
+locale ordered_term
+  fixes pair_of_term :: "'t => 'a * 'k"
+    and term_of_pair :: "'a * 'k => 't"
+    and ord :: "'a => 'a => bool"  (infixl \<open>\<preceq>\<close> 50)
+    and ord_strict :: "'a => 'a => bool"  (infixl \<open>\<prec>\<close> 50)
+    and
+    ord_term :: "'t => 't => bool"
+      (infixl \<open>\<preceq>\<^sub>t\<close> 50)
+    and
+    ord_term_strict :: "'t => 't => bool"
+      (infixl \<open>\<prec>\<^sub>t\<close> 50)
+  assumes
+    "ordered_term pair_of_term term_of_pair (\<preceq>) (\<prec>)
+      (\<preceq>\<^sub>t) (\<prec>\<^sub>t)"
+consts
+  find_adds ::
+    "('t \<Rightarrow>\<^sub>0 'b) list
+     => 't => ('t \<Rightarrow>\<^sub>0 'b) option"
+locale gd_term
+  fixes pair_of_term :: "'t => 'a * 'k"
+    and term_of_pair :: "'a * 'k => 't"
+    and ord :: "'a => 'a => bool"  (infixl \<open>\<preceq>\<close> 50)
+    and ord_strict :: "'a => 'a => bool"  (infixl \<open>\<prec>\<close> 50)
+    and
+    ord_term :: "'t => 't => bool"
+      (infixl \<open>\<preceq>\<^sub>t\<close> 50)
+    and
+    ord_term_strict :: "'t => 't => bool"
+      (infixl \<open>\<prec>\<^sub>t\<close> 50)
+  assumes
+    "gd_term pair_of_term term_of_pair (\<preceq>) (\<prec>)
+      (\<preceq>\<^sub>t) (\<prec>\<^sub>t)"
+### theory "Draft.Reduction"
+### 4.261s elapsed time, 6.799s cpu time, 2.111s GC time
+Loading theory "Draft.Groebner_Bases" (required by "Draft.Syzygy_ExamplesTemplates" via "Draft.Syzygy_Examples" via "Draft.Buchberger" via "Draft.Algorithm_Schema")
+locale gd_term
+  fixes pair_of_term :: "'t => 'a * 'k"
+    and term_of_pair :: "'a * 'k => 't"
+    and ord :: "'a => 'a => bool"  (infixl \<open>\<preceq>\<close> 50)
+    and ord_strict :: "'a => 'a => bool"  (infixl \<open>\<prec>\<close> 50)
+    and
+    ord_term :: "'t => 't => bool"
+      (infixl \<open>\<preceq>\<^sub>t\<close> 50)
+    and
+    ord_term_strict :: "'t => 't => bool"
+      (infixl \<open>\<prec>\<^sub>t\<close> 50)
+  assumes
+    "gd_term pair_of_term term_of_pair (\<preceq>) (\<prec>)
+      (\<preceq>\<^sub>t) (\<prec>\<^sub>t)"
+locale od_term
+  fixes pair_of_term :: "'t => 'a * 'k"
+    and term_of_pair :: "'a * 'k => 't"
+    and ord :: "'a => 'a => bool"  (infixl \<open>\<preceq>\<close> 50)
+    and ord_strict :: "'a => 'a => bool"  (infixl \<open>\<prec>\<close> 50)
+    and
+    ord_term :: "'t => 't => bool"
+      (infixl \<open>\<preceq>\<^sub>t\<close> 50)
+    and
+    ord_term_strict :: "'t => 't => bool"
+      (infixl \<open>\<prec>\<^sub>t\<close> 50)
+  assumes
+    "od_term pair_of_term term_of_pair (\<preceq>) (\<prec>)
+      (\<preceq>\<^sub>t) (\<prec>\<^sub>t)"
+### theory "Draft.Groebner_Bases"
+### 5.410s elapsed time, 6.567s cpu time, 1.911s GC time
+Loading theory "Draft.Algorithm_Schema" (required by "Draft.Syzygy_ExamplesTemplates" via "Draft.Syzygy_Examples" via "Draft.Buchberger")
+Loading theory "Draft.Syzygy" (required by "Draft.Syzygy_ExamplesTemplates" via "Draft.Syzygy_Examples")
+locale module
+  fixes scale :: "'a => 'b => 'b"  (infixr \<open>*s\<close> 75)
+  assumes "module (*s)"
+locale module
+  fixes scale :: "'a => 'b => 'b"  (infixr \<open>*s\<close> 75)
+  assumes "module (*s)"
+locale term_powerprod
+  fixes pair_of_term :: "'t => 'a * 'k"
+    and term_of_pair :: "'a * 'k => 't"
+  assumes "term_powerprod pair_of_term term_of_pair"
+locale ordered_term
+  fixes pair_of_term :: "'t => 'a * 'k"
+    and term_of_pair :: "'a * 'k => 't"
+    and ord :: "'a => 'a => bool"  (infixl \<open>\<preceq>\<close> 50)
+    and ord_strict :: "'a => 'a => bool"  (infixl \<open>\<prec>\<close> 50)
+    and
+    ord_term :: "'t => 't => bool"
+      (infixl \<open>\<preceq>\<^sub>t\<close> 50)
+    and
+    ord_term_strict :: "'t => 't => bool"
+      (infixl \<open>\<prec>\<^sub>t\<close> 50)
+  assumes
+    "ordered_term pair_of_term term_of_pair (\<preceq>) (\<prec>)
+      (\<preceq>\<^sub>t) (\<prec>\<^sub>t)"
+locale ordered_term
+  fixes pair_of_term :: "'t => 'a * 'k"
+    and term_of_pair :: "'a * 'k => 't"
+    and ord :: "'a => 'a => bool"  (infixl \<open>\<preceq>\<close> 50)
+    and ord_strict :: "'a => 'a => bool"  (infixl \<open>\<prec>\<close> 50)
+    and
+    ord_term :: "'t => 't => bool"
+      (infixl \<open>\<preceq>\<^sub>t\<close> 50)
+    and
+    ord_term_strict :: "'t => 't => bool"
+      (infixl \<open>\<prec>\<^sub>t\<close> 50)
+  assumes
+    "ordered_term pair_of_term term_of_pair (\<preceq>) (\<prec>)
+      (\<preceq>\<^sub>t) (\<prec>\<^sub>t)"
+locale gd_term
+  fixes pair_of_term :: "'t => 'a * 'k"
+    and term_of_pair :: "'a * 'k => 't"
+    and ord :: "'a => 'a => bool"  (infixl \<open>\<preceq>\<close> 50)
+    and ord_strict :: "'a => 'a => bool"  (infixl \<open>\<prec>\<close> 50)
+    and
+    ord_term :: "'t => 't => bool"
+      (infixl \<open>\<preceq>\<^sub>t\<close> 50)
+    and
+    ord_term_strict :: "'t => 't => bool"
+      (infixl \<open>\<prec>\<^sub>t\<close> 50)
+  assumes
+    "gd_term pair_of_term term_of_pair (\<preceq>) (\<prec>)
+      (\<preceq>\<^sub>t) (\<prec>\<^sub>t)"
+locale gd_inf_term
+  fixes pair_of_term :: "'t => 'a * nat"
+    and term_of_pair :: "'a * nat => 't"
+    and ord :: "'a => 'a => bool"  (infixl \<open>\<preceq>\<close> 50)
+    and ord_strict :: "'a => 'a => bool"  (infixl \<open>\<prec>\<close> 50)
+    and
+    ord_term :: "'t => 't => bool"
+      (infixl \<open>\<preceq>\<^sub>t\<close> 50)
+    and
+    ord_term_strict :: "'t => 't => bool"
+      (infixl \<open>\<prec>\<^sub>t\<close> 50)
+  assumes
+    "gd_inf_term pair_of_term term_of_pair (\<preceq>) (\<prec>)
+      (\<preceq>\<^sub>t) (\<prec>\<^sub>t)"
+### theory "Draft.Syzygy"
+### 3.383s elapsed time, 6.851s cpu time, 1.258s GC time
+consts
+  gb_schema_incr ::
+    "((('t \<Rightarrow>\<^sub>0 'b) * nat * 'c) list
+      => (('t \<Rightarrow>\<^sub>0 'b) * nat * 'c) list
+         => ((('t \<Rightarrow>\<^sub>0 'b) * nat * 'c) *
+             ('t \<Rightarrow>\<^sub>0 'b) * nat * 'c) list
+            => nat * 'd
+               => ((('t \<Rightarrow>\<^sub>0 'b) * nat * 'c) *
+                   ('t \<Rightarrow>\<^sub>0 'b) * nat * 'c) list)
+     => ((('t \<Rightarrow>\<^sub>0 'b) * nat * 'c) list
+         => (('t \<Rightarrow>\<^sub>0 'b) * nat * 'c) list
+            => ((('t \<Rightarrow>\<^sub>0 'b) * nat * 'c) *
+                ('t \<Rightarrow>\<^sub>0 'b) * nat * 'c) list
+               => (('t \<Rightarrow>\<^sub>0 'b) * nat * 'c) list
+                  => nat * 'd
+                     => ((('t \<Rightarrow>\<^sub>0 'b) * nat * 'c) *
+                         ('t \<Rightarrow>\<^sub>0 'b) * nat * 'c) list)
+        => ((('t \<Rightarrow>\<^sub>0 'b) * nat * 'c) list
+            => (('t \<Rightarrow>\<^sub>0 'b) * nat * 'c) list
+               => (('t \<Rightarrow>\<^sub>0 'b) * nat * 'c) list
+                  => nat * 'd
+                     => (('t \<Rightarrow>\<^sub>0 'b) * nat * 'c) list)
+           => ((('t \<Rightarrow>\<^sub>0 'b) * nat * 'c) list
+               => (('t \<Rightarrow>\<^sub>0 'b) * nat * 'c) list
+                  => ((('t \<Rightarrow>\<^sub>0 'b) * nat * 'c) *
+                      ('t \<Rightarrow>\<^sub>0 'b) * nat * 'c) list
+                     => ((('t \<Rightarrow>\<^sub>0 'b) * nat * 'c) *
+                         ('t \<Rightarrow>\<^sub>0 'b) * nat * 'c) list
+                        => nat * 'd
+                           => (('t \<Rightarrow>\<^sub>0 'b) * 'c) list *
+                              'd)
+              => ((('t \<Rightarrow>\<^sub>0 'b) * nat * 'c) list
+                  => ('t \<Rightarrow>\<^sub>0 'b) * nat * 'c => 'd => 'd)
+                 => (('t \<Rightarrow>\<^sub>0 'b) * 'c) list
+                    => 'd => (('t \<Rightarrow>\<^sub>0 'b) * 'c) list"
+Found termination order:
+  "(%p. size_list (%p. size (fst (snd (snd (snd p))))) (fst p)) <*mlex*> {}"
+Found termination order:
+  "(%p. size_list (%p. size (fst (snd p)))
+         (fst (snd (snd (snd p))))) <*mlex*>
+   (%p. size_list (%p. size (fst (snd p))) (fst (snd (snd p)))) <*mlex*> {}"
+consts
+  pairs ::
+    "(bool
+      => (('t \<Rightarrow>\<^sub>0 'b) * nat * 'c) list
+         => (('t \<Rightarrow>\<^sub>0 'b) * nat * 'c) list
+            => ('t \<Rightarrow>\<^sub>0 'b) * nat * 'c
+               => (bool *
+                   (('t \<Rightarrow>\<^sub>0 'b) * nat * 'c) *
+                   ('t \<Rightarrow>\<^sub>0 'b) * nat * 'c) list
+                  => (bool *
+                      (('t \<Rightarrow>\<^sub>0 'b) * nat * 'c) *
+                      ('t \<Rightarrow>\<^sub>0 'b) * nat * 'c) list)
+     => bool
+        => (('t \<Rightarrow>\<^sub>0 'b) * nat * 'c) list
+           => (bool *
+               (('t \<Rightarrow>\<^sub>0 'b) * nat * 'c) *
+               ('t \<Rightarrow>\<^sub>0 'b) * nat * 'c) list"
+locale gd_powerprod
+  fixes ord :: "'a => 'a => bool"  (infixl \<open>\<preceq>\<close> 50)
+    and ord_strict :: "'a => 'a => bool"  (infixl \<open>\<prec>\<close> 50)
+  assumes "gd_powerprod (\<preceq>) (\<prec>)"
+### theory "Draft.Algorithm_Schema"
+### 21.671s elapsed time, 30.699s cpu time, 10.746s GC time
+Loading theory "Draft.Buchberger" (required by "Draft.Syzygy_ExamplesTemplates" via "Draft.Syzygy_Examples")
+Loading theory "Draft.Algorithm_Schema_Impl" (required by "Draft.Syzygy_ExamplesTemplates" via "Draft.Syzygy_Examples")
+### theory "Draft.Algorithm_Schema_Impl"
+### 0.445s elapsed time, 0.880s cpu time, 0.220s GC time
+locale gd_term
+  fixes pair_of_term :: "'t => 'a * 'k"
+    and term_of_pair :: "'a * 'k => 't"
+    and ord :: "'a => 'a => bool"  (infixl \<open>\<preceq>\<close> 50)
+    and ord_strict :: "'a => 'a => bool"  (infixl \<open>\<prec>\<close> 50)
+    and
+    ord_term :: "'t => 't => bool"
+      (infixl \<open>\<preceq>\<^sub>t\<close> 50)
+    and
+    ord_term_strict :: "'t => 't => bool"
+      (infixl \<open>\<prec>\<^sub>t\<close> 50)
+  assumes
+    "gd_term pair_of_term term_of_pair (\<preceq>) (\<prec>)
+      (\<preceq>\<^sub>t) (\<prec>\<^sub>t)"
+consts
+  gb_sel ::
+    "(('t \<Rightarrow>\<^sub>0 'b) * nat * 'c) list
+     => (('t \<Rightarrow>\<^sub>0 'b) * nat * 'c) list
+        => ((('t \<Rightarrow>\<^sub>0 'b) * nat * 'c) *
+            ('t \<Rightarrow>\<^sub>0 'b) * nat * 'c) list
+           => nat * 'd
+              => ((('t \<Rightarrow>\<^sub>0 'b) * nat * 'c) *
+                  ('t \<Rightarrow>\<^sub>0 'b) * nat * 'c) list"
+### theory "Draft.Buchberger"
+### 4.950s elapsed time, 8.265s cpu time, 4.698s GC time
+Loading theory "Draft.Syzygy_Examples" (required by "Draft.Syzygy_ExamplesTemplates")
+### Partially applied constant "MPoly_Type_Class.to_pair_unit" on left hand side of equation, in theorem:
+### gd_term.trd_aux to_pair_unit fst (le_of_nat_term_order ?cmp_term) ?fs ?p
+###  ?r ==
+### if is_zero ?p then ?r
+### else case ordered_term.find_adds to_pair_unit fst
+###            (le_of_nat_term_order ?cmp_term) ?fs (lt_punit ?cmp_term ?p) of
+###      None =>
+###        gd_term.trd_aux to_pair_unit fst (le_of_nat_term_order ?cmp_term) ?fs
+###         (tail_punit ?cmp_term ?p)
+###         (plus_monomial_less ?r (lc_punit ?cmp_term ?p)
+###           (lt_punit ?cmp_term ?p))
+###      | Some f =>
+###          gd_term.trd_aux to_pair_unit fst (le_of_nat_term_order ?cmp_term)
+###           ?fs
+###           (tail_punit ?cmp_term ?p -
+###            monom_mult_punit (lc_punit ?cmp_term ?p / lc_punit ?cmp_term f)
+###             (lt_punit ?cmp_term ?p - lt_punit ?cmp_term f)
+###             (tail_punit ?cmp_term f))
+###           ?r
+### Partially applied constant "MPoly_Type_Class.to_pair_unit" on left hand side of equation, in theorem:
+### gd_term.trd_aux to_pair_unit fst
+###  (%s t. le_of_nat_term_order ?cmp_term (fst (s, the_min))
+###          (fst (t, the_min)))
+###  ?fs ?p ?r ==
+### if is_zero ?p then ?r
+### else case ordered_term.find_adds to_pair_unit fst
+###            (%s t. le_of_nat_term_order ?cmp_term (fst (s, the_min))
+###                    (fst (t, the_min)))
+###            ?fs (punit0.punit.lt ?cmp_term ?p) of
+###      None =>
+###        gd_term.trd_aux to_pair_unit fst
+###         (%s t. le_of_nat_term_order ?cmp_term (fst (s, the_min))
+###                 (fst (t, the_min)))
+###         ?fs (punit0.punit.tail ?cmp_term ?p)
+###         (plus_monomial_less ?r (punit0.punit.lc ?cmp_term ?p)
+###           (punit0.punit.lt ?cmp_term ?p))
+###      | Some f =>
+###          gd_term.trd_aux to_pair_unit fst
+###           (%s t. le_of_nat_term_order ?cmp_term (fst (s, the_min))
+###                   (fst (t, the_min)))
+###           ?fs
+###           (punit0.punit.tail ?cmp_term ?p -
+###            monom_mult_punit
+###             (punit0.punit.lc ?cmp_term ?p / punit0.punit.lc ?cmp_term f)
+###             (punit0.punit.lt ?cmp_term ?p - punit0.punit.lt ?cmp_term f)
+###             (punit0.punit.tail ?cmp_term f))
+###           ?r
+locale gd_nat_inf_term
+  fixes pair_of_term :: "'t => 'a * nat"
+    and term_of_pair :: "'a * nat => 't"
+    and cmp_term :: "'t nat_term_order"
+  assumes "gd_nat_inf_term pair_of_term term_of_pair cmp_term"
+### Cannot skip proof of schematic goal statement
+### Abstraction on left hand side of equation, in theorem:
+### linorder.Min
+###  (%s t. le_of_nat_term_order ?cmp_term (s, the_min) (t, the_min))
+###  (set (?x # ?xs)) ==
+### fold (pprod'.ordered_powerprod_lin.min ?cmp_term) ?xs ?x
+### Abstraction on left hand side of equation, in theorem:
+### linorder.Max
+###  (%s t. le_of_nat_term_order ?cmp_term (s, the_min) (t, the_min))
+###  (set (?x # ?xs)) ==
+### fold (pprod'.ordered_powerprod_lin.max ?cmp_term) ?xs ?x
+### Abstraction on left hand side of equation, in theorem:
+### pprod'.ordered_powerprod_lin.sorted ?cmp_term [] == True
+### Abstraction on left hand side of equation, in theorem:
+### pprod'.ordered_powerprod_lin.sorted ?cmp_term [?x] == True
+### Abstraction on left hand side of equation, in theorem:
+### pprod'.ordered_powerprod_lin.sorted ?cmp_term (?x # ?y # ?zs) ==
+### le_of_nat_term_order ?cmp_term (?x, the_min) (?y, the_min) &
+### pprod'.ordered_powerprod_lin.sorted ?cmp_term (?y # ?zs)
+### Abstraction on left hand side of equation, in theorem:
+### pprod'.ordered_powerprod_lin.sorted_list_of_set ?cmp_term (set ?xs) ==
+### pprod'.ordered_powerprod_lin.sort ?cmp_term (remdups ?xs)
+### Abstraction on left hand side of equation, in theorem:
+### pprod'.punit.ord_strict_p ?cmp_term ?p ?q ==
+### ?q ~= 0 &
+### (?p = 0 |
+###  (let v1 = pprod'.punit.lt ?cmp_term ?p; v2 = pprod'.punit.lt ?cmp_term ?q
+###   in lt_of_nat_term_order ?cmp_term (v1, the_min) (v2, the_min) |
+###      v1 = v2 &
+###      lookup ?p v1 = lookup ?q v2 &
+###      pprod'.punit.ord_strict_p ?cmp_term
+###       (pprod'.punit.lower ?cmp_term ?p v1)
+###       (pprod'.punit.lower ?cmp_term ?q v2)))
+### Partially applied constant "OAlist_Poly_Mapping.le_of_nat_term_order" on left hand side of equation, in theorem:
+### linorder.Min (le_of_nat_term_order ?cmp_term) (set (?x # ?xs)) ==
+### fold (pprod'.ord_term_lin.min ?cmp_term) ?xs ?x
+### Partially applied constant "OAlist_Poly_Mapping.le_of_nat_term_order" on left hand side of equation, in theorem:
+### linorder.Max (le_of_nat_term_order ?cmp_term) (set (?x # ?xs)) ==
+### fold (pprod'.ord_term_lin.max ?cmp_term) ?xs ?x
+### Partially applied constant "OAlist_Poly_Mapping.le_of_nat_term_order" on left hand side of equation, in theorem:
+### pprod'.ord_term_lin.sorted ?cmp_term [] == True
+### Partially applied constant "OAlist_Poly_Mapping.le_of_nat_term_order" on left hand side of equation, in theorem:
+### pprod'.ord_term_lin.sorted ?cmp_term [?x] == True
+### Partially applied constant "OAlist_Poly_Mapping.le_of_nat_term_order" on left hand side of equation, in theorem:
+### pprod'.ord_term_lin.sorted ?cmp_term (?x # ?y # ?zs) ==
+### le_of_nat_term_order ?cmp_term ?x ?y &
+### pprod'.ord_term_lin.sorted ?cmp_term (?y # ?zs)
+### Partially applied constant "OAlist_Poly_Mapping.le_of_nat_term_order" on left hand side of equation, in theorem:
+### pprod'.ord_term_lin.sorted_list_of_set ?cmp_term (set ?xs) ==
+### pprod'.ord_term_lin.sort ?cmp_term (remdups ?xs)
+### Partially applied constant "MPoly_Type_Class.to_pair_unit" on left hand side of equation, in theorem:
+### pprod'.punit.gb_schema_aux ?cmp_term ?sel ?ap ?ab ?compl ?gs ?data ?bs [] ==
+### ?gs @ ?bs
+### Partially applied constant "MPoly_Type_Class.to_pair_unit" on left hand side of equation, in theorem:
+### pprod'.punit.gb_aux ?cmp_term ?gs ?data ?bs ?ps ==
+### if ?ps = [] then ?gs @ ?bs
+### else let sps = pprod'.punit.gb_sel ?gs ?bs ?ps (snd ?data);
+###          ps0 = ?ps -- sps;
+###          aux = pprod'.punit.gb_red ?cmp_term ?gs ?bs ps0 sps (snd ?data);
+###          remcomps =
+###            fst ?data -
+###            pprod'.punit.count_const_lt_components ?cmp_term (fst aux)
+###      in if remcomps = 0 then pprod'.punit.full_gb ?cmp_term (?gs @ ?bs)
+###         else let (hs, data') = add_indices aux (snd ?data)
+###              in pprod'.punit.gb_aux ?cmp_term ?gs (remcomps, data')
+###                  (pprod'.punit.add_basis_canon ?cmp_term ?gs ?bs hs data')
+###                  (pprod'.punit.add_pairs_canon ?cmp_term ?gs ?bs ps0 hs
+###                    data')
+### Partially applied constant "MPoly_Type_Class.to_pair_unit" on left hand side of equation, in theorem:
+### pprod'.punit.gb ?cmp_term ?bs0.0 ?data0.0 ==
+### let data = (length ?bs0.0, ?data0.0);
+###     bs1 = fst (add_indices (?bs0.0, ?data0.0) (0, ?data0.0));
+###     bs = pprod'.punit.add_basis_canon ?cmp_term [] [] bs1 data
+### in map (%(f, uu_, y). (f, y))
+###     (pprod'.punit.gb_aux ?cmp_term []
+###       (pprod'.punit.count_rem_components ?cmp_term bs, data) bs
+###       (pprod'.punit.add_pairs_canon ?cmp_term [] [] [] bs1 data))
+### Abstraction on left hand side of equation, in theorem:
+### pprod'.punit.gb_aux_punit ?cmp_term ?gs ?data ?bs ?ps ==
+### if ?ps = [] then ?gs @ ?bs
+### else let sps = pprod'.punit.gb_sel ?gs ?bs ?ps (snd ?data);
+###          ps0 = ?ps -- sps;
+###          aux = pprod'.punit.gb_red ?cmp_term ?gs ?bs ps0 sps (snd ?data);
+###          remcomps =
+###            fst ?data -
+###            pprod'.punit.count_const_lt_components ?cmp_term (fst aux)
+###      in if remcomps = 0 then pprod'.punit.full_gb ?cmp_term (?gs @ ?bs)
+###         else let (hs, data') = add_indices aux (snd ?data)
+###              in pprod'.punit.gb_aux_punit ?cmp_term ?gs (remcomps, data')
+###                  (pprod'.punit.add_basis_canon ?cmp_term ?gs ?bs hs data')
+###                  (pprod'.punit.add_pairs
+###                    (pprod'.punit.new_pairs_sorted
+###                      (pprod'.punit.canon_pair_order ?cmp_term))
+###                    (pprod'.punit.product_crit ?cmp_term)
+###                    (pprod'.punit.chain_ncrit ?cmp_term)
+###                    (pprod'.punit.chain_ocrit ?cmp_term)
+###                    (pprod'.punit.canon_pair_comb ?cmp_term) ?gs ?bs ps0 hs
+###                    data')
+### Abstraction on left hand side of equation, in theorem:
+### pprod'.punit.gb_punit ?cmp_term ?bs0.0 ?data0.0 ==
+### let data = (length ?bs0.0, ?data0.0);
+###     bs1 = fst (add_indices (?bs0.0, ?data0.0) (0, ?data0.0));
+###     bs = pprod'.punit.add_basis_canon ?cmp_term [] [] bs1 data
+### in map (%(f, uu_, y). (f, y))
+###     (pprod'.punit.gb_aux_punit ?cmp_term []
+###       (pprod'.punit.count_rem_components ?cmp_term bs, data) bs
+###       (pprod'.punit.add_pairs
+###         (pprod'.punit.new_pairs_sorted
+###           (pprod'.punit.canon_pair_order ?cmp_term))
+###         (pprod'.punit.product_crit ?cmp_term)
+###         (pprod'.punit.chain_ncrit ?cmp_term)
+###         (pprod'.punit.chain_ocrit ?cmp_term)
+###         (pprod'.punit.canon_pair_comb ?cmp_term) [] [] [] bs1 data))
+### Partially applied constant "MPoly_Type_Class.to_pair_unit" on left hand side of equation, in theorem:
+### pprod'.punit.trd_aux ?cmp_term ?fs ?p ?r ==
+### if is_zero ?p then ?r
+### else case pprod'.punit.find_adds ?cmp_term ?fs
+###            (pprod'.punit.lt ?cmp_term ?p) of
+###      None =>
+###        pprod'.punit.trd_aux ?cmp_term ?fs (pprod'.punit.tail ?cmp_term ?p)
+###         (plus_monomial_less ?r (pprod'.punit.lc ?cmp_term ?p)
+###           (pprod'.punit.lt ?cmp_term ?p))
+###      | Some f =>
+###          pprod'.punit.trd_aux ?cmp_term ?fs
+###           (pprod'.punit.tail ?cmp_term ?p -
+###            punit.monom_mult
+###             (pprod'.punit.lc ?cmp_term ?p / pprod'.punit.lc ?cmp_term f)
+###             (pprod'.punit.lp ?cmp_term ?p - pprod'.punit.lp ?cmp_term f)
+###             (pprod'.punit.tail ?cmp_term f))
+###           ?r
+### Partially applied constant "MPoly_Type_Class.to_pair_unit" on left hand side of equation, in theorem:
+### pprod'.punit.count_const_lt_components ?cmp_term ?hs ==
+### if EX h:set ?hs. pprod'.punit.const_lt_component ?cmp_term (fst h) = Some ()
+### then 1 else 0
+### Partially applied constant "MPoly_Type_Class.to_pair_unit" on left hand side of equation, in theorem:
+### pprod'.punit.count_rem_components ?cmp_term ?bs ==
+### if ALL b:set ?bs. fst b = 0 then 0
+### else if EX b:set ?bs.
+###            fst b ~= 0 &
+###            pprod'.punit.const_lt_component ?cmp_term (fst b) = Some ()
+###      then 0 else 1
+### Partially applied constant "MPoly_Type_Class.to_pair_unit" on left hand side of equation, in theorem:
+### pprod'.punit.full_gb ?cmp_term ?bs ==
+### if ALL b:set ?bs. fst b = 0 then [] else [(1, 0, default)]
+### Abstraction on left hand side of equation, in theorem:
+### pprod'.gb_schema_aux ?cmp_term ?sel ?ap ?ab ?compl ?gs ?data ?bs [] ==
+### ?gs @ ?bs
+### Abstraction on left hand side of equation, in theorem:
+### pprod'.gb_aux_punit ?cmp_term ?gs ?data ?bs ?ps ==
+### if ?ps = [] then ?gs @ ?bs
+### else let sps = pprod'.punit.gb_sel ?gs ?bs ?ps (snd ?data);
+###          ps0 = ?ps -- sps;
+###          aux = pprod'.punit.gb_red ?cmp_term ?gs ?bs ps0 sps (snd ?data);
+###          remcomps =
+###            fst ?data -
+###            pprod'.punit.count_const_lt_components ?cmp_term (fst aux)
+###      in if remcomps = 0 then pprod'.punit.full_gb ?cmp_term (?gs @ ?bs)
+###         else let (hs, data') = add_indices aux (snd ?data)
+###              in pprod'.gb_aux_punit ?cmp_term ?gs (remcomps, data')
+###                  (pprod'.punit.add_basis_canon ?cmp_term ?gs ?bs hs data')
+###                  (pprod'.add_pairs_punit_canon ?cmp_term ?gs ?bs ps0 hs
+###                    data')
+### Abstraction on left hand side of equation, in theorem:
+### pprod'.gb_punit ?cmp_term ?bs0.0 ?data0.0 ==
+### let data = (length ?bs0.0, ?data0.0);
+###     bs1 = fst (add_indices (?bs0.0, ?data0.0) (0, ?data0.0));
+###     bs = pprod'.punit.add_basis_canon ?cmp_term [] [] bs1 data
+### in map (%(f, uu_, y). (f, y))
+###     (pprod'.gb_aux_punit ?cmp_term []
+###       (pprod'.punit.count_rem_components ?cmp_term bs, data) bs
+###       (pprod'.add_pairs_punit_canon ?cmp_term [] [] [] bs1 data))
+### Code generator: dropping subsumed code equation
+### ord_strict_p_pprod ?cmp_term ?p ?q ==
+### ?q ~= 0 &
+### (?p = 0 |
+###  (let v1 = lt_pprod ?cmp_term ?p; v2 = lt_pprod ?cmp_term ?q
+###   in lt_of_nat_term_order ?cmp_term v1 v2 |
+###      v1 = v2 &
+###      lookup ?p v1 = lookup ?q v2 &
+###      ord_strict_p_pprod ?cmp_term (pprod'.lower ?cmp_term ?p v1)
+###       (pprod'.lower ?cmp_term ?q v2)))
+[| distinct ?bs; pprod'.is_Groebner_basis (POT ?to1) (set ?gs);
+   pprod'.pmdl.span (set ?gs) =
+   pprod'.pmdl.span (set (init_syzygy_list_pprod ?bs)) |]
+==> pprod'.is_Groebner_basis (POT ?to1)
+     (set (filter_syzygy_basis_pprod (length ?bs) ?gs))
+locale experiment16653822
+### theory "Draft.Syzygy_Examples"
+### 41.194s elapsed time, 73.194s cpu time, 49.529s GC time
+Loading theory "Draft.Syzygy_ExamplesTemplates"
+val templateLemmas =
+   [("Syzygy_Examples.POT_is_pot_ord",
+     "ordered_term.is_pot_ord (%x. x) (lt_of_nat_term_order (POT ?to))",
+     template_predicate
+      (
+         template_app
+          (template_app (template_hole 2, t_empty),
+           template_app
+            (template_hole 1,
+             template_app (template_hole 0, template_var 0)))
+         )),
+    ("Syzygy_Examples.compute_splus_pprod",
+     "splus_pprod ?t (?s, ?i) = (?t + ?s, ?i)",
+     template_equation
+      (template_app
+        (template_app (template_hole 2, template_var 2),
+         template_app
+          (template_app (template_hole 1, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 1,
+           template_app
+            (template_app (template_hole 0, template_var 2),
+             template_var 1)),
+         template_var 0))),
+    ("Syzygy_Examples.compute_trd_pprod",
+     "trd_pprod ?to ?fs ?p = trd_aux_pprod ?to ?fs ?p (change_ord ?to 0)",
+     template_equation
+      (template_app
+        (template_app
+          (template_app (template_hole 3, template_var 2), template_var 1),
+         template_var 0),
+       template_app
+        (template_app
+          (template_app
+            (template_app (template_hole 2, template_var 2),
+             template_var 1),
+           template_var 0),
+         template_app
+          (template_app (template_hole 1, template_var 2),
+           template_hole 0)))),
+    ("Syzygy_Examples.compute_adds_term_pprod",
+     "adds_term_pprod ?u ?v =
+      (snd ?u = snd ?v & adds_pp_add_linorder (fst ?u) (fst ?v))",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 5, template_var 1),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 4,
+               template_app
+                (template_app
+                  (template_hole 3,
+                   template_app (template_hole 2, template_var 1)),
+                 template_app (template_hole 2, template_var 0))),
+             template_app
+              (template_app
+                (template_hole 1,
+                 template_app (template_hole 0, template_var 1)),
+               template_app (template_hole 0, template_var 0)))
+           ))),
+    ("Syzygy_Examples.lift_poly_syz_MP_oalist",
+     "lift_poly_syz_pprod ?n (MP_oalist ?xs) ?i =
+      MP_oalist
+       (OAlist_insert_ntm ((0, ?i), 1::?'c) (lift_keys_pprod ?n ?xs))",
+     template_equation
+      (template_app
+        (template_app
+          (template_app (template_hole 7, template_var 2),
+           template_app (template_hole 6, template_var 1)),
+         template_var 0),
+       template_app
+        (template_hole 6,
+         template_app
+          (template_app
+            (template_hole 5,
+             template_app
+              (template_app
+                (template_hole 4,
+                 template_app
+                  (template_app (template_hole 3, template_hole 2),
+                   template_var 0)),
+               template_hole 1)),
+           template_app
+            (template_app (template_hole 0, template_var 2),
+             template_var 1))))),
+    ("Syzygy_Examples.compute_shift_map_keys_pprod",
+     "list_of_oalist_ntm (shift_map_keys_pprod ?t ?f ?xs) =
+      map_raw (%(k, v). (splus_pprod ?t k, ?f v)) (list_of_oalist_ntm ?xs)",
+     template_equation
+      (template_app
+        (template_hole 5,
+         template_app
+          (template_app
+            (template_app (template_hole 4, template_var 2),
+             template_var 1),
+           template_var 0)),
+       template_app
+        (template_app
+          (template_hole 3, template_app (template_hole 2, t_empty)),
+         template_app (template_hole 5, template_var 0))))]:
+   (string * thm * template) list
+### theory "Draft.Syzygy_ExamplesTemplates"
+### 4.046s elapsed time, 12.139s cpu time, 2.488s GC time
+"[MP_oalist
+   (OAlist_ntm
+     ([((PP_oalist (OAlist_tc [(0, 1), (1, 1)]), 1), 1),
+       ((PP_oalist (OAlist_tc [(2, 1)]), 1), - 1),
+       ((PP_oalist (OAlist_tc [(0, 1), (2, 1)]), 0), - 1),
+       ((PP_oalist (OAlist_tc [(1, 1)]), 0), 1)],
+      POT DRLEX)),
+  MP_oalist
+   (OAlist_ntm
+     ([((PP_oalist (OAlist_tc [(0, 1), (1, 1)]), 2), 1),
+       ((PP_oalist (OAlist_tc [(2, 1)]), 2), - 1),
+       ((PP_oalist (OAlist_tc [(1, 1), (2, 1)]), 0), - 1),
+       ((PP_oalist (OAlist_tc [(0, 1)]), 0), 1)],
+      POT DRLEX)),
+  MP_oalist
+   (OAlist_ntm
+     ([((PP_oalist (OAlist_tc [(0, 1), (2, 1)]), 2), 1),
+       ((PP_oalist (OAlist_tc [(1, 1)]), 2), - 1),
+       ((PP_oalist (OAlist_tc [(1, 1), (2, 1)]), 1), - 1),
+       ((PP_oalist (OAlist_tc [(0, 1)]), 1), 1)],
+      POT DRLEX)),
+  MP_oalist
+   (OAlist_ntm
+     ([((PP_oalist (OAlist_tc [(2, 2)]), 2), - 1),
+       ((PP_oalist (OAlist_tc [(1, 2)]), 2), 1),
+       ((PP_oalist (OAlist_tc [(1, 2), (2, 1)]), 1), 1),
+       ((PP_oalist (OAlist_tc [(2, 1)]), 1), - 1),
+       ((PP_oalist (OAlist_tc [(1, 1), (2, 2)]), 0), - 1),
+       ((PP_oalist (OAlist_tc [(1, 1)]), 0), 1)],
+      POT DRLEX))]"
+  :: "((nat, nat) pp * nat \<Rightarrow>\<^sub>0 rat) list"
+"[MP_oalist
+   (OAlist_ntm
+     ([((PP_oalist (OAlist_tc [(0, 2), (2, 3)]), 1), - 1),
+       ((PP_oalist (OAlist_tc [(0, 2), (1, 1)]), 1), - 3),
+       ((PP_oalist (OAlist_tc [(0, 1), (1, 1), (2, 1)]), 0), 1),
+       ((PP_oalist (OAlist_tc [(1, 2)]), 0), 2)],
+      POT DRLEX)),
+  MP_oalist
+   (OAlist_ntm
+     ([((PP_oalist (OAlist_tc [(0, 1), (1, 1), (2, 1)]), 2), - 1),
+       ((PP_oalist (OAlist_tc [(1, 2)]), 2), - 2),
+       ((PP_oalist (OAlist_tc [(2, 1)]), 1), 3),
+       ((PP_oalist (OAlist_tc [(1, 1)]), 1), - 1),
+       ((PP_oalist (OAlist_tc [(0, 1)]), 1), 1)],
+      POT DRLEX)),
+  MP_oalist
+   (OAlist_ntm
+     ([((PP_oalist (OAlist_tc [(0, 2), (2, 3)]), 2), 9),
+       ((PP_oalist (OAlist_tc [(0, 2), (1, 1)]), 2), 27),
+       ((PP_oalist (OAlist_tc [(2, 1)]), 0), - 27),
+       ((PP_oalist (OAlist_tc [(1, 1)]), 0), 9),
+       ((PP_oalist (OAlist_tc [(0, 1)]), 0), - 9)],
+      POT DRLEX)),
+  MP_oalist
+   (OAlist_ntm
+     ([((PP_oalist (OAlist_tc [(1, 3), (2, 1)]), 2), - 1),
+       ((PP_oalist (OAlist_tc [(0, 2), (1, 2)]), 2), - (3 / 4)),
+       ((PP_oalist (OAlist_tc [(0, 1), (2, 3)]), 1), - (3 / 4)),
+       ((PP_oalist (OAlist_tc [(0, 1), (1, 1), (2, 2)]), 1), 1 / 4),
+       ((PP_oalist (OAlist_tc [(0, 2), (2, 2)]), 1), - (1 / 4)),
+       ((PP_oalist (OAlist_tc [(1, 1), (2, 2)]), 1), 3 / 2),
+       ((PP_oalist (OAlist_tc [(1, 2), (2, 1)]), 1), - (1 / 2)),
+       ((PP_oalist (OAlist_tc [(0, 1), (1, 1), (2, 1)]), 1), 1 / 2),
+       ((PP_oalist (OAlist_tc [(1, 1), (2, 1)]), 0), 3 / 4),
+       ((PP_oalist (OAlist_tc [(1, 2)]), 0), - (1 / 4)),
+       ((PP_oalist (OAlist_tc [(0, 1), (1, 1)]), 0), 1 / 4)],
+      POT DRLEX)),
+  MP_oalist
+   (OAlist_ntm
+     ([((PP_oalist (OAlist_tc [(0, 3), (1, 2)]), 2), 3 / 4),
+       ((PP_oalist (OAlist_tc [(1, 4)]), 2), - 2),
+       ((PP_oalist (OAlist_tc [(0, 2), (2, 3)]), 1), 3 / 4),
+       ((PP_oalist (OAlist_tc [(0, 2), (1, 1), (2, 2)]), 1), - (1 / 4)),
+       ((PP_oalist (OAlist_tc [(0, 3), (2, 2)]), 1), 1 / 4),
+       ((PP_oalist (OAlist_tc [(0, 1), (1, 1), (2, 2)]), 1), - (3 / 2)),
+       ((PP_oalist (OAlist_tc [(0, 1), (1, 2), (2, 1)]), 1), 1 / 2),
+       ((PP_oalist (OAlist_tc [(0, 2), (1, 1), (2, 1)]), 1), - (1 / 2)),
+       ((PP_oalist (OAlist_tc [(1, 2), (2, 1)]), 1), 3),
+       ((PP_oalist (OAlist_tc [(1, 3)]), 1), - 1),
+       ((PP_oalist (OAlist_tc [(0, 1), (1, 2)]), 1), 1),
+       ((PP_oalist (OAlist_tc [(0, 1), (1, 1), (2, 1)]), 0), - (3 / 4)),
+       ((PP_oalist (OAlist_tc [(0, 1), (1, 2)]), 0), 1 / 4),
+       ((PP_oalist (OAlist_tc [(0, 2), (1, 1)]), 0), - (1 / 4))],
+      POT DRLEX))]"
+  :: "((nat, nat) pp * nat \<Rightarrow>\<^sub>0 rat) list"
+val it = (): unit

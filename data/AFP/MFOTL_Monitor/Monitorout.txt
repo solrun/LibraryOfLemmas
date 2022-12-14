@@ -1,0 +1,3534 @@
+Loading theory "Draft.Table" (required by "Draft.MonitorTemplates" via "Draft.Monitor" via "Draft.Abstract_Monitor")
+Loading theory "Draft.Trace" (required by "Draft.MonitorTemplates" via "Draft.Monitor" via "Draft.Abstract_Monitor")
+Loading theory "Draft.Interval" (required by "Draft.MonitorTemplates" via "Draft.Monitor" via "Draft.MFOTL")
+Loading theory "Draft.Templates" (required by "Draft.MonitorTemplates" via "Draft.ExtrEqs")
+Proofs for coinductive predicate(s) "ssorted"
+consts
+  tabulate :: "(nat => 'a) => nat => nat => 'a list"
+  Proving monotonicity ...
+datatype template_term
+=
+     t_empty
+   | template_app of template_term * template_term
+   | template_hole of int
+   | template_var of int
+datatype sign
+= equals | greater_equals | greater_than | less_equals | less_than
+datatype template
+=
+     template_bimplication of template * template
+   | template_dunno
+   | template_equation of template_term * template_term
+   | template_implication of template list * template
+   | template_inequation of sign * template_term * template_term
+   | template_negation of template
+   | template_predicate of template_term
+constructor t_empty: template_term
+constructor template_app: template_term * template_term -> template_term
+constructor template_hole: int -> template_term
+constructor template_var: int -> template_term
+constructor equals: sign
+constructor greater_equals: sign
+constructor greater_than: sign
+constructor less_equals: sign
+constructor less_than: sign
+constructor template_bimplication: template * template -> template
+constructor template_dunno: template
+constructor template_equation: template_term * template_term -> template
+constructor template_implication: template list * template -> template
+constructor template_inequation:
+   sign * template_term * template_term -> template
+constructor template_negation: template -> template
+constructor template_predicate: template_term -> template
+val vfs = fn: term -> (indexname * typ) list * (string * typ) list
+val indexOf = fn: ''a list -> ''a -> int -> int
+val has_eq = fn: term -> bool
+val term2template = fn:
+   (indexname * typ) list -> (string * typ) list -> term -> template_term
+val lemma2predicate = fn: term -> term -> template
+val makeTemplatewithContext = fn: term -> term -> template
+val lemma2template = fn: term -> template
+val thm2template = fn: thm -> template
+val tterm2string = fn: template_term -> string
+val template2string = fn: template -> string
+val t = "height ?t <= size ?t": thm
+val th =
+   Const ("HOL.Trueprop", "bool => prop") $
+     (Const ("Orderings.ord_class.less_eq", "nat => nat => bool") $
+       (Const ("Tree.height_class.height", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree")) $
+       (Const ("Nat.size_class.size", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree"))):
+   term
+### theory "Draft.Templates"
+### 0.117s elapsed time, 0.462s cpu time, 0.034s GC time
+Loading theory "Draft.ExtrEqs" (required by "Draft.MonitorTemplates")
+Found termination order: "(%p. size_list size (snd p)) <*mlex*> {}"
+instantiation
+  \<I> :: equal
+  equal_\<I> == equal_class.equal :: \<I> => \<I> => bool
+instantiation
+  \<I> :: linorder
+  less_eq_\<I> == less_eq :: \<I> => \<I> => bool
+  less_\<I> == less :: \<I> => \<I> => bool
+instantiation
+  prefix :: (type) order
+  less_eq_prefix == less_eq :: 'a prefix => 'a prefix => bool
+  less_prefix == less :: 'a prefix => 'a prefix => bool
+### theory "Draft.Interval"
+### 0.522s elapsed time, 2.031s cpu time, 0.164s GC time
+### theory "Draft.Trace"
+### 0.541s elapsed time, 2.082s cpu time, 0.164s GC time
+### theory "Draft.Table"
+### 0.560s elapsed time, 2.120s cpu time, 0.164s GC time
+Loading theory "Draft.Abstract_Monitor" (required by "Draft.MonitorTemplates" via "Draft.Monitor")
+locale fo_spec
+  fixes nfv :: "nat"
+    and fv :: "nat set"
+    and sat :: "'a trace => 'b list => nat => bool"
+  assumes "fo_spec nfv fv sat"
+locale cosafety_fo_spec
+  fixes nfv :: "nat"
+    and fv :: "nat set"
+    and sat :: "'a trace => 'b list => nat => bool"
+  assumes "cosafety_fo_spec nfv fv sat"
+val eqpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Var (("_dummy_", 2), "?'a"))
+       ):
+   term Find_Theorems.criterion
+val badeqpattern = Pattern (Const ("Pure.eq", "?'a => ?'a => prop")):
+   term Find_Theorems.criterion
+val undefpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Const ("HOL.undefined", "?'a"))
+       ):
+   term Find_Theorems.criterion
+val thmpattern =
+   Pattern
+    (Const ("HOL.Trueprop", "bool => prop") $ Var (("_dummy_", 1), "bool")):
+   term Find_Theorems.criterion
+val badnames =
+   ["*nitpick*", "*Nitpick*", "*full_exhaustive*", "*_def*", "Enum.finite*",
+    "*Quickcheck*", "ATP*", "*Nunchaku*", "*Code*", "*BNF*", "*SMT*",
+    "*.*.*"]:
+   string list
+val unwanted_names =
+   [(false, Name "*nitpick*"), (false, Name "*Nitpick*"),
+    (false, Name "*full_exhaustive*"), (false, Name "*_def*"),
+    (false, Name "Enum.finite*"), (false, Name "*Quickcheck*"),
+    (false, Name "ATP*"), (false, Name "*Nunchaku*"),
+    (false, Name "*Code*"), (false, Name "*BNF*"), (false, Name "*SMT*"),
+    (false, Name "*.*.*")]:
+   (bool * term Find_Theorems.criterion) list
+val has_vars = fn: term -> bool
+val get_all_eqs = fn: string -> Proof.context -> (string * thm) list
+val get_all_thms = fn: string -> Proof.context -> (string * thm) list
+val get_noneq_thms = fn: string -> Proof.context -> (string * thm) list
+val template_eqs = fn:
+   string -> Proof.context -> (string * thm * template) list
+val template_thms = fn:
+   string -> Proof.context -> (string * thm * template) list
+### theory "Draft.ExtrEqs"
+### 0.587s elapsed time, 1.961s cpu time, 0.130s GC time
+locale monitor
+  fixes nfv :: "nat"
+    and fv :: "nat set"
+    and sat :: "'a trace => 'b list => nat => bool"
+    and M :: "'a prefix => (nat * 'b option list) set"
+  assumes "monitor nfv fv sat M"
+locale cosafety_monitor
+  fixes nfv :: "nat"
+    and fv :: "nat set"
+    and sat :: "'a trace => 'b list => nat => bool"
+    and M :: "'a prefix => (nat * 'b option list) set"
+  assumes "cosafety_monitor nfv fv sat M"
+locale progress
+  fixes nfv :: "nat"
+    and fv :: "nat set"
+    and sat :: "'a trace => 'b list => nat => bool"
+    and progress :: "'a prefix => nat"
+  assumes "progress nfv fv sat progress"
+locale abstract_slicer
+  fixes relevant_events :: "'b list set => 'a set"
+locale sliceable_fo_spec
+  fixes nfv :: "nat"
+    and fv :: "nat set"
+    and relevant_events :: "'b list set => 'a set"
+    and sat :: "'a trace => 'b list => nat => bool"
+  assumes "sliceable_fo_spec nfv fv relevant_events sat"
+locale sliceable_monitor
+  fixes nfv :: "nat"
+    and fv :: "nat set"
+    and relevant_events :: "'b list set => 'a set"
+    and sat :: "'a trace => 'b list => nat => bool"
+    and M :: "'a prefix => (nat * 'b option list) set"
+  assumes "sliceable_monitor nfv fv relevant_events sat M"
+locale timed_progress
+  fixes nfv :: "nat"
+    and fv :: "nat set"
+    and sat :: "'a trace => 'b list => nat => bool"
+    and progress :: "'a prefix => nat"
+  assumes "timed_progress nfv fv sat progress"
+locale sliceable_timed_progress
+  fixes nfv :: "nat"
+    and fv :: "nat set"
+    and relevant_events :: "'a list set => 'b set"
+    and sat :: "'b trace => 'a list => nat => bool"
+    and progress :: "'b prefix => nat"
+  assumes "sliceable_timed_progress nfv fv relevant_events sat progress"
+### theory "Draft.Abstract_Monitor"
+### 0.280s elapsed time, 0.458s cpu time, 0.058s GC time
+Loading theory "Draft.MFOTL" (required by "Draft.MonitorTemplates" via "Draft.Monitor")
+consts
+  fvi_trm :: "nat => 'a trm => nat set"
+consts
+  eval_trm :: "'a list => 'a trm => 'a"
+consts
+  fvi :: "nat => 'a formula => nat set"
+consts
+  future_reach :: "'a formula => enat"
+consts
+  sat ::
+    "(char list * 'a list) Trace.trace
+     => 'a list => nat => 'a formula => bool"
+Found termination order: "size <*mlex*> {}"
+consts
+  matches :: "'a list => 'a formula => char list * 'a list => bool"
+### theory "Draft.MFOTL"
+### 2.983s elapsed time, 3.633s cpu time, 0.726s GC time
+Loading theory "Draft.Monitor" (required by "Draft.MonitorTemplates")
+Found termination order: "size <*mlex*> {}"
+Found termination order: "{}"
+Found termination order: "{}"
+Found termination order: "(%p. size (snd p)) <*mlex*> {}"
+Found termination order: "(%p. size_list size (snd (snd p))) <*mlex*> {}"
+Found termination order: "{}"
+Found termination order: "(%p. length (snd (snd p))) <*mlex*> {}"
+Found termination order:
+  "(%p. size_list size (snd (snd (snd p)))) <*mlex*> {}"
+Found termination order: "(%p. length (snd p)) <*mlex*> {}"
+Found termination order:
+  "(%p. size_list (%p. size (snd p)) (snd (snd p))) <*mlex*> {}"
+consts
+  meval ::
+    "nat
+     => nat
+        => (char list * 'a list) set
+           => 'a mformula => 'a option list set list * 'a mformula"
+consts
+  progress ::
+    "(char list * 'a list) trace => 'a MFOTL.formula => nat => nat"
+locale future_bounded_mfotl
+  fixes \<phi> :: "'a MFOTL.formula"
+  assumes "future_bounded_mfotl \<phi>"
+locale monitorable_mfotl
+  fixes \<phi> :: "'a MFOTL.formula"
+  assumes "monitorable_mfotl \<phi>"
+Proofs for inductive predicate(s) "wf_mformula"
+  Proving monotonicity ...
+[| \<tau> \<sigma> i + m < \<tau> \<sigma> ?uu5;
+   \<tau> \<sigma> ?uu5 <= \<tau> \<sigma> ?uua5 + m |]
+==> \<tau> \<sigma> i + m < \<tau> \<sigma> ?uua5 + m
+consts
+  msteps0 ::
+    "((char list * 'a list) set * nat) list
+     => 'a mstate => (nat * 'a option list) set * 'a mstate"
+consts
+  msteps0_stateless ::
+    "((char list * 'a list) set * nat) list
+     => 'a mstate => (nat * 'a option list) set"
+locale monitorable_mfotl
+  fixes \<phi> :: "'a MFOTL.formula"
+  assumes "monitorable_mfotl \<phi>"
+### theory "Draft.Monitor"
+### 4.885s elapsed time, 6.486s cpu time, 1.904s GC time
+Loading theory "Draft.MonitorTemplates"
+val templateLemmas =
+   [("Monitor.monitorable_formula_code",
+     "mmonitorable ?\<phi> = mmonitorable_exec ?\<phi>",
+     template_equation
+      (template_app (template_hole 1, template_var 0),
+       template_app (template_hole 0, template_var 0))),
+    ("Monitor.progress_0", "Monitor.progress ?\<sigma> ?\<phi> 0 = 0",
+     template_equation
+      (template_app
+        (template_app
+          (template_app (template_hole 1, template_var 1), template_var 0),
+         template_hole 0),
+       template_hole 0)),
+    ("Monitor.wf_ts_0", "wf_ts ?\<sigma> 0 ?\<phi> ?\<psi> []",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 2, template_var 2),
+                 template_hole 1),
+               template_var 1),
+             template_var 0),
+           template_hole 0)
+         )),
+    ("Monitor.progress_le", "Monitor.progress ?\<sigma> ?\<phi> ?j <= ?j",
+     template_inequation
+      (less_equals,
+       template_app
+        (template_app
+          (template_app (template_hole 0, template_var 2), template_var 1),
+         template_var 0),
+       template_var 0)),
+    ("Monitor.mmonitorable_exec_mmonitorable",
+     "mmonitorable_exec ?\<phi> ==> mmonitorable ?\<phi>",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 1, template_var 0))],
+       template_predicate
+        (template_app (template_hole 0, template_var 0)))),
+    ("Monitor.msteps_msteps_stateless",
+     "fst (msteps ?w ?st) = msteps_stateless ?w ?st",
+     template_equation
+      (template_app
+        (template_hole 2,
+         template_app
+          (template_app (template_hole 1, template_var 1), template_var 0)),
+       template_app
+        (template_app (template_hole 0, template_var 1), template_var 0))),
+    ("Monitor.msteps0_msteps0_stateless",
+     "fst (msteps0 ?w ?st) = msteps0_stateless ?w ?st",
+     template_equation
+      (template_app
+        (template_hole 2,
+         template_app
+          (template_app (template_hole 1, template_var 1), template_var 0)),
+       template_app
+        (template_app (template_hole 0, template_var 1), template_var 0))),
+    ("Monitor.minit_safe_minit",
+     "mmonitorable ?\<phi> ==> minit_safe ?\<phi> = minit ?\<phi>",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 3, template_var 0))],
+       template_equation
+        (template_app (template_hole 1, template_var 0),
+         template_app (template_hole 0, template_var 0)))),
+    ("Monitor.wf_mbuf2'_0",
+     "wf_mbuf2' ?\<sigma> 0 ?n ?R ?\<phi> ?\<psi> ([], [])",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_app
+                    (template_app (template_hole 3, template_var 4),
+                     template_hole 2),
+                   template_var 3),
+                 template_var 2),
+               template_var 1),
+             template_var 0),
+           template_app
+            (template_app (template_hole 1, template_hole 0),
+             template_hole 0))
+         )),
+    ("Monitor.wf_since_aux_Nil",
+     "wf_since_aux ?\<sigma> ?n ?R ?pos ?\<phi>' ?I ?\<psi>' [] 0",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_app
+                    (template_app
+                      (template_app
+                        (template_app (template_hole 2, template_var 6),
+                         template_var 5),
+                       template_var 4),
+                     template_var 3),
+                   template_var 2),
+                 template_var 1),
+               template_var 0),
+             template_hole 1),
+           template_hole 0)
+         )),
+    ("Monitor.wf_until_aux_Nil",
+     "wf_until_aux ?\<sigma> ?n ?R ?pos ?\<phi>' ?I ?\<psi>' [] 0",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_app
+                    (template_app
+                      (template_app
+                        (template_app (template_hole 2, template_var 6),
+                         template_var 5),
+                       template_var 4),
+                     template_var 3),
+                   template_var 2),
+                 template_var 1),
+               template_var 0),
+             template_hole 1),
+           template_hole 0)
+         )),
+    ("Monitor.wf_mstate_minit",
+     "safe_formula ?\<phi> ==> wf_mstate ?\<phi> pnil ?R (minit ?\<phi>)",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 3, template_var 1))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 2, template_var 1),
+                 template_hole 1),
+               template_var 0),
+             template_app (template_hole 0, template_var 1))
+           ))),
+    ("Monitor.wf_mstate_minit_safe",
+     "mmonitorable ?\<phi> ==>
+      wf_mstate ?\<phi> pnil ?R (minit_safe ?\<phi>)",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 3, template_var 1))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 2, template_var 1),
+                 template_hole 1),
+               template_var 0),
+             template_app (template_hole 0, template_var 1))
+           ))),
+    ("Monitor.length_update_until",
+     "length (update_until ?pos ?I ?rel1.0 ?rel2.0 ?nt ?aux) =
+      Suc (length ?aux)",
+     template_equation
+      (template_app
+        (template_hole 2,
+         template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_app (template_hole 1, template_var 5),
+                   template_var 4),
+                 template_var 3),
+               template_var 2),
+             template_var 1),
+           template_var 0)),
+       template_app
+        (template_hole 0, template_app (template_hole 2, template_var 0)))),
+    ("Monitor.safe_formula_mmonitorable_exec",
+     "[| safe_formula ?\<phi>; MFOTL.future_reach ?\<phi> ~= \<infinity> |]
+      ==> mmonitorable_exec ?\<phi>",
+     template_implication
+      ([template_predicate (template_app (template_hole 5, template_var 0)),
+        template_negation
+         (
+            template_equation
+             (template_app (template_hole 2, template_var 0),
+              template_hole 1)
+            )],
+       template_predicate
+        (template_app (template_hole 0, template_var 0)))),
+    ("Monitor.progress_mono",
+     "?j <= ?j' ==>
+      Monitor.progress ?\<sigma> ?\<phi> ?j
+      <= Monitor.progress ?\<sigma> ?\<phi> ?j'",
+     template_implication
+      ([template_inequation (less_equals, template_var 3, template_var 2)],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_app
+            (template_app (template_hole 0, template_var 1),
+             template_var 0),
+           template_var 3),
+         template_app
+          (template_app
+            (template_app (template_hole 0, template_var 1),
+             template_var 0),
+           template_var 2)))),
+    ("Monitor.pprogress_eq",
+     "prefix_of ?\<pi> ?\<sigma> ==>
+      pprogress ?\<phi> ?\<pi> =
+      Monitor.progress ?\<sigma> ?\<phi> (plen ?\<pi>)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 4, template_var 2),
+              template_var 1)
+            )],
+       template_equation
+        (template_app
+          (template_app (template_hole 2, template_var 0), template_var 2),
+         template_app
+          (template_app
+            (template_app (template_hole 1, template_var 1),
+             template_var 0),
+           template_app (template_hole 0, template_var 2))))),
+    ("Monitor.qtable_mem_restr_UNIV",
+     "qtable ?n ?A (mem_restr UNIV) ?Q ?X = wf_table ?n ?A ?Q ?X",
+     template_equation
+      (template_app
+        (template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 3, template_var 3),
+               template_var 2),
+             template_app (template_hole 2, template_hole 1)),
+           template_var 1),
+         template_var 0),
+       template_app
+        (template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 3, template_var 3),
+               template_var 2),
+             t_empty),
+           template_var 1),
+         template_var 0))),
+    ("Monitor.progress_ge",
+     "MFOTL.future_reach ?\<phi> ~= \<infinity> ==>
+      EX j. ?i <= Monitor.progress ?\<sigma> ?\<phi> j",
+     template_implication
+      ([template_negation
+         (
+            template_equation
+             (template_app (template_hole 4, template_var 2),
+              template_hole 3)
+            )],
+       template_predicate (template_app (template_hole 2, t_empty)))),
+    ("Monitor.progress_And",
+     "Monitor.progress ?\<sigma> (MFOTL.And ?\<phi> ?\<psi>) ?j =
+      min (Monitor.progress ?\<sigma> ?\<phi> ?j)
+       (Monitor.progress ?\<sigma> ?\<psi> ?j)",
+     template_equation
+      (template_app
+        (template_app
+          (template_app (template_hole 2, template_var 3),
+           template_app
+            (template_app (template_hole 1, template_var 2),
+             template_var 1)),
+         template_var 0),
+       template_app
+        (template_app
+          (template_hole 0,
+           template_app
+            (template_app
+              (template_app (template_hole 2, template_var 3),
+               template_var 2),
+             template_var 0)),
+         template_app
+          (template_app
+            (template_app (template_hole 2, template_var 3),
+             template_var 1),
+           template_var 0)))),
+    ("Monitor.progress_And_Not",
+     "Monitor.progress ?\<sigma> (MFOTL.And_Not ?\<phi> ?\<psi>) ?j =
+      min (Monitor.progress ?\<sigma> ?\<phi> ?j)
+       (Monitor.progress ?\<sigma> ?\<psi> ?j)",
+     template_equation
+      (template_app
+        (template_app
+          (template_app (template_hole 2, template_var 3),
+           template_app
+            (template_app (template_hole 1, template_var 2),
+             template_var 1)),
+         template_var 0),
+       template_app
+        (template_app
+          (template_hole 0,
+           template_app
+            (template_app
+              (template_app (template_hole 2, template_var 3),
+               template_var 2),
+             template_var 0)),
+         template_app
+          (template_app
+            (template_app (template_hole 2, template_var 3),
+             template_var 1),
+           template_var 0)))),
+    ("Monitor.progress_Until_le",
+     "Monitor.progress ?\<sigma> (formula.Until ?\<phi> ?I ?\<psi>) ?j
+      <= min (Monitor.progress ?\<sigma> ?\<phi> ?j)
+          (Monitor.progress ?\<sigma> ?\<psi> ?j)",
+     template_inequation
+      (less_equals,
+       template_app
+        (template_app
+          (template_app (template_hole 2, template_var 4),
+           template_app
+            (template_app
+              (template_app (template_hole 1, template_var 3),
+               template_var 2),
+             template_var 1)),
+         template_var 0),
+       template_app
+        (template_app
+          (template_hole 0,
+           template_app
+            (template_app
+              (template_app (template_hole 2, template_var 4),
+               template_var 3),
+             template_var 0)),
+         template_app
+          (template_app
+            (template_app (template_hole 2, template_var 4),
+             template_var 1),
+           template_var 0)))),
+    ("Monitor.wf_tuple_Suc_fviD",
+     "wf_tuple (Suc ?n) (MFOTL.fvi ?b ?\<phi>) ?v ==>
+      wf_tuple ?n (MFOTL.fvi (Suc ?b) ?\<phi>) (tl ?v)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_hole 3,
+                  template_app (template_hole 2, template_var 3)),
+                template_app
+                 (template_app (template_hole 1, template_var 2),
+                  template_var 1)),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app (template_hole 3, template_var 3),
+               template_app
+                (template_app
+                  (template_hole 1,
+                   template_app (template_hole 2, template_var 2)),
+                 template_var 1)),
+             template_app (template_hole 0, template_var 0))
+           ))),
+    ("Monitor.in_foldr_UnI",
+     "[| ?x : ?A; ?A : set ?xs |] ==> ?x : foldr (Un) ?xs {}",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 5, template_var 2),
+              template_var 1)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 4, template_var 1),
+              template_app (template_hole 3, template_var 0))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 5, template_var 2),
+             template_app
+              (template_app
+                (template_app (template_hole 2, template_hole 1),
+                 template_var 0),
+               template_hole 0))
+           ))),
+    ("Monitor.cInf_restrict_nat",
+     "?x : ?A ==> Inf ?A = Inf {y: ?A. y <= ?x}",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 5, template_var 1),
+              template_var 0)
+            )],
+       template_equation
+        (template_app (template_hole 3, template_var 0),
+         template_app
+          (template_hole 3, template_app (template_hole 2, t_empty))))),
+    ("Monitor.table_fvi_tl",
+     "table (Suc ?n) (MFOTL.fvi ?b ?\<phi>) ?X ==>
+      table ?n (MFOTL.fvi (Suc ?b) ?\<phi>) (tl ` ?X)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_hole 4,
+                  template_app (template_hole 3, template_var 3)),
+                template_app
+                 (template_app (template_hole 2, template_var 2),
+                  template_var 1)),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app (template_hole 4, template_var 3),
+               template_app
+                (template_app
+                  (template_hole 2,
+                   template_app (template_hole 3, template_var 2)),
+                 template_var 1)),
+             template_app
+              (template_app (template_hole 1, template_hole 0),
+               template_var 0))
+           ))),
+    ("Monitor.minus_eq_enat_iff",
+     "(?a - enat ?k = enat ?i) = (EX j. ?a = enat j & j - ?k = ?i)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 6,
+           template_app
+            (template_app (template_hole 5, template_var 2),
+             template_app (template_hole 4, template_var 1))),
+         template_app (template_hole 4, template_var 0)),
+       template_app (template_hole 3, t_empty))),
+    ("Monitor.table_eq_rel",
+     "trm.is_Const ?t1.0 | trm.is_Const ?t2.0 ==>
+      table ?n (fv_trm ?t1.0 Un fv_trm ?t2.0) (eq_rel ?n ?t1.0 ?t2.0)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 6,
+                template_app (template_hole 5, template_var 2)),
+              template_app (template_hole 5, template_var 1))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app (template_hole 4, template_var 0),
+               template_app
+                (template_app
+                  (template_hole 3,
+                   template_app
+                    (template_app (template_hole 2, template_hole 1),
+                     template_var 2)),
+                 template_app
+                  (template_app (template_hole 2, template_hole 1),
+                   template_var 1))),
+             template_app
+              (template_app
+                (template_app (template_hole 0, template_var 0),
+                 template_var 2),
+               template_var 1))
+           ))),
+    ("Monitor.upt_append",
+     "[| ?a <= ?b; ?b <= ?c |] ==> [?a..<?b] @ [?b..<?c] = [?a..<?c]",
+     template_implication
+      ([template_inequation (less_equals, template_var 2, template_var 1),
+        template_inequation (less_equals, template_var 1, template_var 0)],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 1,
+             template_app
+              (template_app (template_hole 0, template_var 2),
+               template_var 1)),
+           template_app
+            (template_app (template_hole 0, template_var 1),
+             template_var 0)),
+         template_app
+          (template_app (template_hole 0, template_var 2),
+           template_var 0)))),
+    ("Monitor.progress_prefix_conv",
+     "[| prefix_of ?\<pi> ?\<sigma>; prefix_of ?\<pi> ?\<sigma>' |]
+      ==> Monitor.progress ?\<sigma> ?\<phi> (plen ?\<pi>) =
+          Monitor.progress ?\<sigma>' ?\<phi> (plen ?\<pi>)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 3, template_var 3),
+              template_var 2)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 3, template_var 3),
+              template_var 1)
+            )],
+       template_equation
+        (template_app
+          (template_app
+            (template_app (template_hole 1, template_var 2),
+             template_var 0),
+           template_app (template_hole 0, template_var 3)),
+         template_app
+          (template_app
+            (template_app (template_hole 1, template_var 1),
+             template_var 0),
+           template_app (template_hole 0, template_var 3))))),
+    ("Monitor.Suc_length_conv_snoc",
+     "(Suc ?n = length ?xs) = (EX y ys. ?xs = ys @ [y] & length ys = ?n)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 9, template_app (template_hole 8, template_var 1)),
+         template_app (template_hole 7, template_var 0)),
+       template_app (template_hole 6, t_empty))),
+    ("Monitor.match_wf_tuple",
+     "Some ?f = match ?ts ?xs ==>
+      wf_tuple ?n (\<Union> (fv_trm ` set ?ts)) (tabulate ?f 0 ?n)",
+     template_implication
+      ([template_equation
+         (template_app (template_hole 8, template_var 3),
+          template_app
+           (template_app (template_hole 7, template_var 2),
+            template_var 1))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app (template_hole 6, template_var 0),
+               template_app
+                (template_hole 5,
+                 template_app
+                  (template_app (template_hole 4, t_empty),
+                   template_app (template_hole 1, template_var 2)))),
+             template_app
+              (template_app
+                (template_app (template_hole 0, template_var 3),
+                 template_hole 2),
+               template_var 0))
+           ))),
+    ("Monitor.wf_until_aux_Cons1",
+     "wf_until_aux ?\<sigma> ?n ?R ?pos ?\<phi> ?I ?\<psi>
+       ((?t, ?a1.0, ?a2.0) # ?aux) ?ne ==>
+      ?t = \<tau> ?\<sigma> ?ne",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app
+                     (template_app
+                       (template_app
+                         (template_app
+                           (template_app (template_hole 5, template_var 11),
+                            template_var 10),
+                          template_var 9),
+                        template_var 8),
+                      template_var 7),
+                    template_var 6),
+                  template_var 5),
+                template_app
+                 (template_app
+                   (template_hole 4,
+                    template_app
+                     (template_app (template_hole 3, template_var 4),
+                      template_app
+                       (template_app (template_hole 2, template_var 3),
+                        template_var 2))),
+                  template_var 1)),
+              template_var 0)
+            )],
+       template_equation
+        (template_var 4,
+         template_app
+          (template_app (template_hole 0, template_var 11),
+           template_var 0)))),
+    ("Monitor.wf_minit0",
+     "[| safe_formula ?\<phi>; ALL x:fv ?\<phi>. x < ?n |]
+      ==> wf_mformula ?\<sigma> 0 ?n ?R (minit0 ?n ?\<phi>) ?\<phi>",
+     template_implication
+      ([template_predicate (template_app (template_hole 6, template_var 3)),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 5,
+                template_app
+                 (template_app (template_hole 4, template_hole 3),
+                  template_var 3)),
+              t_empty)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_app
+                    (template_app (template_hole 1, template_var 1),
+                     template_hole 3),
+                   template_var 2),
+                 template_var 0),
+               template_app
+                (template_app (template_hole 0, template_var 2),
+                 template_var 3)),
+             template_var 3)
+           ))),
+    ("Monitor.sat_the_restrict",
+     "fv ?\<phi> <= ?A ==>
+      MFOTL.sat ?\<sigma> (map the (restrict ?A ?v)) ?i ?\<phi> =
+      MFOTL.sat ?\<sigma> (map the ?v) ?i ?\<phi>",
+     template_implication
+      ([template_inequation
+         (less_equals,
+          template_app
+           (template_app (template_hole 6, template_hole 5),
+            template_var 4),
+          template_var 3)],
+       template_equation
+        (template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 3, template_var 2),
+               template_app
+                (template_app (template_hole 2, template_hole 1),
+                 template_app
+                  (template_app (template_hole 0, template_var 3),
+                   template_var 1))),
+             template_var 0),
+           template_var 4),
+         template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 3, template_var 2),
+               template_app
+                (template_app (template_hole 2, template_hole 1),
+                 template_var 1)),
+             template_var 0),
+           template_var 4)))),
+    ("Monitor.progress_time_conv",
+     "ALL i<?j. \<tau> ?\<sigma> i = \<tau> ?\<sigma>' i ==>
+      Monitor.progress ?\<sigma> ?\<phi> ?j =
+      Monitor.progress ?\<sigma>' ?\<phi> ?j",
+     template_implication
+      ([template_predicate (template_app (template_hole 5, t_empty))],
+       template_equation
+        (template_app
+          (template_app
+            (template_app (template_hole 0, template_var 2),
+             template_var 0),
+           template_var 3),
+         template_app
+          (template_app
+            (template_app (template_hole 0, template_var 1),
+             template_var 0),
+           template_var 3)))),
+    ("Monitor.wf_mstate_mstep",
+     "[| wf_mstate ?\<phi> ?\<pi> ?R ?st; last_ts ?\<pi> <= snd ?tdb |]
+      ==> wf_mstate ?\<phi> (psnoc ?\<pi> ?tdb) ?R (snd (mstep ?tdb ?st))",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 6, template_var 4),
+                  template_var 3),
+                template_var 2),
+              template_var 1)
+            ),
+        template_inequation
+         (less_equals, template_app (template_hole 4, template_var 3),
+          template_app (template_hole 3, template_var 0))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 6, template_var 4),
+                 template_app
+                  (template_app (template_hole 2, template_var 3),
+                   template_var 0)),
+               template_var 2),
+             template_app
+              (template_hole 1,
+               template_app
+                (template_app (template_hole 0, template_var 0),
+                 template_var 1)))
+           ))),
+    ("Monitor.match_fvi_trm_None",
+     "[| Some ?f = match ?ts ?xs; ALL t:set ?ts. ?x ~: fv_trm t |]
+      ==> ?f ?x = None",
+     template_implication
+      ([template_equation
+         (template_app (template_hole 9, template_var 3),
+          template_app
+           (template_app (template_hole 8, template_var 2),
+            template_var 1)),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 7,
+                template_app (template_hole 6, template_var 2)),
+              t_empty)
+            )],
+       template_equation
+        (template_app (template_var 3, template_var 0), template_hole 0))),
+    ("Monitor.wf_until_aux_Cons",
+     "wf_until_aux ?\<sigma> ?n ?R ?pos ?\<phi> ?I ?\<psi> (?a # ?aux)
+       ?ne ==>
+      wf_until_aux ?\<sigma> ?n ?R ?pos ?\<phi> ?I ?\<psi> ?aux (Suc ?ne)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app
+                     (template_app
+                       (template_app
+                         (template_app
+                           (template_app (template_hole 2, template_var 9),
+                            template_var 8),
+                          template_var 7),
+                        template_var 6),
+                      template_var 5),
+                    template_var 4),
+                  template_var 3),
+                template_app
+                 (template_app (template_hole 1, template_var 2),
+                  template_var 1)),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_app
+                    (template_app
+                      (template_app
+                        (template_app
+                          (template_app (template_hole 2, template_var 9),
+                           template_var 8),
+                         template_var 7),
+                       template_var 6),
+                     template_var 5),
+                   template_var 4),
+                 template_var 3),
+               template_var 1),
+             template_app (template_hole 0, template_var 0))
+           ))),
+    ("Monitor.in_foldr_UnE",
+     "[| ?x : foldr (Un) ?xs {}; !!A. [| A : set ?xs; ?x : A |] ==> ?P |]
+      ==> ?P",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 6, template_var 2),
+              template_app
+               (template_app
+                 (template_app (template_hole 5, template_hole 4),
+                  template_var 1),
+                template_hole 3))
+            ),
+        template_predicate (template_app (template_hole 2, t_empty))],
+       template_predicate (template_var 0))),
+    ("Monitor.plus_eq_enat_iff",
+     "(?a + ?b = enat ?i) =
+      (EX j k. ?a = enat j & ?b = enat k & j + k = ?i)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 6,
+           template_app
+            (template_app (template_hole 5, template_var 2),
+             template_var 1)),
+         template_app (template_hole 4, template_var 0)),
+       template_app (template_hole 3, t_empty))),
+    ("Monitor.wf_tuple_Suc_fvi_SomeI",
+     "[| 0 : MFOTL.fvi ?b ?\<phi>;
+         wf_tuple ?n (MFOTL.fvi (Suc ?b) ?\<phi>) ?v |]
+      ==> wf_tuple (Suc ?n) (MFOTL.fvi ?b ?\<phi>) (Some ?x # ?v)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 6, template_hole 5),
+              template_app
+               (template_app (template_hole 4, template_var 4),
+                template_var 3))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 3, template_var 2),
+                template_app
+                 (template_app
+                   (template_hole 4,
+                    template_app (template_hole 2, template_var 4)),
+                  template_var 3)),
+              template_var 1)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_hole 3,
+                 template_app (template_hole 2, template_var 2)),
+               template_app
+                (template_app (template_hole 4, template_var 4),
+                 template_var 3)),
+             template_app
+              (template_app
+                (template_hole 1,
+                 template_app (template_hole 0, template_var 0)),
+               template_var 1))
+           ))),
+    ("Monitor.wf_tuple_Suc_fvi_NoneI",
+     "[| 0 ~: MFOTL.fvi ?b ?\<phi>;
+         wf_tuple ?n (MFOTL.fvi (Suc ?b) ?\<phi>) ?v |]
+      ==> wf_tuple (Suc ?n) (MFOTL.fvi ?b ?\<phi>) (None # ?v)",
+     template_implication
+      ([template_negation
+         (
+            template_predicate
+             (
+                template_app
+                 (template_app (template_hole 6, template_hole 5),
+                  template_app
+                   (template_app (template_hole 4, template_var 3),
+                    template_var 2))
+                )
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 3, template_var 1),
+                template_app
+                 (template_app
+                   (template_hole 4,
+                    template_app (template_hole 2, template_var 3)),
+                  template_var 2)),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_hole 3,
+                 template_app (template_hole 2, template_var 1)),
+               template_app
+                (template_app (template_hole 4, template_var 3),
+                 template_var 2)),
+             template_app
+              (template_app (template_hole 1, template_hole 0),
+               template_var 0))
+           ))),
+    ("Monitor.match_fvi_trm_Some",
+     "[| Some ?f = match ?ts ?xs; ?t : set ?ts; ?x : fv_trm ?t |]
+      ==> ?f ?x ~= None",
+     template_implication
+      ([template_equation
+         (template_app (template_hole 9, template_var 4),
+          template_app
+           (template_app (template_hole 8, template_var 3),
+            template_var 2)),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 7, template_var 1),
+              template_app (template_hole 6, template_var 3))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 5, template_var 0),
+              template_app
+               (template_app (template_hole 4, template_hole 3),
+                template_var 1))
+            )],
+       template_negation
+        (
+           template_equation
+            (template_app (template_var 4, template_var 0), template_hole 0)
+           ))),
+    ("Monitor.wf_tuple_tabulate_Some",
+     "[| wf_tuple ?n ?A (tabulate ?f 0 ?n); ?x : ?A; ?x < ?n |]
+      ==> EX y. ?f ?x = Some y",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 7, template_var 3),
+                template_var 2),
+              template_app
+               (template_app
+                 (template_app (template_hole 6, template_var 1),
+                  template_hole 5),
+                template_var 3))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 4, template_var 0),
+              template_var 2)
+            ),
+        template_inequation (less_than, template_var 0, template_var 3)],
+       template_predicate (template_app (template_hole 2, t_empty)))),
+    ("Monitor.msteps0_snoc",
+     "msteps0 (?\<pi> @ [?tdb]) ?st =
+      (let (V', st') = msteps0 ?\<pi> ?st; (V'', st'') = mstep ?tdb st'
+       in (V' Un V'', st''))",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 8,
+           template_app
+            (template_app (template_hole 7, template_var 2),
+             template_app
+              (template_app (template_hole 6, template_var 1),
+               template_hole 5))),
+         template_var 0),
+       template_app
+        (template_app
+          (template_hole 4,
+           template_app
+            (template_app (template_hole 8, template_var 2),
+             template_var 0)),
+         template_app (template_hole 3, t_empty)))),
+    ("Monitor.mbuf2_take_eqD",
+     "[| mbuf2_take ?f ?buf = (?xs, ?buf');
+         wf_mbuf2 ?i ?ja ?jb ?P ?Q ?buf |]
+      ==> wf_mbuf2 (min ?ja ?jb) ?ja ?jb ?P ?Q ?buf'",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app (template_hole 3, template_var 8), template_var 7),
+          template_app
+           (template_app (template_hole 2, template_var 6),
+            template_var 5)),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app
+                     (template_app (template_hole 1, template_var 4),
+                      template_var 3),
+                    template_var 2),
+                  template_var 1),
+                template_var 0),
+              template_var 7)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_app
+                    (template_app
+                      (template_hole 1,
+                       template_app
+                        (template_app (template_hole 0, template_var 3),
+                         template_var 2)),
+                     template_var 3),
+                   template_var 2),
+                 template_var 1),
+               template_var 0),
+             template_var 5)
+           ))),
+    ("Monitor.list_all2_upt_Cons",
+     "[| ?P ?a ?x; list_all2 ?P [Suc ?a..<?b] ?xs; Suc ?a <= ?b |]
+      ==> list_all2 ?P [?a..<?b] (?x # ?xs)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_var 4, template_var 3), template_var 2)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 4, template_var 4),
+                template_app
+                 (template_app
+                   (template_hole 3,
+                    template_app (template_hole 2, template_var 3)),
+                  template_var 1)),
+              template_var 0)
+            ),
+        template_inequation
+         (less_equals, template_app (template_hole 2, template_var 3),
+          template_var 1)],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app (template_hole 4, template_var 4),
+               template_app
+                (template_app (template_hole 3, template_var 3),
+                 template_var 1)),
+             template_app
+              (template_app (template_hole 0, template_var 2),
+               template_var 0))
+           ))),
+    ("Monitor.minit0_And_Not",
+     "safe_formula ?\<psi> & fv ?\<psi> <= fv ?\<phi> ==>
+      minit0 ?n (MFOTL.And_Not ?\<phi> ?\<psi>) =
+      MAnd (minit0 ?n ?\<phi>) False (minit0 ?n ?\<psi>) ([], [])",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 11,
+                template_app (template_hole 10, template_var 2)),
+              template_app
+               (template_app
+                 (template_hole 9,
+                  template_app
+                   (template_app (template_hole 8, template_hole 7),
+                    template_var 2)),
+                template_app
+                 (template_app (template_hole 8, template_hole 7),
+                  template_var 1)))
+            )],
+       template_equation
+        (template_app
+          (template_app (template_hole 5, template_var 0),
+           template_app
+            (template_app (template_hole 4, template_var 1),
+             template_var 2)),
+         template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_hole 3,
+                 template_app
+                  (template_app (template_hole 5, template_var 0),
+                   template_var 1)),
+               template_hole 2),
+             template_app
+              (template_app (template_hole 5, template_var 0),
+               template_var 2)),
+           template_app
+            (template_app (template_hole 1, template_hole 0),
+             template_hole 0))))),
+    ("Monitor.sat_prefix_conv",
+     "[| prefix_of ?\<pi> ?\<sigma>; prefix_of ?\<pi> ?\<sigma>';
+         ?i < Monitor.progress ?\<sigma> ?\<phi> (plen ?\<pi>) |]
+      ==> MFOTL.sat ?\<sigma> ?v ?i ?\<phi> =
+          MFOTL.sat ?\<sigma>' ?v ?i ?\<phi>",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 5, template_var 5),
+              template_var 4)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 5, template_var 5),
+              template_var 3)
+            ),
+        template_inequation
+         (less_than, template_var 2,
+          template_app
+           (template_app
+             (template_app (template_hole 3, template_var 4),
+              template_var 1),
+            template_app (template_hole 2, template_var 5)))],
+       template_equation
+        (template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 0, template_var 4),
+               template_var 0),
+             template_var 2),
+           template_var 1),
+         template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 0, template_var 3),
+               template_var 0),
+             template_var 2),
+           template_var 1)))),
+    ("Monitor.minit0_And",
+     "~ (safe_formula (formula.Neg ?\<psi>) & fv ?\<psi> <= fv ?\<phi>) ==>
+      minit0 ?n (MFOTL.And ?\<phi> ?\<psi>) =
+      MAnd (minit0 ?n ?\<phi>) True (minit0 ?n ?\<psi>) ([], [])",
+     template_implication
+      ([template_negation
+         (
+            template_predicate
+             (
+                template_app
+                 (template_app
+                   (template_hole 12,
+                    template_app
+                     (template_hole 11,
+                      template_app (template_hole 10, template_var 2))),
+                  template_app
+                   (template_app
+                     (template_hole 9,
+                      template_app
+                       (template_app (template_hole 8, template_hole 7),
+                        template_var 2)),
+                    template_app
+                     (template_app (template_hole 8, template_hole 7),
+                      template_var 1)))
+                )
+            )],
+       template_equation
+        (template_app
+          (template_app (template_hole 5, template_var 0),
+           template_app
+            (template_app (template_hole 4, template_var 1),
+             template_var 2)),
+         template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_hole 3,
+                 template_app
+                  (template_app (template_hole 5, template_var 0),
+                   template_var 1)),
+               template_hole 2),
+             template_app
+              (template_app (template_hole 5, template_var 0),
+               template_var 2)),
+           template_app
+            (template_app (template_hole 1, template_hole 0),
+             template_hole 0))))),
+    ("Monitor.msteps_psnoc",
+     "last_ts ?\<pi> <= snd ?tdb ==>
+      msteps (psnoc ?\<pi> ?tdb) ?st =
+      (let (V', st') = msteps ?\<pi> ?st; (V'', st'') = mstep ?tdb st'
+       in (V' Un V'', st''))",
+     template_implication
+      ([template_inequation
+         (less_equals, template_app (template_hole 9, template_var 2),
+          template_app (template_hole 8, template_var 1))],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 6,
+             template_app
+              (template_app (template_hole 5, template_var 2),
+               template_var 1)),
+           template_var 0),
+         template_app
+          (template_app
+            (template_hole 4,
+             template_app
+              (template_app (template_hole 6, template_var 2),
+               template_var 0)),
+           template_app (template_hole 3, t_empty))))),
+    ("Monitor.match_eval_trm",
+     "[| ALL t:set ?ts. ALL i:fv_trm t. i < ?n; Some ?f = match ?ts ?xs |]
+      ==> map (MFOTL.eval_trm (tabulate (%i. the (?f i)) 0 ?n)) ?ts = ?xs",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 13,
+                template_app (template_hole 12, template_var 3)),
+              t_empty)
+            ),
+        template_equation
+         (template_app (template_hole 6, template_var 1),
+          template_app
+           (template_app (template_hole 5, template_var 3),
+            template_var 0))],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 3,
+             template_app
+              (template_hole 2,
+               template_app
+                (template_app
+                  (template_app (template_hole 1, t_empty),
+                   template_hole 9),
+                 template_var 2))),
+           template_var 3),
+         template_var 0))),
+    ("Monitor.list_all2_upt_append",
+     "[| list_all2 ?P [?a..<?b] ?xs; list_all2 ?P [?b..<?c] ?ys; ?a <= ?b;
+         ?b <= ?c |]
+      ==> list_all2 ?P [?a..<?c] (?xs @ ?ys)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 3, template_var 5),
+                template_app
+                 (template_app (template_hole 2, template_var 4),
+                  template_var 3)),
+              template_var 2)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 3, template_var 5),
+                template_app
+                 (template_app (template_hole 2, template_var 3),
+                  template_var 1)),
+              template_var 0)
+            ),
+        template_inequation (less_equals, template_var 4, template_var 3),
+        template_inequation (less_equals, template_var 3, template_var 1)],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app (template_hole 3, template_var 5),
+               template_app
+                (template_app (template_hole 2, template_var 4),
+                 template_var 1)),
+             template_app
+              (template_app (template_hole 0, template_var 2),
+               template_var 0))
+           ))),
+    ("Monitor.in_eq_rel",
+     "[| wf_tuple ?n (fv_trm ?t1.0 Un fv_trm ?t2.0) ?v;
+         trm.is_Const ?t1.0 | trm.is_Const ?t2.0;
+         MFOTL.eval_trm (map the ?v) ?t1.0 =
+         MFOTL.eval_trm (map the ?v) ?t2.0 |]
+      ==> ?v : eq_rel ?n ?t1.0 ?t2.0",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 11, template_var 3),
+                template_app
+                 (template_app
+                   (template_hole 10,
+                    template_app
+                     (template_app (template_hole 9, template_hole 8),
+                      template_var 2)),
+                  template_app
+                   (template_app (template_hole 9, template_hole 8),
+                    template_var 1))),
+              template_var 0)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 7,
+                template_app (template_hole 6, template_var 2)),
+              template_app (template_hole 6, template_var 1))
+            ),
+        template_equation
+         (template_app
+           (template_app
+             (template_hole 4,
+              template_app
+               (template_app (template_hole 3, template_hole 2),
+                template_var 0)),
+            template_var 2),
+          template_app
+           (template_app
+             (template_hole 4,
+              template_app
+               (template_app (template_hole 3, template_hole 2),
+                template_var 0)),
+            template_var 1))],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 1, template_var 0),
+             template_app
+              (template_app
+                (template_app (template_hole 0, template_var 3),
+                 template_var 2),
+               template_var 1))
+           ))),
+    ("Monitor.qtable_project_fv",
+     "qtable (Suc ?n) (fv ?\<phi>) (mem_restr (lift_envs ?R)) ?P ?X ==>
+      qtable ?n (MFOTL.fvi (Suc 0) ?\<phi>) (mem_restr ?R)
+       (%v. EX x. ?P ((if 0 : fv ?\<phi> then Some x else None) # v))
+       (tl ` ?X)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app
+                     (template_hole 13,
+                      template_app (template_hole 12, template_var 4)),
+                    template_app
+                     (template_app (template_hole 11, template_hole 10),
+                      template_var 3)),
+                  template_app
+                   (template_hole 9,
+                    template_app (template_hole 8, template_var 2))),
+                template_var 1),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_app (template_hole 13, template_var 4),
+                   template_app
+                    (template_app
+                      (template_hole 11,
+                       template_app (template_hole 12, template_hole 10)),
+                     template_var 3)),
+                 template_app (template_hole 9, template_var 2)),
+               t_empty),
+             template_app
+              (template_app (template_hole 1, template_hole 0),
+               template_var 0))
+           ))),
+    ("Monitor.eq_rel_eval_trm",
+     "[| ?v : eq_rel ?n ?t1.0 ?t2.0;
+         trm.is_Const ?t1.0 | trm.is_Const ?t2.0;
+         ALL x:fv_trm ?t1.0 Un fv_trm ?t2.0. x < ?n |]
+      ==> MFOTL.eval_trm (map the ?v) ?t1.0 =
+          MFOTL.eval_trm (map the ?v) ?t2.0",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 12, template_var 3),
+              template_app
+               (template_app
+                 (template_app (template_hole 11, template_var 2),
+                  template_var 1),
+                template_var 0))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 10,
+                template_app (template_hole 9, template_var 1)),
+              template_app (template_hole 9, template_var 0))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 8,
+                template_app
+                 (template_app
+                   (template_hole 7,
+                    template_app
+                     (template_app (template_hole 6, template_hole 5),
+                      template_var 1)),
+                  template_app
+                   (template_app (template_hole 6, template_hole 5),
+                    template_var 0))),
+              t_empty)
+            )],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 2,
+             template_app
+              (template_app (template_hole 1, template_hole 0),
+               template_var 3)),
+           template_var 1),
+         template_app
+          (template_app
+            (template_hole 2,
+             template_app
+              (template_app (template_hole 1, template_hole 0),
+               template_var 3)),
+           template_var 0)))),
+    ("Monitor.mbuf2_take_eqD",
+     "[| mbuf2_take ?f ?buf = (?xs, ?buf');
+         wf_mbuf2 ?i ?ja ?jb ?P ?Q ?buf |]
+      ==> list_all2 (%i z. EX x y. ?P i x & ?Q i y & z = ?f x y)
+           [?i..<min ?ja ?jb] ?xs",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app (template_hole 8, template_var 8), template_var 7),
+          template_app
+           (template_app (template_hole 7, template_var 6),
+            template_var 5)),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app
+                     (template_app (template_hole 6, template_var 4),
+                      template_var 3),
+                    template_var 2),
+                  template_var 1),
+                template_var 0),
+              template_var 7)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app (template_hole 5, t_empty),
+               template_app
+                (template_app (template_hole 1, template_var 4),
+                 template_app
+                  (template_app (template_hole 0, template_var 3),
+                   template_var 2))),
+             template_var 6)
+           ))),
+    ("Monitor.wf_mbuf2_add",
+     "[| wf_mbuf2 ?i ?ja ?jb ?P ?Q ?buf; list_all2 ?P [?ja..<?ja'] ?xs;
+         list_all2 ?Q [?jb..<?jb'] ?ys; ?ja <= ?ja'; ?jb <= ?jb' |]
+      ==> wf_mbuf2 ?i ?ja' ?jb' ?P ?Q (mbuf2_add ?xs ?ys ?buf)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app
+                     (template_app (template_hole 4, template_var 9),
+                      template_var 8),
+                    template_var 7),
+                  template_var 6),
+                template_var 5),
+              template_var 4)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 3, template_var 6),
+                template_app
+                 (template_app (template_hole 2, template_var 8),
+                  template_var 3)),
+              template_var 2)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 3, template_var 5),
+                template_app
+                 (template_app (template_hole 2, template_var 7),
+                  template_var 1)),
+              template_var 0)
+            ),
+        template_inequation (less_equals, template_var 8, template_var 3),
+        template_inequation (less_equals, template_var 7, template_var 1)],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_app
+                    (template_app (template_hole 4, template_var 9),
+                     template_var 3),
+                   template_var 1),
+                 template_var 6),
+               template_var 5),
+             template_app
+              (template_app
+                (template_app (template_hole 0, template_var 2),
+                 template_var 0),
+               template_var 4))
+           ))),
+    ("Monitor.mstep_alt",
+     "mstep ?tdb ?st =
+      (let (xs, m) =
+             meval (mstate_n ?st) (snd ?tdb) (fst ?tdb) (mstate_m ?st)
+       in (UN (i, X):set (List.enumerate (mstate_i ?st) xs).
+              UN v:X. {(i, v)},
+           (| mstate_i = mstate_i ?st + length xs, mstate_m = m,
+              mstate_n = mstate_n ?st |)))",
+     template_equation
+      (template_app
+        (template_app (template_hole 22, template_var 1), template_var 0),
+       template_app
+        (template_app
+          (template_hole 21,
+           template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_hole 20,
+                   template_app (template_hole 19, template_var 0)),
+                 template_app (template_hole 18, template_var 1)),
+               template_app (template_hole 17, template_var 1)),
+             template_app (template_hole 16, template_var 0))),
+         template_app (template_hole 15, t_empty)))),
+    ("Monitor.ex_match",
+     "[| wf_tuple ?n (\<Union> (fv_trm ` set ?ts)) ?v;
+         ALL t:set ?ts. ALL x:fv_trm t. x < ?n |]
+      ==> EX f. match ?ts (map (MFOTL.eval_trm (map the ?v)) ?ts) = Some f &
+                ?v = tabulate f 0 ?n",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 19, template_var 2),
+                template_app
+                 (template_hole 18,
+                  template_app
+                   (template_app (template_hole 17, t_empty),
+                    template_app (template_hole 14, template_var 1)))),
+              template_var 0)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 13,
+                template_app (template_hole 14, template_var 1)),
+              t_empty)
+            )],
+       template_predicate (template_app (template_hole 10, t_empty)))),
+    ("Monitor.mbuf2t_take_eqD",
+     "[| mbuf2t_take ?f ?z ?buf ?nts = (?z', ?buf', ?nts');
+         wf_mbuf2 ?i ?ja ?jb ?P ?Q ?buf; list_all2 ?R [?i..<?j] ?nts;
+         ?ja <= ?j; ?jb <= ?j |]
+      ==> list_all2 ?R [min ?ja ?jb..<?j] ?nts'",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app
+             (template_app
+               (template_app (template_hole 7, template_var 13),
+                template_var 12),
+              template_var 11),
+            template_var 10),
+          template_app
+           (template_app (template_hole 6, template_var 9),
+            template_app
+             (template_app (template_hole 5, template_var 8),
+              template_var 7))),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app
+                     (template_app (template_hole 4, template_var 6),
+                      template_var 5),
+                    template_var 4),
+                  template_var 3),
+                template_var 2),
+              template_var 11)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 3, template_var 1),
+                template_app
+                 (template_app (template_hole 2, template_var 6),
+                  template_var 0)),
+              template_var 10)
+            ),
+        template_inequation (less_equals, template_var 5, template_var 0),
+        template_inequation (less_equals, template_var 4, template_var 0)],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app (template_hole 3, template_var 1),
+               template_app
+                (template_app
+                  (template_hole 2,
+                   template_app
+                    (template_app (template_hole 0, template_var 5),
+                     template_var 4)),
+                 template_var 0)),
+             template_var 7)
+           ))),
+    ("Monitor.mbuf2t_take_eqD",
+     "[| mbuf2t_take ?f ?z ?buf ?nts = (?z', ?buf', ?nts');
+         wf_mbuf2 ?i ?ja ?jb ?P ?Q ?buf; list_all2 ?R [?i..<?j] ?nts;
+         ?ja <= ?j; ?jb <= ?j |]
+      ==> wf_mbuf2 (min ?ja ?jb) ?ja ?jb ?P ?Q ?buf'",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app
+             (template_app
+               (template_app (template_hole 7, template_var 13),
+                template_var 12),
+              template_var 11),
+            template_var 10),
+          template_app
+           (template_app (template_hole 6, template_var 9),
+            template_app
+             (template_app (template_hole 5, template_var 8),
+              template_var 7))),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app
+                     (template_app (template_hole 4, template_var 6),
+                      template_var 5),
+                    template_var 4),
+                  template_var 3),
+                template_var 2),
+              template_var 11)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 3, template_var 1),
+                template_app
+                 (template_app (template_hole 2, template_var 6),
+                  template_var 0)),
+              template_var 10)
+            ),
+        template_inequation (less_equals, template_var 5, template_var 0),
+        template_inequation (less_equals, template_var 4, template_var 0)],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_app
+                    (template_app
+                      (template_hole 4,
+                       template_app
+                        (template_app (template_hole 0, template_var 5),
+                         template_var 4)),
+                     template_var 5),
+                   template_var 4),
+                 template_var 3),
+               template_var 2),
+             template_var 8)
+           ))),
+    ("Monitor.meval",
+     "wf_mformula ?\<sigma> ?j ?n ?R ?\<phi> ?\<phi>' ==>
+      case meval ?n (\<tau> ?\<sigma> ?j) (\<Gamma> ?\<sigma> ?j) ?\<phi> of
+      (xs, \<phi>\<^sub>n) =>
+        wf_mformula ?\<sigma> (Suc ?j) ?n ?R \<phi>\<^sub>n ?\<phi>' &
+        list_all2
+         (%i. qtable ?n (fv ?\<phi>') (mem_restr ?R)
+               (%v. MFOTL.sat ?\<sigma> (map the v) i ?\<phi>'))
+         [Monitor.progress ?\<sigma> ?\<phi>' ?j..<
+          Monitor.progress ?\<sigma> ?\<phi>' (Suc ?j)]
+         xs",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app
+                     (template_app (template_hole 16, template_var 5),
+                      template_var 4),
+                    template_var 3),
+                  template_var 2),
+                template_var 1),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 15, t_empty),
+             template_app
+              (template_app
+                (template_app
+                  (template_app (template_hole 2, template_var 3),
+                   template_app
+                    (template_app (template_hole 1, template_var 5),
+                     template_var 4)),
+                 template_app
+                  (template_app (template_hole 0, template_var 5),
+                   template_var 4)),
+               template_var 1))
+           ))),
+    ("Monitor.mstep_output_iff",
+     "[| wf_mstate ?\<phi> ?\<pi> ?R ?st; last_ts ?\<pi> <= snd ?tdb;
+         prefix_of (psnoc ?\<pi> ?tdb) ?\<sigma>; mem_restr ?R ?v |]
+      ==> ((?i, ?v) : fst (mstep ?tdb ?st)) =
+          (Monitor.progress ?\<sigma> ?\<phi> (plen ?\<pi>) <= ?i &
+           ?i < Monitor.progress ?\<sigma> ?\<phi> (Suc (plen ?\<pi>)) &
+           wf_tuple (MFOTL.nfv ?\<phi>) (fv ?\<phi>) ?v &
+           MFOTL.sat ?\<sigma> (map the ?v) ?i ?\<phi>)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 23, template_var 7),
+                  template_var 6),
+                template_var 5),
+              template_var 4)
+            ),
+        template_inequation
+         (less_equals, template_app (template_hole 21, template_var 6),
+          template_app (template_hole 20, template_var 3)),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 19,
+                template_app
+                 (template_app (template_hole 18, template_var 6),
+                  template_var 3)),
+              template_var 2)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 17, template_var 5),
+              template_var 1)
+            )],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 15,
+             template_app
+              (template_app (template_hole 14, template_var 0),
+               template_var 1)),
+           template_app
+            (template_hole 13,
+             template_app
+              (template_app (template_hole 12, template_var 3),
+               template_var 4))),
+         template_app
+          (template_app
+            (template_hole 11,
+             template_app
+              (template_app
+                (template_hole 22,
+                 template_app
+                  (template_app
+                    (template_app (template_hole 10, template_var 2),
+                     template_var 7),
+                   template_app (template_hole 9, template_var 6))),
+               template_var 0)),
+           template_app
+            (template_app
+              (template_hole 11,
+               template_app
+                (template_app (template_hole 8, template_var 0),
+                 template_app
+                  (template_app
+                    (template_app (template_hole 10, template_var 2),
+                     template_var 7),
+                   template_app
+                    (template_hole 7,
+                     template_app (template_hole 9, template_var 6))))),
+             template_app
+              (template_app
+                (template_hole 11,
+                 template_app
+                  (template_app
+                    (template_app
+                      (template_hole 6,
+                       template_app (template_hole 5, template_var 7)),
+                     template_app
+                      (template_app (template_hole 4, template_hole 3),
+                       template_var 7)),
+                   template_var 1)),
+               template_app
+                (template_app
+                  (template_app
+                    (template_app (template_hole 2, template_var 2),
+                     template_app
+                      (template_app (template_hole 1, template_hole 0),
+                       template_var 1)),
+                   template_var 0),
+                 template_var 7))))))),
+    ("Monitor.wf_mbuf2'_UNIV_alt",
+     "wf_mbuf2' ?\<sigma> ?j ?n UNIV ?\<phi> ?\<psi> ?buf =
+      (case ?buf of
+       (xs, ys) =>
+         list_all2
+          (%i. wf_table ?n (fv ?\<phi>)
+                (%v. MFOTL.sat ?\<sigma> (map the v) i ?\<phi>))
+          [min (Monitor.progress ?\<sigma> ?\<phi> ?j)
+            (Monitor.progress ?\<sigma> ?\<psi> ?j)..<
+           Monitor.progress ?\<sigma> ?\<phi> ?j]
+          xs &
+         list_all2
+          (%i. wf_table ?n (fv ?\<psi>)
+                (%v. MFOTL.sat ?\<sigma> (map the v) i ?\<psi>))
+          [min (Monitor.progress ?\<sigma> ?\<phi> ?j)
+            (Monitor.progress ?\<sigma> ?\<psi> ?j)..<
+           Monitor.progress ?\<sigma> ?\<psi> ?j]
+          ys)",
+     template_equation
+      (template_app
+        (template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_app (template_hole 14, template_var 5),
+                   template_var 4),
+                 template_var 3),
+               template_hole 13),
+             template_var 2),
+           template_var 1),
+         template_var 0),
+       template_app
+        (template_app (template_hole 12, t_empty), template_var 0))),
+    ("Monitor.update_since",
+     "[| wf_since_aux ?\<sigma> ?n ?R ?pos ?\<phi> ?I ?\<psi> ?aux ?ne;
+         qtable ?n (fv ?\<phi>) (mem_restr ?R)
+          (%v. MFOTL.sat ?\<sigma> (map the v) ?ne ?\<phi>) ?rel1.0;
+         qtable ?n (fv ?\<psi>) (mem_restr ?R)
+          (%v. MFOTL.sat ?\<sigma> (map the v) ?ne ?\<psi>) ?rel2.0;
+         (?rel, ?aux') =
+         update_since ?I ?pos ?rel1.0 ?rel2.0 (\<tau> ?\<sigma> ?ne) ?aux;
+         fv ?\<phi> <= fv ?\<psi> |]
+      ==> wf_since_aux ?\<sigma> ?n ?R ?pos ?\<phi> ?I ?\<psi> ?aux'
+           (Suc ?ne)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app
+                     (template_app
+                       (template_app
+                         (template_app
+                           (template_app
+                             (template_hole 13, template_var 12),
+                            template_var 11),
+                          template_var 10),
+                        template_var 9),
+                      template_var 8),
+                    template_var 7),
+                  template_var 6),
+                template_var 5),
+              template_var 4)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app (template_hole 12, template_var 11),
+                    template_app
+                     (template_app (template_hole 11, template_hole 10),
+                      template_var 8)),
+                  template_app (template_hole 9, template_var 10)),
+                t_empty),
+              template_var 3)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app (template_hole 12, template_var 11),
+                    template_app
+                     (template_app (template_hole 11, template_hole 10),
+                      template_var 6)),
+                  template_app (template_hole 9, template_var 10)),
+                t_empty),
+              template_var 2)
+            ),
+        template_equation
+         (template_app
+           (template_app (template_hole 4, template_var 1), template_var 0),
+          template_app
+           (template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app (template_hole 3, template_var 7),
+                    template_var 9),
+                  template_var 3),
+                template_var 2),
+              template_app
+               (template_app (template_hole 2, template_var 12),
+                template_var 4)),
+            template_var 5)),
+        template_inequation
+         (less_equals,
+          template_app
+           (template_app (template_hole 11, template_hole 10),
+            template_var 8),
+          template_app
+           (template_app (template_hole 11, template_hole 10),
+            template_var 6))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_app
+                    (template_app
+                      (template_app
+                        (template_app
+                          (template_app (template_hole 13, template_var 12),
+                           template_var 11),
+                         template_var 10),
+                       template_var 9),
+                     template_var 8),
+                   template_var 7),
+                 template_var 6),
+               template_var 0),
+             template_app (template_hole 0, template_var 4))
+           ))),
+    ("Monitor.wf_update_until",
+     "[| wf_until_aux ?\<sigma> ?n ?R ?pos ?\<phi> ?I ?\<psi> ?aux ?ne;
+         qtable ?n (fv ?\<phi>) (mem_restr ?R)
+          (%v. MFOTL.sat ?\<sigma> (map the v) (?ne + length ?aux) ?\<phi>)
+          ?rel1.0;
+         qtable ?n (fv ?\<psi>) (mem_restr ?R)
+          (%v. MFOTL.sat ?\<sigma> (map the v) (?ne + length ?aux) ?\<psi>)
+          ?rel2.0;
+         fv ?\<phi> <= fv ?\<psi> |]
+      ==> wf_until_aux ?\<sigma> ?n ?R ?pos ?\<phi> ?I ?\<psi>
+           (update_until ?I ?pos ?rel1.0 ?rel2.0
+             (\<tau> ?\<sigma> (?ne + length ?aux)) ?aux)
+           ?ne",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app
+                     (template_app
+                       (template_app
+                         (template_app
+                           (template_app
+                             (template_hole 12, template_var 10),
+                            template_var 9),
+                          template_var 8),
+                        template_var 7),
+                      template_var 6),
+                    template_var 5),
+                  template_var 4),
+                template_var 3),
+              template_var 2)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app (template_hole 11, template_var 9),
+                    template_app
+                     (template_app (template_hole 10, template_hole 9),
+                      template_var 6)),
+                  template_app (template_hole 8, template_var 8)),
+                t_empty),
+              template_var 1)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app (template_hole 11, template_var 9),
+                    template_app
+                     (template_app (template_hole 10, template_hole 9),
+                      template_var 4)),
+                  template_app (template_hole 8, template_var 8)),
+                t_empty),
+              template_var 0)
+            ),
+        template_inequation
+         (less_equals,
+          template_app
+           (template_app (template_hole 10, template_hole 9),
+            template_var 6),
+          template_app
+           (template_app (template_hole 10, template_hole 9),
+            template_var 4))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_app
+                    (template_app
+                      (template_app
+                        (template_app
+                          (template_app (template_hole 12, template_var 10),
+                           template_var 9),
+                         template_var 8),
+                       template_var 7),
+                     template_var 6),
+                   template_var 5),
+                 template_var 4),
+               template_app
+                (template_app
+                  (template_app
+                    (template_app
+                      (template_app
+                        (template_app (template_hole 1, template_var 5),
+                         template_var 7),
+                       template_var 1),
+                     template_var 0),
+                   template_app
+                    (template_app (template_hole 0, template_var 10),
+                     template_app
+                      (template_app (template_hole 4, template_var 2),
+                       template_app (template_hole 3, template_var 3)))),
+                 template_var 3)),
+             template_var 2)
+           ))),
+    ("Monitor.mbuf2_take_add'",
+     "[| mbuf2_take ?f (mbuf2_add ?xs ?ys ?buf) = (?zs, ?buf');
+         wf_mbuf2' ?\<sigma> ?j ?n ?R ?\<phi> ?\<psi> ?buf;
+         list_all2
+          (%i. qtable ?n (fv ?\<phi>) (mem_restr ?R)
+                (%v. MFOTL.sat ?\<sigma> (map the v) i ?\<phi>))
+          [Monitor.progress ?\<sigma> ?\<phi> ?j..<
+           Monitor.progress ?\<sigma> ?\<phi> ?j']
+          ?xs;
+         list_all2
+          (%i. qtable ?n (fv ?\<psi>) (mem_restr ?R)
+                (%v. MFOTL.sat ?\<sigma> (map the v) i ?\<psi>))
+          [Monitor.progress ?\<sigma> ?\<psi> ?j..<
+           Monitor.progress ?\<sigma> ?\<psi> ?j']
+          ?ys;
+         ?j <= ?j' |]
+      ==> wf_mbuf2' ?\<sigma> ?j' ?n ?R ?\<phi> ?\<psi> ?buf'",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app (template_hole 14, template_var 12),
+            template_app
+             (template_app
+               (template_app (template_hole 13, template_var 11),
+                template_var 10),
+              template_var 9)),
+          template_app
+           (template_app (template_hole 12, template_var 8),
+            template_var 7)),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app
+                     (template_app
+                       (template_app (template_hole 11, template_var 6),
+                        template_var 5),
+                      template_var 4),
+                    template_var 3),
+                  template_var 2),
+                template_var 1),
+              template_var 9)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 10, t_empty),
+                template_app
+                 (template_app
+                   (template_hole 2,
+                    template_app
+                     (template_app
+                       (template_app (template_hole 1, template_var 6),
+                        template_var 2),
+                      template_var 5)),
+                  template_app
+                   (template_app
+                     (template_app (template_hole 1, template_var 6),
+                      template_var 2),
+                    template_var 0))),
+              template_var 11)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 10, t_empty),
+                template_app
+                 (template_app
+                   (template_hole 2,
+                    template_app
+                     (template_app
+                       (template_app (template_hole 1, template_var 6),
+                        template_var 1),
+                      template_var 5)),
+                  template_app
+                   (template_app
+                     (template_app (template_hole 1, template_var 6),
+                      template_var 1),
+                    template_var 0))),
+              template_var 10)
+            ),
+        template_inequation (less_equals, template_var 5, template_var 0)],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_app
+                    (template_app
+                      (template_app (template_hole 11, template_var 6),
+                       template_var 0),
+                     template_var 4),
+                   template_var 3),
+                 template_var 2),
+               template_var 1),
+             template_var 7)
+           ))),
+    ("Monitor.wf_until_aux_Cons3",
+     "wf_until_aux ?\<sigma> ?n ?R ?pos ?\<phi> ?I ?\<psi>
+       ((?t, ?a1.0, ?a2.0) # ?aux) ?ne ==>
+      qtable ?n (fv ?\<psi>) (mem_restr ?R)
+       (%v. EX j>=?ne.
+               j < Suc (?ne + length ?aux) &
+               mem (\<tau> ?\<sigma> j - \<tau> ?\<sigma> ?ne) ?I &
+               MFOTL.sat ?\<sigma> (map the v) j ?\<psi> &
+               (ALL k:{?ne..<j}.
+                   if ?pos then MFOTL.sat ?\<sigma> (map the v) k ?\<phi>
+                   else ~ MFOTL.sat ?\<sigma> (map the v) k ?\<phi>))
+       ?a2.0",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app
+                     (template_app
+                       (template_app
+                         (template_app
+                           (template_app
+                             (template_hole 27, template_var 11),
+                            template_var 10),
+                          template_var 9),
+                        template_var 8),
+                      template_var 7),
+                    template_var 6),
+                  template_var 5),
+                template_app
+                 (template_app
+                   (template_hole 26,
+                    template_app
+                     (template_app (template_hole 25, template_var 4),
+                      template_app
+                       (template_app (template_hole 24, template_var 3),
+                        template_var 2))),
+                  template_var 1)),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_app (template_hole 23, template_var 10),
+                   template_app
+                    (template_app (template_hole 22, template_hole 21),
+                     template_var 5)),
+                 template_app (template_hole 20, template_var 9)),
+               t_empty),
+             template_var 2)
+           ))),
+    ("Monitor.update_since",
+     "[| wf_since_aux ?\<sigma> ?n ?R ?pos ?\<phi> ?I ?\<psi> ?aux ?ne;
+         qtable ?n (fv ?\<phi>) (mem_restr ?R)
+          (%v. MFOTL.sat ?\<sigma> (map the v) ?ne ?\<phi>) ?rel1.0;
+         qtable ?n (fv ?\<psi>) (mem_restr ?R)
+          (%v. MFOTL.sat ?\<sigma> (map the v) ?ne ?\<psi>) ?rel2.0;
+         (?rel, ?aux') =
+         update_since ?I ?pos ?rel1.0 ?rel2.0 (\<tau> ?\<sigma> ?ne) ?aux;
+         fv ?\<phi> <= fv ?\<psi> |]
+      ==> qtable ?n (fv ?\<psi>) (mem_restr ?R)
+           (%v. MFOTL.sat ?\<sigma> (map the v) ?ne
+                 (Sincep ?pos ?\<phi> ?I ?\<psi>))
+           ?rel",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app
+                     (template_app
+                       (template_app
+                         (template_app
+                           (template_app
+                             (template_hole 15, template_var 12),
+                            template_var 11),
+                          template_var 10),
+                        template_var 9),
+                      template_var 8),
+                    template_var 7),
+                  template_var 6),
+                template_var 5),
+              template_var 4)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app (template_hole 14, template_var 11),
+                    template_app
+                     (template_app (template_hole 13, template_hole 12),
+                      template_var 8)),
+                  template_app (template_hole 11, template_var 10)),
+                t_empty),
+              template_var 3)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app (template_hole 14, template_var 11),
+                    template_app
+                     (template_app (template_hole 13, template_hole 12),
+                      template_var 6)),
+                  template_app (template_hole 11, template_var 10)),
+                t_empty),
+              template_var 2)
+            ),
+        template_equation
+         (template_app
+           (template_app (template_hole 6, template_var 1), template_var 0),
+          template_app
+           (template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app (template_hole 5, template_var 7),
+                    template_var 9),
+                  template_var 3),
+                template_var 2),
+              template_app
+               (template_app (template_hole 4, template_var 12),
+                template_var 4)),
+            template_var 5)),
+        template_inequation
+         (less_equals,
+          template_app
+           (template_app (template_hole 13, template_hole 12),
+            template_var 8),
+          template_app
+           (template_app (template_hole 13, template_hole 12),
+            template_var 6))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_app (template_hole 14, template_var 11),
+                   template_app
+                    (template_app (template_hole 13, template_hole 12),
+                     template_var 6)),
+                 template_app (template_hole 11, template_var 10)),
+               t_empty),
+             template_var 1)
+           ))),
+    ("Monitor.mbuf2t_take_induct",
+     "[| mbuf2t_take ?f ?z ?buf ?nts = (?z', ?buf', ?nts');
+         wf_mbuf2 ?i ?ja ?jb ?P ?Q ?buf; list_all2 ?R [?i..<?j] ?nts;
+         ?ja <= ?j; ?jb <= ?j; ?U ?i ?z;
+         !!k x y t z.
+            [| ?i <= k; Suc k <= ?ja; Suc k <= ?jb; ?P k x; ?Q k y; ?R k t;
+               ?U k z |]
+            ==> ?U (Suc k) (?f x y t z) |]
+      ==> ?U (min ?ja ?jb) ?z'",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app
+             (template_app
+               (template_app (template_hole 11, template_var 14),
+                template_var 13),
+              template_var 12),
+            template_var 11),
+          template_app
+           (template_app (template_hole 10, template_var 10),
+            template_app
+             (template_app (template_hole 9, template_var 9),
+              template_var 8))),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app
+                     (template_app (template_hole 8, template_var 7),
+                      template_var 6),
+                    template_var 5),
+                  template_var 4),
+                template_var 3),
+              template_var 12)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 7, template_var 2),
+                template_app
+                 (template_app (template_hole 6, template_var 7),
+                  template_var 1)),
+              template_var 11)
+            ),
+        template_inequation (less_equals, template_var 6, template_var 1),
+        template_inequation (less_equals, template_var 5, template_var 1),
+        template_predicate
+         (
+            template_app
+             (template_app (template_var 0, template_var 7),
+              template_var 13)
+            ),
+        template_predicate (template_app (template_hole 4, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_var 0,
+               template_app
+                (template_app (template_hole 0, template_var 6),
+                 template_var 5)),
+             template_var 10)
+           ))),
+    ("Monitor.mprev",
+     "[| mprev_next ?I ?xs ?ts = (?ys, ?xs', ?ts');
+         list_all2 ?P [?i..<?j'] ?xs;
+         list_all2 (%i t. t = \<tau> ?\<sigma> i) [?i..<?j] ?ts; ?i <= ?j';
+         ?i < ?j |]
+      ==> list_all2
+           (%i X. if mem (\<tau> ?\<sigma> (Suc i) - \<tau> ?\<sigma> i) ?I
+                  then ?P i X else X = empty_table)
+           [?i..<min ?j' (?j - 1)] ?ys &
+          list_all2 ?P [min ?j' (?j - 1)..<?j'] ?xs' &
+          list_all2 (%i t. t = \<tau> ?\<sigma> i) [min ?j' (?j - 1)..<?j]
+           ?ts'",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app
+             (template_app (template_hole 21, template_var 10),
+              template_var 9),
+            template_var 8),
+          template_app
+           (template_app (template_hole 20, template_var 7),
+            template_app
+             (template_app (template_hole 19, template_var 6),
+              template_var 5))),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 18, template_var 4),
+                template_app
+                 (template_app (template_hole 17, template_var 3),
+                  template_var 2)),
+              template_var 9)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 16, t_empty),
+                template_app
+                 (template_app (template_hole 17, template_var 3),
+                  template_var 0)),
+              template_var 8)
+            ),
+        template_inequation (less_equals, template_var 3, template_var 2),
+        template_inequation (less_than, template_var 3, template_var 0)],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 11,
+               template_app
+                (template_app
+                  (template_app (template_hole 18, t_empty),
+                   template_app
+                    (template_app (template_hole 17, template_var 3),
+                     template_app
+                      (template_app (template_hole 1, template_var 2),
+                       template_app
+                        (template_app (template_hole 8, template_var 0),
+                         template_hole 0)))),
+                 template_var 7)),
+             template_app
+              (template_app
+                (template_hole 11,
+                 template_app
+                  (template_app
+                    (template_app (template_hole 18, template_var 4),
+                     template_app
+                      (template_app
+                        (template_hole 17,
+                         template_app
+                          (template_app (template_hole 1, template_var 2),
+                           template_app
+                            (template_app (template_hole 8, template_var 0),
+                             template_hole 0))),
+                       template_var 2)),
+                   template_var 6)),
+               template_app
+                (template_app
+                  (template_app (template_hole 16, t_empty),
+                   template_app
+                    (template_app
+                      (template_hole 17,
+                       template_app
+                        (template_app (template_hole 1, template_var 2),
+                         template_app
+                          (template_app (template_hole 8, template_var 0),
+                           template_hole 0))),
+                     template_var 0)),
+                 template_var 5)))
+           ))),
+    ("Monitor.mbuf2t_take_add'",
+     "[| mbuf2t_take ?f ?z (mbuf2_add ?xs ?ys ?buf) ?nts =
+         (?z', ?buf', ?nts');
+         wf_mbuf2' ?\<sigma> ?j ?n ?R ?\<phi> ?\<psi> ?buf;
+         list_all2 (%i t. t = \<tau> ?\<sigma> i)
+          [min (Monitor.progress ?\<sigma> ?\<phi> ?j)
+            (Monitor.progress ?\<sigma> ?\<psi> ?j)..<
+           ?j']
+          ?nts;
+         list_all2
+          (%i. qtable ?n (fv ?\<phi>) (mem_restr ?R)
+                (%v. MFOTL.sat ?\<sigma> (map the v) i ?\<phi>))
+          [Monitor.progress ?\<sigma> ?\<phi> ?j..<
+           Monitor.progress ?\<sigma> ?\<phi> ?j']
+          ?xs;
+         list_all2
+          (%i. qtable ?n (fv ?\<psi>) (mem_restr ?R)
+                (%v. MFOTL.sat ?\<sigma> (map the v) i ?\<psi>))
+          [Monitor.progress ?\<sigma> ?\<psi> ?j..<
+           Monitor.progress ?\<sigma> ?\<psi> ?j']
+          ?ys;
+         ?j <= ?j' |]
+      ==> wf_ts ?\<sigma> ?j' ?\<phi> ?\<psi> ?nts'",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app
+             (template_app
+               (template_app (template_hole 20, template_var 15),
+                template_var 14),
+              template_app
+               (template_app
+                 (template_app (template_hole 19, template_var 13),
+                  template_var 12),
+                template_var 11)),
+            template_var 10),
+          template_app
+           (template_app (template_hole 18, template_var 9),
+            template_app
+             (template_app (template_hole 17, template_var 8),
+              template_var 7))),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app
+                     (template_app
+                       (template_app (template_hole 16, template_var 6),
+                        template_var 5),
+                      template_var 4),
+                    template_var 3),
+                  template_var 2),
+                template_var 1),
+              template_var 11)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 15, t_empty),
+                template_app
+                 (template_app
+                   (template_hole 12,
+                    template_app
+                     (template_app
+                       (template_hole 11,
+                        template_app
+                         (template_app
+                           (template_app (template_hole 10, template_var 6),
+                            template_var 2),
+                          template_var 5)),
+                      template_app
+                       (template_app
+                         (template_app (template_hole 10, template_var 6),
+                          template_var 1),
+                        template_var 5))),
+                  template_var 0)),
+              template_var 10)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 9, t_empty),
+                template_app
+                 (template_app
+                   (template_hole 12,
+                    template_app
+                     (template_app
+                       (template_app (template_hole 10, template_var 6),
+                        template_var 2),
+                      template_var 5)),
+                  template_app
+                   (template_app
+                     (template_app (template_hole 10, template_var 6),
+                      template_var 2),
+                    template_var 0))),
+              template_var 13)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 9, t_empty),
+                template_app
+                 (template_app
+                   (template_hole 12,
+                    template_app
+                     (template_app
+                       (template_app (template_hole 10, template_var 6),
+                        template_var 1),
+                      template_var 5)),
+                  template_app
+                   (template_app
+                     (template_app (template_hole 10, template_var 6),
+                      template_var 1),
+                    template_var 0))),
+              template_var 12)
+            ),
+        template_inequation (less_equals, template_var 5, template_var 0)],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_app (template_hole 0, template_var 6),
+                   template_var 0),
+                 template_var 2),
+               template_var 1),
+             template_var 7)
+           ))),
+    ("Monitor.mbuf2t_take_add'",
+     "[| mbuf2t_take ?f ?z (mbuf2_add ?xs ?ys ?buf) ?nts =
+         (?z', ?buf', ?nts');
+         wf_mbuf2' ?\<sigma> ?j ?n ?R ?\<phi> ?\<psi> ?buf;
+         list_all2 (%i t. t = \<tau> ?\<sigma> i)
+          [min (Monitor.progress ?\<sigma> ?\<phi> ?j)
+            (Monitor.progress ?\<sigma> ?\<psi> ?j)..<
+           ?j']
+          ?nts;
+         list_all2
+          (%i. qtable ?n (fv ?\<phi>) (mem_restr ?R)
+                (%v. MFOTL.sat ?\<sigma> (map the v) i ?\<phi>))
+          [Monitor.progress ?\<sigma> ?\<phi> ?j..<
+           Monitor.progress ?\<sigma> ?\<phi> ?j']
+          ?xs;
+         list_all2
+          (%i. qtable ?n (fv ?\<psi>) (mem_restr ?R)
+                (%v. MFOTL.sat ?\<sigma> (map the v) i ?\<psi>))
+          [Monitor.progress ?\<sigma> ?\<psi> ?j..<
+           Monitor.progress ?\<sigma> ?\<psi> ?j']
+          ?ys;
+         ?j <= ?j' |]
+      ==> wf_mbuf2' ?\<sigma> ?j' ?n ?R ?\<phi> ?\<psi> ?buf'",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app
+             (template_app
+               (template_app (template_hole 19, template_var 15),
+                template_var 14),
+              template_app
+               (template_app
+                 (template_app (template_hole 18, template_var 13),
+                  template_var 12),
+                template_var 11)),
+            template_var 10),
+          template_app
+           (template_app (template_hole 17, template_var 9),
+            template_app
+             (template_app (template_hole 16, template_var 8),
+              template_var 7))),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app
+                     (template_app
+                       (template_app (template_hole 15, template_var 6),
+                        template_var 5),
+                      template_var 4),
+                    template_var 3),
+                  template_var 2),
+                template_var 1),
+              template_var 11)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 14, t_empty),
+                template_app
+                 (template_app
+                   (template_hole 11,
+                    template_app
+                     (template_app
+                       (template_hole 10,
+                        template_app
+                         (template_app
+                           (template_app (template_hole 9, template_var 6),
+                            template_var 2),
+                          template_var 5)),
+                      template_app
+                       (template_app
+                         (template_app (template_hole 9, template_var 6),
+                          template_var 1),
+                        template_var 5))),
+                  template_var 0)),
+              template_var 10)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 8, t_empty),
+                template_app
+                 (template_app
+                   (template_hole 11,
+                    template_app
+                     (template_app
+                       (template_app (template_hole 9, template_var 6),
+                        template_var 2),
+                      template_var 5)),
+                  template_app
+                   (template_app
+                     (template_app (template_hole 9, template_var 6),
+                      template_var 2),
+                    template_var 0))),
+              template_var 13)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 8, t_empty),
+                template_app
+                 (template_app
+                   (template_hole 11,
+                    template_app
+                     (template_app
+                       (template_app (template_hole 9, template_var 6),
+                        template_var 1),
+                      template_var 5)),
+                  template_app
+                   (template_app
+                     (template_app (template_hole 9, template_var 6),
+                      template_var 1),
+                    template_var 0))),
+              template_var 12)
+            ),
+        template_inequation (less_equals, template_var 5, template_var 0)],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_app
+                    (template_app
+                      (template_app (template_hole 15, template_var 6),
+                       template_var 0),
+                     template_var 4),
+                   template_var 3),
+                 template_var 2),
+               template_var 1),
+             template_var 8)
+           ))),
+    ("Monitor.mnext",
+     "[| mprev_next ?I ?xs ?ts = (?ys, ?xs', ?ts');
+         list_all2 ?P [Suc ?i..<?j'] ?xs;
+         list_all2 (%i t. t = \<tau> ?\<sigma> i) [?i..<?j] ?ts;
+         Suc ?i <= ?j'; ?i < ?j |]
+      ==> list_all2
+           (%i X. if mem (\<tau> ?\<sigma> (Suc i) - \<tau> ?\<sigma> i) ?I
+                  then ?P (Suc i) X else X = empty_table)
+           [?i..<min (?j' - 1) (?j - 1)] ?ys &
+          list_all2 ?P [Suc (min (?j' - 1) (?j - 1))..<?j'] ?xs' &
+          list_all2 (%i t. t = \<tau> ?\<sigma> i)
+           [min (?j' - 1) (?j - 1)..<?j] ?ts'",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app
+             (template_app (template_hole 21, template_var 10),
+              template_var 9),
+            template_var 8),
+          template_app
+           (template_app (template_hole 20, template_var 7),
+            template_app
+             (template_app (template_hole 19, template_var 6),
+              template_var 5))),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 18, template_var 4),
+                template_app
+                 (template_app
+                   (template_hole 17,
+                    template_app (template_hole 16, template_var 3)),
+                  template_var 2)),
+              template_var 9)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 15, t_empty),
+                template_app
+                 (template_app (template_hole 17, template_var 3),
+                  template_var 0)),
+              template_var 8)
+            ),
+        template_inequation
+         (less_equals, template_app (template_hole 16, template_var 3),
+          template_var 2),
+        template_inequation (less_than, template_var 3, template_var 0)],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 10,
+               template_app
+                (template_app
+                  (template_app (template_hole 18, t_empty),
+                   template_app
+                    (template_app (template_hole 17, template_var 3),
+                     template_app
+                      (template_app
+                        (template_hole 1,
+                         template_app
+                          (template_app (template_hole 7, template_var 2),
+                           template_hole 0)),
+                       template_app
+                        (template_app (template_hole 7, template_var 0),
+                         template_hole 0)))),
+                 template_var 7)),
+             template_app
+              (template_app
+                (template_hole 10,
+                 template_app
+                  (template_app
+                    (template_app (template_hole 18, template_var 4),
+                     template_app
+                      (template_app
+                        (template_hole 17,
+                         template_app
+                          (template_hole 16,
+                           template_app
+                            (template_app
+                              (template_hole 1,
+                               template_app
+                                (template_app
+                                  (template_hole 7, template_var 2),
+                                 template_hole 0)),
+                             template_app
+                              (template_app
+                                (template_hole 7, template_var 0),
+                               template_hole 0)))),
+                       template_var 2)),
+                   template_var 6)),
+               template_app
+                (template_app
+                  (template_app (template_hole 15, t_empty),
+                   template_app
+                    (template_app
+                      (template_hole 17,
+                       template_app
+                        (template_app
+                          (template_hole 1,
+                           template_app
+                            (template_app (template_hole 7, template_var 2),
+                             template_hole 0)),
+                         template_app
+                          (template_app (template_hole 7, template_var 0),
+                           template_hole 0))),
+                     template_var 0)),
+                 template_var 5)))
+           ))),
+    ("Monitor.wf_since_aux_UNIV_alt",
+     "wf_since_aux ?\<sigma> ?n UNIV ?pos ?\<phi> ?I ?\<psi> ?aux ?ne =
+      (sorted_wrt (%x y. fst y < fst x) ?aux &
+       (ALL t X.
+           (t, X) : set ?aux -->
+           ?ne ~= 0 &
+           t <= \<tau> ?\<sigma> (?ne - 1) &
+           enat (\<tau> ?\<sigma> (?ne - 1) - t) <= Interval.right ?I &
+           (EX i. \<tau> ?\<sigma> i = t) &
+           wf_table ?n (fv ?\<psi>)
+            (%v. MFOTL.sat ?\<sigma> (map the v) (?ne - 1)
+                  (Sincep ?pos ?\<phi>
+                    (point (\<tau> ?\<sigma> (?ne - 1) - t)) ?\<psi>))
+            X) &
+       (ALL t.
+           ?ne ~= 0 &
+           t <= \<tau> ?\<sigma> (?ne - 1) &
+           enat (\<tau> ?\<sigma> (?ne - 1) - t) <= Interval.right ?I &
+           (EX i. \<tau> ?\<sigma> i = t) -->
+           (EX X. (t, X) : set ?aux)))",
+     template_equation
+      (template_app
+        (template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_app
+                    (template_app
+                      (template_app (template_hole 33, template_var 7),
+                       template_var 6),
+                     template_hole 32),
+                   template_var 5),
+                 template_var 4),
+               template_var 3),
+             template_var 2),
+           template_var 1),
+         template_var 0),
+       template_app
+        (template_app
+          (template_hole 31,
+           template_app
+            (template_app (template_hole 30, t_empty), template_var 1)),
+         template_app
+          (template_app
+            (template_hole 31, template_app (template_hole 27, t_empty)),
+           template_app (template_hole 27, t_empty))))),
+    ("Monitor.mbuf2_take_add'",
+     "[| mbuf2_take ?f (mbuf2_add ?xs ?ys ?buf) = (?zs, ?buf');
+         wf_mbuf2' ?\<sigma> ?j ?n ?R ?\<phi> ?\<psi> ?buf;
+         list_all2
+          (%i. qtable ?n (fv ?\<phi>) (mem_restr ?R)
+                (%v. MFOTL.sat ?\<sigma> (map the v) i ?\<phi>))
+          [Monitor.progress ?\<sigma> ?\<phi> ?j..<
+           Monitor.progress ?\<sigma> ?\<phi> ?j']
+          ?xs;
+         list_all2
+          (%i. qtable ?n (fv ?\<psi>) (mem_restr ?R)
+                (%v. MFOTL.sat ?\<sigma> (map the v) i ?\<psi>))
+          [Monitor.progress ?\<sigma> ?\<psi> ?j..<
+           Monitor.progress ?\<sigma> ?\<psi> ?j']
+          ?ys;
+         ?j <= ?j' |]
+      ==> list_all2
+           (%i Z. EX X Y.
+                     qtable ?n (fv ?\<phi>) (mem_restr ?R)
+                      (%v. MFOTL.sat ?\<sigma> (map the v) i ?\<phi>) X &
+                     qtable ?n (fv ?\<psi>) (mem_restr ?R)
+                      (%v. MFOTL.sat ?\<sigma> (map the v) i ?\<psi>) Y &
+                     Z = ?f X Y)
+           [min (Monitor.progress ?\<sigma> ?\<phi> ?j)
+             (Monitor.progress ?\<sigma> ?\<psi> ?j)..<
+            min (Monitor.progress ?\<sigma> ?\<phi> ?j')
+             (Monitor.progress ?\<sigma> ?\<psi> ?j')]
+           ?zs",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app (template_hole 19, template_var 12),
+            template_app
+             (template_app
+               (template_app (template_hole 18, template_var 11),
+                template_var 10),
+              template_var 9)),
+          template_app
+           (template_app (template_hole 17, template_var 8),
+            template_var 7)),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app
+                     (template_app
+                       (template_app (template_hole 16, template_var 6),
+                        template_var 5),
+                      template_var 4),
+                    template_var 3),
+                  template_var 2),
+                template_var 1),
+              template_var 9)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 15, t_empty),
+                template_app
+                 (template_app
+                   (template_hole 7,
+                    template_app
+                     (template_app
+                       (template_app (template_hole 6, template_var 6),
+                        template_var 2),
+                      template_var 5)),
+                  template_app
+                   (template_app
+                     (template_app (template_hole 6, template_var 6),
+                      template_var 2),
+                    template_var 0))),
+              template_var 11)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 15, t_empty),
+                template_app
+                 (template_app
+                   (template_hole 7,
+                    template_app
+                     (template_app
+                       (template_app (template_hole 6, template_var 6),
+                        template_var 1),
+                      template_var 5)),
+                  template_app
+                   (template_app
+                     (template_app (template_hole 6, template_var 6),
+                      template_var 1),
+                    template_var 0))),
+              template_var 10)
+            ),
+        template_inequation (less_equals, template_var 5, template_var 0)],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app (template_hole 4, t_empty),
+               template_app
+                (template_app
+                  (template_hole 7,
+                   template_app
+                    (template_app
+                      (template_hole 0,
+                       template_app
+                        (template_app
+                          (template_app (template_hole 6, template_var 6),
+                           template_var 2),
+                         template_var 5)),
+                     template_app
+                      (template_app
+                        (template_app (template_hole 6, template_var 6),
+                         template_var 1),
+                       template_var 5))),
+                 template_app
+                  (template_app
+                    (template_hole 0,
+                     template_app
+                      (template_app
+                        (template_app (template_hole 6, template_var 6),
+                         template_var 2),
+                       template_var 0)),
+                   template_app
+                    (template_app
+                      (template_app (template_hole 6, template_var 6),
+                       template_var 1),
+                     template_var 0)))),
+             template_var 8)
+           ))),
+    ("Monitor.wf_until_aux_UNIV_alt",
+     "wf_until_aux ?\<sigma> ?n UNIV ?pos ?\<phi> ?I ?\<psi> ?aux ?ne =
+      list_all2
+       (%x i. case x of
+              (t, r1, r2) =>
+                t = \<tau> ?\<sigma> i &
+                wf_table ?n (fv ?\<phi>)
+                 (%v. if ?pos
+                      then ALL k:{i..<?ne + length ?aux}.
+                              MFOTL.sat ?\<sigma> (map the v) k ?\<phi>
+                      else EX k:{i..<?ne + length ?aux}.
+                              MFOTL.sat ?\<sigma> (map the v) k ?\<phi>)
+                 r1 &
+                wf_table ?n (fv ?\<psi>)
+                 (%v. EX j>=i.
+                         j < ?ne + length ?aux &
+                         mem (\<tau> ?\<sigma> j - \<tau> ?\<sigma> i) ?I &
+                         MFOTL.sat ?\<sigma> (map the v) j ?\<psi> &
+                         (ALL k:{i..<j}.
+                             if ?pos
+                             then MFOTL.sat ?\<sigma> (map the v) k ?\<phi>
+                             else ~ MFOTL.sat ?\<sigma> (map the v) k
+                                     ?\<phi>))
+                 r2)
+       ?aux [?ne..<?ne + length ?aux]",
+     template_equation
+      (template_app
+        (template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_app
+                    (template_app
+                      (template_app (template_hole 30, template_var 7),
+                       template_var 6),
+                     template_hole 29),
+                   template_var 5),
+                 template_var 4),
+               template_var 3),
+             template_var 2),
+           template_var 1),
+         template_var 0),
+       template_app
+        (template_app
+          (template_app (template_hole 28, t_empty), template_var 1),
+         template_app
+          (template_app (template_hole 0, template_var 0),
+           template_app
+            (template_app (template_hole 15, template_var 0),
+             template_app (template_hole 14, template_var 1)))))),
+    ("Monitor.mbuf2t_take_add_induct'",
+     "[| mbuf2t_take ?f ?z (mbuf2_add ?xs ?ys ?buf) ?nts =
+         (?z', ?buf', ?nts');
+         wf_mbuf2' ?\<sigma> ?j ?n ?R ?\<phi> ?\<psi> ?buf;
+         list_all2 (%i t. t = \<tau> ?\<sigma> i)
+          [min (Monitor.progress ?\<sigma> ?\<phi> ?j)
+            (Monitor.progress ?\<sigma> ?\<psi> ?j)..<
+           ?j']
+          ?nts;
+         list_all2
+          (%i. qtable ?n (fv ?\<phi>) (mem_restr ?R)
+                (%v. MFOTL.sat ?\<sigma> (map the v) i ?\<phi>))
+          [Monitor.progress ?\<sigma> ?\<phi> ?j..<
+           Monitor.progress ?\<sigma> ?\<phi> ?j']
+          ?xs;
+         list_all2
+          (%i. qtable ?n (fv ?\<psi>) (mem_restr ?R)
+                (%v. MFOTL.sat ?\<sigma> (map the v) i ?\<psi>))
+          [Monitor.progress ?\<sigma> ?\<psi> ?j..<
+           Monitor.progress ?\<sigma> ?\<psi> ?j']
+          ?ys;
+         ?j <= ?j';
+         ?U (min (Monitor.progress ?\<sigma> ?\<phi> ?j)
+              (Monitor.progress ?\<sigma> ?\<psi> ?j))
+          ?z;
+         !!k X Y z.
+            [| min (Monitor.progress ?\<sigma> ?\<phi> ?j)
+                (Monitor.progress ?\<sigma> ?\<psi> ?j)
+               <= k;
+               Suc k <= Monitor.progress ?\<sigma> ?\<phi> ?j';
+               Suc k <= Monitor.progress ?\<sigma> ?\<psi> ?j';
+               qtable ?n (fv ?\<phi>) (mem_restr ?R)
+                (%v. MFOTL.sat ?\<sigma> (map the v) k ?\<phi>) X;
+               qtable ?n (fv ?\<psi>) (mem_restr ?R)
+                (%v. MFOTL.sat ?\<sigma> (map the v) k ?\<psi>) Y;
+               ?U k z |]
+            ==> ?U (Suc k) (?f X Y (\<tau> ?\<sigma> k) z) |]
+      ==> ?U (min (Monitor.progress ?\<sigma> ?\<phi> ?j')
+               (Monitor.progress ?\<sigma> ?\<psi> ?j'))
+           ?z'",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app
+             (template_app
+               (template_app (template_hole 23, template_var 16),
+                template_var 15),
+              template_app
+               (template_app
+                 (template_app (template_hole 22, template_var 14),
+                  template_var 13),
+                template_var 12)),
+            template_var 11),
+          template_app
+           (template_app (template_hole 21, template_var 10),
+            template_app
+             (template_app (template_hole 20, template_var 9),
+              template_var 8))),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app
+                     (template_app
+                       (template_app (template_hole 19, template_var 7),
+                        template_var 6),
+                      template_var 5),
+                    template_var 4),
+                  template_var 3),
+                template_var 2),
+              template_var 12)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 18, t_empty),
+                template_app
+                 (template_app
+                   (template_hole 15,
+                    template_app
+                     (template_app
+                       (template_hole 14,
+                        template_app
+                         (template_app
+                           (template_app (template_hole 13, template_var 7),
+                            template_var 3),
+                          template_var 6)),
+                      template_app
+                       (template_app
+                         (template_app (template_hole 13, template_var 7),
+                          template_var 2),
+                        template_var 6))),
+                  template_var 1)),
+              template_var 11)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 12, t_empty),
+                template_app
+                 (template_app
+                   (template_hole 15,
+                    template_app
+                     (template_app
+                       (template_app (template_hole 13, template_var 7),
+                        template_var 3),
+                      template_var 6)),
+                  template_app
+                   (template_app
+                     (template_app (template_hole 13, template_var 7),
+                      template_var 3),
+                    template_var 1))),
+              template_var 14)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 12, t_empty),
+                template_app
+                 (template_app
+                   (template_hole 15,
+                    template_app
+                     (template_app
+                       (template_app (template_hole 13, template_var 7),
+                        template_var 2),
+                      template_var 6)),
+                  template_app
+                   (template_app
+                     (template_app (template_hole 13, template_var 7),
+                      template_var 2),
+                    template_var 1))),
+              template_var 13)
+            ),
+        template_inequation (less_equals, template_var 6, template_var 1),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_var 0,
+                template_app
+                 (template_app
+                   (template_hole 14,
+                    template_app
+                     (template_app
+                       (template_app (template_hole 13, template_var 7),
+                        template_var 3),
+                      template_var 6)),
+                  template_app
+                   (template_app
+                     (template_app (template_hole 13, template_var 7),
+                      template_var 2),
+                    template_var 6))),
+              template_var 15)
+            ),
+        template_predicate (template_app (template_hole 3, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_var 0,
+               template_app
+                (template_app
+                  (template_hole 14,
+                   template_app
+                    (template_app
+                      (template_app (template_hole 13, template_var 7),
+                       template_var 3),
+                     template_var 1)),
+                 template_app
+                  (template_app
+                    (template_app (template_hole 13, template_var 7),
+                     template_var 2),
+                   template_var 1))),
+             template_var 10)
+           )))]:
+   (string * thm * template) list
+### theory "Draft.MonitorTemplates"
+### 0.497s elapsed time, 0.694s cpu time, 0.074s GC time
+val it = (): unit

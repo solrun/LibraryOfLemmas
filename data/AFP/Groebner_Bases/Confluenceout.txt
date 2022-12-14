@@ -1,0 +1,504 @@
+Loading theory "Draft.Confluence" (required by "Draft.ConfluenceTemplates")
+Loading theory "Draft.Templates" (required by "Draft.ConfluenceTemplates" via "Draft.ExtrEqs")
+datatype template_term
+=
+     t_empty
+   | template_app of template_term * template_term
+   | template_hole of int
+   | template_var of int
+datatype sign
+= equals | greater_equals | greater_than | less_equals | less_than
+datatype template
+=
+     template_bimplication of template * template
+   | template_dunno
+   | template_equation of template_term * template_term
+   | template_implication of template list * template
+   | template_inequation of sign * template_term * template_term
+   | template_negation of template
+   | template_predicate of template_term
+constructor t_empty: template_term
+constructor template_app: template_term * template_term -> template_term
+constructor template_hole: int -> template_term
+constructor template_var: int -> template_term
+constructor equals: sign
+constructor greater_equals: sign
+constructor greater_than: sign
+constructor less_equals: sign
+constructor less_than: sign
+constructor template_bimplication: template * template -> template
+constructor template_dunno: template
+constructor template_equation: template_term * template_term -> template
+constructor template_implication: template list * template -> template
+constructor template_inequation:
+   sign * template_term * template_term -> template
+constructor template_negation: template -> template
+constructor template_predicate: template_term -> template
+val vfs = fn: term -> (indexname * typ) list * (string * typ) list
+val indexOf = fn: ''a list -> ''a -> int -> int
+val has_eq = fn: term -> bool
+val term2template = fn:
+   (indexname * typ) list -> (string * typ) list -> term -> template_term
+val lemma2predicate = fn: term -> term -> template
+val makeTemplatewithContext = fn: term -> term -> template
+val lemma2template = fn: term -> template
+val thm2template = fn: thm -> template
+val tterm2string = fn: template_term -> string
+val template2string = fn: template -> string
+val t = "height ?t <= size ?t": thm
+val th =
+   Const ("HOL.Trueprop", "bool => prop") $
+     (Const ("Orderings.ord_class.less_eq", "nat => nat => bool") $
+       (Const ("Tree.height_class.height", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree")) $
+       (Const ("Nat.size_class.size", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree"))):
+   term
+### theory "Draft.Templates"
+### 0.063s elapsed time, 0.152s cpu time, 0.000s GC time
+Loading theory "Draft.ExtrEqs" (required by "Draft.ConfluenceTemplates")
+locale relation
+  fixes r :: "'a => 'a => bool"  (infixl \<open>\<rightarrow>\<close> 50)
+locale relation_order
+  fixes r :: "'a => 'a => bool"  (infixl \<open>\<rightarrow>\<close> 50)
+    and ord :: "'a => 'a => bool"
+    and A :: "'a set"
+  assumes "relation_order (\<rightarrow>) ord A"
+### theory "Draft.Confluence"
+### 0.394s elapsed time, 0.798s cpu time, 0.058s GC time
+val eqpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Var (("_dummy_", 2), "?'a"))
+       ):
+   term Find_Theorems.criterion
+val badeqpattern = Pattern (Const ("Pure.eq", "?'a => ?'a => prop")):
+   term Find_Theorems.criterion
+val undefpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Const ("HOL.undefined", "?'a"))
+       ):
+   term Find_Theorems.criterion
+val thmpattern =
+   Pattern
+    (Const ("HOL.Trueprop", "bool => prop") $ Var (("_dummy_", 1), "bool")):
+   term Find_Theorems.criterion
+val badnames =
+   ["*nitpick*", "*Nitpick*", "*full_exhaustive*", "*_def*", "Enum.finite*",
+    "*Quickcheck*", "ATP*", "*Nunchaku*", "*Code*", "*BNF*", "*SMT*",
+    "*.*.*"]:
+   string list
+val unwanted_names =
+   [(false, Name "*nitpick*"), (false, Name "*Nitpick*"),
+    (false, Name "*full_exhaustive*"), (false, Name "*_def*"),
+    (false, Name "Enum.finite*"), (false, Name "*Quickcheck*"),
+    (false, Name "ATP*"), (false, Name "*Nunchaku*"),
+    (false, Name "*Code*"), (false, Name "*BNF*"), (false, Name "*SMT*"),
+    (false, Name "*.*.*")]:
+   (bool * term Find_Theorems.criterion) list
+val has_vars = fn: term -> bool
+val get_all_eqs = fn: string -> Proof.context -> (string * thm) list
+val get_all_thms = fn: string -> Proof.context -> (string * thm) list
+val get_noneq_thms = fn: string -> Proof.context -> (string * thm) list
+val template_eqs = fn:
+   string -> Proof.context -> (string * thm * template) list
+val template_thms = fn:
+   string -> Proof.context -> (string * thm * template) list
+### theory "Draft.ExtrEqs"
+### 0.556s elapsed time, 0.885s cpu time, 0.058s GC time
+Loading theory "Draft.ConfluenceTemplates"
+val templateLemmas =
+   [("Confluence.cbelow_on_first_in",
+     "cbelow_on ?A ?ord ?z ?rel ?a ?b ==> ?a : ?A",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app
+                     (template_app (template_hole 1, template_var 5),
+                      template_var 4),
+                    template_var 3),
+                  template_var 2),
+                template_var 1),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 0, template_var 1), template_var 5)
+           ))),
+    ("Confluence.cbelow_on_second_in",
+     "cbelow_on ?A ?ord ?z ?rel ?a ?b ==> ?b : ?A",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app
+                     (template_app (template_hole 1, template_var 5),
+                      template_var 4),
+                    template_var 3),
+                  template_var 2),
+                template_var 1),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 0, template_var 0), template_var 5)
+           ))),
+    ("Confluence.cbelow_on_first_below",
+     "cbelow_on ?A ?ord ?z ?rel ?a ?b ==> ?ord ?a ?z",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app
+                     (template_app (template_hole 0, template_var 5),
+                      template_var 4),
+                    template_var 3),
+                  template_var 2),
+                template_var 1),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app (template_var 4, template_var 1), template_var 3)
+           ))),
+    ("Confluence.cbelow_on_second_below",
+     "cbelow_on ?A ?ord ?z ?rel ?a ?b ==> ?ord ?b ?z",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app
+                     (template_app (template_hole 0, template_var 5),
+                      template_var 4),
+                    template_var 3),
+                  template_var 2),
+                template_var 1),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app (template_var 4, template_var 0), template_var 3)
+           ))),
+    ("Confluence.loc_connectivity_equiv_ChurchRosser",
+     "relation_order ?r ?ord UNIV ==>
+      relation.is_ChurchRosser ?r = is_loc_connective_on UNIV ?ord ?r",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 4, template_var 1),
+                template_var 0),
+              template_hole 3)
+            )],
+       template_equation
+        (template_app (template_hole 1, template_var 1),
+         template_app
+          (template_app
+            (template_app (template_hole 0, template_hole 3),
+             template_var 0),
+           template_var 1)))),
+    ("Confluence.wfp_on_finite",
+     "[| irreflp ?rel; transp ?rel; finite ?A |] ==> wfp_on ?rel ?A",
+     template_implication
+      ([template_predicate (template_app (template_hole 3, template_var 1)),
+        template_predicate (template_app (template_hole 2, template_var 1)),
+        template_predicate
+         (template_app (template_hole 1, template_var 0))],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 0, template_var 1), template_var 0)
+           ))),
+    ("Confluence.wfp_on_imp_wfP",
+     "wfp_on ?r ?A ==> wfP (%x y. ?r x y & x : ?A & y : ?A)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 3, template_var 1),
+              template_var 0)
+            )],
+       template_predicate (template_app (template_hole 2, t_empty)))),
+    ("Confluence.cbelow_on_symmetric",
+     "[| cbelow_on ?A ?ord ?z ?rel ?a ?b; symp ?rel |]
+      ==> cbelow_on ?A ?ord ?z ?rel ?b ?a",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app
+                     (template_app (template_hole 1, template_var 5),
+                      template_var 4),
+                    template_var 3),
+                  template_var 2),
+                template_var 1),
+              template_var 0)
+            ),
+        template_predicate
+         (template_app (template_hole 0, template_var 2))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_app
+                    (template_app (template_hole 1, template_var 5),
+                     template_var 4),
+                   template_var 3),
+                 template_var 2),
+               template_var 0),
+             template_var 1)
+           ))),
+    ("Confluence.wfp_onI_chain",
+     "\<nexists>f. ALL i. f i : ?A & ?r (f (Suc i)) (f i) ==> wfp_on ?r ?A",
+     template_implication
+      ([template_negation
+         (template_predicate (template_app (template_hole 5, t_empty)))],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 0, template_var 0), template_var 1)
+           ))),
+    ("Confluence.cbelow_on_mono",
+     "[| cbelow_on ?A ?ord ?z ?rel ?a ?b; ?A <= ?B |]
+      ==> cbelow_on ?B ?ord ?z ?rel ?a ?b",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app
+                     (template_app (template_hole 1, template_var 6),
+                      template_var 5),
+                    template_var 4),
+                  template_var 3),
+                template_var 2),
+              template_var 1)
+            ),
+        template_inequation (less_equals, template_var 6, template_var 0)],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_app
+                    (template_app (template_hole 1, template_var 0),
+                     template_var 5),
+                   template_var 4),
+                 template_var 3),
+               template_var 2),
+             template_var 1)
+           ))),
+    ("Confluence.cbelow_on_transitive",
+     "[| cbelow_on ?A ?ord ?z ?rel ?a ?b; cbelow_on ?A ?ord ?z ?rel ?b ?c |]
+      ==> cbelow_on ?A ?ord ?z ?rel ?a ?c",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app
+                     (template_app (template_hole 0, template_var 6),
+                      template_var 5),
+                    template_var 4),
+                  template_var 3),
+                template_var 2),
+              template_var 1)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app
+                     (template_app (template_hole 0, template_var 6),
+                      template_var 5),
+                    template_var 4),
+                  template_var 3),
+                template_var 1),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_app
+                    (template_app (template_hole 0, template_var 6),
+                     template_var 5),
+                   template_var 4),
+                 template_var 3),
+               template_var 2),
+             template_var 0)
+           ))),
+    ("Confluence.cbelow_on_intro",
+     "[| cbelow_on ?A ?ord ?z ?rel ?a ?b; ?c : ?A; ?rel ?b ?c; ?ord ?c ?z |]
+      ==> cbelow_on ?A ?ord ?z ?rel ?a ?c",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app
+                     (template_app (template_hole 1, template_var 6),
+                      template_var 5),
+                    template_var 4),
+                  template_var 3),
+                template_var 2),
+              template_var 1)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 0, template_var 0),
+              template_var 6)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_var 3, template_var 1), template_var 0)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_var 5, template_var 0), template_var 4)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_app
+                    (template_app (template_hole 1, template_var 6),
+                     template_var 5),
+                   template_var 4),
+                 template_var 3),
+               template_var 2),
+             template_var 0)
+           ))),
+    ("Confluence.wfp_onI_min",
+     "(!!x Q.
+          [| x : Q; Q <= ?A |] ==> EX z:Q. ALL y:?A. ?r y z --> y ~: Q) ==>
+      wfp_on ?r ?A",
+     template_implication
+      ([template_predicate (template_app (template_hole 9, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 0, template_var 0), template_var 1)
+           ))),
+    ("Confluence.wfp_onE_min",
+     "[| wfp_on ?r ?A; ?x : ?Q; ?Q <= ?A;
+         !!z. [| z : ?Q; !!y. ?r y z ==> y ~: ?Q |] ==> ?thesis |]
+      ==> ?thesis",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 4, template_var 4),
+              template_var 3)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 3, template_var 2),
+              template_var 1)
+            ),
+        template_inequation (less_equals, template_var 1, template_var 3),
+        template_predicate (template_app (template_hole 1, t_empty))],
+       template_predicate (template_var 0))),
+    ("Confluence.finite_minimalE",
+     "[| finite ?A; ?A ~= {}; irreflp ?rel; transp ?rel;
+         !!a. [| a : ?A; !!b. ?rel b a ==> b ~: ?A |] ==> ?thesis |]
+      ==> ?thesis",
+     template_implication
+      ([template_predicate (template_app (template_hole 7, template_var 2)),
+        template_negation
+         (template_equation (template_var 2, template_hole 4)),
+        template_predicate (template_app (template_hole 3, template_var 1)),
+        template_predicate (template_app (template_hole 2, template_var 1)),
+        template_predicate (template_app (template_hole 1, t_empty))],
+       template_predicate (template_var 0))),
+    ("Confluence.cbelow_on_induct",
+     "[| cbelow_on ?A ?ord ?z ?rel ?a ?b;
+         [| ?a : ?A; ?ord ?a ?z |] ==> ?P ?a;
+         !!b c.
+            [| cbelow_on ?A ?ord ?z ?rel ?a b; ?rel b c; c : ?A; ?ord c ?z;
+               ?P b |]
+            ==> ?P c |]
+      ==> ?P ?b",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app
+                     (template_app (template_hole 2, template_var 6),
+                      template_var 5),
+                    template_var 4),
+                  template_var 3),
+                template_var 2),
+              template_var 1)
+            ),
+        template_implication
+         ([template_predicate
+            (
+               template_app
+                (template_app (template_hole 1, template_var 2),
+                 template_var 6)
+               )],
+          template_implication
+           ([template_predicate
+              (
+                 template_app
+                  (template_app (template_var 5, template_var 2),
+                   template_var 4)
+                 )],
+            template_predicate
+             (template_app (template_var 0, template_var 2)))),
+        template_predicate (template_app (template_hole 0, t_empty))],
+       template_predicate
+        (template_app (template_var 0, template_var 1))))]:
+   (string * thm * template) list
+### theory "Draft.ConfluenceTemplates"
+### 0.357s elapsed time, 0.509s cpu time, 0.089s GC time
+val it = (): unit

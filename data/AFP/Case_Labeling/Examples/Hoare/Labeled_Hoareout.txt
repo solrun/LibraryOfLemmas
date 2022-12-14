@@ -1,0 +1,2349 @@
+Loading theory "Draft.Case_Labeling" (required by "Draft.Labeled_HoareMoreTemplates" via "Draft.Labeled_Hoare")
+Loading theory "HOL-Hoare.Hoare_Syntax" (required by "Draft.Labeled_HoareMoreTemplates" via "Draft.Labeled_Hoare" via "HOL-Hoare.Hoare_Logic")
+Loading theory "HOL-Library.Function_Algebras" (required by "Draft.Labeled_HoareMoreTemplates" via "Draft.ExtrEqs" via "HOL-Library.BigO")
+Loading theory "HOL-Hoare.Hoare_Tac" (required by "Draft.Labeled_HoareMoreTemplates" via "Draft.Labeled_Hoare" via "HOL-Hoare.Hoare_Logic")
+instantiation
+  fun :: (type, plus) plus
+  plus_fun == plus :: ('a => 'b) => ('a => 'b) => 'a => 'b
+instantiation
+  fun :: (type, zero) zero
+  zero_fun == zero_class.zero :: 'a => 'b
+instantiation
+  fun :: (type, times) times
+  times_fun == times :: ('a => 'b) => ('a => 'b) => 'a => 'b
+instantiation
+  fun :: (type, one) one
+  one_fun == one_class.one :: 'a => 'b
+locale Labeling_Syntax
+### theory "HOL-Library.Function_Algebras"
+### 0.130s elapsed time, 0.534s cpu time, 0.054s GC time
+Loading theory "HOL-Library.Nat_Bijection" (required by "Draft.Labeled_HoareMoreTemplates" via "Draft.ExtrEqs" via "HOL-Library.Stream")
+signature PRINT_NESTED_CASES =
+  sig
+    val pretty_cases: Proof.context -> Pretty.T
+    val print_cases: Proof.context -> unit
+  end
+structure Print_Nested_Cases: PRINT_NESTED_CASES
+infix 1 THEN_CONTEXT
+infix 1 THEN_ALL_NEW_FWD
+signature BASIC_UTIL =
+  sig
+    val INTERVAL_FWD: (int -> tactic) -> int -> int -> tactic
+    val REPEAT_ALL_NEW_FWD: (int -> tactic) -> int -> tactic
+    val THEN_ALL_NEW_FWD: (int -> tactic) * (int -> tactic) -> int -> tactic
+    val THEN_CONTEXT: tactic * context_tactic -> context_tactic
+  end
+signature UTIL =
+  sig
+    val INTERVAL_FWD: (int -> tactic) -> int -> int -> tactic
+    val REPEAT_ALL_NEW_FWD: (int -> tactic) -> int -> tactic
+    val SIMPLE_METHOD_CASES: context_tactic -> Method.method
+    val THEN_ALL_NEW_FWD: (int -> tactic) * (int -> tactic) -> int -> tactic
+    val THEN_CONTEXT: tactic * context_tactic -> context_tactic
+    val appair: ('a -> 'b) -> ('c -> 'd) -> 'a * 'c -> 'b * 'd
+    val dest_bool: term -> bool
+    val dest_option: term -> term option
+    val dest_pair: term -> term * term
+    val dest_tuple: term -> term list
+    val fst_ord: ('a * 'a -> order) -> ('a * 'b) * ('a * 'b) -> order
+    val infst: ('a -> 'b -> 'c * 'b) -> 'a * 'd -> 'b -> ('c * 'd) * 'b
+    val none_inf_ord: ('a * 'a -> order) -> 'a option * 'a option -> order
+    val snd_ord: ('a * 'a -> order) -> ('b * 'a) * ('b * 'a) -> order
+  end
+structure Util: UTIL
+structure Basic_Util: BASIC_UTIL
+val INTERVAL_FWD = fn: (int -> tactic) -> int -> int -> tactic
+val THEN_CONTEXT = fn: tactic * context_tactic -> context_tactic
+val REPEAT_ALL_NEW_FWD = fn: (int -> tactic) -> int -> tactic
+val THEN_ALL_NEW_FWD = fn:
+   (int -> tactic) * (int -> tactic) -> int -> tactic
+Found termination order: "(%p. size (snd p)) <*mlex*> {}"
+Found termination order: "size_list size <*mlex*> {}"
+### theory "HOL-Library.Nat_Bijection"
+### 0.298s elapsed time, 1.171s cpu time, 0.060s GC time
+Loading theory "HOL-Library.Stream" (required by "Draft.Labeled_HoareMoreTemplates" via "Draft.ExtrEqs")
+signature CASIFY =
+  sig
+    val SPLIT_subst_tac: Proof.context -> int -> tactic
+    val casify_method_setup:
+       options -> (Proof.context -> Method.method) context_parser
+    val casify_options: options -> options parser
+    val casify_tac: options -> context_tactic
+    val extract_cases_tac: context_tactic
+    val hyp_subst_tac: Proof.context -> int -> tactic
+    datatype options
+    =
+         Options of
+             {protect_subgoals: bool,
+              simp_all_cases: bool, split_right_only: bool}
+    val prepare_labels_tac: Proof.context -> int -> tactic
+    val split_bind_all_tac:
+       {right_only: bool, simp_all_cases: bool} ->
+         Proof.context -> int -> tactic
+  end
+structure Casify: CASIFY
+val casify_defs =
+   Options
+    {protect_subgoals = false, simp_all_cases = true, split_right_only =
+     true}:
+   Casify.options
+### theory "Draft.Case_Labeling"
+### 0.447s elapsed time, 1.784s cpu time, 0.113s GC time
+Loading theory "HOL-Library.Set_Algebras" (required by "Draft.Labeled_HoareMoreTemplates" via "Draft.ExtrEqs" via "HOL-Library.BigO")
+instantiation
+  set :: (plus) plus
+  plus_set == plus :: 'a set => 'a set => 'a set
+instantiation
+  set :: (times) times
+  times_set == times :: 'a set => 'a set => 'a set
+instantiation
+  set :: (zero) zero
+  zero_set == zero_class.zero :: 'a set
+instantiation
+  set :: (one) one
+  one_set == one_class.one :: 'a set
+### theory "HOL-Library.Set_Algebras"
+### 0.248s elapsed time, 0.980s cpu time, 0.077s GC time
+Loading theory "HOL-Library.Tree" (required by "Draft.Labeled_HoareMoreTemplates" via "Draft.ExtrEqs" via "Draft.Templates")
+consts
+  shift :: "'a list => 'a stream => 'a stream"
+Proofs for coinductive predicate(s) "streamsp"
+  Proving monotonicity ...
+consts
+  snth :: "'a stream => nat => 'a"
+### ML warning (line 58 of "~~/src/HOL/Hoare/hoare_syntax.ML"):
+### Matches are not exhaustive.
+### ML warning (line 62 of "~~/src/HOL/Hoare/hoare_syntax.ML"):
+### Matches are not exhaustive.
+### ML warning (line 232 of "~~/src/HOL/Hoare/hoare_syntax.ML"):
+### Matches are not exhaustive.
+signature HOARE_SYNTAX =
+  sig
+    val hoare_tc_vars_tr: Proof.context -> term list -> term
+    val hoare_vars_tr: Proof.context -> term list -> term
+    val setup:
+       {Basic: string,
+        Cond: string,
+        Seq: string,
+        Skip: string, Valid: string, ValidTC: string, While: string}
+         -> theory -> theory
+    val spec_tr': string -> Proof.context -> term list -> term
+  end
+structure Hoare_Syntax: HOARE_SYNTAX
+consts
+  stake :: "nat => 'a stream => 'a list"
+### theory "HOL-Hoare.Hoare_Syntax"
+### 0.900s elapsed time, 3.573s cpu time, 0.257s GC time
+Loading theory "HOL-Library.BigO" (required by "Draft.Labeled_HoareMoreTemplates" via "Draft.ExtrEqs")
+consts
+  sdrop :: "nat => 'a stream => 'a stream"
+consts
+  sfilter :: "('a => bool) => 'a stream => 'a stream"
+consts
+  cycle :: "'a list => 'a stream"
+consts
+  siterate :: "('a => 'a) => 'a => 'a stream"
+consts
+  flat :: "'a list stream => 'a stream"
+consts
+  sinterleave :: "'a stream => 'a stream => 'a stream"
+consts
+  szip :: "'a stream => 'b stream => ('a * 'b) stream"
+consts
+  smap2 :: "('a => 'b => 'c) => 'a stream => 'b stream => 'c stream"
+### theory "HOL-Library.Stream"
+### 0.893s elapsed time, 3.400s cpu time, 0.605s GC time
+consts
+  left :: "'a tree => 'a tree"
+consts
+  right :: "'a tree => 'a tree"
+Found termination order: "size <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+class height = type +
+  fixes height :: "'a => nat"
+instantiation
+  tree :: (type) height
+  height_tree == height :: 'a tree => nat
+### ML warning (line 49 of "~~/src/HOL/Hoare/hoare_tac.ML"):
+### Matches are not exhaustive.
+### ML warning (line 64 of "~~/src/HOL/Hoare/hoare_tac.ML"):
+### Matches are not exhaustive.
+### ML warning (line 76 of "~~/src/HOL/Hoare/hoare_tac.ML"):
+### Matches are not exhaustive.
+### ML warning (file "~~/src/HOL/Hoare/hoare_tac.ML"):
+### Pattern is not exhaustive.
+### ML warning (line 90 of "~~/src/HOL/Hoare/hoare_tac.ML"):
+### Pattern is not exhaustive.
+signature HOARE_TAC =
+  sig
+    val hoare_rule_tac:
+       Proof.context ->
+         term list * thm -> (int -> tactic) -> bool -> int -> tactic
+    val hoare_tac: Proof.context -> (int -> tactic) -> int -> tactic
+    val hoare_tc_tac: Proof.context -> (int -> tactic) -> int -> tactic
+  end
+structure Hoare_Tac: HOARE_TAC
+### theory "HOL-Hoare.Hoare_Tac"
+### 1.572s elapsed time, 5.880s cpu time, 0.740s GC time
+Loading theory "HOL-Hoare.Hoare_Logic" (required by "Draft.Labeled_HoareMoreTemplates" via "Draft.Labeled_Hoare")
+Found termination order: "size <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+### theory "HOL-Library.BigO"
+### 0.843s elapsed time, 2.817s cpu time, 0.536s GC time
+Found termination order: "size <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+Found termination order: "(%p. size (fst p)) <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+Found termination order: "(%p. size (snd p)) <*mlex*> {}"
+Proofs for inductive predicate(s) "Sem"
+  Proving monotonicity ...
+Found termination order: "size <*mlex*> {}"
+### theory "HOL-Hoare.Hoare_Logic"
+### 0.767s elapsed time, 1.792s cpu time, 0.208s GC time
+Loading theory "Draft.Labeled_Hoare" (required by "Draft.Labeled_HoareMoreTemplates")
+### theory "HOL-Library.Tree"
+### 1.731s elapsed time, 5.073s cpu time, 0.758s GC time
+Loading theory "Draft.Templates" (required by "Draft.Labeled_HoareMoreTemplates" via "Draft.ExtrEqs")
+datatype template_term
+=
+     t_empty
+   | template_app of template_term * template_term
+   | template_hole of int
+   | template_var of int
+datatype sign
+= equals | greater_equals | greater_than | less_equals | less_than
+datatype template
+=
+     template_bimplication of template * template
+   | template_dunno
+   | template_equation of template_term * template_term
+   | template_implication of template list * template
+   | template_inequation of sign * template_term * template_term
+   | template_negation of template
+   | template_predicate of template_term
+constructor t_empty: template_term
+constructor template_app: template_term * template_term -> template_term
+constructor template_hole: int -> template_term
+constructor template_var: int -> template_term
+constructor equals: sign
+constructor greater_equals: sign
+constructor greater_than: sign
+constructor less_equals: sign
+constructor less_than: sign
+constructor template_bimplication: template * template -> template
+constructor template_dunno: template
+constructor template_equation: template_term * template_term -> template
+constructor template_implication: template list * template -> template
+constructor template_inequation:
+   sign * template_term * template_term -> template
+constructor template_negation: template -> template
+constructor template_predicate: template_term -> template
+val vfs = fn: term -> (indexname * typ) list * (string * typ) list
+val indexOf = fn: ''a list -> ''a -> int -> int
+val has_eq = fn: term -> bool
+val term2template = fn:
+   (indexname * typ) list -> (string * typ) list -> term -> template_term
+val lemma2predicate = fn: term -> term -> template
+val makeTemplatewithContext = fn: term -> term -> template
+val lemma2template = fn: term -> template
+val thm2template = fn: thm -> template
+val tterm2string = fn: template_term -> string
+val template2string = fn: template -> string
+val t = "height ?t <= size ?t": thm
+val th =
+   Const ("HOL.Trueprop", "bool => prop") $
+     (Const ("Orderings.ord_class.less_eq", "nat => nat => bool") $
+       (Const ("Tree.height_class.height", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree")) $
+       (Const ("Nat.size_class.size", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree"))):
+   term
+### theory "Draft.Templates"
+### 0.064s elapsed time, 0.144s cpu time, 0.041s GC time
+Loading theory "Draft.ExtrEqs" (required by "Draft.Labeled_HoareMoreTemplates")
+### ML warning (line 63 of "$AFP/Case_Labeling/Examples/Hoare/labeled_hoare_tac.ML"):
+### Matches are not exhaustive.
+### ML warning (line 80 of "$AFP/Case_Labeling/Examples/Hoare/labeled_hoare_tac.ML"):
+### Matches are not exhaustive.
+### ML warning (line 90 of "$AFP/Case_Labeling/Examples/Hoare/labeled_hoare_tac.ML"):
+### Pattern is not exhaustive.
+### ML warning (line 94 of "$AFP/Case_Labeling/Examples/Hoare/labeled_hoare_tac.ML"):
+### Pattern is not exhaustive.
+### ML warning (line 94 of "$AFP/Case_Labeling/Examples/Hoare/labeled_hoare_tac.ML"):
+### Value identifier (T) has not been referenced.
+### ML warning (line 103 of "$AFP/Case_Labeling/Examples/Hoare/labeled_hoare_tac.ML"):
+### Pattern is not exhaustive.
+signature LABELED_HOARE =
+  sig
+    val hoare_rule_tac:
+       Proof.context ->
+         term list * thm -> (int -> tactic) -> bool -> int -> tactic
+    val hoare_tac: Proof.context -> (int -> tactic) -> int -> tactic
+    val wrap_label_tac: Proof.context -> (int -> tactic) -> int -> tactic
+  end
+structure Labeled_Hoare: LABELED_HOARE
+### theory "Draft.Labeled_Hoare"
+### 0.219s elapsed time, 0.452s cpu time, 0.041s GC time
+val eqpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Var (("_dummy_", 2), "?'a"))
+       ):
+   term Find_Theorems.criterion
+val badeqpattern = Pattern (Const ("Pure.eq", "?'a => ?'a => prop")):
+   term Find_Theorems.criterion
+val undefpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Const ("HOL.undefined", "?'a"))
+       ):
+   term Find_Theorems.criterion
+val thmpattern =
+   Pattern
+    (Const ("HOL.Trueprop", "bool => prop") $ Var (("_dummy_", 1), "bool")):
+   term Find_Theorems.criterion
+val badnames =
+   ["*nitpick*", "*Nitpick*", "*full_exhaustive*", "*_def*", "Enum.finite*",
+    "*Quickcheck*", "ATP*", "*Nunchaku*", "*Code*", "*BNF*", "*SMT*",
+    "*.*.*"]:
+   string list
+val unwanted_names =
+   [(false, Name "*nitpick*"), (false, Name "*Nitpick*"),
+    (false, Name "*full_exhaustive*"), (false, Name "*_def*"),
+    (false, Name "Enum.finite*"), (false, Name "*Quickcheck*"),
+    (false, Name "ATP*"), (false, Name "*Nunchaku*"),
+    (false, Name "*Code*"), (false, Name "*BNF*"), (false, Name "*SMT*"),
+    (false, Name "*.*.*")]:
+   (bool * term Find_Theorems.criterion) list
+val has_vars = fn: term -> bool
+val get_all_eqs = fn: string -> Proof.context -> (string * thm) list
+val get_all_thms = fn: string -> Proof.context -> (string * thm) list
+val get_noneq_thms = fn: string -> Proof.context -> (string * thm) list
+val template_eqs = fn:
+   string -> Proof.context -> (string * thm * template) list
+val template_thms = fn:
+   string -> Proof.context -> (string * thm * template) list
+### theory "Draft.ExtrEqs"
+### 0.484s elapsed time, 0.594s cpu time, 0.038s GC time
+Loading theory "Draft.Labeled_HoareMoreTemplates"
+val templateLemmas =
+   [("Labeled_Hoare.LABELs_to_prems",
+     "(Case_Labeling.CTXT ?IC ?CT ?OC True ==> ?P) ==>
+      Case_Labeling.CTXT ?IC ?CT ?OC ?P",
+     template_implication
+      ([template_implication
+         ([template_predicate
+            (
+               template_app
+                (template_app
+                  (template_app
+                    (template_app (template_hole 1, template_var 3),
+                     template_var 2),
+                   template_var 1),
+                 template_hole 0)
+               )],
+          template_predicate (template_var 0))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 1, template_var 3),
+                 template_var 2),
+               template_var 1),
+             template_var 0)
+           ))),
+    ("Labeled_Hoare.LABELs_to_prems",
+     "(Case_Labeling.VC (?x # ?ct) True ==> ?P) ==>
+      Case_Labeling.VC (?x # ?ct) ?P",
+     template_implication
+      ([template_implication
+         ([template_predicate
+            (
+               template_app
+                (template_app
+                  (template_hole 2,
+                   template_app
+                    (template_app (template_hole 1, template_var 2),
+                     template_var 1)),
+                 template_hole 0)
+               )],
+          template_predicate (template_var 0))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 2,
+               template_app
+                (template_app (template_hole 1, template_var 2),
+                 template_var 1)),
+             template_var 0)
+           ))),
+    ("Labeled_Hoare.LABELs_to_concl",
+     "[| Case_Labeling.CTXT ?IC ?CT ?OC True;
+         Case_Labeling.CTXT ?IC ?CT ?OC ?P |]
+      ==> ?P",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 1, template_var 3),
+                  template_var 2),
+                template_var 1),
+              template_hole 0)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 1, template_var 3),
+                  template_var 2),
+                template_var 1),
+              template_var 0)
+            )],
+       template_predicate (template_var 0))),
+    ("Labeled_Hoare.LABELs_to_concl",
+     "[| Case_Labeling.VC (?x # ?ct) True; Case_Labeling.VC (?x # ?ct) ?P |]
+      ==> ?P",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 2,
+                template_app
+                 (template_app (template_hole 1, template_var 2),
+                  template_var 1)),
+              template_hole 0)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 2,
+                template_app
+                 (template_app (template_hole 1, template_var 2),
+                  template_var 1)),
+              template_var 0)
+            )],
+       template_predicate (template_var 0))),
+    ("Labeled_Hoare.LSeqRule",
+     "[| Case_Labeling.CTXT ?IC ?CT ?OC1.0 ({?P} 
+       ?c1.0 
+       {?Q});
+         Case_Labeling.CTXT (Suc ?OC1.0) ?CT ?OC ({?Q} 
+             ?c2.0 
+             {?R}) |]
+      ==> Case_Labeling.CTXT ?IC ?CT ?OC ({?P} 
+     ?c1.0; ?c2.0 
+     {?R})",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 4, template_var 10),
+                  template_var 9),
+                template_var 8),
+              template_app
+               (template_app
+                 (template_app
+                   (template_app (template_hole 3, template_var 7),
+                    template_var 6),
+                  template_var 5),
+                template_var 4))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_hole 4,
+                    template_app (template_hole 2, template_var 8)),
+                  template_var 9),
+                template_var 3),
+              template_app
+               (template_app
+                 (template_app
+                   (template_app (template_hole 3, template_var 4),
+                    template_var 2),
+                  template_var 1),
+                template_var 0))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 4, template_var 10),
+                 template_var 9),
+               template_var 3),
+             template_app
+              (template_app
+                (template_app
+                  (template_app (template_hole 3, template_var 7),
+                   template_app
+                    (template_app (template_hole 1, template_var 6),
+                     template_var 2)),
+                 template_app
+                  (template_app (template_hole 0, template_var 5),
+                   template_var 1)),
+               template_var 0))
+           ))),
+    ("Labeled_Hoare.LBasicRule",
+     "Case_Labeling.VC ((''basic'', ?IC, []) # ?CT)
+       (?p <= {s. ?f s : ?q}) ==>
+      Case_Labeling.CTXT ?IC ?CT ?IC ({?p} 
+ Basic ?f 
+ {?q})",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 15,
+                template_app
+                 (template_app
+                   (template_hole 14,
+                    template_app
+                     (template_app
+                       (template_hole 13,
+                        template_app
+                         (template_app
+                           (template_hole 12,
+                            template_app
+                             (template_app
+                               (template_app
+                                 (template_app
+                                   (template_app
+                                     (template_app
+ (template_app
+   (template_app (template_hole 11, template_hole 10), template_hole 9),
+  template_hole 10),
+template_hole 10),
+                                    template_hole 10),
+                                  template_hole 9),
+                                template_hole 9),
+                              template_hole 10)),
+                          template_app
+                           (template_app
+                             (template_hole 12,
+                              template_app
+                               (template_app
+                                 (template_app
+                                   (template_app
+                                     (template_app
+ (template_app
+   (template_app
+     (template_app (template_hole 11, template_hole 9), template_hole 10),
+    template_hole 10),
+  template_hole 10),
+template_hole 10),
+                                    template_hole 9),
+                                  template_hole 9),
+                                template_hole 10)),
+                            template_app
+                             (template_app
+                               (template_hole 12,
+                                template_app
+                                 (template_app
+                                   (template_app
+                                     (template_app
+ (template_app
+   (template_app
+     (template_app
+       (template_app (template_hole 11, template_hole 9), template_hole 9),
+      template_hole 10),
+    template_hole 10),
+  template_hole 9),
+template_hole 9),
+                                    template_hole 9),
+                                  template_hole 10)),
+                              template_app
+                               (template_app
+                                 (template_hole 12,
+                                  template_app
+                                   (template_app
+                                     (template_app
+ (template_app
+   (template_app
+     (template_app
+       (template_app
+         (template_app (template_hole 11, template_hole 9),
+          template_hole 10),
+        template_hole 10),
+      template_hole 9),
+    template_hole 10),
+  template_hole 9),
+template_hole 9),
+                                    template_hole 10)),
+                                template_app
+                                 (template_app
+                                   (template_hole 12,
+                                    template_app
+                                     (template_app
+ (template_app
+   (template_app
+     (template_app
+       (template_app
+         (template_app
+           (template_app (template_hole 11, template_hole 9),
+            template_hole 9),
+          template_hole 10),
+        template_hole 10),
+      template_hole 10),
+    template_hole 9),
+  template_hole 9),
+template_hole 10)),
+                                  template_hole 8)))))),
+                      template_app
+                       (template_app (template_hole 7, template_var 5),
+                        template_hole 6))),
+                  template_var 4)),
+              template_app
+               (template_app (template_hole 5, template_var 3),
+                template_app (template_hole 4, t_empty)))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 2, template_var 5),
+                 template_var 4),
+               template_var 5),
+             template_app
+              (template_app
+                (template_app
+                  (template_app (template_hole 1, template_var 3),
+                   template_app (template_hole 0, template_var 2)),
+                 template_var 0),
+               template_var 1))
+           ))),
+    ("Labeled_Hoare.LSkipRule",
+     "Case_Labeling.VC ((''weaken'', ?IC, []) # ?CT) (?p <= ?q) ==>
+      Case_Labeling.CTXT ?IC ?CT ?IC ({?p} 
+ SKIP 
+ {?q})",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 14,
+                template_app
+                 (template_app
+                   (template_hole 13,
+                    template_app
+                     (template_app
+                       (template_hole 12,
+                        template_app
+                         (template_app
+                           (template_hole 11,
+                            template_app
+                             (template_app
+                               (template_app
+                                 (template_app
+                                   (template_app
+                                     (template_app
+ (template_app
+   (template_app (template_hole 10, template_hole 9), template_hole 9),
+  template_hole 9),
+template_hole 8),
+                                    template_hole 9),
+                                  template_hole 9),
+                                template_hole 9),
+                              template_hole 8)),
+                          template_app
+                           (template_app
+                             (template_hole 11,
+                              template_app
+                               (template_app
+                                 (template_app
+                                   (template_app
+                                     (template_app
+ (template_app
+   (template_app
+     (template_app (template_hole 10, template_hole 9), template_hole 8),
+    template_hole 9),
+  template_hole 8),
+template_hole 8),
+                                    template_hole 9),
+                                  template_hole 9),
+                                template_hole 8)),
+                            template_app
+                             (template_app
+                               (template_hole 11,
+                                template_app
+                                 (template_app
+                                   (template_app
+                                     (template_app
+ (template_app
+   (template_app
+     (template_app
+       (template_app (template_hole 10, template_hole 9), template_hole 8),
+      template_hole 8),
+    template_hole 8),
+  template_hole 8),
+template_hole 9),
+                                    template_hole 9),
+                                  template_hole 8)),
+                              template_app
+                               (template_app
+                                 (template_hole 11,
+                                  template_app
+                                   (template_app
+                                     (template_app
+ (template_app
+   (template_app
+     (template_app
+       (template_app
+         (template_app (template_hole 10, template_hole 9),
+          template_hole 9),
+        template_hole 8),
+      template_hole 9),
+    template_hole 8),
+  template_hole 9),
+template_hole 9),
+                                    template_hole 8)),
+                                template_app
+                                 (template_app
+                                   (template_hole 11,
+                                    template_app
+                                     (template_app
+ (template_app
+   (template_app
+     (template_app
+       (template_app
+         (template_app
+           (template_app (template_hole 10, template_hole 9),
+            template_hole 8),
+          template_hole 9),
+        template_hole 8),
+      template_hole 8),
+    template_hole 9),
+  template_hole 9),
+template_hole 8)),
+                                  template_app
+                                   (template_app
+                                     (template_hole 11,
+template_app
+ (template_app
+   (template_app
+     (template_app
+       (template_app
+         (template_app
+           (template_app
+             (template_app (template_hole 10, template_hole 8),
+              template_hole 9),
+            template_hole 9),
+          template_hole 9),
+        template_hole 8),
+      template_hole 9),
+    template_hole 9),
+  template_hole 8)),
+                                    template_hole 7))))))),
+                      template_app
+                       (template_app (template_hole 6, template_var 4),
+                        template_hole 5))),
+                  template_var 3)),
+              template_app
+               (template_app (template_hole 4, template_var 2),
+                template_var 1))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 3, template_var 4),
+                 template_var 3),
+               template_var 4),
+             template_app
+              (template_app
+                (template_app
+                  (template_app (template_hole 2, template_var 2),
+                   template_app (template_hole 1, template_hole 0)),
+                 template_var 0),
+               template_var 1))
+           ))),
+    ("Labeled_Hoare.LCondRule",
+     "[| Case_Labeling.VC ((''vc'', ?IC, []) # (''cond'', ?IC, []) # ?CT)
+          (?p <= {s. (s : ?b --> s : ?w) & (s ~: ?b --> s : ?w')});
+         Case_Labeling.CTXT (Suc ?IC)
+          ((''then'', ?IC, []) # (''cond'', ?IC, []) # ?CT) ?OC1.0 ({?w} 
+                               ?c1.0 
+                               {?q});
+         Case_Labeling.CTXT (Suc ?OC1.0)
+          ((''else'', Suc ?OC1.0, []) # (''cond'', ?IC, []) # ?CT) ?OC
+          ({?w'} 
+            ?c2.0 
+            {?q}) |]
+      ==> Case_Labeling.CTXT ?IC ?CT ?OC
+           ({?p} 
+             IF ?b THEN ?c1.0  ELSE ?c2.0 FI 
+             {?q})",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 20,
+                template_app
+                 (template_app
+                   (template_hole 19,
+                    template_app
+                     (template_app
+                       (template_hole 18,
+                        template_app
+                         (template_app
+                           (template_hole 17,
+                            template_app
+                             (template_app
+                               (template_app
+                                 (template_app
+                                   (template_app
+                                     (template_app
+ (template_app
+   (template_app (template_hole 16, template_hole 15), template_hole 14),
+  template_hole 14),
+template_hole 15),
+                                    template_hole 14),
+                                  template_hole 14),
+                                template_hole 14),
+                              template_hole 15)),
+                          template_app
+                           (template_app
+                             (template_hole 17,
+                              template_app
+                               (template_app
+                                 (template_app
+                                   (template_app
+                                     (template_app
+ (template_app
+   (template_app
+     (template_app (template_hole 16, template_hole 14), template_hole 14),
+    template_hole 15),
+  template_hole 15),
+template_hole 15),
+                                    template_hole 14),
+                                  template_hole 14),
+                                template_hole 15)),
+                            template_hole 13))),
+                      template_app
+                       (template_app (template_hole 12, template_var 12),
+                        template_hole 11))),
+                  template_app
+                   (template_app
+                     (template_hole 19,
+                      template_app
+                       (template_app
+                         (template_hole 18,
+                          template_app
+                           (template_app
+                             (template_hole 17,
+                              template_app
+                               (template_app
+                                 (template_app
+                                   (template_app
+                                     (template_app
+ (template_app
+   (template_app
+     (template_app (template_hole 16, template_hole 14), template_hole 14),
+    template_hole 15),
+  template_hole 15),
+template_hole 15),
+                                    template_hole 14),
+                                  template_hole 14),
+                                template_hole 15)),
+                            template_app
+                             (template_app
+                               (template_hole 17,
+                                template_app
+                                 (template_app
+                                   (template_app
+                                     (template_app
+ (template_app
+   (template_app
+     (template_app
+       (template_app (template_hole 16, template_hole 14),
+        template_hole 14),
+      template_hole 14),
+    template_hole 14),
+  template_hole 15),
+template_hole 14),
+                                    template_hole 14),
+                                  template_hole 15)),
+                              template_app
+                               (template_app
+                                 (template_hole 17,
+                                  template_app
+                                   (template_app
+                                     (template_app
+ (template_app
+   (template_app
+     (template_app
+       (template_app
+         (template_app (template_hole 16, template_hole 15),
+          template_hole 14),
+        template_hole 14),
+      template_hole 14),
+    template_hole 15),
+  template_hole 14),
+template_hole 14),
+                                    template_hole 15)),
+                                template_app
+                                 (template_app
+                                   (template_hole 17,
+                                    template_app
+                                     (template_app
+ (template_app
+   (template_app
+     (template_app
+       (template_app
+         (template_app
+           (template_app (template_hole 16, template_hole 15),
+            template_hole 15),
+          template_hole 14),
+        template_hole 15),
+      template_hole 15),
+    template_hole 14),
+  template_hole 14),
+template_hole 15)),
+                                  template_hole 13))))),
+                        template_app
+                         (template_app (template_hole 12, template_var 12),
+                          template_hole 11))),
+                    template_var 11))),
+              template_app
+               (template_app (template_hole 10, template_var 10),
+                template_app (template_hole 9, t_empty)))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_hole 4,
+                    template_app (template_hole 3, template_var 12)),
+                  template_app
+                   (template_app
+                     (template_hole 19,
+                      template_app
+                       (template_app
+                         (template_hole 18,
+                          template_app
+                           (template_app
+                             (template_hole 17,
+                              template_app
+                               (template_app
+                                 (template_app
+                                   (template_app
+                                     (template_app
+ (template_app
+   (template_app
+     (template_app (template_hole 16, template_hole 15), template_hole 15),
+    template_hole 14),
+  template_hole 15),
+template_hole 14),
+                                    template_hole 14),
+                                  template_hole 14),
+                                template_hole 15)),
+                            template_app
+                             (template_app
+                               (template_hole 17,
+                                template_app
+                                 (template_app
+                                   (template_app
+                                     (template_app
+ (template_app
+   (template_app
+     (template_app
+       (template_app (template_hole 16, template_hole 15),
+        template_hole 15),
+      template_hole 15),
+    template_hole 14),
+  template_hole 15),
+template_hole 14),
+                                    template_hole 14),
+                                  template_hole 15)),
+                              template_app
+                               (template_app
+                                 (template_hole 17,
+                                  template_app
+                                   (template_app
+                                     (template_app
+ (template_app
+   (template_app
+     (template_app
+       (template_app
+         (template_app (template_hole 16, template_hole 14),
+          template_hole 15),
+        template_hole 14),
+      template_hole 15),
+    template_hole 15),
+  template_hole 14),
+template_hole 14),
+                                    template_hole 15)),
+                                template_app
+                                 (template_app
+                                   (template_hole 17,
+                                    template_app
+                                     (template_app
+ (template_app
+   (template_app
+     (template_app
+       (template_app
+         (template_app
+           (template_app (template_hole 16, template_hole 15),
+            template_hole 14),
+          template_hole 14),
+        template_hole 14),
+      template_hole 15),
+    template_hole 14),
+  template_hole 14),
+template_hole 15)),
+                                  template_hole 13))))),
+                        template_app
+                         (template_app (template_hole 12, template_var 12),
+                          template_hole 11))),
+                    template_app
+                     (template_app
+                       (template_hole 19,
+                        template_app
+                         (template_app
+                           (template_hole 18,
+                            template_app
+                             (template_app
+                               (template_hole 17,
+                                template_app
+                                 (template_app
+                                   (template_app
+                                     (template_app
+ (template_app
+   (template_app
+     (template_app
+       (template_app (template_hole 16, template_hole 14),
+        template_hole 14),
+      template_hole 15),
+    template_hole 15),
+  template_hole 15),
+template_hole 14),
+                                    template_hole 14),
+                                  template_hole 15)),
+                              template_app
+                               (template_app
+                                 (template_hole 17,
+                                  template_app
+                                   (template_app
+                                     (template_app
+ (template_app
+   (template_app
+     (template_app
+       (template_app
+         (template_app (template_hole 16, template_hole 14),
+          template_hole 14),
+        template_hole 14),
+      template_hole 14),
+    template_hole 15),
+  template_hole 14),
+template_hole 14),
+                                    template_hole 15)),
+                                template_app
+                                 (template_app
+                                   (template_hole 17,
+                                    template_app
+                                     (template_app
+ (template_app
+   (template_app
+     (template_app
+       (template_app
+         (template_app
+           (template_app (template_hole 16, template_hole 15),
+            template_hole 14),
+          template_hole 14),
+        template_hole 14),
+      template_hole 15),
+    template_hole 14),
+  template_hole 14),
+template_hole 15)),
+                                  template_app
+                                   (template_app
+                                     (template_hole 17,
+template_app
+ (template_app
+   (template_app
+     (template_app
+       (template_app
+         (template_app
+           (template_app
+             (template_app (template_hole 16, template_hole 15),
+              template_hole 15),
+            template_hole 14),
+          template_hole 15),
+        template_hole 15),
+      template_hole 14),
+    template_hole 14),
+  template_hole 15)),
+                                    template_hole 13))))),
+                          template_app
+                           (template_app
+                             (template_hole 12, template_var 12),
+                            template_hole 11))),
+                      template_var 11))),
+                template_var 6),
+              template_app
+               (template_app
+                 (template_app
+                   (template_app (template_hole 2, template_var 8),
+                    template_var 5),
+                  template_var 4),
+                template_var 3))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_hole 4,
+                    template_app (template_hole 3, template_var 6)),
+                  template_app
+                   (template_app
+                     (template_hole 19,
+                      template_app
+                       (template_app
+                         (template_hole 18,
+                          template_app
+                           (template_app
+                             (template_hole 17,
+                              template_app
+                               (template_app
+                                 (template_app
+                                   (template_app
+                                     (template_app
+ (template_app
+   (template_app
+     (template_app (template_hole 16, template_hole 14), template_hole 15),
+    template_hole 14),
+  template_hole 15),
+template_hole 15),
+                                    template_hole 14),
+                                  template_hole 14),
+                                template_hole 15)),
+                            template_app
+                             (template_app
+                               (template_hole 17,
+                                template_app
+                                 (template_app
+                                   (template_app
+                                     (template_app
+ (template_app
+   (template_app
+     (template_app
+       (template_app (template_hole 16, template_hole 15),
+        template_hole 15),
+      template_hole 14),
+    template_hole 14),
+  template_hole 15),
+template_hole 14),
+                                    template_hole 14),
+                                  template_hole 15)),
+                              template_app
+                               (template_app
+                                 (template_hole 17,
+                                  template_app
+                                   (template_app
+                                     (template_app
+ (template_app
+   (template_app
+     (template_app
+       (template_app
+         (template_app (template_hole 16, template_hole 14),
+          template_hole 14),
+        template_hole 15),
+      template_hole 15),
+    template_hole 14),
+  template_hole 14),
+template_hole 14),
+                                    template_hole 15)),
+                                template_app
+                                 (template_app
+                                   (template_hole 17,
+                                    template_app
+                                     (template_app
+ (template_app
+   (template_app
+     (template_app
+       (template_app
+         (template_app
+           (template_app (template_hole 16, template_hole 14),
+            template_hole 15),
+          template_hole 14),
+        template_hole 15),
+      template_hole 15),
+    template_hole 14),
+  template_hole 14),
+template_hole 15)),
+                                  template_hole 13))))),
+                        template_app
+                         (template_app
+                           (template_hole 12,
+                            template_app (template_hole 3, template_var 6)),
+                          template_hole 11))),
+                    template_app
+                     (template_app
+                       (template_hole 19,
+                        template_app
+                         (template_app
+                           (template_hole 18,
+                            template_app
+                             (template_app
+                               (template_hole 17,
+                                template_app
+                                 (template_app
+                                   (template_app
+                                     (template_app
+ (template_app
+   (template_app
+     (template_app
+       (template_app (template_hole 16, template_hole 14),
+        template_hole 14),
+      template_hole 15),
+    template_hole 15),
+  template_hole 15),
+template_hole 14),
+                                    template_hole 14),
+                                  template_hole 15)),
+                              template_app
+                               (template_app
+                                 (template_hole 17,
+                                  template_app
+                                   (template_app
+                                     (template_app
+ (template_app
+   (template_app
+     (template_app
+       (template_app
+         (template_app (template_hole 16, template_hole 14),
+          template_hole 14),
+        template_hole 14),
+      template_hole 14),
+    template_hole 15),
+  template_hole 14),
+template_hole 14),
+                                    template_hole 15)),
+                                template_app
+                                 (template_app
+                                   (template_hole 17,
+                                    template_app
+                                     (template_app
+ (template_app
+   (template_app
+     (template_app
+       (template_app
+         (template_app
+           (template_app (template_hole 16, template_hole 15),
+            template_hole 14),
+          template_hole 14),
+        template_hole 14),
+      template_hole 15),
+    template_hole 14),
+  template_hole 14),
+template_hole 15)),
+                                  template_app
+                                   (template_app
+                                     (template_hole 17,
+template_app
+ (template_app
+   (template_app
+     (template_app
+       (template_app
+         (template_app
+           (template_app
+             (template_app (template_hole 16, template_hole 15),
+              template_hole 15),
+            template_hole 14),
+          template_hole 15),
+        template_hole 15),
+      template_hole 14),
+    template_hole 14),
+  template_hole 15)),
+                                    template_hole 13))))),
+                          template_app
+                           (template_app
+                             (template_hole 12, template_var 12),
+                            template_hole 11))),
+                      template_var 11))),
+                template_var 2),
+              template_app
+               (template_app
+                 (template_app
+                   (template_app (template_hole 2, template_var 7),
+                    template_var 1),
+                  template_var 0),
+                template_var 3))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 4, template_var 12),
+                 template_var 11),
+               template_var 2),
+             template_app
+              (template_app
+                (template_app
+                  (template_app (template_hole 2, template_var 10),
+                   template_app
+                    (template_app
+                      (template_app (template_hole 1, template_var 9),
+                       template_var 5),
+                     template_var 1)),
+                 template_app
+                  (template_app (template_hole 0, template_var 4),
+                   template_var 0)),
+               template_var 3))
+           ))),
+    ("Labeled_Hoare.LWhileRule",
+     "[| Case_Labeling.VC
+          ((''precondition'', ?IC, []) # (''while'', ?IC, []) # ?CT)
+          (?p <= ?i);
+         Case_Labeling.CTXT (Suc ?IC)
+          ((''invariant'', Suc ?IC, []) # (''while'', ?IC, []) # ?CT) ?OC
+          ({?i Int ?b} 
+            ?c 
+            {?i});
+         Case_Labeling.VC
+          ((''postcondition'', ?IC, []) # (''while'', ?IC, []) # ?CT)
+          (?i Int - ?b <= ?q) |]
+      ==> Case_Labeling.CTXT ?IC ?CT ?OC ({?p} 
+     WHILE ?b INV {?i}  VAR {?v} 
+      DO ?c OD 
+     {?q})",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 18,
+                template_app
+                 (template_app
+                   (template_hole 17,
+                    template_app
+                     (template_app
+                       (template_hole 16,
+                        template_app
+                         (template_app
+                           (template_hole 15,
+                            template_app
+                             (template_app
+                               (template_app
+                                 (template_app
+                                   (template_app
+                                     (template_app
+ (template_app
+   (template_app (template_hole 14, template_hole 13), template_hole 13),
+  template_hole 13),
+template_hole 13),
+                                    template_hole 12),
+                                  template_hole 12),
+                                template_hole 12),
+                              template_hole 13)),
+                          template_app
+                           (template_app
+                             (template_hole 15,
+                              template_app
+                               (template_app
+                                 (template_app
+                                   (template_app
+                                     (template_app
+ (template_app
+   (template_app
+     (template_app (template_hole 14, template_hole 13), template_hole 12),
+    template_hole 13),
+  template_hole 13),
+template_hole 12),
+                                    template_hole 12),
+                                  template_hole 12),
+                                template_hole 13)),
+                            template_app
+                             (template_app
+                               (template_hole 15,
+                                template_app
+                                 (template_app
+                                   (template_app
+                                     (template_app
+ (template_app
+   (template_app
+     (template_app
+       (template_app (template_hole 14, template_hole 12),
+        template_hole 13),
+      template_hole 12),
+    template_hole 13),
+  template_hole 13),
+template_hole 12),
+                                    template_hole 12),
+                                  template_hole 13)),
+                              template_app
+                               (template_app
+                                 (template_hole 15,
+                                  template_app
+                                   (template_app
+                                     (template_app
+ (template_app
+   (template_app
+     (template_app
+       (template_app
+         (template_app (template_hole 14, template_hole 12),
+          template_hole 12),
+        template_hole 13),
+      template_hole 13),
+    template_hole 13),
+  template_hole 12),
+template_hole 12),
+                                    template_hole 13)),
+                                template_app
+                                 (template_app
+                                   (template_hole 15,
+                                    template_app
+                                     (template_app
+ (template_app
+   (template_app
+     (template_app
+       (template_app
+         (template_app
+           (template_app (template_hole 14, template_hole 12),
+            template_hole 12),
+          template_hole 12),
+        template_hole 12),
+      template_hole 13),
+    template_hole 12),
+  template_hole 12),
+template_hole 13)),
+                                  template_app
+                                   (template_app
+                                     (template_hole 15,
+template_app
+ (template_app
+   (template_app
+     (template_app
+       (template_app
+         (template_app
+           (template_app
+             (template_app (template_hole 14, template_hole 13),
+              template_hole 12),
+            template_hole 12),
+          template_hole 12),
+        template_hole 13),
+      template_hole 12),
+    template_hole 12),
+  template_hole 13)),
+                                    template_app
+                                     (template_app
+ (template_hole 15,
+  template_app
+   (template_app
+     (template_app
+       (template_app
+         (template_app
+           (template_app
+             (template_app
+               (template_app (template_hole 14, template_hole 13),
+                template_hole 13),
+              template_hole 12),
+            template_hole 13),
+          template_hole 13),
+        template_hole 12),
+      template_hole 12),
+    template_hole 13)),
+template_app
+ (template_app
+   (template_hole 15,
+    template_app
+     (template_app
+       (template_app
+         (template_app
+           (template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 14, template_hole 12),
+                  template_hole 13),
+                template_hole 13),
+              template_hole 12),
+            template_hole 13),
+          template_hole 12),
+        template_hole 12),
+      template_hole 13)),
+  template_app
+   (template_app
+     (template_hole 15,
+      template_app
+       (template_app
+         (template_app
+           (template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app (template_hole 14, template_hole 13),
+                    template_hole 13),
+                  template_hole 12),
+                template_hole 13),
+              template_hole 12),
+            template_hole 12),
+          template_hole 12),
+        template_hole 13)),
+    template_app
+     (template_app
+       (template_hole 15,
+        template_app
+         (template_app
+           (template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app
+                     (template_app (template_hole 14, template_hole 12),
+                      template_hole 13),
+                    template_hole 13),
+                  template_hole 12),
+                template_hole 13),
+              template_hole 12),
+            template_hole 12),
+          template_hole 13)),
+      template_app
+       (template_app
+         (template_hole 15,
+          template_app
+           (template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app
+                     (template_app
+                       (template_app (template_hole 14, template_hole 12),
+                        template_hole 12),
+                      template_hole 12),
+                    template_hole 12),
+                  template_hole 13),
+                template_hole 12),
+              template_hole 12),
+            template_hole 13)),
+        template_app
+         (template_app
+           (template_hole 15,
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app
+                     (template_app
+                       (template_app
+                         (template_app (template_hole 14, template_hole 13),
+                          template_hole 12),
+                        template_hole 12),
+                      template_hole 12),
+                    template_hole 13),
+                  template_hole 12),
+                template_hole 12),
+              template_hole 13)),
+          template_hole 11))))))))))))),
+                      template_app
+                       (template_app (template_hole 10, template_var 9),
+                        template_hole 9))),
+                  template_app
+                   (template_app
+                     (template_hole 17,
+                      template_app
+                       (template_app
+                         (template_hole 16,
+                          template_app
+                           (template_app
+                             (template_hole 15,
+                              template_app
+                               (template_app
+                                 (template_app
+                                   (template_app
+                                     (template_app
+ (template_app
+   (template_app
+     (template_app (template_hole 14, template_hole 12), template_hole 12),
+    template_hole 12),
+  template_hole 13),
+template_hole 12),
+                                    template_hole 12),
+                                  template_hole 12),
+                                template_hole 13)),
+                            template_app
+                             (template_app
+                               (template_hole 15,
+                                template_app
+                                 (template_app
+                                   (template_app
+                                     (template_app
+ (template_app
+   (template_app
+     (template_app
+       (template_app (template_hole 14, template_hole 13),
+        template_hole 13),
+      template_hole 13),
+    template_hole 12),
+  template_hole 13),
+template_hole 12),
+                                    template_hole 12),
+                                  template_hole 13)),
+                              template_app
+                               (template_app
+                                 (template_hole 15,
+                                  template_app
+                                   (template_app
+                                     (template_app
+ (template_app
+   (template_app
+     (template_app
+       (template_app
+         (template_app (template_hole 14, template_hole 12),
+          template_hole 13),
+        template_hole 13),
+      template_hole 12),
+    template_hole 13),
+  template_hole 12),
+template_hole 12),
+                                    template_hole 13)),
+                                template_app
+                                 (template_app
+                                   (template_hole 15,
+                                    template_app
+                                     (template_app
+ (template_app
+   (template_app
+     (template_app
+       (template_app
+         (template_app
+           (template_app (template_hole 14, template_hole 13),
+            template_hole 13),
+          template_hole 12),
+        template_hole 12),
+      template_hole 13),
+    template_hole 12),
+  template_hole 12),
+template_hole 13)),
+                                  template_app
+                                   (template_app
+                                     (template_hole 15,
+template_app
+ (template_app
+   (template_app
+     (template_app
+       (template_app
+         (template_app
+           (template_app
+             (template_app (template_hole 14, template_hole 12),
+              template_hole 13),
+            template_hole 12),
+          template_hole 13),
+        template_hole 13),
+      template_hole 12),
+    template_hole 12),
+  template_hole 13)),
+                                    template_hole 11)))))),
+                        template_app
+                         (template_app (template_hole 10, template_var 9),
+                          template_hole 9))),
+                    template_var 8))),
+              template_app
+               (template_app (template_hole 8, template_var 7),
+                template_var 6))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_hole 7,
+                    template_app (template_hole 6, template_var 9)),
+                  template_app
+                   (template_app
+                     (template_hole 17,
+                      template_app
+                       (template_app
+                         (template_hole 16,
+                          template_app
+                           (template_app
+                             (template_hole 15,
+                              template_app
+                               (template_app
+                                 (template_app
+                                   (template_app
+                                     (template_app
+ (template_app
+   (template_app
+     (template_app (template_hole 14, template_hole 12), template_hole 13),
+    template_hole 13),
+  template_hole 12),
+template_hole 13),
+                                    template_hole 12),
+                                  template_hole 12),
+                                template_hole 13)),
+                            template_app
+                             (template_app
+                               (template_hole 15,
+                                template_app
+                                 (template_app
+                                   (template_app
+                                     (template_app
+ (template_app
+   (template_app
+     (template_app
+       (template_app (template_hole 14, template_hole 13),
+        template_hole 12),
+      template_hole 12),
+    template_hole 12),
+  template_hole 13),
+template_hole 12),
+                                    template_hole 12),
+                                  template_hole 13)),
+                              template_app
+                               (template_app
+                                 (template_hole 15,
+                                  template_app
+                                   (template_app
+                                     (template_app
+ (template_app
+   (template_app
+     (template_app
+       (template_app
+         (template_app (template_hole 14, template_hole 13),
+          template_hole 12),
+        template_hole 12),
+      template_hole 13),
+    template_hole 12),
+  template_hole 12),
+template_hole 12),
+                                    template_hole 13)),
+                                template_app
+                                 (template_app
+                                   (template_hole 15,
+                                    template_app
+                                     (template_app
+ (template_app
+   (template_app
+     (template_app
+       (template_app
+         (template_app
+           (template_app (template_hole 14, template_hole 12),
+            template_hole 13),
+          template_hole 13),
+        template_hole 13),
+      template_hole 13),
+    template_hole 12),
+  template_hole 12),
+template_hole 13)),
+                                  template_app
+                                   (template_app
+                                     (template_hole 15,
+template_app
+ (template_app
+   (template_app
+     (template_app
+       (template_app
+         (template_app
+           (template_app
+             (template_app (template_hole 14, template_hole 13),
+              template_hole 12),
+            template_hole 13),
+          template_hole 13),
+        template_hole 12),
+      template_hole 12),
+    template_hole 12),
+  template_hole 13)),
+                                    template_app
+                                     (template_app
+ (template_hole 15,
+  template_app
+   (template_app
+     (template_app
+       (template_app
+         (template_app
+           (template_app
+             (template_app
+               (template_app (template_hole 14, template_hole 12),
+                template_hole 13),
+              template_hole 13),
+            template_hole 12),
+          template_hole 13),
+        template_hole 12),
+      template_hole 12),
+    template_hole 13)),
+template_app
+ (template_app
+   (template_hole 15,
+    template_app
+     (template_app
+       (template_app
+         (template_app
+           (template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 14, template_hole 12),
+                  template_hole 13),
+                template_hole 13),
+              template_hole 13),
+            template_hole 13),
+          template_hole 12),
+        template_hole 12),
+      template_hole 13)),
+  template_app
+   (template_app
+     (template_hole 15,
+      template_app
+       (template_app
+         (template_app
+           (template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app (template_hole 14, template_hole 13),
+                    template_hole 12),
+                  template_hole 12),
+                template_hole 12),
+              template_hole 13),
+            template_hole 12),
+          template_hole 12),
+        template_hole 13)),
+    template_app
+     (template_app
+       (template_hole 15,
+        template_app
+         (template_app
+           (template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app
+                     (template_app (template_hole 14, template_hole 13),
+                      template_hole 13),
+                    template_hole 12),
+                  template_hole 13),
+                template_hole 12),
+              template_hole 12),
+            template_hole 12),
+          template_hole 13)),
+      template_hole 11)))))))))),
+                        template_app
+                         (template_app
+                           (template_hole 10,
+                            template_app (template_hole 6, template_var 9)),
+                          template_hole 9))),
+                    template_app
+                     (template_app
+                       (template_hole 17,
+                        template_app
+                         (template_app
+                           (template_hole 16,
+                            template_app
+                             (template_app
+                               (template_hole 15,
+                                template_app
+                                 (template_app
+                                   (template_app
+                                     (template_app
+ (template_app
+   (template_app
+     (template_app
+       (template_app (template_hole 14, template_hole 12),
+        template_hole 12),
+      template_hole 12),
+    template_hole 13),
+  template_hole 12),
+template_hole 12),
+                                    template_hole 12),
+                                  template_hole 13)),
+                              template_app
+                               (template_app
+                                 (template_hole 15,
+                                  template_app
+                                   (template_app
+                                     (template_app
+ (template_app
+   (template_app
+     (template_app
+       (template_app
+         (template_app (template_hole 14, template_hole 13),
+          template_hole 13),
+        template_hole 13),
+      template_hole 12),
+    template_hole 13),
+  template_hole 12),
+template_hole 12),
+                                    template_hole 13)),
+                                template_app
+                                 (template_app
+                                   (template_hole 15,
+                                    template_app
+                                     (template_app
+ (template_app
+   (template_app
+     (template_app
+       (template_app
+         (template_app
+           (template_app (template_hole 14, template_hole 12),
+            template_hole 13),
+          template_hole 13),
+        template_hole 12),
+      template_hole 13),
+    template_hole 12),
+  template_hole 12),
+template_hole 13)),
+                                  template_app
+                                   (template_app
+                                     (template_hole 15,
+template_app
+ (template_app
+   (template_app
+     (template_app
+       (template_app
+         (template_app
+           (template_app
+             (template_app (template_hole 14, template_hole 13),
+              template_hole 13),
+            template_hole 12),
+          template_hole 12),
+        template_hole 13),
+      template_hole 12),
+    template_hole 12),
+  template_hole 13)),
+                                    template_app
+                                     (template_app
+ (template_hole 15,
+  template_app
+   (template_app
+     (template_app
+       (template_app
+         (template_app
+           (template_app
+             (template_app
+               (template_app (template_hole 14, template_hole 12),
+                template_hole 13),
+              template_hole 12),
+            template_hole 13),
+          template_hole 13),
+        template_hole 12),
+      template_hole 12),
+    template_hole 13)),
+template_hole 11)))))),
+                          template_app
+                           (template_app (template_hole 10, template_var 9),
+                            template_hole 9))),
+                      template_var 8))),
+                template_var 5),
+              template_app
+               (template_app
+                 (template_app
+                   (template_app
+                     (template_hole 5,
+                      template_app
+                       (template_app (template_hole 4, template_var 6),
+                        template_var 4)),
+                    template_var 3),
+                  template_app (template_var 2, template_hole 3)),
+                template_var 6))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 18,
+                template_app
+                 (template_app
+                   (template_hole 17,
+                    template_app
+                     (template_app
+                       (template_hole 16,
+                        template_app
+                         (template_app
+                           (template_hole 15,
+                            template_app
+                             (template_app
+                               (template_app
+                                 (template_app
+                                   (template_app
+                                     (template_app
+ (template_app
+   (template_app (template_hole 14, template_hole 13), template_hole 13),
+  template_hole 13),
+template_hole 13),
+                                    template_hole 12),
+                                  template_hole 12),
+                                template_hole 12),
+                              template_hole 13)),
+                          template_app
+                           (template_app
+                             (template_hole 15,
+                              template_app
+                               (template_app
+                                 (template_app
+                                   (template_app
+                                     (template_app
+ (template_app
+   (template_app
+     (template_app (template_hole 14, template_hole 12), template_hole 12),
+    template_hole 12),
+  template_hole 12),
+template_hole 13),
+                                    template_hole 12),
+                                  template_hole 12),
+                                template_hole 13)),
+                            template_app
+                             (template_app
+                               (template_hole 15,
+                                template_app
+                                 (template_app
+                                   (template_app
+                                     (template_app
+ (template_app
+   (template_app
+     (template_app
+       (template_app (template_hole 14, template_hole 12),
+        template_hole 12),
+      template_hole 13),
+    template_hole 13),
+  template_hole 12),
+template_hole 12),
+                                    template_hole 12),
+                                  template_hole 13)),
+                              template_app
+                               (template_app
+                                 (template_hole 15,
+                                  template_app
+                                   (template_app
+                                     (template_app
+ (template_app
+   (template_app
+     (template_app
+       (template_app
+         (template_app (template_hole 14, template_hole 13),
+          template_hole 13),
+        template_hole 12),
+      template_hole 13),
+    template_hole 12),
+  template_hole 12),
+template_hole 12),
+                                    template_hole 13)),
+                                template_app
+                                 (template_app
+                                   (template_hole 15,
+                                    template_app
+                                     (template_app
+ (template_app
+   (template_app
+     (template_app
+       (template_app
+         (template_app
+           (template_app (template_hole 14, template_hole 12),
+            template_hole 12),
+          template_hole 13),
+        template_hole 13),
+      template_hole 13),
+    template_hole 12),
+  template_hole 12),
+template_hole 13)),
+                                  template_app
+                                   (template_app
+                                     (template_hole 15,
+template_app
+ (template_app
+   (template_app
+     (template_app
+       (template_app
+         (template_app
+           (template_app
+             (template_app (template_hole 14, template_hole 12),
+              template_hole 12),
+            template_hole 12),
+          template_hole 12),
+        template_hole 13),
+      template_hole 12),
+    template_hole 12),
+  template_hole 13)),
+                                    template_app
+                                     (template_app
+ (template_hole 15,
+  template_app
+   (template_app
+     (template_app
+       (template_app
+         (template_app
+           (template_app
+             (template_app
+               (template_app (template_hole 14, template_hole 13),
+                template_hole 12),
+              template_hole 12),
+            template_hole 12),
+          template_hole 13),
+        template_hole 12),
+      template_hole 12),
+    template_hole 13)),
+template_app
+ (template_app
+   (template_hole 15,
+    template_app
+     (template_app
+       (template_app
+         (template_app
+           (template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 14, template_hole 13),
+                  template_hole 13),
+                template_hole 12),
+              template_hole 13),
+            template_hole 13),
+          template_hole 12),
+        template_hole 12),
+      template_hole 13)),
+  template_app
+   (template_app
+     (template_hole 15,
+      template_app
+       (template_app
+         (template_app
+           (template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app (template_hole 14, template_hole 12),
+                    template_hole 13),
+                  template_hole 13),
+                template_hole 12),
+              template_hole 13),
+            template_hole 12),
+          template_hole 12),
+        template_hole 13)),
+    template_app
+     (template_app
+       (template_hole 15,
+        template_app
+         (template_app
+           (template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app
+                     (template_app (template_hole 14, template_hole 13),
+                      template_hole 13),
+                    template_hole 12),
+                  template_hole 13),
+                template_hole 12),
+              template_hole 12),
+            template_hole 12),
+          template_hole 13)),
+      template_app
+       (template_app
+         (template_hole 15,
+          template_app
+           (template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app
+                     (template_app
+                       (template_app (template_hole 14, template_hole 12),
+                        template_hole 13),
+                      template_hole 13),
+                    template_hole 12),
+                  template_hole 13),
+                template_hole 12),
+              template_hole 12),
+            template_hole 13)),
+        template_app
+         (template_app
+           (template_hole 15,
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app
+                     (template_app
+                       (template_app
+                         (template_app (template_hole 14, template_hole 12),
+                          template_hole 12),
+                        template_hole 12),
+                      template_hole 12),
+                    template_hole 13),
+                  template_hole 12),
+                template_hole 12),
+              template_hole 13)),
+          template_app
+           (template_app
+             (template_hole 15,
+              template_app
+               (template_app
+                 (template_app
+                   (template_app
+                     (template_app
+                       (template_app
+                         (template_app
+                           (template_app
+                             (template_hole 14, template_hole 13),
+                            template_hole 12),
+                          template_hole 12),
+                        template_hole 12),
+                      template_hole 13),
+                    template_hole 12),
+                  template_hole 12),
+                template_hole 13)),
+            template_hole 11)))))))))))))),
+                      template_app
+                       (template_app (template_hole 10, template_var 9),
+                        template_hole 9))),
+                  template_app
+                   (template_app
+                     (template_hole 17,
+                      template_app
+                       (template_app
+                         (template_hole 16,
+                          template_app
+                           (template_app
+                             (template_hole 15,
+                              template_app
+                               (template_app
+                                 (template_app
+                                   (template_app
+                                     (template_app
+ (template_app
+   (template_app
+     (template_app (template_hole 14, template_hole 12), template_hole 12),
+    template_hole 12),
+  template_hole 13),
+template_hole 12),
+                                    template_hole 12),
+                                  template_hole 12),
+                                template_hole 13)),
+                            template_app
+                             (template_app
+                               (template_hole 15,
+                                template_app
+                                 (template_app
+                                   (template_app
+                                     (template_app
+ (template_app
+   (template_app
+     (template_app
+       (template_app (template_hole 14, template_hole 13),
+        template_hole 13),
+      template_hole 13),
+    template_hole 12),
+  template_hole 13),
+template_hole 12),
+                                    template_hole 12),
+                                  template_hole 13)),
+                              template_app
+                               (template_app
+                                 (template_hole 15,
+                                  template_app
+                                   (template_app
+                                     (template_app
+ (template_app
+   (template_app
+     (template_app
+       (template_app
+         (template_app (template_hole 14, template_hole 12),
+          template_hole 13),
+        template_hole 13),
+      template_hole 12),
+    template_hole 13),
+  template_hole 12),
+template_hole 12),
+                                    template_hole 13)),
+                                template_app
+                                 (template_app
+                                   (template_hole 15,
+                                    template_app
+                                     (template_app
+ (template_app
+   (template_app
+     (template_app
+       (template_app
+         (template_app
+           (template_app (template_hole 14, template_hole 13),
+            template_hole 13),
+          template_hole 12),
+        template_hole 12),
+      template_hole 13),
+    template_hole 12),
+  template_hole 12),
+template_hole 13)),
+                                  template_app
+                                   (template_app
+                                     (template_hole 15,
+template_app
+ (template_app
+   (template_app
+     (template_app
+       (template_app
+         (template_app
+           (template_app
+             (template_app (template_hole 14, template_hole 12),
+              template_hole 13),
+            template_hole 12),
+          template_hole 13),
+        template_hole 13),
+      template_hole 12),
+    template_hole 12),
+  template_hole 13)),
+                                    template_hole 11)))))),
+                        template_app
+                         (template_app (template_hole 10, template_var 9),
+                          template_hole 9))),
+                    template_var 8))),
+              template_app
+               (template_app
+                 (template_hole 8,
+                  template_app
+                   (template_app (template_hole 4, template_var 6),
+                    template_app (template_hole 2, template_var 4))),
+                template_var 1))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 7, template_var 9),
+                 template_var 8),
+               template_var 5),
+             template_app
+              (template_app
+                (template_app
+                  (template_app (template_hole 5, template_var 7),
+                   template_app
+                    (template_app (template_hole 1, template_var 4),
+                     template_var 3)),
+                 template_app
+                  (template_app
+                    (template_app (template_hole 0, template_var 6),
+                     template_var 0),
+                   template_var 2)),
+               template_var 1))
+           )))]:
+   (string * thm * template) list
+### theory "Draft.Labeled_HoareMoreTemplates"
+### 0.334s elapsed time, 0.424s cpu time, 0.000s GC time
+val it = (): unit

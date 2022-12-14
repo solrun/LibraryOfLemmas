@@ -1,0 +1,395 @@
+Loading theory "Deriving.Derive_Manager" (required by "Draft.BasicAlgorithmsMoreTemplates" via "Draft.BasicAlgorithms" via "Draft.Data" via "Datatype_Order_Generator.Order_Generator" via "Datatype_Order_Generator.Derive_Aux")
+Loading theory "HOL-Library.Adhoc_Overloading" (required by "Draft.BasicAlgorithmsMoreTemplates" via "Draft.BasicAlgorithms" via "Draft.ErrorMonad" via "Certification_Monads.Error_Monad" via "HOL-Library.Monad_Syntax")
+Loading theory "HOL-Library.Function_Algebras" (required by "Draft.BasicAlgorithmsMoreTemplates" via "Draft.ExtrEqs" via "HOL-Library.BigO")
+Loading theory "HOL-Library.Nat_Bijection" (required by "Draft.BasicAlgorithmsMoreTemplates" via "Draft.ExtrEqs" via "HOL-Library.Stream")
+instantiation
+  fun :: (type, plus) plus
+  plus_fun == plus :: ('a => 'b) => ('a => 'b) => 'a => 'b
+instantiation
+  fun :: (type, zero) zero
+  zero_fun == zero_class.zero :: 'a => 'b
+instantiation
+  fun :: (type, times) times
+  times_fun == times :: ('a => 'b) => ('a => 'b) => 'a => 'b
+signature DERIVE_MANAGER =
+  sig
+    val derive: string -> string -> string -> theory -> theory
+    val derive_cmd: string -> string -> string -> theory -> theory
+    val print_info: theory -> unit
+    val register_derive:
+       string ->
+         string ->
+           (string -> string -> theory -> theory) -> theory -> theory
+  end
+structure Derive_Manager: DERIVE_MANAGER
+### theory "Deriving.Derive_Manager"
+### 0.055s elapsed time, 0.248s cpu time, 0.000s GC time
+Loading theory "Datatype_Order_Generator.Derive_Aux" (required by "Draft.BasicAlgorithmsMoreTemplates" via "Draft.BasicAlgorithms" via "Draft.Data" via "Datatype_Order_Generator.Order_Generator")
+instantiation
+  fun :: (type, one) one
+  one_fun == one_class.one :: 'a => 'b
+signature ADHOC_OVERLOADING =
+  sig
+    val generic_add_overloaded: string -> Context.generic -> Context.generic
+    val generic_add_variant:
+       string -> term -> Context.generic -> Context.generic
+    val generic_remove_overloaded:
+       string -> Context.generic -> Context.generic
+    val generic_remove_variant:
+       string -> term -> Context.generic -> Context.generic
+    val is_overloaded: Proof.context -> string -> bool
+    val show_variants: bool Config.T
+  end
+structure Adhoc_Overloading: ADHOC_OVERLOADING
+### theory "HOL-Library.Adhoc_Overloading"
+### 0.106s elapsed time, 0.429s cpu time, 0.030s GC time
+Loading theory "Certification_Monads.Error_Syntax" (required by "Draft.BasicAlgorithmsMoreTemplates" via "Draft.BasicAlgorithms" via "Draft.ErrorMonad" via "Certification_Monads.Error_Monad")
+Found termination order: "(%p. size (snd p)) <*mlex*> {}"
+### theory "HOL-Library.Function_Algebras"
+### 0.121s elapsed time, 0.492s cpu time, 0.030s GC time
+Loading theory "HOL-Library.Monad_Syntax" (required by "Draft.BasicAlgorithmsMoreTemplates" via "Draft.BasicAlgorithms" via "Draft.ErrorMonad" via "Certification_Monads.Error_Monad")
+### theory "Certification_Monads.Error_Syntax"
+### 0.026s elapsed time, 0.108s cpu time, 0.000s GC time
+Loading theory "HOL-Library.Set_Algebras" (required by "Draft.BasicAlgorithmsMoreTemplates" via "Draft.ExtrEqs" via "HOL-Library.BigO")
+### theory "HOL-Library.Monad_Syntax"
+### 0.035s elapsed time, 0.136s cpu time, 0.000s GC time
+Loading theory "Certification_Monads.Error_Monad" (required by "Draft.BasicAlgorithmsMoreTemplates" via "Draft.BasicAlgorithms" via "Draft.ErrorMonad")
+instantiation
+  set :: (plus) plus
+  plus_set == plus :: 'a set => 'a set => 'a set
+instantiation
+  set :: (times) times
+  times_set == times :: 'a set => 'a set => 'a set
+instantiation
+  set :: (zero) zero
+  zero_set == zero_class.zero :: 'a set
+instantiation
+  set :: (one) one
+  one_set == one_class.one :: 'a set
+### Rewrite rule not in simpset:
+### [| distinct (map fst ?xys3); (?x3, ?y3) : set ?xys3 |]
+### ==> map_of ?xys3 ?x3 = Some ?y3 == True
+### Rewrite rule not in simpset:
+### ?m2.3 ?k3 = Some ?k'3 ==>
+### (?m1.3 \<circ>\<^sub>m ?m2.3) ?k3 = ?m1.3 ?k'3 == True
+### Rewrite rule not in simpset:
+### ?n3 ?k3 = Some ?xx3 ==> (?m3 ++ ?n3) ?k3 = Some ?xx3 == True
+### ML warning (line 140 of "$AFP/Datatype_Order_Generator/derive_aux.ML"):
+### Value identifier (sort) has not been referenced.
+signature DERIVE_AUX =
+  sig
+    val HOLogic_list_all: term list * term -> term
+    val HOLogic_list_conj: term list -> term
+    val HOLogic_list_implies: term list * term -> term
+    val define_overloaded:
+       string * term -> local_theory -> thm * local_theory
+    val define_overloaded_generic:
+       Attrib.binding * term -> local_theory -> thm * local_theory
+    val dt_number_recs: Old_Datatype_Aux.dtyp list -> int * (int * int) list
+    val inductive_thm:
+       theory ->
+         (term list * term list) list ->
+           thm ->
+             sort ->
+               (Proof.context ->
+                  int ->
+                    thm list ->
+                      thm list -> term list -> term list -> tactic)
+                 -> thm
+    val mk_Some: term -> term
+    val mk_binary_thm:
+       (theory ->
+          Old_Datatype_Aux.info ->
+            sort -> 'a -> (term list * term list) list)
+         ->
+         (theory ->
+            Old_Datatype_Aux.info ->
+              sort -> (int -> term) * ('b * int * int) list)
+           ->
+           string ->
+             theory ->
+               Old_Datatype_Aux.info ->
+                 'a ->
+                   sort ->
+                     (Proof.context ->
+                        thm list ->
+                          thm list ->
+                            thm ->
+                              (Proof.context -> thm list -> tactic) ->
+                                int ->
+                                  term list ->
+                                    term list ->
+                                      string * Old_Datatype_Aux.dtyp list ->
+  (Old_Datatype_Aux.dtyp -> term -> ...) -> tactic)
+                       -> thm
+    val mk_case_tac:
+       Proof.context ->
+         term option list list ->
+           thm ->
+             (Proof.context * int * thm list * (string * cterm) list ->
+                tactic)
+               -> tactic
+    val mk_def: typ -> string -> term -> term
+    val mk_solve_with_tac: Proof.context -> thm list -> tactic -> tactic
+    val mk_xs: theory -> Old_Datatype_Aux.info -> sort -> int -> int -> term
+    val my_print_tac: Proof.context -> string -> tactic
+    val my_simp_set: simpset
+    val prop_trm_to_major_imp: (term list * 'a) list -> term * 'a
+    val rulify_only_asm: Proof.context -> thm -> thm
+    val split_last: 'a list -> 'a list * 'a
+    val typ_and_vs_of_typname:
+       theory -> string -> sort -> typ * (string * sort) list
+    val typ_subst_for_sort:
+       theory -> Old_Datatype_Aux.info -> sort -> typ -> typ
+  end
+structure Derive_Aux: DERIVE_AUX
+### theory "Datatype_Order_Generator.Derive_Aux"
+### 0.150s elapsed time, 0.575s cpu time, 0.030s GC time
+Loading theory "Datatype_Order_Generator.Order_Generator" (required by "Draft.BasicAlgorithmsMoreTemplates" via "Draft.BasicAlgorithms" via "Draft.Data")
+Found termination order: "size_list size <*mlex*> {}"
+### theory "HOL-Library.Nat_Bijection"
+### 0.321s elapsed time, 1.276s cpu time, 0.086s GC time
+Loading theory "HOL-Library.Stream" (required by "Draft.BasicAlgorithmsMoreTemplates" via "Draft.ExtrEqs")
+### theory "HOL-Library.Set_Algebras"
+### 0.208s elapsed time, 0.818s cpu time, 0.056s GC time
+Loading theory "HOL-Library.Tree" (required by "Draft.BasicAlgorithmsMoreTemplates" via "Draft.ExtrEqs" via "Draft.Templates")
+### ML warning (line 134 of "$AFP/Datatype_Order_Generator/order_generator.ML"):
+### Matches are not exhaustive.
+### ML warning (line 140 of "$AFP/Datatype_Order_Generator/order_generator.ML"):
+### Matches are not exhaustive.
+### ML warning (line 146 of "$AFP/Datatype_Order_Generator/order_generator.ML"):
+### Matches are not exhaustive.
+### ML warning (line 211 of "$AFP/Datatype_Order_Generator/order_generator.ML"):
+### Matches are not exhaustive.
+### ML warning (line 173 of "$AFP/Datatype_Order_Generator/order_generator.ML"):
+### Matches are not exhaustive.
+### ML warning (line 307 of "$AFP/Datatype_Order_Generator/order_generator.ML"):
+### Matches are not exhaustive.
+### ML warning (line 318 of "$AFP/Datatype_Order_Generator/order_generator.ML"):
+### Matches are not exhaustive.
+### ML warning (line 363 of "$AFP/Datatype_Order_Generator/order_generator.ML"):
+### Matches are not exhaustive.
+### ML warning (line 382 of "$AFP/Datatype_Order_Generator/order_generator.ML"):
+### Matches are not exhaustive.
+### ML warning (line 397 of "$AFP/Datatype_Order_Generator/order_generator.ML"):
+### Matches are not exhaustive.
+### ML warning (line 430 of "$AFP/Datatype_Order_Generator/order_generator.ML"):
+### Matches are not exhaustive.
+### ML warning (line 438 of "$AFP/Datatype_Order_Generator/order_generator.ML"):
+### Matches are not exhaustive.
+### ML warning (line 474 of "$AFP/Datatype_Order_Generator/order_generator.ML"):
+### Matches are not exhaustive.
+### ML warning (line 524 of "$AFP/Datatype_Order_Generator/order_generator.ML"):
+### Pattern is not exhaustive.
+signature ORDER_GENERATOR =
+  sig
+    val derive: int -> string -> string -> theory -> theory
+    val mk_antisym_thm: theory -> Old_Datatype_Aux.info -> thm -> thm -> thm
+    val mk_le_refl_thm: theory -> Old_Datatype_Aux.info -> thm
+    val mk_less_eq_idx:
+       theory ->
+         Old_Datatype_Aux.info -> sort -> int -> term -> term -> term
+    val mk_less_idx:
+       theory ->
+         Old_Datatype_Aux.info ->
+           sort -> (int -> term) * (term * int * int) list
+    val mk_less_le_not_le_thm: theory -> Old_Datatype_Aux.info -> thm
+    val mk_linear_thm: theory -> Old_Datatype_Aux.info -> thm
+    val mk_order_thms: theory -> Old_Datatype_Aux.info -> thm list
+    val mk_transitivity_thms: theory -> Old_Datatype_Aux.info -> thm * thm
+  end
+structure Order_Generator: ORDER_GENERATOR
+### theory "Datatype_Order_Generator.Order_Generator"
+### 0.171s elapsed time, 0.671s cpu time, 0.056s GC time
+Loading theory "Draft.Data" (required by "Draft.BasicAlgorithmsMoreTemplates" via "Draft.BasicAlgorithms")
+Found termination order: "(%p. length (snd (snd p))) <*mlex*> {}"
+Found termination order: "(%p. length (snd (snd p))) <*mlex*> {}"
+Found termination order: "(%p. length (snd p)) <*mlex*> {}"
+Found termination order: "(%p. length (snd p)) <*mlex*> {}"
+consts
+  shift :: "'a list => 'a stream => 'a stream"
+Proofs for coinductive predicate(s) "streamsp"
+  Proving monotonicity ...
+Found termination order: "size_list size <*mlex*> {}"
+consts
+  snth :: "'a stream => nat => 'a"
+consts
+  stake :: "nat => 'a stream => 'a list"
+consts
+  sdrop :: "nat => 'a stream => 'a stream"
+creating orders for datatype extended
+consts
+  left :: "'a tree => 'a tree"
+consts
+  right :: "'a tree => 'a tree"
+registered extended in class ord
+Found termination order: "(%p. length (snd p)) <*mlex*> {}"
+registered extended in class order
+registered extended in class linorder
+consts
+  sfilter :: "('a => bool) => 'a stream => 'a stream"
+Found termination order: "size <*mlex*> {}"
+consts
+  cycle :: "'a list => 'a stream"
+Found termination order: "size_list size <*mlex*> {}"
+consts
+  siterate :: "('a => 'a) => 'a => 'a stream"
+Found termination order: "size <*mlex*> {}"
+consts
+  flat :: "'a list stream => 'a stream"
+Found termination order: "size <*mlex*> {}"
+Found termination order: "(%p. length (snd p)) <*mlex*> {}"
+consts
+  sinterleave :: "'a stream => 'a stream => 'a stream"
+### theory "Certification_Monads.Error_Monad"
+### 1.163s elapsed time, 4.422s cpu time, 0.903s GC time
+Loading theory "Draft.ErrorMonad" (required by "Draft.BasicAlgorithmsMoreTemplates" via "Draft.BasicAlgorithms")
+class height = type +
+  fixes height :: "'a => nat"
+instantiation
+  tree :: (type) height
+  height_tree == height :: 'a tree => nat
+consts
+  szip :: "'a stream => 'b stream => ('a * 'b) stream"
+consts
+  smap2 :: "('a => 'b => 'c) => 'a stream => 'b stream => 'c stream"
+Found termination order: "{}"
+### theory "HOL-Library.Stream"
+### 1.067s elapsed time, 4.044s cpu time, 0.847s GC time
+Loading theory "HOL-Library.BigO" (required by "Draft.BasicAlgorithmsMoreTemplates" via "Draft.ExtrEqs")
+Found termination order: "size <*mlex*> {}"
+Found termination order: "{}"
+Found termination order: "size <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+Found termination order: "{}"
+### theory "Draft.ErrorMonad"
+### 0.284s elapsed time, 1.127s cpu time, 0.083s GC time
+Found termination order: "size <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+Found termination order: "(%p. size (fst p)) <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+Found termination order: "(%p. size (snd p)) <*mlex*> {}"
+### theory "HOL-Library.BigO"
+### 0.791s elapsed time, 2.616s cpu time, 0.315s GC time
+Found termination order: "size <*mlex*> {}"
+### theory "HOL-Library.Tree"
+### 2.342s elapsed time, 7.897s cpu time, 1.883s GC time
+Loading theory "Draft.Templates" (required by "Draft.BasicAlgorithmsMoreTemplates" via "Draft.ExtrEqs")
+datatype template_term
+=
+     t_empty
+   | template_app of template_term * template_term
+   | template_hole of int
+   | template_var of int
+datatype sign
+= equals | greater_equals | greater_than | less_equals | less_than
+datatype template
+=
+     template_bimplication of template * template
+   | template_dunno
+   | template_equation of template_term * template_term
+   | template_implication of template list * template
+   | template_inequation of sign * template_term * template_term
+   | template_negation of template
+   | template_predicate of template_term
+constructor t_empty: template_term
+constructor template_app: template_term * template_term -> template_term
+constructor template_hole: int -> template_term
+constructor template_var: int -> template_term
+constructor equals: sign
+constructor greater_equals: sign
+constructor greater_than: sign
+constructor less_equals: sign
+constructor less_than: sign
+constructor template_bimplication: template * template -> template
+constructor template_dunno: template
+constructor template_equation: template_term * template_term -> template
+constructor template_implication: template list * template -> template
+constructor template_inequation:
+   sign * template_term * template_term -> template
+constructor template_negation: template -> template
+constructor template_predicate: template_term -> template
+val vfs = fn: term -> (indexname * typ) list * (string * typ) list
+val indexOf = fn: ''a list -> ''a -> int -> int
+val has_eq = fn: term -> bool
+val term2template = fn:
+   (indexname * typ) list -> (string * typ) list -> term -> template_term
+val lemma2predicate = fn: term -> term -> template
+val makeTemplatewithContext = fn: term -> term -> template
+val lemma2template = fn: term -> template
+val thm2template = fn: thm -> template
+val tterm2string = fn: template_term -> string
+val template2string = fn: template -> string
+val t = "height ?t <= size ?t": thm
+val th =
+   Const ("HOL.Trueprop", "bool => prop") $
+     (Const ("Orderings.ord_class.less_eq", "nat => nat => bool") $
+       (Const ("Tree.height_class.height", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree")) $
+       (Const ("Nat.size_class.size", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree"))):
+   term
+### theory "Draft.Templates"
+### 0.052s elapsed time, 0.104s cpu time, 0.000s GC time
+Loading theory "Draft.ExtrEqs" (required by "Draft.BasicAlgorithmsMoreTemplates")
+Found termination order: "{}"
+### theory "Draft.Data"
+### 2.664s elapsed time, 8.502s cpu time, 1.940s GC time
+Loading theory "Draft.BasicAlgorithms" (required by "Draft.BasicAlgorithmsMoreTemplates")
+Found termination order: "{}"
+val eqpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Var (("_dummy_", 2), "?'a"))
+       ):
+   term Find_Theorems.criterion
+val badeqpattern = Pattern (Const ("Pure.eq", "?'a => ?'a => prop")):
+   term Find_Theorems.criterion
+val undefpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Const ("HOL.undefined", "?'a"))
+       ):
+   term Find_Theorems.criterion
+val thmpattern =
+   Pattern
+    (Const ("HOL.Trueprop", "bool => prop") $ Var (("_dummy_", 1), "bool")):
+   term Find_Theorems.criterion
+val badnames =
+   ["*nitpick*", "*Nitpick*", "*full_exhaustive*", "*_def*", "Enum.finite*",
+    "*Quickcheck*", "ATP*", "*Nunchaku*", "*Code*", "*BNF*", "*SMT*",
+    "*.*.*"]:
+   string list
+val unwanted_names =
+   [(false, Name "*nitpick*"), (false, Name "*Nitpick*"),
+    (false, Name "*full_exhaustive*"), (false, Name "*_def*"),
+    (false, Name "Enum.finite*"), (false, Name "*Quickcheck*"),
+    (false, Name "ATP*"), (false, Name "*Nunchaku*"),
+    (false, Name "*Code*"), (false, Name "*BNF*"), (false, Name "*SMT*"),
+    (false, Name "*.*.*")]:
+   (bool * term Find_Theorems.criterion) list
+val has_vars = fn: term -> bool
+val get_all_eqs = fn: string -> Proof.context -> (string * thm) list
+val get_all_thms = fn: string -> Proof.context -> (string * thm) list
+val get_noneq_thms = fn: string -> Proof.context -> (string * thm) list
+val template_eqs = fn:
+   string -> Proof.context -> (string * thm * template) list
+val template_thms = fn:
+   string -> Proof.context -> (string * thm * template) list
+### theory "Draft.ExtrEqs"
+### 0.552s elapsed time, 1.162s cpu time, 0.116s GC time
+Found termination order: "{}"
+Found termination order: "{}"
+### theory "Draft.BasicAlgorithms"
+### 0.413s elapsed time, 0.713s cpu time, 0.058s GC time
+Loading theory "Draft.BasicAlgorithmsMoreTemplates"
+val templateLemmas = []: (string * thm * template) list
+### theory "Draft.BasicAlgorithmsMoreTemplates"
+### 0.357s elapsed time, 0.517s cpu time, 0.056s GC time
+val it = (): unit

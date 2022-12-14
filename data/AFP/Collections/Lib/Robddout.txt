@@ -1,0 +1,2614 @@
+Loading theory "Draft.ICF_Tools" (required by "Draft.RobddTemplates" via "Draft.Robdd" via "Draft.MapSpec" via "Draft.ICF_Spec_Base" via "Draft.Record_Intf")
+Loading theory "HOL-Library.Function_Algebras" (required by "Draft.RobddTemplates" via "Draft.ExtrEqs" via "HOL-Library.BigO")
+Loading theory "Draft.SetIterator" (required by "Draft.RobddTemplates" via "Draft.Robdd" via "Draft.MapSpec" via "Draft.ICF_Spec_Base" via "Draft.Iterator" via "Draft.It_to_It" via "Draft.Proper_Iterator" via "Draft.SetIteratorOperations")
+Loading theory "HOL-Library.Nat_Bijection" (required by "Draft.RobddTemplates" via "Draft.ExtrEqs" via "HOL-Library.Stream")
+instantiation
+  fun :: (type, plus) plus
+  plus_fun == plus :: ('a => 'b) => ('a => 'b) => 'a => 'b
+instantiation
+  fun :: (type, zero) zero
+  zero_fun == zero_class.zero :: 'a => 'b
+instantiation
+  fun :: (type, times) times
+  times_fun == times :: ('a => 'b) => ('a => 'b) => 'a => 'b
+instantiation
+  fun :: (type, one) one
+  one_fun == one_class.one :: 'a => 'b
+infix 0 ##
+signature ICF_TOOLS =
+  sig
+    val changed_conv: conv -> conv
+    val chead_of: cterm -> cterm
+    val chead_of_thm: thm -> cterm
+    val define_simple:
+       string -> term -> local_theory -> (term * thm) * local_theory
+    val define_simple_global:
+       string -> term -> theory -> (term * thm) * theory
+    val define_simple_local:
+       string -> term -> local_theory -> (term * thm) * local_theory
+    val dest_def_eq: term -> term * term
+    val dt_head: term -> term
+    val dt_lhs: term -> term
+    val dt_params: term -> term list
+    val dt_rhs: term -> term
+    val dthm_head: thm -> term
+    val dthm_lhs: thm -> term
+    val dthm_params: thm -> term list
+    val dthm_rhs: thm -> term
+    val gen_variant: (string -> bool) -> string -> string
+    val import_cterm: cterm -> Proof.context -> cterm * Proof.context
+    val inst_meta_cong: Proof.context -> cterm -> thm
+    val map_option: ('a -> 'b) -> 'a option -> 'b option
+    val norm_def_thm: thm -> thm
+    val parse_cpat: cterm context_parser
+    val rem_dup_prems: Proof.context -> thm -> thm
+    val rename_cterm: cterm * cterm -> ctyp TVars.table * cterm Vars.table
+    val renames_cterm: cterm * cterm -> bool
+    val repeat_top_sweep_conv:
+       (Proof.context -> conv) -> Proof.context -> conv
+    val revert_abbrevs: string -> theory -> theory
+    val sss_add: thm list -> Proof.context -> Proof.context
+    val wrap_lthy_global: (local_theory -> local_theory) -> theory -> theory
+    val wrap_lthy_local:
+       (local_theory -> local_theory) -> local_theory -> local_theory
+    val wrap_lthy_result_global:
+       (local_theory -> 'a * local_theory) ->
+         (morphism -> 'a -> 'b) -> theory -> 'b * theory
+    val wrap_lthy_result_local:
+       (local_theory -> 'a * local_theory) ->
+         (morphism -> 'a -> 'b) -> local_theory -> 'b * local_theory
+  end
+val ## = fn: ('a -> 'b) * ('c -> 'd) -> 'a * 'c -> 'b * 'd
+structure ICF_Tools: ICF_TOOLS
+### theory "Draft.ICF_Tools"
+### 0.127s elapsed time, 0.493s cpu time, 0.036s GC time
+Loading theory "Draft.Ord_Code_Preproc" (required by "Draft.RobddTemplates" via "Draft.Robdd" via "Draft.MapSpec" via "Draft.ICF_Spec_Base" via "Draft.Record_Intf")
+Found termination order: "(%p. size (snd p)) <*mlex*> {}"
+### theory "HOL-Library.Function_Algebras"
+### 0.157s elapsed time, 0.610s cpu time, 0.036s GC time
+Loading theory "HOL-Library.Set_Algebras" (required by "Draft.RobddTemplates" via "Draft.ExtrEqs" via "HOL-Library.BigO")
+instantiation
+  set :: (plus) plus
+  plus_set == plus :: 'a set => 'a set => 'a set
+### ML warning (line 26 of "$AFP/Collections/ICF/tools/Ord_Code_Preproc.thy"):
+### (=) has infix status but was not preceded by op.
+### ML warning (line 37 of "$AFP/Collections/ICF/tools/Ord_Code_Preproc.thy"):
+### Value identifier (trace_ft) has not been referenced.
+### ML warning (line 50 of "$AFP/Collections/ICF/tools/Ord_Code_Preproc.thy"):
+### Value identifier (process) has not been referenced.
+signature ORD_CODE_PREPROC =
+  sig
+    val add: int * string * (theory -> thm -> thm) -> theory -> theory
+    val get: theory -> (int * string * (theory -> thm -> thm)) list
+    val rem: string -> theory -> theory
+    val setup: theory -> theory
+    val trace_enabled: bool ref
+  end
+signature OC_SIMPSET =
+  sig
+    val get: theory -> simpset
+    val map: (simpset -> simpset) -> theory -> theory
+    val setup: theory -> theory
+  end
+structure Ord_Code_Preproc: ORD_CODE_PREPROC
+functor Oc_Simpset (sig val name: string val prio: int end): OC_SIMPSET
+locale set_iterator_genord
+  fixes
+    iti ::
+      "('\<sigma> => bool)
+       => ('x => '\<sigma> => '\<sigma>) => '\<sigma> => '\<sigma>"
+    and S0 :: "'x set"
+    and R :: "'x => 'x => bool"
+  assumes "set_iterator_genord iti S0 R"
+instantiation
+  set :: (times) times
+  times_set == times :: 'a set => 'a set => 'a set
+### theory "Draft.Ord_Code_Preproc"
+### 0.063s elapsed time, 0.251s cpu time, 0.000s GC time
+Loading theory "Draft.Locale_Code" (required by "Draft.RobddTemplates" via "Draft.Robdd" via "Draft.MapSpec" via "Draft.ICF_Spec_Base")
+instantiation
+  set :: (zero) zero
+  zero_set == zero_class.zero :: 'a set
+instantiation
+  set :: (one) one
+  one_set == one_class.one :: 'a set
+Found termination order: "size_list size <*mlex*> {}"
+### ML warning (line 343 of "$AFP/Collections/ICF/tools/Locale_Code.thy"):
+### Pattern is not exhaustive.
+signature LOCALE_CODE =
+  sig
+    val add_pat_eq: cterm -> thm list -> theory -> theory
+    val close_block: theory -> theory
+    val del_pat: cterm -> theory -> theory
+    val get_unf_ss: theory -> simpset
+    val lc_decl_del: term -> local_theory -> local_theory
+    val lc_decl_eq: thm list -> local_theory -> local_theory
+    val open_block: theory -> theory
+    type pat_eq = cterm * thm list
+    val setup: theory -> theory
+    val tracing_enabled: bool ref
+  end
+structure Locale_Code: LOCALE_CODE
+### theory "Draft.Locale_Code"
+### 0.166s elapsed time, 0.636s cpu time, 0.078s GC time
+Loading theory "Draft.Record_Intf" (required by "Draft.RobddTemplates" via "Draft.Robdd" via "Draft.MapSpec" via "Draft.ICF_Spec_Base")
+### theory "HOL-Library.Set_Algebras"
+### 0.224s elapsed time, 0.877s cpu time, 0.078s GC time
+Loading theory "HOL-Library.Tree" (required by "Draft.RobddTemplates" via "Draft.ExtrEqs" via "Draft.Templates")
+signature RECORD_INTF =
+  sig
+    val add_unf_thms: thm list -> Context.generic -> Context.generic
+    val add_unf_thms_global: thm list -> theory -> theory
+    val get_unf_ss: Context.generic -> simpset
+    val get_unf_thms: Context.generic -> thm list
+    val icf_locales_tac: Proof.context -> tactic
+    val icf_rec_def: thm -> Context.generic -> Context.generic
+    val icf_rec_def_attr: attribute context_parser
+    val setup: theory -> theory
+  end
+structure Record_Intf: RECORD_INTF
+### theory "Draft.Record_Intf"
+### 0.056s elapsed time, 0.225s cpu time, 0.000s GC time
+Loading theory "HOL-Library.BigO" (required by "Draft.RobddTemplates" via "Draft.ExtrEqs")
+### theory "HOL-Library.Nat_Bijection"
+### 0.429s elapsed time, 1.671s cpu time, 0.114s GC time
+Loading theory "HOL-Library.Stream" (required by "Draft.RobddTemplates" via "Draft.ExtrEqs")
+class linorder = order +
+  assumes "linear": "!!x y. x <= y | y <= x"
+consts
+  shift :: "'a list => 'a stream => 'a stream"
+Proofs for coinductive predicate(s) "streamsp"
+  Proving monotonicity ...
+consts
+  snth :: "'a stream => nat => 'a"
+consts
+  stake :: "nat => 'a stream => 'a list"
+class linorder = order +
+  assumes "linear": "!!x y. x <= y | y <= x"
+consts
+  left :: "'a tree => 'a tree"
+consts
+  right :: "'a tree => 'a tree"
+consts
+  sdrop :: "nat => 'a stream => 'a stream"
+Found termination order: "size <*mlex*> {}"
+consts
+  sfilter :: "('a => bool) => 'a stream => 'a stream"
+consts
+  cycle :: "'a list => 'a stream"
+Found termination order: "size <*mlex*> {}"
+consts
+  siterate :: "('a => 'a) => 'a => 'a stream"
+class linorder = order +
+  assumes "linear": "!!x y. x <= y | y <= x"
+consts
+  flat :: "'a list stream => 'a stream"
+### theory "Draft.SetIterator"
+### 1.308s elapsed time, 4.908s cpu time, 0.921s GC time
+Loading theory "Draft.Idx_Iterator" (required by "Draft.RobddTemplates" via "Draft.Robdd" via "Draft.MapSpec" via "Draft.ICF_Spec_Base" via "Draft.Iterator")
+Found termination order: "size <*mlex*> {}"
+class height = type +
+  fixes height :: "'a => nat"
+instantiation
+  tree :: (type) height
+  height_tree == height :: 'a tree => nat
+### theory "HOL-Library.BigO"
+### 0.941s elapsed time, 3.474s cpu time, 0.807s GC time
+Loading theory "Draft.SetIteratorOperations" (required by "Draft.RobddTemplates" via "Draft.Robdd" via "Draft.MapSpec" via "Draft.ICF_Spec_Base" via "Draft.Iterator" via "Draft.It_to_It" via "Draft.Proper_Iterator")
+consts
+  sinterleave :: "'a stream => 'a stream => 'a stream"
+consts
+  szip :: "'a stream => 'b stream => ('a * 'b) stream"
+Found termination order: "size <*mlex*> {}"
+consts
+  smap2 :: "('a => 'b => 'c) => 'a stream => 'b stream => 'c stream"
+### theory "HOL-Library.Stream"
+### 1.088s elapsed time, 4.042s cpu time, 0.897s GC time
+val it = fn:
+   (theory -> theory) ->
+     (Proof.context -> Proof.context) -> Context.generic -> Context.generic
+Found termination order: "size <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+Found termination order: "(%p. size (fst (snd (snd p)))) <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+### theory "Draft.Idx_Iterator"
+### 0.444s elapsed time, 1.620s cpu time, 0.148s GC time
+Found termination order: "size <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+Found termination order: "(%p. size (fst p)) <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+Found termination order: "(%p. size (snd p)) <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+### theory "HOL-Library.Tree"
+### 2.365s elapsed time, 7.348s cpu time, 1.783s GC time
+Loading theory "Draft.Templates" (required by "Draft.RobddTemplates" via "Draft.ExtrEqs")
+datatype template_term
+=
+     t_empty
+   | template_app of template_term * template_term
+   | template_hole of int
+   | template_var of int
+datatype sign
+= equals | greater_equals | greater_than | less_equals | less_than
+datatype template
+=
+     template_bimplication of template * template
+   | template_dunno
+   | template_equation of template_term * template_term
+   | template_implication of template list * template
+   | template_inequation of sign * template_term * template_term
+   | template_negation of template
+   | template_predicate of template_term
+constructor t_empty: template_term
+constructor template_app: template_term * template_term -> template_term
+constructor template_hole: int -> template_term
+constructor template_var: int -> template_term
+constructor equals: sign
+constructor greater_equals: sign
+constructor greater_than: sign
+constructor less_equals: sign
+constructor less_than: sign
+constructor template_bimplication: template * template -> template
+constructor template_dunno: template
+constructor template_equation: template_term * template_term -> template
+constructor template_implication: template list * template -> template
+constructor template_inequation:
+   sign * template_term * template_term -> template
+constructor template_negation: template -> template
+constructor template_predicate: template_term -> template
+val vfs = fn: term -> (indexname * typ) list * (string * typ) list
+val indexOf = fn: ''a list -> ''a -> int -> int
+val has_eq = fn: term -> bool
+val term2template = fn:
+   (indexname * typ) list -> (string * typ) list -> term -> template_term
+val lemma2predicate = fn: term -> term -> template
+val makeTemplatewithContext = fn: term -> term -> template
+val lemma2template = fn: term -> template
+val thm2template = fn: thm -> template
+val tterm2string = fn: template_term -> string
+val template2string = fn: template -> string
+val t = "height ?t <= size ?t": thm
+val th =
+   Const ("HOL.Trueprop", "bool => prop") $
+     (Const ("Orderings.ord_class.less_eq", "nat => nat => bool") $
+       (Const ("Tree.height_class.height", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree")) $
+       (Const ("Nat.size_class.size", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree"))):
+   term
+### theory "Draft.Templates"
+### 0.079s elapsed time, 0.173s cpu time, 0.049s GC time
+Loading theory "Draft.ExtrEqs" (required by "Draft.RobddTemplates")
+### theory "Draft.SetIteratorOperations"
+### 1.875s elapsed time, 4.697s cpu time, 1.070s GC time
+Loading theory "Draft.Proper_Iterator" (required by "Draft.RobddTemplates" via "Draft.Robdd" via "Draft.MapSpec" via "Draft.ICF_Spec_Base" via "Draft.Iterator" via "Draft.It_to_It")
+Loading theory "Draft.SetIteratorGA" (required by "Draft.RobddTemplates" via "Draft.Robdd" via "Draft.MapSpec" via "Draft.ICF_Spec_Base" via "Draft.Iterator")
+val eqpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Var (("_dummy_", 2), "?'a"))
+       ):
+   term Find_Theorems.criterion
+val badeqpattern = Pattern (Const ("Pure.eq", "?'a => ?'a => prop")):
+   term Find_Theorems.criterion
+val undefpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Const ("HOL.undefined", "?'a"))
+       ):
+   term Find_Theorems.criterion
+val thmpattern =
+   Pattern
+    (Const ("HOL.Trueprop", "bool => prop") $ Var (("_dummy_", 1), "bool")):
+   term Find_Theorems.criterion
+val badnames =
+   ["*nitpick*", "*Nitpick*", "*full_exhaustive*", "*_def*", "Enum.finite*",
+    "*Quickcheck*", "ATP*", "*Nunchaku*", "*Code*", "*BNF*", "*SMT*",
+    "*.*.*"]:
+   string list
+val unwanted_names =
+   [(false, Name "*nitpick*"), (false, Name "*Nitpick*"),
+    (false, Name "*full_exhaustive*"), (false, Name "*_def*"),
+    (false, Name "Enum.finite*"), (false, Name "*Quickcheck*"),
+    (false, Name "ATP*"), (false, Name "*Nunchaku*"),
+    (false, Name "*Code*"), (false, Name "*BNF*"), (false, Name "*SMT*"),
+    (false, Name "*.*.*")]:
+   (bool * term Find_Theorems.criterion) list
+val has_vars = fn: term -> bool
+val get_all_eqs = fn: string -> Proof.context -> (string * thm) list
+val get_all_thms = fn: string -> Proof.context -> (string * thm) list
+val get_noneq_thms = fn: string -> Proof.context -> (string * thm) list
+val template_eqs = fn:
+   string -> Proof.context -> (string * thm * template) list
+val template_thms = fn:
+   string -> Proof.context -> (string * thm * template) list
+### theory "Draft.ExtrEqs"
+### 0.547s elapsed time, 1.289s cpu time, 0.108s GC time
+structure Icf_Proper_Iterator:
+  sig
+    val add: attribute
+    val add_thm: thm -> Context.generic -> Context.generic
+    val del: attribute
+    val del_thm: thm -> Context.generic -> Context.generic
+    val get: Proof.context -> thm list
+    structure icf_proper_iteratorI: NAMED_THMS
+    val setup: theory -> theory
+  end
+### theory "Draft.Proper_Iterator"
+### 0.365s elapsed time, 0.922s cpu time, 0.105s GC time
+Loading theory "Draft.It_to_It" (required by "Draft.RobddTemplates" via "Draft.Robdd" via "Draft.MapSpec" via "Draft.ICF_Spec_Base" via "Draft.Iterator")
+Loading theory "Draft.Gen_Iterator" (required by "Draft.RobddTemplates" via "Draft.Robdd" via "Draft.MapSpec" via "Draft.ICF_Spec_Base" via "Draft.Iterator")
+locale proper_it_loc
+  fixes
+    it ::
+      "'s => ('x list => bool)
+             => ('x => 'x list => 'x list) => 'x list => 'x list"
+    and
+    it' ::
+      "'s => ('\<sigma> => bool)
+             => ('x => '\<sigma> => '\<sigma>) => '\<sigma> => '\<sigma>"
+  assumes "proper_it_loc it it'"
+### theory "Draft.It_to_It"
+### 0.084s elapsed time, 0.249s cpu time, 0.000s GC time
+### theory "Draft.SetIteratorGA"
+### 0.615s elapsed time, 1.524s cpu time, 0.153s GC time
+### theory "Draft.Gen_Iterator"
+### 0.429s elapsed time, 0.813s cpu time, 0.048s GC time
+Loading theory "Draft.Iterator" (required by "Draft.RobddTemplates" via "Draft.Robdd" via "Draft.MapSpec" via "Draft.ICF_Spec_Base")
+### theory "Draft.Iterator"
+### 0.366s elapsed time, 0.409s cpu time, 0.063s GC time
+Loading theory "Draft.ICF_Spec_Base" (required by "Draft.RobddTemplates" via "Draft.Robdd" via "Draft.MapSpec")
+### theory "Draft.ICF_Spec_Base"
+### 0.201s elapsed time, 0.201s cpu time, 0.000s GC time
+Loading theory "Draft.MapSpec" (required by "Draft.RobddTemplates" via "Draft.Robdd")
+locale map
+  fixes \<alpha> :: "'s => 'u => 'v option"
+    and invar :: "'s => bool"
+locale map_no_invar
+  fixes \<alpha> :: "'a => 'b => 'c option"
+    and invar :: "'a => bool"
+  assumes "map_no_invar invar"
+locale map_empty
+  fixes \<alpha> :: "'s => 'u => 'v option"
+    and invar :: "'s => bool"
+    and empty :: "unit => 's"
+  assumes "map_empty \<alpha> invar empty"
+locale map_lookup
+  fixes \<alpha> :: "'s => 'u => 'v option"
+    and invar :: "'s => bool"
+    and lookup :: "'u => 's => 'v option"
+  assumes "map_lookup \<alpha> invar lookup"
+locale map_update
+  fixes \<alpha> :: "'s => 'u => 'v option"
+    and invar :: "'s => bool"
+    and update :: "'u => 'v => 's => 's"
+  assumes "map_update \<alpha> invar update"
+locale map_update_dj
+  fixes \<alpha> :: "'s => 'u => 'v option"
+    and invar :: "'s => bool"
+    and update_dj :: "'u => 'v => 's => 's"
+  assumes "map_update_dj \<alpha> invar update_dj"
+locale map_delete
+  fixes \<alpha> :: "'s => 'u => 'v option"
+    and invar :: "'s => bool"
+    and delete :: "'u => 's => 's"
+  assumes "map_delete \<alpha> invar delete"
+locale map_add
+  fixes \<alpha> :: "'s => 'u => 'v option"
+    and invar :: "'s => bool"
+    and add :: "'s => 's => 's"
+  assumes "MapSpec.map_add \<alpha> invar add"
+locale map_add_dj
+  fixes \<alpha> :: "'s => 'u => 'v option"
+    and invar :: "'s => bool"
+    and add_dj :: "'s => 's => 's"
+  assumes "map_add_dj \<alpha> invar add_dj"
+locale map_isEmpty
+  fixes \<alpha> :: "'s => 'u => 'v option"
+    and invar :: "'s => bool"
+    and isEmpty :: "'s => bool"
+  assumes "map_isEmpty \<alpha> invar isEmpty"
+locale map_sng
+  fixes \<alpha> :: "'s => 'u => 'v option"
+    and invar :: "'s => bool"
+    and sng :: "'u => 'v => 's"
+  assumes "map_sng \<alpha> invar sng"
+locale map_isSng
+  fixes \<alpha> :: "'s => 'k => 'v option"
+    and invar :: "'s => bool"
+    and isSng :: "'s => bool"
+  assumes "map_isSng \<alpha> invar isSng"
+locale finite_map
+  fixes \<alpha> :: "'a => 'b => 'c option"
+    and invar :: "'a => bool"
+  assumes "finite_map \<alpha> invar"
+locale map_size
+  fixes \<alpha> :: "'s => 'u => 'v option"
+    and invar :: "'s => bool"
+    and size :: "'s => nat"
+  assumes "map_size \<alpha> invar size"
+locale map_size_abort
+  fixes \<alpha> :: "'s => 'u => 'v option"
+    and invar :: "'s => bool"
+    and size_abort :: "nat => 's => nat"
+  assumes "map_size_abort \<alpha> invar size_abort"
+locale poly_map_iteratei_defs
+  fixes
+    list_it ::
+      "'s => (('u * 'v) list => bool)
+             => ('u * 'v => ('u * 'v) list => ('u * 'v) list)
+                => ('u * 'v) list => ('u * 'v) list"
+locale poly_map_iteratei
+  fixes \<alpha> :: "'s => 'u => 'v option"
+    and invar :: "'s => bool"
+    and
+    list_it ::
+      "'s => (('u * 'v) list => bool)
+             => ('u * 'v => ('u * 'v) list => ('u * 'v) list)
+                => ('u * 'v) list => ('u * 'v) list"
+  assumes "poly_map_iteratei \<alpha> invar list_it"
+locale map_ball
+  fixes \<alpha> :: "'s => 'u => 'v option"
+    and invar :: "'s => bool"
+    and ball :: "'s => ('u * 'v => bool) => bool"
+  assumes "map_ball \<alpha> invar ball"
+locale map_bex
+  fixes \<alpha> :: "'s => 'u => 'v option"
+    and invar :: "'s => bool"
+    and bex :: "'s => ('u * 'v => bool) => bool"
+  assumes "map_bex \<alpha> invar bex"
+locale map_sel
+  fixes \<alpha> :: "'s => 'u => 'v option"
+    and invar :: "'s => bool"
+    and sel :: "'s => ('u * 'v => 'r option) => 'r option"
+  assumes "map_sel \<alpha> invar sel"
+locale map_sel'
+  fixes \<alpha> :: "'s => 'u => 'v option"
+    and invar :: "'s => bool"
+    and sel' :: "'s => ('u * 'v => bool) => ('u * 'v) option"
+  assumes "map_sel' \<alpha> invar sel'"
+locale map_to_list
+  fixes \<alpha> :: "'s => 'u => 'v option"
+    and invar :: "'s => bool"
+    and to_list :: "'s => ('u * 'v) list"
+  assumes "map_to_list \<alpha> invar to_list"
+locale list_to_map
+  fixes \<alpha> :: "'s => 'u => 'v option"
+    and invar :: "'s => bool"
+    and to_map :: "('u * 'v) list => 's"
+  assumes "list_to_map \<alpha> invar to_map"
+locale map_image_filter
+  fixes \<alpha>1 :: "'m1 => 'u1 => 'v1 option"
+    and invar1 :: "'m1 => bool"
+    and \<alpha>2 :: "'m2 => 'u2 => 'v2 option"
+    and invar2 :: "'m2 => bool"
+    and
+    map_image_filter :: "('u1 * 'v1 => ('u2 * 'v2) option) => 'm1 => 'm2"
+  assumes
+    "map_image_filter \<alpha>1 invar1 \<alpha>2 invar2 map_image_filter"
+locale map_value_image_filter
+  fixes \<alpha>1 :: "'m1 => 'u => 'v1 option"
+    and invar1 :: "'m1 => bool"
+    and \<alpha>2 :: "'m2 => 'u => 'v2 option"
+    and invar2 :: "'m2 => bool"
+    and map_value_image_filter :: "('u => 'v1 => 'v2 option) => 'm1 => 'm2"
+  assumes
+    "map_value_image_filter \<alpha>1 invar1 \<alpha>2 invar2
+      map_value_image_filter"
+locale map_restrict
+  fixes \<alpha>1 :: "'m1 => 'u => 'v option"
+    and invar1 :: "'m1 => bool"
+    and \<alpha>2 :: "'m2 => 'u => 'v option"
+    and invar2 :: "'m2 => bool"
+    and restrict :: "('u * 'v => bool) => 'm1 => 'm2"
+  assumes "map_restrict \<alpha>1 invar1 \<alpha>2 invar2 restrict"
+locale ordered_map
+  fixes \<alpha> :: "'s => 'u => 'v option"
+    and invar :: "'s => bool"
+locale ordered_finite_map
+  fixes \<alpha> :: "'s => 'u => 'v option"
+    and invar :: "'s => bool"
+  assumes "ordered_finite_map \<alpha> invar"
+locale poly_map_iterateoi_defs
+  fixes
+    olist_it ::
+      "'s => (('u * 'v) list => bool)
+             => ('u * 'v => ('u * 'v) list => ('u * 'v) list)
+                => ('u * 'v) list => ('u * 'v) list"
+locale poly_map_iterateoi
+  fixes \<alpha> :: "'s => 'u => 'v option"
+    and invar :: "'s => bool"
+    and
+    list_ordered_it ::
+      "'s => (('u * 'v) list => bool)
+             => ('u * 'v => ('u * 'v) list => ('u * 'v) list)
+                => ('u * 'v) list => ('u * 'v) list"
+  assumes "poly_map_iterateoi \<alpha> invar list_ordered_it"
+locale poly_map_rev_iterateoi_defs
+  fixes
+    list_rev_it ::
+      "'s => (('u * 'v) list => bool)
+             => ('u * 'v => ('u * 'v) list => ('u * 'v) list)
+                => ('u * 'v) list => ('u * 'v) list"
+locale poly_map_rev_iterateoi
+  fixes \<alpha> :: "'s => 'u => 'v option"
+    and invar :: "'s => bool"
+    and
+    list_rev_it ::
+      "'s => (('u * 'v) list => bool)
+             => ('u * 'v => ('u * 'v) list => ('u * 'v) list)
+                => ('u * 'v) list => ('u * 'v) list"
+  assumes "poly_map_rev_iterateoi \<alpha> invar list_rev_it"
+locale map_min
+  fixes \<alpha> :: "'s => 'u => 'v option"
+    and invar :: "'s => bool"
+    and min :: "'s => ('u * 'v => bool) => ('u * 'v) option"
+  assumes "map_min \<alpha> invar min"
+locale map_max
+  fixes \<alpha> :: "'s => 'u => 'v option"
+    and invar :: "'s => bool"
+    and max :: "'s => ('u * 'v => bool) => ('u * 'v) option"
+  assumes "map_max \<alpha> invar max"
+locale map_to_sorted_list
+  fixes \<alpha> :: "'s => 'u => 'v option"
+    and invar :: "'s => bool"
+    and to_sorted_list :: "'s => ('u * 'v) list"
+  assumes "MapSpec.map_to_sorted_list \<alpha> invar to_sorted_list"
+locale map_to_rev_list
+  fixes \<alpha> :: "'s => 'u => 'v option"
+    and invar :: "'s => bool"
+    and to_rev_list :: "'s => ('u * 'v) list"
+  assumes "map_to_rev_list \<alpha> invar to_rev_list"
+locale StdMapDefs
+  fixes ops :: "('k, 'v, 's, 'more) map_ops_scheme"
+locale StdMap
+  fixes ops :: "('k, 'v, 's, 'more) map_ops_scheme"
+  assumes "StdMap ops"
+locale StdMap_no_invar
+  fixes ops :: "('a, 'b, 'c, 'd) map_ops_scheme"
+  assumes "StdMap_no_invar ops"
+locale StdOMapDefs
+  fixes ops :: "('k, 'v, 's, 'more) omap_ops_scheme"
+locale StdOMap
+  fixes ops :: "('k, 'v, 's, 'more) omap_ops_scheme"
+  assumes "StdOMap ops"
+### theory "Draft.MapSpec"
+### 2.268s elapsed time, 3.163s cpu time, 1.209s GC time
+Loading theory "Draft.Robdd" (required by "Draft.RobddTemplates")
+consts
+  robdd_\<alpha> :: "robdd => (nat => bool) => bool"
+consts
+  robdd_get_id :: "robdd => nat"
+consts
+  robdd_get_var :: "robdd => nat"
+consts
+  robdd_get_left :: "robdd => robdd"
+consts
+  robdd_get_right :: "robdd => robdd"
+consts
+  robdd_to_bool :: "robdd => bool option"
+consts
+  robdd_is_leaf :: "robdd => bool"
+consts
+  robdd_equiv :: "robdd => robdd => bool"
+consts
+  subrobdds :: "robdd => robdd set"
+consts
+  robdd_invar_vars_greater :: "nat => robdd => bool"
+consts
+  robdd_invar_reduced :: "robdd => bool"
+consts
+  robdd_used_vars :: "robdd => nat set"
+Found termination order: "{}"
+Found termination order: "{}"
+locale robdd_locale
+  fixes c_\<alpha> :: "'c_map => nat * nat => robdd option"
+    and c_invar :: "'c_map => bool"
+    and c_empty :: "unit => 'c_map"
+    and c_lookup :: "nat * nat => 'c_map => robdd option"
+    and c_update :: "nat * nat => robdd => 'c_map => 'c_map"
+    and r_\<alpha> :: "'r_map => nat * nat * nat => robdd option"
+    and r_invar :: "'r_map => bool"
+    and r_empty :: "unit => 'r_map"
+    and r_lookup :: "nat * nat * nat => 'r_map => robdd option"
+    and r_update :: "nat * nat * nat => robdd => 'r_map => 'r_map"
+  assumes
+    "robdd_locale c_\<alpha> c_invar c_empty c_lookup c_update r_\<alpha>
+      r_invar r_empty r_lookup r_update"
+Found termination order: "{}"
+Found termination order: "{}"
+Found termination order: "(%p. size (snd (snd (snd (snd p))))) <*mlex*> {}"
+Found termination order: "(%p. size_list size (snd (snd p))) <*mlex*> {}"
+Found termination order: "(%p. size (snd (snd p))) <*mlex*> {}"
+### theory "Draft.Robdd"
+### 1.973s elapsed time, 2.285s cpu time, 0.389s GC time
+Loading theory "Draft.RobddTemplates"
+val templateLemmas =
+   [("Robdd.robdd_equiv_simps", "robdd_equiv ?b ?b",
+     template_predicate
+      (
+         template_app
+          (template_app (template_hole 0, template_var 0), template_var 0)
+         )),
+    ("Robdd.robdd_invar_simps_leafs", "robdd_invar (robdd_leaf ?value)",
+     template_predicate
+      (
+         template_app
+          (template_hole 1, template_app (template_hole 0, template_var 0))
+         )),
+    ("Robdd.inj_shift_assignement", "inj_on (shift_assignment ?b) ?S",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_hole 1,
+             template_app (template_hole 0, template_var 1)),
+           template_var 0)
+         )),
+    ("Robdd.infinite_list_to_assignment_set",
+     "infinite (list_to_assignment_set ?l)",
+     template_negation
+      (
+         template_predicate
+          (
+             template_app
+              (template_hole 1,
+               template_app (template_hole 0, template_var 0))
+             )
+         )),
+    ("Robdd.subrobdds_set_mono", "?bs <= subrobdds_set ?bs",
+     template_inequation
+      (less_equals, template_var 0,
+       template_app (template_hole 0, template_var 0))),
+    ("Robdd.subrobdds_refl", "?b : subrobdds ?b",
+     template_predicate
+      (
+         template_app
+          (template_app (template_hole 1, template_var 0),
+           template_app (template_hole 0, template_var 0))
+         )),
+    ("Robdd.list_to_assignment_set_not_empty",
+     "list_to_assignment_set ?l ~= {}",
+     template_negation
+      (
+         template_equation
+          (template_app (template_hole 1, template_var 0), template_hole 0)
+         )),
+    ("Robdd.robbd_depends_on_var_leaf",
+     "~ robdd_depends_on_var ?v (robdd_leaf ?f)",
+     template_negation
+      (
+         template_predicate
+          (
+             template_app
+              (template_app (template_hole 1, template_var 1),
+               template_app (template_hole 0, template_var 0))
+             )
+         )),
+    ("Robdd.subrobdds_proper_simps",
+     "subrobdds_proper (robdd_leaf ?f) = {}",
+     template_equation
+      (template_app
+        (template_hole 2, template_app (template_hole 1, template_var 0)),
+       template_hole 0)),
+    ("Robdd.robdd_invar_reduced_leaf",
+     "robdd_invar_reduced (robdd_leaf ?v) = True",
+     template_equation
+      (template_app
+        (template_hole 2, template_app (template_hole 1, template_var 0)),
+       template_hole 0)),
+    ("Robdd.bope_eq_code", "bope_eq None ?bo = None",
+     template_equation
+      (template_app
+        (template_app (template_hole 1, template_hole 0), template_var 0),
+       template_hole 0)),
+    ("Robdd.bope_eq_code", "bope_eq ?bo None = None",
+     template_equation
+      (template_app
+        (template_app (template_hole 1, template_var 0), template_hole 0),
+       template_hole 0)),
+    ("Robdd.bope_xor_code", "bope_xor None ?bo = None",
+     template_equation
+      (template_app
+        (template_app (template_hole 1, template_hole 0), template_var 0),
+       template_hole 0)),
+    ("Robdd.bope_xor_code", "bope_xor ?bo None = None",
+     template_equation
+      (template_app
+        (template_app (template_hole 1, template_var 0), template_hole 0),
+       template_hole 0)),
+    ("Robdd.subrobdds_set_idempot2",
+     "subrobdds_set (subrobdds ?b) = subrobdds ?b",
+     template_equation
+      (template_app
+        (template_hole 1, template_app (template_hole 0, template_var 0)),
+       template_app (template_hole 0, template_var 0))),
+    ("Robdd.subrobdds_set_idempot",
+     "subrobdds_set (subrobdds_set ?bs) = subrobdds_set ?bs",
+     template_equation
+      (template_app
+        (template_hole 0, template_app (template_hole 0, template_var 0)),
+       template_app (template_hole 0, template_var 0))),
+    ("Robdd.robdd_invar_ids_expand",
+     "robdd_invar_ids (subrobdds_set ?bs) = robdd_invar_ids ?bs",
+     template_equation
+      (template_app
+        (template_hole 1, template_app (template_hole 0, template_var 0)),
+       template_app (template_hole 1, template_var 0))),
+    ("Robdd.bope_and_code", "bope_and ?bo (Some True) = ?bo",
+     template_equation
+      (template_app
+        (template_app (template_hole 2, template_var 0),
+         template_app (template_hole 1, template_hole 0)),
+       template_var 0)),
+    ("Robdd.bope_and_code", "bope_and (Some True) ?bo = ?bo",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 2,
+           template_app (template_hole 1, template_hole 0)),
+         template_var 0),
+       template_var 0)),
+    ("Robdd.bope_imp_code", "bope_imp (Some True) ?bo = ?bo",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 2,
+           template_app (template_hole 1, template_hole 0)),
+         template_var 0),
+       template_var 0)),
+    ("Robdd.bope_or_code", "bope_or ?bo (Some False) = ?bo",
+     template_equation
+      (template_app
+        (template_app (template_hole 2, template_var 0),
+         template_app (template_hole 1, template_hole 0)),
+       template_var 0)),
+    ("Robdd.bope_or_code", "bope_or (Some False) ?bo = ?bo",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 2,
+           template_app (template_hole 1, template_hole 0)),
+         template_var 0),
+       template_var 0)),
+    ("Robdd.robdd_id_map_properties",
+     "robdd_invar_ids_equal ?bs = robdd_id_map_OK ?bs (robdd_id_map ?bs)",
+     template_equation
+      (template_app (template_hole 2, template_var 0),
+       template_app
+        (template_app (template_hole 1, template_var 0),
+         template_app (template_hole 0, template_var 0)))),
+    ("Robdd.bope_and_code", "bope_and ?bo (Some False) = Some False",
+     template_equation
+      (template_app
+        (template_app (template_hole 2, template_var 0),
+         template_app (template_hole 1, template_hole 0)),
+       template_app (template_hole 1, template_hole 0))),
+    ("Robdd.bope_and_code", "bope_and (Some False) ?bo = Some False",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 2,
+           template_app (template_hole 1, template_hole 0)),
+         template_var 0),
+       template_app (template_hole 1, template_hole 0))),
+    ("Robdd.bope_imp_code", "bope_imp (Some False) ?bo = Some True",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 3,
+           template_app (template_hole 2, template_hole 1)),
+         template_var 0),
+       template_app (template_hole 2, template_hole 0))),
+    ("Robdd.bope_nand_code", "bope_nand ?bo (Some False) = Some True",
+     template_equation
+      (template_app
+        (template_app (template_hole 3, template_var 0),
+         template_app (template_hole 2, template_hole 1)),
+       template_app (template_hole 2, template_hole 0))),
+    ("Robdd.bope_nand_code", "bope_nand (Some False) ?bo = Some True",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 3,
+           template_app (template_hole 2, template_hole 1)),
+         template_var 0),
+       template_app (template_hole 2, template_hole 0))),
+    ("Robdd.bope_nor_code", "bope_nor ?bo (Some True) = Some False",
+     template_equation
+      (template_app
+        (template_app (template_hole 3, template_var 0),
+         template_app (template_hole 2, template_hole 1)),
+       template_app (template_hole 2, template_hole 0))),
+    ("Robdd.bope_nor_code", "bope_nor (Some True) ?bo = Some False",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 3,
+           template_app (template_hole 2, template_hole 1)),
+         template_var 0),
+       template_app (template_hole 2, template_hole 0))),
+    ("Robdd.bope_or_code", "bope_or ?bo (Some True) = Some True",
+     template_equation
+      (template_app
+        (template_app (template_hole 2, template_var 0),
+         template_app (template_hole 1, template_hole 0)),
+       template_app (template_hole 1, template_hole 0))),
+    ("Robdd.bope_or_code", "bope_or (Some True) ?bo = Some True",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 2,
+           template_app (template_hole 1, template_hole 0)),
+         template_var 0),
+       template_app (template_hole 1, template_hole 0))),
+    ("Robdd.robdd_invar_vars_impl",
+     "robdd_invar_vars_greater ?n ?robdd ==> robdd_invar_vars ?robdd",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 1, template_var 1),
+              template_var 0)
+            )],
+       template_predicate
+        (template_app (template_hole 0, template_var 0)))),
+    ("Robdd.robdd_invar_impl",
+     "robdd_invar_ext ?bs ?n ?b ==> robdd_invar ?b",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 1, template_var 2),
+                template_var 1),
+              template_var 0)
+            )],
+       template_predicate
+        (template_app (template_hole 0, template_var 0)))),
+    ("Robdd.robdd_equiv_simps",
+     "robdd_equiv ?b (robdd_leaf ?f) = (?b = robdd_leaf ?f)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 2, template_var 1),
+              template_app (template_hole 1, template_var 0))
+            )],
+       template_equation
+        (template_var 1, template_app (template_hole 1, template_var 0)))),
+    ("Robdd.robdd_depends_on_var_implies_used",
+     "robdd_depends_on_var ?v ?b ==> ?v : robdd_used_vars ?b",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 2, template_var 1),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 1, template_var 1),
+             template_app (template_hole 0, template_var 0))
+           ))),
+    ("Robdd.subrobdds_set_simps",
+     "subrobdds_set (?bs1.0 Un ?bs2.0) =
+      subrobdds_set ?bs1.0 Un subrobdds_set ?bs2.0",
+     template_equation
+      (template_app
+        (template_hole 1,
+         template_app
+          (template_app (template_hole 0, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 0, template_app (template_hole 1, template_var 1)),
+         template_app (template_hole 1, template_var 0)))),
+    ("Robdd.subrobdds_set_simps",
+     "subrobdds_set (insert ?b ?bs) = subrobdds ?b Un subrobdds_set ?bs",
+     template_equation
+      (template_app
+        (template_hole 3,
+         template_app
+          (template_app (template_hole 2, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 1, template_app (template_hole 0, template_var 1)),
+         template_app (template_hole 3, template_var 0)))),
+    ("Robdd.subrobdds_set_subset_simp",
+     "(subrobdds ?b <= subrobdds_set ?bs) = (?b : subrobdds_set ?bs)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 3, template_app (template_hole 2, template_var 1)),
+         template_app (template_hole 1, template_var 0)),
+       template_app
+        (template_app (template_hole 0, template_var 1),
+         template_app (template_hole 1, template_var 0)))),
+    ("Robdd.subrobdds_subset_simp",
+     "(subrobdds ?b1.0 <= subrobdds ?b2.0) = (?b1.0 : subrobdds ?b2.0)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 2, template_app (template_hole 1, template_var 1)),
+         template_app (template_hole 1, template_var 0)),
+       template_app
+        (template_app (template_hole 0, template_var 1),
+         template_app (template_hole 1, template_var 0)))),
+    ("Robdd.rodd_invar_ext_idempot_subrobdds_set",
+     "robdd_invar_ext (subrobdds_set ?bs) ?n ?b =
+      robdd_invar_ext ?bs ?n ?b",
+     template_equation
+      (template_app
+        (template_app
+          (template_app
+            (template_hole 1,
+             template_app (template_hole 0, template_var 2)),
+           template_var 1),
+         template_var 0),
+       template_app
+        (template_app
+          (template_app (template_hole 1, template_var 2), template_var 1),
+         template_var 0))),
+    ("Robdd.subrobdds_set_mono2",
+     "?bs1.0 <= ?bs2.0 ==> subrobdds_set ?bs1.0 <= subrobdds_set ?bs2.0",
+     template_implication
+      ([template_inequation (less_equals, template_var 1, template_var 0)],
+       template_inequation
+        (less_equals, template_app (template_hole 0, template_var 1),
+         template_app (template_hole 0, template_var 0)))),
+    ("Robdd.robdd_equiv_implies_sem_equiv",
+     "robdd_equiv ?b1.0 ?b2.0 ==>
+      robdd_\<alpha> ?b1.0 = robdd_\<alpha> ?b2.0",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 2, template_var 1),
+              template_var 0)
+            )],
+       template_equation
+        (template_app (template_hole 0, template_var 1),
+         template_app (template_hole 0, template_var 0)))),
+    ("Robdd.list_to_assignment_set_simps",
+     "list_to_assignment_set (Some ?b # ?l) =
+      shift_assignment ?b ` list_to_assignment_set ?l",
+     template_equation
+      (template_app
+        (template_hole 4,
+         template_app
+          (template_app
+            (template_hole 3,
+             template_app (template_hole 2, template_var 1)),
+           template_var 0)),
+       template_app
+        (template_app
+          (template_hole 1, template_app (template_hole 0, template_var 1)),
+         template_app (template_hole 4, template_var 0)))),
+    ("Robdd.robdd_\<alpha>_simps_leafs",
+     "(robdd_\<alpha> (robdd_leaf ?f1.0) =
+       robdd_\<alpha> (robdd_leaf ?f2.0)) =
+      (?f1.0 = ?f2.0)",
+     template_bimplication
+      (template_equation
+        (template_app
+          (template_hole 1, template_app (template_hole 0, template_var 1)),
+         template_app
+          (template_hole 1,
+           template_app (template_hole 0, template_var 0))),
+       template_equation (template_var 1, template_var 0))),
+    ("Robdd.robdd_neg_simps",
+     "robdd_neg_next (robdd_leaf ?f) = (robdd_leaf ?f, robdd_leaf ?f, 0)",
+     template_equation
+      (template_app
+        (template_hole 4, template_app (template_hole 3, template_var 0)),
+       template_app
+        (template_app
+          (template_hole 2, template_app (template_hole 3, template_var 0)),
+         template_app
+          (template_app
+            (template_hole 1,
+             template_app (template_hole 3, template_var 0)),
+           template_hole 0)))),
+    ("Robdd.subrobdds_size",
+     "?b1.0 : subrobdds ?b2.0 ==> size_robdd ?b1.0 <= size_robdd ?b2.0",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 3, template_var 1),
+              template_app (template_hole 2, template_var 0))
+            )],
+       template_inequation
+        (less_equals, template_app (template_hole 0, template_var 1),
+         template_app (template_hole 0, template_var 0)))),
+    ("Robdd.subobbds_proper_size",
+     "?b1.0 : subrobdds_proper ?b2.0 ==>
+      size_robdd ?b1.0 < size_robdd ?b2.0",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 3, template_var 1),
+              template_app (template_hole 2, template_var 0))
+            )],
+       template_inequation
+        (less_than, template_app (template_hole 0, template_var 1),
+         template_app (template_hole 0, template_var 0)))),
+    ("Robdd.robdd_invar_ids_subset_rule",
+     "[| robdd_invar_ids ?bs1.0; ?bs2.0 <= ?bs1.0 |]
+      ==> robdd_invar_ids ?bs2.0",
+     template_implication
+      ([template_predicate (template_app (template_hole 1, template_var 1)),
+        template_inequation (less_equals, template_var 0, template_var 1)],
+       template_predicate
+        (template_app (template_hole 1, template_var 0)))),
+    ("Robdd.robdd_neg_simps",
+     "robdd_neg_next (robdd_var ?i ?l ?v ?r) = (?l, ?r, ?v)",
+     template_equation
+      (template_app
+        (template_hole 3,
+         template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 2, template_var 3),
+               template_var 2),
+             template_var 1),
+           template_var 0)),
+       template_app
+        (template_app (template_hole 1, template_var 2),
+         template_app
+          (template_app (template_hole 0, template_var 0),
+           template_var 1)))),
+    ("Robdd.robdd_depends_on_var_eq_used",
+     "robdd_invar ?b ==>
+      robdd_depends_on_var ?v ?b = (?v : robdd_used_vars ?b)",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 4, template_var 1))],
+       template_equation
+        (template_app
+          (template_app (template_hole 2, template_var 0), template_var 1),
+         template_app
+          (template_app (template_hole 1, template_var 0),
+           template_app (template_hole 0, template_var 1))))),
+    ("Robdd.robdd_invar_vars_greater___weaken",
+     "[| robdd_invar_vars_greater ?n ?b; ?n' <= ?n |]
+      ==> robdd_invar_vars_greater ?n' ?b",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 1, template_var 2),
+              template_var 1)
+            ),
+        template_inequation (less_equals, template_var 0, template_var 2)],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 1, template_var 0), template_var 1)
+           ))),
+    ("Robdd.robdd_invar_ext_simps",
+     "robdd_invar_ext ?bs ?n (robdd_leaf ?f) =
+      (robdd_invar_ids ?bs & robdd_leaf ?f : subrobdds_set ?bs)",
+     template_equation
+      (template_app
+        (template_app
+          (template_app (template_hole 5, template_var 2), template_var 1),
+         template_app (template_hole 4, template_var 0)),
+       template_app
+        (template_app
+          (template_hole 3, template_app (template_hole 2, template_var 2)),
+         template_app
+          (template_app
+            (template_hole 1,
+             template_app (template_hole 4, template_var 0)),
+           template_app (template_hole 0, template_var 2))))),
+    ("Robdd.robdd_depends_on_var_invar_greater",
+     "[| robdd_invar_vars_greater ?n ?b; ?m < ?n |]
+      ==> ~ robdd_depends_on_var ?m ?b",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 3, template_var 2),
+              template_var 1)
+            ),
+        template_inequation (less_than, template_var 0, template_var 2)],
+       template_negation
+        (
+           template_predicate
+            (
+               template_app
+                (template_app (template_hole 0, template_var 0),
+                 template_var 1)
+               )
+           ))),
+    ("Robdd.robdd_invar_ext_weaken_var",
+     "[| robdd_invar_ext ?bs ?n ?b; ?m <= ?n |]
+      ==> robdd_invar_ext ?bs ?m ?b",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 1, template_var 3),
+                template_var 2),
+              template_var 1)
+            ),
+        template_inequation (less_equals, template_var 0, template_var 2)],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app (template_hole 1, template_var 3),
+               template_var 0),
+             template_var 1)
+           ))),
+    ("Robdd.subrobdds_antisym",
+     "[| ?b1.0 : subrobdds ?b2.0; ?b2.0 : subrobdds ?b1.0 |]
+      ==> ?b1.0 = ?b2.0",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 2, template_var 1),
+              template_app (template_hole 1, template_var 0))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 2, template_var 0),
+              template_app (template_hole 1, template_var 1))
+            )],
+       template_equation (template_var 1, template_var 0))),
+    ("Robdd.list_to_assignment_set_None_simp",
+     "list_to_assignment_set (None # ?l) =
+      list_to_assignment_set (Some True # ?l) Un
+      list_to_assignment_set (Some False # ?l)",
+     template_equation
+      (template_app
+        (template_hole 6,
+         template_app
+          (template_app (template_hole 5, template_hole 4),
+           template_var 0)),
+       template_app
+        (template_app
+          (template_hole 3,
+           template_app
+            (template_hole 6,
+             template_app
+              (template_app
+                (template_hole 5,
+                 template_app (template_hole 2, template_hole 1)),
+               template_var 0))),
+         template_app
+          (template_hole 6,
+           template_app
+            (template_app
+              (template_hole 5,
+               template_app (template_hole 2, template_hole 0)),
+             template_var 0))))),
+    ("Robdd.subrobdds_proper_simps",
+     "subrobdds_proper (robdd_var ?i ?l ?v ?r) =
+      insert ?l (insert ?r (subrobdds_proper ?l Un subrobdds_proper ?r))",
+     template_equation
+      (template_app
+        (template_hole 3,
+         template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 2, template_var 3),
+               template_var 2),
+             template_var 1),
+           template_var 0)),
+       template_app
+        (template_app (template_hole 1, template_var 2),
+         template_app
+          (template_app (template_hole 1, template_var 0),
+           template_app
+            (template_app
+              (template_hole 0,
+               template_app (template_hole 3, template_var 2)),
+             template_app (template_hole 3, template_var 0)))))),
+    ("Robdd.robdd_id_map_union",
+     "robdd_invar_ids_equal (?bs1.0 Un ?bs2.0) ==>
+      robdd_id_map (?bs1.0 Un ?bs2.0) =
+      robdd_id_map ?bs1.0 ++ robdd_id_map ?bs2.0",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_hole 4,
+              template_app
+               (template_app (template_hole 3, template_var 1),
+                template_var 0))
+            )],
+       template_equation
+        (template_app
+          (template_hole 1,
+           template_app
+            (template_app (template_hole 3, template_var 1),
+             template_var 0)),
+         template_app
+          (template_app
+            (template_hole 0,
+             template_app (template_hole 1, template_var 1)),
+           template_app (template_hole 1, template_var 0))))),
+    ("Robdd.subrobdds_trans",
+     "[| ?b1.0 : subrobdds ?b2.0; ?b2.0 : subrobdds ?b3.0 |]
+      ==> ?b1.0 : subrobdds ?b3.0",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 1, template_var 2),
+              template_app (template_hole 0, template_var 1))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 1, template_var 1),
+              template_app (template_hole 0, template_var 0))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 1, template_var 2),
+             template_app (template_hole 0, template_var 0))
+           ))),
+    ("Robdd.robdd_id_map_OK_D",
+     "[| robdd_id_map_OK ?bs ?m; ?b : subrobdds_set ?bs |]
+      ==> ?m (robdd_get_id ?b) = Some ?b",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 5, template_var 2),
+              template_var 1)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 4, template_var 0),
+              template_app (template_hole 3, template_var 2))
+            )],
+       template_equation
+        (template_app
+          (template_var 1, template_app (template_hole 1, template_var 0)),
+         template_app (template_hole 0, template_var 0)))),
+    ("Robdd.robdd_invar_ids_equal_intro",
+     "[| !!b. b : ?bs ==> robdd_invar b; robdd_invar_ids ?bs |]
+      ==> robdd_invar_ids_equal ?bs",
+     template_implication
+      ([template_predicate (template_app (template_hole 5, t_empty)),
+        template_predicate
+         (template_app (template_hole 1, template_var 0))],
+       template_predicate
+        (template_app (template_hole 0, template_var 0)))),
+    ("Robdd.robdd_invar_ids_full_equal_intro",
+     "[| !!b. b : ?bs ==> robdd_invar b; robdd_invar_ids_full ?bs |]
+      ==> robdd_invar_ids_full_equal ?bs",
+     template_implication
+      ([template_predicate (template_app (template_hole 5, t_empty)),
+        template_predicate
+         (template_app (template_hole 1, template_var 0))],
+       template_predicate
+        (template_app (template_hole 0, template_var 0)))),
+    ("Robdd.robdd_invar_ids_leafs_intro",
+     "[| !!b. b : ?bs ==> robdd_invar_reduced b; robdd_invar_ids ?bs |]
+      ==> robdd_invar_ids_leafs ?bs",
+     template_implication
+      ([template_predicate (template_app (template_hole 5, t_empty)),
+        template_predicate
+         (template_app (template_hole 1, template_var 0))],
+       template_predicate
+        (template_app (template_hole 0, template_var 0)))),
+    ("Robdd.robdd_invar_simps_var",
+     "robdd_invar (robdd_var ?i ?l ?v ?r) ==>
+      ~ robdd_equiv ?l ?r & robdd_invar ?l & robdd_invar ?r",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_hole 4,
+              template_app
+               (template_app
+                 (template_app
+                   (template_app (template_hole 3, template_var 3),
+                    template_var 2),
+                  template_var 1),
+                template_var 0))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 2,
+               template_app
+                (template_hole 1,
+                 template_app
+                  (template_app (template_hole 0, template_var 2),
+                   template_var 0))),
+             template_app
+              (template_app
+                (template_hole 2,
+                 template_app (template_hole 4, template_var 2)),
+               template_app (template_hole 4, template_var 0)))
+           ))),
+    ("Robdd.robdd_depends_on_varI",
+     "robdd_\<alpha> ?b (?a(?v := True)) ~=
+      robdd_\<alpha> ?b (?a(?v := False)) ==>
+      robdd_depends_on_var ?v ?b",
+     template_implication
+      ([template_negation
+         (
+            template_equation
+             (template_app
+               (template_app (template_hole 4, template_var 2),
+                template_app
+                 (template_app
+                   (template_app (template_hole 3, template_var 1),
+                    template_var 0),
+                  template_hole 2)),
+              template_app
+               (template_app (template_hole 4, template_var 2),
+                template_app
+                 (template_app
+                   (template_app (template_hole 3, template_var 1),
+                    template_var 0),
+                  template_hole 1)))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 0, template_var 0), template_var 2)
+           ))),
+    ("Robdd.robdd_invar_subrobdds_set",
+     "[| !!b. b : ?bs ==> robdd_invar b; ?b : subrobdds_set ?bs |]
+      ==> robdd_invar ?b",
+     template_implication
+      ([template_predicate (template_app (template_hole 4, t_empty)),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 2, template_var 0),
+              template_app (template_hole 0, template_var 1))
+            )],
+       template_predicate
+        (template_app (template_hole 1, template_var 0)))),
+    ("Robdd.robbd_depends_on_var_var_impl1",
+     "robdd_depends_on_var ?v (robdd_var ?i ?l ?v' ?r) ==>
+      ?v = ?v' | robdd_depends_on_var ?v ?l | robdd_depends_on_var ?v ?r",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 3, template_var 4),
+              template_app
+               (template_app
+                 (template_app
+                   (template_app (template_hole 2, template_var 3),
+                    template_var 2),
+                  template_var 1),
+                template_var 0))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 1,
+               template_app
+                (template_app (template_hole 0, template_var 4),
+                 template_var 1)),
+             template_app
+              (template_app
+                (template_hole 1,
+                 template_app
+                  (template_app (template_hole 3, template_var 4),
+                   template_var 2)),
+               template_app
+                (template_app (template_hole 3, template_var 4),
+                 template_var 0)))
+           ))),
+    ("Robdd.subrobdds_leaf_in_reduced",
+     "[| robdd_invar_reduced ?b; ~ robdd_is_leaf ?b |]
+      ==> robdd_one : subrobdds ?b & robdd_zero : subrobdds ?b",
+     template_implication
+      ([template_predicate (template_app (template_hole 8, template_var 0)),
+        template_negation
+         (
+            template_predicate
+             (template_app (template_hole 6, template_var 0))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 5,
+               template_app
+                (template_app
+                  (template_hole 4,
+                   template_app (template_hole 3, template_hole 2)),
+                 template_app (template_hole 1, template_var 0))),
+             template_app
+              (template_app
+                (template_hole 4,
+                 template_app (template_hole 3, template_hole 0)),
+               template_app (template_hole 1, template_var 0)))
+           ))),
+    ("Robdd.robdd_list_\<alpha>_correct",
+     "[| robdd_invar_vars ?b; robdd_invar_reduced ?b |]
+      ==> robdd_list_\<alpha> ?b 0 ?l =
+          (ALL a:list_to_assignment_set ?l. robdd_\<alpha> ?b a)",
+     template_implication
+      ([template_predicate (template_app (template_hole 7, template_var 1)),
+        template_predicate
+         (template_app (template_hole 6, template_var 1))],
+       template_equation
+        (template_app
+          (template_app
+            (template_app (template_hole 4, template_var 1),
+             template_hole 3),
+           template_var 0),
+         template_app
+          (template_app
+            (template_hole 2,
+             template_app (template_hole 1, template_var 0)),
+           t_empty)))),
+    ("Robdd.robdd_unique_leaf",
+     "[| robdd_invar_vars ?b; robdd_invar_reduced ?b;
+         robdd_\<alpha> ?b = robdd_\<alpha> (robdd_leaf ?value) |]
+      ==> ?b = robdd_leaf ?value",
+     template_implication
+      ([template_predicate (template_app (template_hole 5, template_var 1)),
+        template_predicate (template_app (template_hole 4, template_var 1)),
+        template_equation
+         (template_app (template_hole 2, template_var 1),
+          template_app
+           (template_hole 2,
+            template_app (template_hole 1, template_var 0)))],
+       template_equation
+        (template_var 1, template_app (template_hole 1, template_var 0)))),
+    ("Robdd.robdd_invar_ids_subset_subrobdds_rule",
+     "[| !!b2. b2 : ?bs2.0 ==> EX b1:?bs1.0. b2 : subrobdds b1;
+         robdd_invar_ids ?bs1.0 |]
+      ==> robdd_invar_ids ?bs2.0",
+     template_implication
+      ([template_predicate (template_app (template_hole 5, t_empty)),
+        template_predicate
+         (template_app (template_hole 0, template_var 0))],
+       template_predicate
+        (template_app (template_hole 0, template_var 1)))),
+    ("Robdd.robdd_invar_ids_equiv_implies_eq",
+     "[| robdd_invar_ids ?bs; ?b1.0 : ?bs; ?b2.0 : ?bs;
+         robdd_equiv ?b1.0 ?b2.0 |]
+      ==> ?b1.0 = ?b2.0",
+     template_implication
+      ([template_predicate (template_app (template_hole 3, template_var 2)),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 2, template_var 1),
+              template_var 2)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 2, template_var 0),
+              template_var 2)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 1, template_var 1),
+              template_var 0)
+            )],
+       template_equation (template_var 1, template_var 0))),
+    ("Robdd.robdd_list_\<alpha>_correct_aux",
+     "[| robdd_invar_vars_greater ?n ?b; robdd_invar_reduced ?b |]
+      ==> robdd_list_\<alpha> ?b ?n ?l =
+          (ALL a:list_to_assignment_set ?l.
+              robdd_\<alpha> ?b (%v. a (v - ?n)))",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 7, template_var 2),
+              template_var 1)
+            ),
+        template_predicate
+         (template_app (template_hole 6, template_var 1))],
+       template_equation
+        (template_app
+          (template_app
+            (template_app (template_hole 4, template_var 1),
+             template_var 2),
+           template_var 0),
+         template_app
+          (template_app
+            (template_hole 3,
+             template_app (template_hole 2, template_var 0)),
+           t_empty)))),
+    ("Robdd.robdd_\<alpha>_invar_greater",
+     "[| robdd_invar_vars_greater ?n ?b;
+         !!v. ?n <= v ==> ?a1.0 v = ?a2.0 v |]
+      ==> robdd_\<alpha> ?b ?a1.0 = robdd_\<alpha> ?b ?a2.0",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 4, template_var 3),
+              template_var 2)
+            ),
+        template_predicate (template_app (template_hole 3, t_empty))],
+       template_equation
+        (template_app
+          (template_app (template_hole 0, template_var 2), template_var 1),
+         template_app
+          (template_app (template_hole 0, template_var 2),
+           template_var 0)))),
+    ("Robdd.sem_equiv_implies_robdd_equiv",
+     "[| robdd_invar_vars ?b1.0; robdd_invar_reduced ?b1.0;
+         robdd_invar_vars ?b2.0; robdd_invar_reduced ?b2.0;
+         robdd_\<alpha> ?b1.0 = robdd_\<alpha> ?b2.0 |]
+      ==> robdd_equiv ?b1.0 ?b2.0",
+     template_implication
+      ([template_predicate (template_app (template_hole 4, template_var 1)),
+        template_predicate (template_app (template_hole 3, template_var 1)),
+        template_predicate (template_app (template_hole 4, template_var 0)),
+        template_predicate (template_app (template_hole 3, template_var 0)),
+        template_equation
+         (template_app (template_hole 1, template_var 1),
+          template_app (template_hole 1, template_var 0))],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 0, template_var 1), template_var 0)
+           ))),
+    ("Robdd.robbd_depends_on_var_var",
+     "robdd_invar (robdd_var ?i ?l ?v' ?r) ==>
+      robdd_depends_on_var ?v (robdd_var ?i ?l ?v' ?r) =
+      (?v = ?v' | robdd_depends_on_var ?v ?l | robdd_depends_on_var ?v ?r)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_hole 5,
+              template_app
+               (template_app
+                 (template_app
+                   (template_app (template_hole 4, template_var 4),
+                    template_var 3),
+                  template_var 2),
+                template_var 1))
+            )],
+       template_implication
+        ([template_predicate
+           (
+              template_app
+               (template_app (template_hole 2, template_var 0),
+                template_app
+                 (template_app
+                   (template_app
+                     (template_app (template_hole 4, template_var 4),
+                      template_var 3),
+                    template_var 2),
+                  template_var 1))
+              )],
+         template_predicate
+          (
+             template_app
+              (template_app
+                (template_hole 1,
+                 template_app
+                  (template_app (template_hole 0, template_var 0),
+                   template_var 2)),
+               template_app
+                (template_app
+                  (template_hole 1,
+                   template_app
+                    (template_app (template_hole 2, template_var 0),
+                     template_var 3)),
+                 template_app
+                  (template_app (template_hole 2, template_var 0),
+                   template_var 1)))
+             )))),
+    ("Robdd.robdd_invar_idsD",
+     "[| robdd_invar_ids ?bs; ?b1.0 : subrobdds_set ?bs;
+         ?b2.0 : subrobdds_set ?bs |]
+      ==> (robdd_\<alpha> ?b1.0 = robdd_\<alpha> ?b2.0) =
+          (robdd_get_id ?b1.0 = robdd_get_id ?b2.0)",
+     template_implication
+      ([template_predicate (template_app (template_hole 7, template_var 2)),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 6, template_var 1),
+              template_app (template_hole 5, template_var 2))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 6, template_var 0),
+              template_app (template_hole 5, template_var 2))
+            )],
+       template_bimplication
+        (template_equation
+          (template_app (template_hole 2, template_var 1),
+           template_app (template_hole 2, template_var 0)),
+         template_equation
+          (template_app (template_hole 0, template_var 1),
+           template_app (template_hole 0, template_var 0))))),
+    ("Robdd.bool_opt_exhaust",
+     "[| ?y = None ==> ?P; ?y = Some True ==> ?P; ?y = Some False ==> ?P |]
+      ==> ?P",
+     template_implication
+      ([template_implication
+         ([template_equation (template_var 1, template_hole 3)],
+          template_predicate (template_var 0)),
+        template_implication
+         ([template_equation
+            (template_var 1,
+             template_app (template_hole 2, template_hole 1))],
+          template_predicate (template_var 0)),
+        template_implication
+         ([template_equation
+            (template_var 1,
+             template_app (template_hole 2, template_hole 0))],
+          template_predicate (template_var 0))],
+       template_predicate (template_var 0))),
+    ("Robdd.robdd_invar_idsI",
+     "(!!b1 b2.
+          [| b1 : subrobdds_set ?bs; b2 : subrobdds_set ?bs |]
+          ==> (robdd_\<alpha> b1 = robdd_\<alpha> b2) =
+              (robdd_get_id b1 = robdd_get_id b2)) ==>
+      robdd_invar_ids ?bs",
+     template_implication
+      ([template_predicate (template_app (template_hole 9, t_empty))],
+       template_predicate
+        (template_app (template_hole 0, template_var 0)))),
+    ("Robdd.robdd_apply_next_correct",
+     "[| robdd_invar_ext ?bs1.0 ?n1.0 ?b1.0;
+         robdd_invar_ext ?bs2.0 ?n2.0 ?b2.0;
+         robdd_apply_next ?b1.0 ?b2.0 =
+         (?b1_l, ?b1_r, ?v'', ?b2_l, ?b2_r) |]
+      ==> ?b1_l : subrobdds ?b1.0",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 8, template_var 10),
+                template_var 9),
+              template_var 8)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 8, template_var 7),
+                template_var 6),
+              template_var 5)
+            ),
+        template_equation
+         (template_app
+           (template_app (template_hole 6, template_var 8), template_var 5),
+          template_app
+           (template_app (template_hole 5, template_var 4),
+            template_app
+             (template_app (template_hole 4, template_var 3),
+              template_app
+               (template_app (template_hole 3, template_var 2),
+                template_app
+                 (template_app (template_hole 2, template_var 1),
+                  template_var 0)))))],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 1, template_var 4),
+             template_app (template_hole 0, template_var 8))
+           ))),
+    ("Robdd.robdd_apply_next_correct",
+     "[| robdd_invar_ext ?bs1.0 ?n1.0 ?b1.0;
+         robdd_invar_ext ?bs2.0 ?n2.0 ?b2.0;
+         robdd_apply_next ?b1.0 ?b2.0 =
+         (?b1_l, ?b1_r, ?v'', ?b2_l, ?b2_r) |]
+      ==> ?b1_r : subrobdds ?b1.0",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 8, template_var 10),
+                template_var 9),
+              template_var 8)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 8, template_var 7),
+                template_var 6),
+              template_var 5)
+            ),
+        template_equation
+         (template_app
+           (template_app (template_hole 6, template_var 8), template_var 5),
+          template_app
+           (template_app (template_hole 5, template_var 4),
+            template_app
+             (template_app (template_hole 4, template_var 3),
+              template_app
+               (template_app (template_hole 3, template_var 2),
+                template_app
+                 (template_app (template_hole 2, template_var 1),
+                  template_var 0)))))],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 1, template_var 3),
+             template_app (template_hole 0, template_var 8))
+           ))),
+    ("Robdd.robdd_apply_next_correct",
+     "[| robdd_invar_ext ?bs1.0 ?n1.0 ?b1.0;
+         robdd_invar_ext ?bs2.0 ?n2.0 ?b2.0;
+         robdd_apply_next ?b1.0 ?b2.0 =
+         (?b1_l, ?b1_r, ?v'', ?b2_l, ?b2_r) |]
+      ==> ?b2_l : subrobdds ?b2.0",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 8, template_var 10),
+                template_var 9),
+              template_var 8)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 8, template_var 7),
+                template_var 6),
+              template_var 5)
+            ),
+        template_equation
+         (template_app
+           (template_app (template_hole 6, template_var 8), template_var 5),
+          template_app
+           (template_app (template_hole 5, template_var 4),
+            template_app
+             (template_app (template_hole 4, template_var 3),
+              template_app
+               (template_app (template_hole 3, template_var 2),
+                template_app
+                 (template_app (template_hole 2, template_var 1),
+                  template_var 0)))))],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 1, template_var 1),
+             template_app (template_hole 0, template_var 5))
+           ))),
+    ("Robdd.robdd_apply_next_correct",
+     "[| robdd_invar_ext ?bs1.0 ?n1.0 ?b1.0;
+         robdd_invar_ext ?bs2.0 ?n2.0 ?b2.0;
+         robdd_apply_next ?b1.0 ?b2.0 =
+         (?b1_l, ?b1_r, ?v'', ?b2_l, ?b2_r) |]
+      ==> ?b2_r : subrobdds ?b2.0",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 8, template_var 10),
+                template_var 9),
+              template_var 8)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 8, template_var 7),
+                template_var 6),
+              template_var 5)
+            ),
+        template_equation
+         (template_app
+           (template_app (template_hole 6, template_var 8), template_var 5),
+          template_app
+           (template_app (template_hole 5, template_var 4),
+            template_app
+             (template_app (template_hole 4, template_var 3),
+              template_app
+               (template_app (template_hole 3, template_var 2),
+                template_app
+                 (template_app (template_hole 2, template_var 1),
+                  template_var 0)))))],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 1, template_var 0),
+             template_app (template_hole 0, template_var 5))
+           ))),
+    ("Robdd.robdd_unique",
+     "[| robdd_invar ?b1.0; robdd_invar ?b2.0; robdd_invar_ids ?bs;
+         ?b1.0 : ?bs; ?b2.0 : ?bs |]
+      ==> (robdd_\<alpha> ?b1.0 = robdd_\<alpha> ?b2.0) = (?b1.0 = ?b2.0)",
+     template_implication
+      ([template_predicate (template_app (template_hole 6, template_var 2)),
+        template_predicate (template_app (template_hole 6, template_var 1)),
+        template_predicate (template_app (template_hole 5, template_var 0)),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 4, template_var 2),
+              template_var 0)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 4, template_var 1),
+              template_var 0)
+            )],
+       template_bimplication
+        (template_equation
+          (template_app (template_hole 1, template_var 2),
+           template_app (template_hole 1, template_var 1)),
+         template_equation (template_var 2, template_var 1)))),
+    ("Robdd.robdd_apply_next_correct",
+     "[| robdd_invar_ext ?bs1.0 ?n1.0 ?b1.0;
+         robdd_invar_ext ?bs2.0 ?n2.0 ?b2.0;
+         robdd_apply_next ?b1.0 ?b2.0 =
+         (?b1_l, ?b1_r, ?v'', ?b2_l, ?b2_r) |]
+      ==> robdd_get_min_var ?b1.0 ?b2.0 = ?v''",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 8, template_var 10),
+                template_var 9),
+              template_var 8)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 8, template_var 7),
+                template_var 6),
+              template_var 5)
+            ),
+        template_equation
+         (template_app
+           (template_app (template_hole 6, template_var 8), template_var 5),
+          template_app
+           (template_app (template_hole 5, template_var 4),
+            template_app
+             (template_app (template_hole 4, template_var 3),
+              template_app
+               (template_app (template_hole 3, template_var 2),
+                template_app
+                 (template_app (template_hole 2, template_var 1),
+                  template_var 0)))))],
+       template_equation
+        (template_app
+          (template_app (template_hole 0, template_var 8), template_var 5),
+         template_var 2))),
+    ("Robdd.robdd_apply_next_correct",
+     "[| robdd_invar_ext ?bs1.0 ?n1.0 ?b1.0;
+         robdd_invar_ext ?bs2.0 ?n2.0 ?b2.0;
+         robdd_apply_next ?b1.0 ?b2.0 =
+         (?b1_l, ?b1_r, ?v'', ?b2_l, ?b2_r) |]
+      ==> robdd_invar_ext ?bs1.0 (Suc ?v'') ?b1_l",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 7, template_var 10),
+                template_var 9),
+              template_var 8)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 7, template_var 7),
+                template_var 6),
+              template_var 5)
+            ),
+        template_equation
+         (template_app
+           (template_app (template_hole 5, template_var 8), template_var 5),
+          template_app
+           (template_app (template_hole 4, template_var 4),
+            template_app
+             (template_app (template_hole 3, template_var 3),
+              template_app
+               (template_app (template_hole 2, template_var 2),
+                template_app
+                 (template_app (template_hole 1, template_var 1),
+                  template_var 0)))))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app (template_hole 7, template_var 10),
+               template_app (template_hole 0, template_var 2)),
+             template_var 4)
+           ))),
+    ("Robdd.robdd_apply_next_correct",
+     "[| robdd_invar_ext ?bs1.0 ?n1.0 ?b1.0;
+         robdd_invar_ext ?bs2.0 ?n2.0 ?b2.0;
+         robdd_apply_next ?b1.0 ?b2.0 =
+         (?b1_l, ?b1_r, ?v'', ?b2_l, ?b2_r) |]
+      ==> robdd_invar_ext ?bs1.0 (Suc ?v'') ?b1_r",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 7, template_var 10),
+                template_var 9),
+              template_var 8)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 7, template_var 7),
+                template_var 6),
+              template_var 5)
+            ),
+        template_equation
+         (template_app
+           (template_app (template_hole 5, template_var 8), template_var 5),
+          template_app
+           (template_app (template_hole 4, template_var 4),
+            template_app
+             (template_app (template_hole 3, template_var 3),
+              template_app
+               (template_app (template_hole 2, template_var 2),
+                template_app
+                 (template_app (template_hole 1, template_var 1),
+                  template_var 0)))))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app (template_hole 7, template_var 10),
+               template_app (template_hole 0, template_var 2)),
+             template_var 3)
+           ))),
+    ("Robdd.robdd_apply_next_correct",
+     "[| robdd_invar_ext ?bs1.0 ?n1.0 ?b1.0;
+         robdd_invar_ext ?bs2.0 ?n2.0 ?b2.0;
+         robdd_apply_next ?b1.0 ?b2.0 =
+         (?b1_l, ?b1_r, ?v'', ?b2_l, ?b2_r) |]
+      ==> robdd_invar_ext ?bs2.0 (Suc ?v'') ?b2_l",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 7, template_var 10),
+                template_var 9),
+              template_var 8)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 7, template_var 7),
+                template_var 6),
+              template_var 5)
+            ),
+        template_equation
+         (template_app
+           (template_app (template_hole 5, template_var 8), template_var 5),
+          template_app
+           (template_app (template_hole 4, template_var 4),
+            template_app
+             (template_app (template_hole 3, template_var 3),
+              template_app
+               (template_app (template_hole 2, template_var 2),
+                template_app
+                 (template_app (template_hole 1, template_var 1),
+                  template_var 0)))))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app (template_hole 7, template_var 7),
+               template_app (template_hole 0, template_var 2)),
+             template_var 1)
+           ))),
+    ("Robdd.robdd_apply_next_correct",
+     "[| robdd_invar_ext ?bs1.0 ?n1.0 ?b1.0;
+         robdd_invar_ext ?bs2.0 ?n2.0 ?b2.0;
+         robdd_apply_next ?b1.0 ?b2.0 =
+         (?b1_l, ?b1_r, ?v'', ?b2_l, ?b2_r) |]
+      ==> robdd_invar_ext ?bs2.0 (Suc ?v'') ?b2_r",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 7, template_var 10),
+                template_var 9),
+              template_var 8)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 7, template_var 7),
+                template_var 6),
+              template_var 5)
+            ),
+        template_equation
+         (template_app
+           (template_app (template_hole 5, template_var 8), template_var 5),
+          template_app
+           (template_app (template_hole 4, template_var 4),
+            template_app
+             (template_app (template_hole 3, template_var 3),
+              template_app
+               (template_app (template_hole 2, template_var 2),
+                template_app
+                 (template_app (template_hole 1, template_var 1),
+                  template_var 0)))))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app (template_hole 7, template_var 7),
+               template_app (template_hole 0, template_var 2)),
+             template_var 0)
+           ))),
+    ("Robdd.robdd_apply_next_correct",
+     "[| robdd_invar_ext ?bs1.0 ?n1.0 ?b1.0;
+         robdd_invar_ext ?bs2.0 ?n2.0 ?b2.0;
+         robdd_apply_next ?b1.0 ?b2.0 =
+         (?b1_l, ?b1_r, ?v'', ?b2_l, ?b2_r) |]
+      ==> robdd_\<alpha> ?b1_l =
+          (%a. robdd_\<alpha> ?b1.0 (a(?v'' := True)))",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 10, template_var 10),
+                template_var 9),
+              template_var 8)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 10, template_var 7),
+                template_var 6),
+              template_var 5)
+            ),
+        template_equation
+         (template_app
+           (template_app (template_hole 8, template_var 8), template_var 5),
+          template_app
+           (template_app (template_hole 7, template_var 4),
+            template_app
+             (template_app (template_hole 6, template_var 3),
+              template_app
+               (template_app (template_hole 5, template_var 2),
+                template_app
+                 (template_app (template_hole 4, template_var 1),
+                  template_var 0)))))],
+       template_equation
+        (template_app (template_hole 2, template_var 4), t_empty))),
+    ("Robdd.robdd_apply_next_correct",
+     "[| robdd_invar_ext ?bs1.0 ?n1.0 ?b1.0;
+         robdd_invar_ext ?bs2.0 ?n2.0 ?b2.0;
+         robdd_apply_next ?b1.0 ?b2.0 =
+         (?b1_l, ?b1_r, ?v'', ?b2_l, ?b2_r) |]
+      ==> robdd_\<alpha> ?b1_r =
+          (%a. robdd_\<alpha> ?b1.0 (a(?v'' := False)))",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 10, template_var 10),
+                template_var 9),
+              template_var 8)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 10, template_var 7),
+                template_var 6),
+              template_var 5)
+            ),
+        template_equation
+         (template_app
+           (template_app (template_hole 8, template_var 8), template_var 5),
+          template_app
+           (template_app (template_hole 7, template_var 4),
+            template_app
+             (template_app (template_hole 6, template_var 3),
+              template_app
+               (template_app (template_hole 5, template_var 2),
+                template_app
+                 (template_app (template_hole 4, template_var 1),
+                  template_var 0)))))],
+       template_equation
+        (template_app (template_hole 2, template_var 3), t_empty))),
+    ("Robdd.robdd_apply_next_correct",
+     "[| robdd_invar_ext ?bs1.0 ?n1.0 ?b1.0;
+         robdd_invar_ext ?bs2.0 ?n2.0 ?b2.0;
+         robdd_apply_next ?b1.0 ?b2.0 =
+         (?b1_l, ?b1_r, ?v'', ?b2_l, ?b2_r) |]
+      ==> robdd_\<alpha> ?b2_l =
+          (%a. robdd_\<alpha> ?b2.0 (a(?v'' := True)))",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 10, template_var 10),
+                template_var 9),
+              template_var 8)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 10, template_var 7),
+                template_var 6),
+              template_var 5)
+            ),
+        template_equation
+         (template_app
+           (template_app (template_hole 8, template_var 8), template_var 5),
+          template_app
+           (template_app (template_hole 7, template_var 4),
+            template_app
+             (template_app (template_hole 6, template_var 3),
+              template_app
+               (template_app (template_hole 5, template_var 2),
+                template_app
+                 (template_app (template_hole 4, template_var 1),
+                  template_var 0)))))],
+       template_equation
+        (template_app (template_hole 2, template_var 1), t_empty))),
+    ("Robdd.robdd_apply_next_correct",
+     "[| robdd_invar_ext ?bs1.0 ?n1.0 ?b1.0;
+         robdd_invar_ext ?bs2.0 ?n2.0 ?b2.0;
+         robdd_apply_next ?b1.0 ?b2.0 =
+         (?b1_l, ?b1_r, ?v'', ?b2_l, ?b2_r) |]
+      ==> robdd_\<alpha> ?b2_r =
+          (%a. robdd_\<alpha> ?b2.0 (a(?v'' := False)))",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 10, template_var 10),
+                template_var 9),
+              template_var 8)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 10, template_var 7),
+                template_var 6),
+              template_var 5)
+            ),
+        template_equation
+         (template_app
+           (template_app (template_hole 8, template_var 8), template_var 5),
+          template_app
+           (template_app (template_hole 7, template_var 4),
+            template_app
+             (template_app (template_hole 6, template_var 3),
+              template_app
+               (template_app (template_hole 5, template_var 2),
+                template_app
+                 (template_app (template_hole 4, template_var 1),
+                  template_var 0)))))],
+       template_equation
+        (template_app (template_hole 2, template_var 0), t_empty))),
+    ("Robdd.robdd_invar_ext_simps",
+     "robdd_invar_ext ?bs ?n (robdd_var ?i ?l ?v ?r) =
+      (robdd_var ?i ?l ?v ?r : subrobdds_set ?bs &
+       ~ robdd_equiv ?l ?r &
+       ?n <= ?v &
+       robdd_invar_ext ?bs (Suc ?v) ?l & robdd_invar_ext ?bs (Suc ?v) ?r)",
+     template_equation
+      (template_app
+        (template_app
+          (template_app (template_hole 8, template_var 5), template_var 4),
+         template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 7, template_var 3),
+               template_var 2),
+             template_var 1),
+           template_var 0)),
+       template_app
+        (template_app
+          (template_hole 6,
+           template_app
+            (template_app
+              (template_hole 5,
+               template_app
+                (template_app
+                  (template_app
+                    (template_app (template_hole 7, template_var 3),
+                     template_var 2),
+                   template_var 1),
+                 template_var 0)),
+             template_app (template_hole 4, template_var 5))),
+         template_app
+          (template_app
+            (template_hole 6,
+             template_app
+              (template_hole 3,
+               template_app
+                (template_app (template_hole 2, template_var 2),
+                 template_var 0))),
+           template_app
+            (template_app
+              (template_hole 6,
+               template_app
+                (template_app (template_hole 1, template_var 4),
+                 template_var 1)),
+             template_app
+              (template_app
+                (template_hole 6,
+                 template_app
+                  (template_app
+                    (template_app (template_hole 8, template_var 5),
+                     template_app (template_hole 0, template_var 1)),
+                   template_var 2)),
+               template_app
+                (template_app
+                  (template_app (template_hole 8, template_var 5),
+                   template_app (template_hole 0, template_var 1)),
+                 template_var 0))))))),
+    ("Robdd.robdd_apply_next_correct",
+     "[| robdd_invar_ext ?bs1.0 ?n1.0 ?b1.0;
+         robdd_invar_ext ?bs2.0 ?n2.0 ?b2.0;
+         robdd_apply_next ?b1.0 ?b2.0 =
+         (?b1_l, ?b1_r, ?v'', ?b2_l, ?b2_r) |]
+      ==> ~ (robdd_is_leaf ?b1.0 & robdd_is_leaf ?b2.0) -->
+          size_robdd ?b1_l + size_robdd ?b2_l
+          < size_robdd ?b1.0 + size_robdd ?b2.0",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 13, template_var 10),
+                template_var 9),
+              template_var 8)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 13, template_var 7),
+                template_var 6),
+              template_var 5)
+            ),
+        template_equation
+         (template_app
+           (template_app (template_hole 11, template_var 8),
+            template_var 5),
+          template_app
+           (template_app (template_hole 10, template_var 4),
+            template_app
+             (template_app (template_hole 9, template_var 3),
+              template_app
+               (template_app (template_hole 8, template_var 2),
+                template_app
+                 (template_app (template_hole 7, template_var 1),
+                  template_var 0)))))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 6,
+               template_app
+                (template_hole 5,
+                 template_app
+                  (template_app
+                    (template_hole 4,
+                     template_app (template_hole 3, template_var 8)),
+                   template_app (template_hole 3, template_var 5)))),
+             template_app
+              (template_app
+                (template_hole 2,
+                 template_app
+                  (template_app
+                    (template_hole 1,
+                     template_app (template_hole 0, template_var 4)),
+                   template_app (template_hole 0, template_var 1))),
+               template_app
+                (template_app
+                  (template_hole 1,
+                   template_app (template_hole 0, template_var 8)),
+                 template_app (template_hole 0, template_var 5))))
+           ))),
+    ("Robdd.robdd_apply_next_correct",
+     "[| robdd_invar_ext ?bs1.0 ?n1.0 ?b1.0;
+         robdd_invar_ext ?bs2.0 ?n2.0 ?b2.0;
+         robdd_apply_next ?b1.0 ?b2.0 =
+         (?b1_l, ?b1_r, ?v'', ?b2_l, ?b2_r) |]
+      ==> ~ (robdd_is_leaf ?b1.0 & robdd_is_leaf ?b2.0) -->
+          size_robdd ?b1_r + size_robdd ?b2_r
+          < size_robdd ?b1.0 + size_robdd ?b2.0",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 13, template_var 10),
+                template_var 9),
+              template_var 8)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 13, template_var 7),
+                template_var 6),
+              template_var 5)
+            ),
+        template_equation
+         (template_app
+           (template_app (template_hole 11, template_var 8),
+            template_var 5),
+          template_app
+           (template_app (template_hole 10, template_var 4),
+            template_app
+             (template_app (template_hole 9, template_var 3),
+              template_app
+               (template_app (template_hole 8, template_var 2),
+                template_app
+                 (template_app (template_hole 7, template_var 1),
+                  template_var 0)))))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 6,
+               template_app
+                (template_hole 5,
+                 template_app
+                  (template_app
+                    (template_hole 4,
+                     template_app (template_hole 3, template_var 8)),
+                   template_app (template_hole 3, template_var 5)))),
+             template_app
+              (template_app
+                (template_hole 2,
+                 template_app
+                  (template_app
+                    (template_hole 1,
+                     template_app (template_hole 0, template_var 3)),
+                   template_app (template_hole 0, template_var 0))),
+               template_app
+                (template_app
+                  (template_hole 1,
+                   template_app (template_hole 0, template_var 8)),
+                 template_app (template_hole 0, template_var 5))))
+           ))),
+    ("Robdd.subrobdds_set_leaf_in_reduced",
+     "[| !!b. b : ?bs ==> robdd_invar_reduced b; ?bs ~= {robdd_one};
+         ?bs ~= {robdd_zero}; ?bs ~= {} |]
+      ==> robdd_one : subrobdds_set ?bs & robdd_zero : subrobdds_set ?bs",
+     template_implication
+      ([template_predicate (template_app (template_hole 12, t_empty)),
+        template_negation
+         (
+            template_equation
+             (template_var 0,
+              template_app
+               (template_app
+                 (template_hole 6,
+                  template_app (template_hole 5, template_hole 4)),
+                template_hole 3))
+            ),
+        template_negation
+         (
+            template_equation
+             (template_var 0,
+              template_app
+               (template_app
+                 (template_hole 6,
+                  template_app (template_hole 5, template_hole 2)),
+                template_hole 3))
+            ),
+        template_negation
+         (template_equation (template_var 0, template_hole 3))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 1,
+               template_app
+                (template_app
+                  (template_hole 10,
+                   template_app (template_hole 5, template_hole 4)),
+                 template_app (template_hole 0, template_var 0))),
+             template_app
+              (template_app
+                (template_hole 10,
+                 template_app (template_hole 5, template_hole 2)),
+               template_app (template_hole 0, template_var 0)))
+           ))),
+    ("Robdd.robdd_invar_ext_weaken",
+     "[| robdd_invar_ext ?bs2.0 ?n ?b;
+         !!b2. [| ?b : subrobdds_set ?bs2.0; b2 : ?bs1.0 |]
+               ==> EX b1:?bs2.0. b2 : subrobdds b1;
+         ?b : subrobdds_set ?bs2.0 ==> ?b : subrobdds_set ?bs1.0;
+         ?m <= ?n |]
+      ==> robdd_invar_ext ?bs1.0 ?m ?b",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 6, template_var 4),
+                template_var 3),
+              template_var 2)
+            ),
+        template_predicate (template_app (template_hole 5, t_empty)),
+        template_implication
+         ([template_predicate
+            (
+               template_app
+                (template_app (template_hole 4, template_var 2),
+                 template_app (template_hole 3, template_var 4))
+               )],
+          template_predicate
+           (
+              template_app
+               (template_app (template_hole 4, template_var 2),
+                template_app (template_hole 3, template_var 1))
+              )),
+        template_inequation (less_equals, template_var 0, template_var 3)],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app (template_hole 6, template_var 1),
+               template_var 0),
+             template_var 2)
+           ))),
+    ("Robdd.robdd_unique_var",
+     "[| robdd_invar_vars (robdd_var ?i1.0 ?l1.0 ?v1.0 ?r1.0);
+         robdd_invar_reduced (robdd_var ?i1.0 ?l1.0 ?v1.0 ?r1.0);
+         robdd_invar_vars (robdd_var ?i2.0 ?l2.0 ?v2.0 ?r2.0);
+         robdd_invar_reduced (robdd_var ?i2.0 ?l2.0 ?v2.0 ?r2.0);
+         robdd_\<alpha> ?l1.0 ~= robdd_\<alpha> ?r1.0;
+         robdd_\<alpha> ?l2.0 ~= robdd_\<alpha> ?r2.0;
+         robdd_\<alpha> (robdd_var ?i1.0 ?l1.0 ?v1.0 ?r1.0) =
+         robdd_\<alpha> (robdd_var ?i2.0 ?l2.0 ?v2.0 ?r2.0) |]
+      ==> ?v1.0 = ?v2.0 &
+          robdd_\<alpha> ?l1.0 = robdd_\<alpha> ?l2.0 &
+          robdd_\<alpha> ?r1.0 = robdd_\<alpha> ?r2.0",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_hole 7,
+              template_app
+               (template_app
+                 (template_app
+                   (template_app (template_hole 6, template_var 7),
+                    template_var 6),
+                  template_var 5),
+                template_var 4))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_hole 5,
+              template_app
+               (template_app
+                 (template_app
+                   (template_app (template_hole 6, template_var 7),
+                    template_var 6),
+                  template_var 5),
+                template_var 4))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_hole 7,
+              template_app
+               (template_app
+                 (template_app
+                   (template_app (template_hole 6, template_var 3),
+                    template_var 2),
+                  template_var 1),
+                template_var 0))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_hole 5,
+              template_app
+               (template_app
+                 (template_app
+                   (template_app (template_hole 6, template_var 3),
+                    template_var 2),
+                  template_var 1),
+                template_var 0))
+            ),
+        template_negation
+         (
+            template_equation
+             (template_app (template_hole 2, template_var 6),
+              template_app (template_hole 2, template_var 4))
+            ),
+        template_negation
+         (
+            template_equation
+             (template_app (template_hole 2, template_var 2),
+              template_app (template_hole 2, template_var 0))
+            ),
+        template_equation
+         (template_app
+           (template_hole 2,
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 6, template_var 7),
+                  template_var 6),
+                template_var 5),
+              template_var 4)),
+          template_app
+           (template_hole 2,
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 6, template_var 3),
+                  template_var 2),
+                template_var 1),
+              template_var 0)))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 1,
+               template_app
+                (template_app (template_hole 0, template_var 5),
+                 template_var 1)),
+             template_app
+              (template_app
+                (template_hole 1,
+                 template_app
+                  (template_app
+                    (template_hole 3,
+                     template_app (template_hole 2, template_var 6)),
+                   template_app (template_hole 2, template_var 2))),
+               template_app
+                (template_app
+                  (template_hole 3,
+                   template_app (template_hole 2, template_var 4)),
+                 template_app (template_hole 2, template_var 0))))
+           )))]:
+   (string * thm * template) list
+### theory "Draft.RobddTemplates"
+### 0.522s elapsed time, 0.757s cpu time, 0.124s GC time
+val it = (): unit

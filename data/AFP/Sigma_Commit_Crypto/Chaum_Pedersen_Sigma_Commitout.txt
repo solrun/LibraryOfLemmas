@@ -1,0 +1,656 @@
+Loading theory "Draft.Number_Theory_Aux" (required by "Draft.Chaum_Pedersen_Sigma_CommitTemplates" via "Draft.Chaum_Pedersen_Sigma_Commit")
+Loading theory "Draft.Templates" (required by "Draft.Chaum_Pedersen_Sigma_CommitTemplates" via "Draft.ExtrEqs")
+Loading theory "Draft.Commitment_Schemes" (required by "Draft.Chaum_Pedersen_Sigma_CommitTemplates" via "Draft.Chaum_Pedersen_Sigma_Commit")
+Loading theory "HOL-Library.BigO" (required by "Draft.Chaum_Pedersen_Sigma_CommitTemplates" via "Draft.ExtrEqs")
+locale abstract_commitment
+  fixes key_gen :: "('ck * 'vk) spmf"
+    and commit :: "'ck => 'plain => ('commit * 'opening) spmf"
+    and verify :: "'vk => 'plain => 'commit => 'opening => bool"
+    and valid_msg :: "'plain => bool"
+### theory "Draft.Number_Theory_Aux"
+### 0.107s elapsed time, 0.431s cpu time, 0.030s GC time
+Loading theory "Draft.Cyclic_Group_Ext" (required by "Draft.Chaum_Pedersen_Sigma_CommitTemplates" via "Draft.Chaum_Pedersen_Sigma_Commit")
+datatype template_term
+=
+     t_empty
+   | template_app of template_term * template_term
+   | template_hole of int
+   | template_var of int
+datatype sign
+= equals | greater_equals | greater_than | less_equals | less_than
+datatype template
+=
+     template_bimplication of template * template
+   | template_dunno
+   | template_equation of template_term * template_term
+   | template_implication of template list * template
+   | template_inequation of sign * template_term * template_term
+   | template_negation of template
+   | template_predicate of template_term
+constructor t_empty: template_term
+constructor template_app: template_term * template_term -> template_term
+constructor template_hole: int -> template_term
+constructor template_var: int -> template_term
+constructor equals: sign
+constructor greater_equals: sign
+constructor greater_than: sign
+constructor less_equals: sign
+constructor less_than: sign
+constructor template_bimplication: template * template -> template
+constructor template_dunno: template
+constructor template_equation: template_term * template_term -> template
+constructor template_implication: template list * template -> template
+constructor template_inequation:
+   sign * template_term * template_term -> template
+constructor template_negation: template -> template
+constructor template_predicate: template_term -> template
+val vfs = fn: term -> (indexname * typ) list * (string * typ) list
+val indexOf = fn: ''a list -> ''a -> int -> int
+val has_eq = fn: term -> bool
+val term2template = fn:
+   (indexname * typ) list -> (string * typ) list -> term -> template_term
+val lemma2predicate = fn: term -> term -> template
+val makeTemplatewithContext = fn: term -> term -> template
+val lemma2template = fn: term -> template
+val thm2template = fn: thm -> template
+val tterm2string = fn: template_term -> string
+val template2string = fn: template -> string
+val t = "height ?t <= size ?t": thm
+val th =
+   Const ("HOL.Trueprop", "bool => prop") $
+     (Const ("Orderings.ord_class.less_eq", "nat => nat => bool") $
+       (Const ("Tree.height_class.height", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree")) $
+       (Const ("Nat.size_class.size", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree"))):
+   term
+### theory "Draft.Templates"
+### 0.108s elapsed time, 0.438s cpu time, 0.030s GC time
+Loading theory "Draft.Uniform_Sampling" (required by "Draft.Chaum_Pedersen_Sigma_CommitTemplates" via "Draft.Chaum_Pedersen_Sigma_Commit")
+### Ambiguous input (line 75 of "$AFP/Sigma_Commit_Crypto/Commitment_Schemes.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" hiding_game_ind_cpa)
+###       ("_tuple" ("_position" \<A>1) ("_tuple_arg" ("_position" \<A>2))))
+###     ("\<^const>Generative_Probabilistic_Value.try_gpv"
+###       ("_do_block"
+###         ("_do_cons"
+###           ("_do_bind" ("_pattern" ("_position" ck) ("_position" vk))
+###             ("_position" key_gen))
+###           ("_do_cons"
+###             ("_do_bind"
+###               ("_pattern" ("_pattern" ("_position" m0) ("_position" m1))
+###                 ("_position" \<sigma>))
+###               ("_applC" ("_position" \<A>1) ("_position" vk)))
+###             ("_do_cons"
+###               ("_do_bind" ("_idtypdummy" ("_type_name" unit))
+###                 ("_applC" ("_position" assert_spmf)
+###                   ("\<^const>HOL.conj"
+###                     ("_applC" ("_position" valid_msg) ("_position" m0))
+###                     ("_applC" ("_position" valid_msg) ("_position" m1)))))
+###               ("_do_cons"
+###                 ("_do_bind" ("_position" b) ("_position" coin_spmf))
+###                 ("_do_cons"
+###                   ("_do_bind" ("_pattern" ("_position" c) ("_position" d))
+###                     ("_applC" ("_position" commit)
+###                       ("_cargs" ("_position" ck)
+###                         ("\<^const>HOL.If" ("_position" b) ("_position" m0)
+###                           ("_position" m1)))))
+###                   ("_do_cons"
+###                     ("_do_bind"
+###                       ("_idtyp" ("_position" b') ("_type_name" bool))
+###                       ("_applC" ("_position" \<A>2)
+###                         ("_cargs" ("_position" c) ("_position" \<sigma>))))
+###                     ("_do_final"
+###                       ("_applC" ("_position" return_spmf)
+###                         ("\<^const>HOL.eq" ("_position" b')
+###                           ("_position" b)))))))))))
+###       ("_position" coin_spmf))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" hiding_game_ind_cpa)
+###       ("_tuple" ("_position" \<A>1) ("_tuple_arg" ("_position" \<A>2))))
+###     ("\<^const>SPMF.try_spmf"
+###       ("_do_block"
+###         ("_do_cons"
+###           ("_do_bind" ("_pattern" ("_position" ck) ("_position" vk))
+###             ("_position" key_gen))
+###           ("_do_cons"
+###             ("_do_bind"
+###               ("_pattern" ("_pattern" ("_position" m0) ("_position" m1))
+###                 ("_position" \<sigma>))
+###               ("_applC" ("_position" \<A>1) ("_position" vk)))
+###             ("_do_cons"
+###               ("_do_bind" ("_idtypdummy" ("_type_name" unit))
+###                 ("_applC" ("_position" assert_spmf)
+###                   ("\<^const>HOL.conj"
+###                     ("_applC" ("_position" valid_msg) ("_position" m0))
+###                     ("_applC" ("_position" valid_msg) ("_position" m1)))))
+###               ("_do_cons"
+###                 ("_do_bind" ("_position" b) ("_position" coin_spmf))
+###                 ("_do_cons"
+###                   ("_do_bind" ("_pattern" ("_position" c) ("_position" d))
+###                     ("_applC" ("_position" commit)
+###                       ("_cargs" ("_position" ck)
+###                         ("\<^const>HOL.If" ("_position" b) ("_position" m0)
+###                           ("_position" m1)))))
+###                   ("_do_cons"
+###                     ("_do_bind"
+###                       ("_idtyp" ("_position" b') ("_type_name" bool))
+###                       ("_applC" ("_position" \<A>2)
+###                         ("_cargs" ("_position" c) ("_position" \<sigma>))))
+###                     ("_do_final"
+###                       ("_applC" ("_position" return_spmf)
+###                         ("\<^const>HOL.eq" ("_position" b')
+###                           ("_position" b)))))))))))
+###       ("_position" coin_spmf))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+consts
+  hiding_game_ind_cpa ::
+    "('vk => (('plain * 'plain) * 'state) spmf) *
+     ('commit => 'state => bool spmf)
+     => bool spmf"
+### Ambiguous input (line 108 of "$AFP/Sigma_Commit_Crypto/Commitment_Schemes.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq" ("_applC" ("_position" bind_game) ("_position" \<A>))
+###     ("\<^const>Generative_Probabilistic_Value.try_gpv"
+###       ("_do_block"
+###         ("_do_cons"
+###           ("_do_bind" ("_pattern" ("_position" ck) ("_position" vk))
+###             ("_position" key_gen))
+###           ("_do_cons"
+###             ("_do_bind"
+###               ("_pattern" ("_position" c)
+###                 ("_patterns" ("_position" m)
+###                   ("_patterns" ("_position" d)
+###                     ("_patterns" ("_position" m') ("_position" d')))))
+###               ("_applC" ("_position" \<A>) ("_position" ck)))
+###             ("_do_cons"
+###               ("_do_bind" ("_idtypdummy" ("_type_name" unit))
+###                 ("_applC" ("_position" assert_spmf)
+###                   ("\<^const>HOL.conj"
+###                     ("\<^const>HOL.not_equal" ("_position" m)
+###                       ("_position" m'))
+###                     ("\<^const>HOL.conj"
+###                       ("_applC" ("_position" valid_msg) ("_position" m))
+###                       ("_applC" ("_position" valid_msg)
+###                         ("_position" m'))))))
+###               ("_do_cons"
+###                 ("_do_let" ("_position" b)
+###                   ("_applC" ("_position" verify)
+###                     ("_cargs" ("_position" vk)
+###                       ("_cargs" ("_position" m)
+###                         ("_cargs" ("_position" c) ("_position" d))))))
+###                 ("_do_cons"
+###                   ("_do_let" ("_position" b')
+###                     ("_applC" ("_position" verify)
+###                       ("_cargs" ("_position" vk)
+###                         ("_cargs" ("_position" m')
+###                           ("_cargs" ("_position" c) ("_position" d'))))))
+###                   ("_do_final"
+###                     ("_applC" ("_position" return_spmf)
+###                       ("\<^const>HOL.conj" ("_position" b)
+###                         ("_position" b'))))))))))
+###       ("_applC" ("_position" return_spmf) ("_position" False)))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq" ("_applC" ("_position" bind_game) ("_position" \<A>))
+###     ("\<^const>SPMF.try_spmf"
+###       ("_do_block"
+###         ("_do_cons"
+###           ("_do_bind" ("_pattern" ("_position" ck) ("_position" vk))
+###             ("_position" key_gen))
+###           ("_do_cons"
+###             ("_do_bind"
+###               ("_pattern" ("_position" c)
+###                 ("_patterns" ("_position" m)
+###                   ("_patterns" ("_position" d)
+###                     ("_patterns" ("_position" m') ("_position" d')))))
+###               ("_applC" ("_position" \<A>) ("_position" ck)))
+###             ("_do_cons"
+###               ("_do_bind" ("_idtypdummy" ("_type_name" unit))
+###                 ("_applC" ("_position" assert_spmf)
+###                   ("\<^const>HOL.conj"
+###                     ("\<^const>HOL.not_equal" ("_position" m)
+###                       ("_position" m'))
+###                     ("\<^const>HOL.conj"
+###                       ("_applC" ("_position" valid_msg) ("_position" m))
+###                       ("_applC" ("_position" valid_msg)
+###                         ("_position" m'))))))
+###               ("_do_cons"
+###                 ("_do_let" ("_position" b)
+###                   ("_applC" ("_position" verify)
+###                     ("_cargs" ("_position" vk)
+###                       ("_cargs" ("_position" m)
+###                         ("_cargs" ("_position" c) ("_position" d))))))
+###                 ("_do_cons"
+###                   ("_do_let" ("_position" b')
+###                     ("_applC" ("_position" verify)
+###                       ("_cargs" ("_position" vk)
+###                         ("_cargs" ("_position" m')
+###                           ("_cargs" ("_position" c) ("_position" d'))))))
+###                   ("_do_final"
+###                     ("_applC" ("_position" return_spmf)
+###                       ("\<^const>HOL.conj" ("_position" b)
+###                         ("_position" b'))))))))))
+###       ("_applC" ("_position" return_spmf) ("_position" False)))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ambiguous input (line 120 of "$AFP/Sigma_Commit_Crypto/Commitment_Schemes.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq" ("_applC" ("_position" bind_game) ("_position" \<A>))
+###     ("\<^const>Generative_Probabilistic_Value.try_gpv"
+###       ("_do_block"
+###         ("_do_cons"
+###           ("_do_bind" ("_pattern" ("_position" ck) ("_position" vk))
+###             ("_position" key_gen))
+###           ("_do_cons"
+###             ("_do_bind"
+###               ("_pattern" ("_position" c)
+###                 ("_patterns" ("_position" m)
+###                   ("_patterns" ("_position" d)
+###                     ("_patterns" ("_position" m') ("_position" d')))))
+###               ("_applC" ("_position" \<A>) ("_position" ck)))
+###             ("_do_cons"
+###               ("_do_bind" ("_idtypdummy" ("_type_name" unit))
+###                 ("_applC" ("_position" assert_spmf)
+###                   ("\<^const>HOL.conj"
+###                     ("\<^const>HOL.not_equal" ("_position" m)
+###                       ("_position" m'))
+###                     ("\<^const>HOL.conj"
+###                       ("_applC" ("_position" valid_msg) ("_position" m))
+###                       ("_applC" ("_position" valid_msg)
+###                         ("_position" m'))))))
+###               ("_do_cons"
+###                 ("_do_let" ("_position" b)
+###                   ("_applC" ("_position" verify)
+###                     ("_cargs" ("_position" vk)
+###                       ("_cargs" ("_position" m)
+###                         ("_cargs" ("_position" c) ("_position" d))))))
+###                 ("_do_cons"
+###                   ("_do_let" ("_position" b')
+###                     ("_applC" ("_position" verify)
+###                       ("_cargs" ("_position" vk)
+###                         ("_cargs" ("_position" m')
+###                           ("_cargs" ("_position" c) ("_position" d'))))))
+###                   ("_do_cons"
+###                     ("_do_bind" ("_idtypdummy" ("_type_name" unit))
+###                       ("_applC" ("_position" assert_spmf)
+###                         ("\<^const>HOL.conj" ("_position" b)
+###                           ("_position" b'))))
+###                     ("_do_final"
+###                       ("_applC" ("_position" return_spmf)
+###                         ("_position" True))))))))))
+###       ("_applC" ("_position" return_spmf) ("_position" False)))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq" ("_applC" ("_position" bind_game) ("_position" \<A>))
+###     ("\<^const>SPMF.try_spmf"
+###       ("_do_block"
+###         ("_do_cons"
+###           ("_do_bind" ("_pattern" ("_position" ck) ("_position" vk))
+###             ("_position" key_gen))
+###           ("_do_cons"
+###             ("_do_bind"
+###               ("_pattern" ("_position" c)
+###                 ("_patterns" ("_position" m)
+###                   ("_patterns" ("_position" d)
+###                     ("_patterns" ("_position" m') ("_position" d')))))
+###               ("_applC" ("_position" \<A>) ("_position" ck)))
+###             ("_do_cons"
+###               ("_do_bind" ("_idtypdummy" ("_type_name" unit))
+###                 ("_applC" ("_position" assert_spmf)
+###                   ("\<^const>HOL.conj"
+###                     ("\<^const>HOL.not_equal" ("_position" m)
+###                       ("_position" m'))
+###                     ("\<^const>HOL.conj"
+###                       ("_applC" ("_position" valid_msg) ("_position" m))
+###                       ("_applC" ("_position" valid_msg)
+###                         ("_position" m'))))))
+###               ("_do_cons"
+###                 ("_do_let" ("_position" b)
+###                   ("_applC" ("_position" verify)
+###                     ("_cargs" ("_position" vk)
+###                       ("_cargs" ("_position" m)
+###                         ("_cargs" ("_position" c) ("_position" d))))))
+###                 ("_do_cons"
+###                   ("_do_let" ("_position" b')
+###                     ("_applC" ("_position" verify)
+###                       ("_cargs" ("_position" vk)
+###                         ("_cargs" ("_position" m')
+###                           ("_cargs" ("_position" c) ("_position" d'))))))
+###                   ("_do_cons"
+###                     ("_do_bind" ("_idtypdummy" ("_type_name" unit))
+###                       ("_applC" ("_position" assert_spmf)
+###                         ("\<^const>HOL.conj" ("_position" b)
+###                           ("_position" b'))))
+###                     ("_do_final"
+###                       ("_applC" ("_position" return_spmf)
+###                         ("_position" True))))))))))
+###       ("_applC" ("_position" return_spmf) ("_position" False)))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### theory "Draft.Commitment_Schemes"
+### 0.322s elapsed time, 1.295s cpu time, 0.030s GC time
+Loading theory "Draft.Sigma_Protocols" (required by "Draft.Chaum_Pedersen_Sigma_CommitTemplates" via "Draft.Chaum_Pedersen_Sigma_Commit")
+locale \<Sigma>_protocols_base
+  fixes init :: "'pub_input => 'witness => ('rand * 'msg) spmf"
+    and response :: "'rand => 'witness => 'challenge => 'response spmf"
+    and check :: "'pub_input => 'msg => 'challenge => 'response => bool"
+    and Rel :: "('pub_input * 'witness) set"
+    and S_raw :: "'pub_input => 'challenge => ('msg * 'response) spmf"
+    and
+    \<A>ss ::
+      "'pub_input
+       => 'msg * 'challenge * 'response
+          => 'msg * 'challenge * 'response => 'witness spmf"
+    and challenge_space :: "'challenge set"
+    and valid_pub :: "'pub_input set"
+  assumes "\<Sigma>_protocols_base Rel valid_pub"
+locale \<Sigma>_protocols_to_commitments
+  fixes init :: "'pub_input => 'witness => ('rand * 'msg) spmf"
+    and response :: "'rand => 'witness => 'challenge => 'response spmf"
+    and check :: "'pub_input => 'msg => 'challenge => 'response => bool"
+    and Rel :: "('pub_input * 'witness) set"
+    and S_raw :: "'pub_input => 'challenge => ('msg * 'response) spmf"
+    and
+    \<A>ss ::
+      "'pub_input
+       => 'msg * 'challenge * 'response
+          => 'msg * 'challenge * 'response => 'witness spmf"
+    and challenge_space :: "'challenge set"
+    and valid_pub :: "'pub_input set"
+    and G :: "('pub_input * 'witness) spmf"
+  assumes
+    "\<Sigma>_protocols_to_commitments init response check Rel S_raw \<A>ss
+      challenge_space valid_pub G"
+### Ambiguous input (line 172 of "$AFP/Sigma_Commit_Crypto/Sigma_Protocols.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq" ("_applC" ("_position" rel_game) ("_position" \<A>))
+###     ("\<^const>Generative_Probabilistic_Value.try_gpv"
+###       ("_do_block"
+###         ("_do_cons"
+###           ("_do_bind" ("_pattern" ("_position" h) ("_position" w))
+###             ("_position" G))
+###           ("_do_cons"
+###             ("_do_bind" ("_position" w')
+###               ("_applC" ("_position" \<A>) ("_position" h)))
+###             ("_do_final"
+###               ("_applC" ("_position" return_spmf)
+###                 ("\<^const>Set.member"
+###                   ("_tuple" ("_position" h) ("_tuple_arg" ("_position" w')))
+###                   ("_position" Rel)))))))
+###       ("_applC" ("_position" return_spmf) ("_position" False)))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq" ("_applC" ("_position" rel_game) ("_position" \<A>))
+###     ("\<^const>SPMF.try_spmf"
+###       ("_do_block"
+###         ("_do_cons"
+###           ("_do_bind" ("_pattern" ("_position" h) ("_position" w))
+###             ("_position" G))
+###           ("_do_cons"
+###             ("_do_bind" ("_position" w')
+###               ("_applC" ("_position" \<A>) ("_position" h)))
+###             ("_do_final"
+###               ("_applC" ("_position" return_spmf)
+###                 ("\<^const>Set.member"
+###                   ("_tuple" ("_position" h) ("_tuple_arg" ("_position" w')))
+###                   ("_position" Rel)))))))
+###       ("_applC" ("_position" return_spmf) ("_position" False)))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+locale cyclic_group
+  fixes G :: "('a, 'b) cyclic_group_scheme"  (structure)
+  assumes "cyclic_group G"
+### theory "Draft.Cyclic_Group_Ext"
+### 0.648s elapsed time, 2.494s cpu time, 0.161s GC time
+Loading theory "Draft.Discrete_Log" (required by "Draft.Chaum_Pedersen_Sigma_CommitTemplates" via "Draft.Chaum_Pedersen_Sigma_Commit")
+### theory "Draft.Uniform_Sampling"
+### 0.698s elapsed time, 2.683s cpu time, 0.161s GC time
+locale dis_log
+  fixes \<G> :: "'grp cyclic_group"  (structure)
+  assumes "dis_log \<G>"
+### theory "Draft.Sigma_Protocols"
+### 0.491s elapsed time, 1.854s cpu time, 0.161s GC time
+### theory "HOL-Library.BigO"
+### 0.814s elapsed time, 3.146s cpu time, 0.191s GC time
+Loading theory "Draft.ExtrEqs" (required by "Draft.Chaum_Pedersen_Sigma_CommitTemplates")
+### Ambiguous input (line 18 of "$AFP/Sigma_Commit_Crypto/Discrete_Log.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq" ("_applC" ("_position" dis_log) ("_position" \<A>))
+###     ("\<^const>Generative_Probabilistic_Value.try_gpv"
+###       ("_do_block"
+###         ("_do_cons"
+###           ("_do_bind" ("_position" x)
+###             ("_applC" ("_position" sample_uniform)
+###               ("_applC" ("_position" order) ("_position" \<G>))))
+###           ("_do_cons"
+###             ("_do_let" ("_position" h)
+###               ("\<^const>Group.pow_indexed"
+###                 ("\<^const>Cyclic_Group.cyclic_group.generator_indexed"
+###                   ("_indexdefault"))
+###                 ("_indexdefault") ("_position" x)))
+###             ("_do_cons"
+###               ("_do_bind" ("_position" x')
+###                 ("_applC" ("_position" \<A>) ("_position" h)))
+###               ("_do_final"
+###                 ("_applC" ("_position" return_spmf)
+###                   ("\<^const>Cong.unique_euclidean_semiring_class.cong"
+###                     ("_position" x) ("_position" x')
+###                     ("_applC" ("_position" order) ("_position" \<G>)))))))))
+###       ("_applC" ("_position" return_spmf) ("_position" False)))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq" ("_applC" ("_position" dis_log) ("_position" \<A>))
+###     ("\<^const>SPMF.try_spmf"
+###       ("_do_block"
+###         ("_do_cons"
+###           ("_do_bind" ("_position" x)
+###             ("_applC" ("_position" sample_uniform)
+###               ("_applC" ("_position" order) ("_position" \<G>))))
+###           ("_do_cons"
+###             ("_do_let" ("_position" h)
+###               ("\<^const>Group.pow_indexed"
+###                 ("\<^const>Cyclic_Group.cyclic_group.generator_indexed"
+###                   ("_indexdefault"))
+###                 ("_indexdefault") ("_position" x)))
+###             ("_do_cons"
+###               ("_do_bind" ("_position" x')
+###                 ("_applC" ("_position" \<A>) ("_position" h)))
+###               ("_do_final"
+###                 ("_applC" ("_position" return_spmf)
+###                   ("\<^const>Cong.unique_euclidean_semiring_class.cong"
+###                     ("_position" x) ("_position" x')
+###                     ("_applC" ("_position" order) ("_position" \<G>)))))))))
+###       ("_applC" ("_position" return_spmf) ("_position" False)))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+locale dis_log_alt
+  fixes \<G> :: "'grp cyclic_group"  (structure)
+    and x :: "nat"
+  assumes "dis_log_alt \<G>"
+### Ambiguous input (line 44 of "$AFP/Sigma_Commit_Crypto/Discrete_Log.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq" ("_applC" ("_position" dis_log2) ("_position" \<A>))
+###     ("\<^const>Generative_Probabilistic_Value.try_gpv"
+###       ("_do_block"
+###         ("_do_cons"
+###           ("_do_bind" ("_position" w)
+###             ("_applC" ("_position" sample_uniform)
+###               ("_applC" ("_position" order) ("_position" \<G>))))
+###           ("_do_cons"
+###             ("_do_let" ("_position" h)
+###               ("\<^const>Group.pow_indexed"
+###                 ("\<^const>Cyclic_Group.cyclic_group.generator_indexed"
+###                   ("_indexdefault"))
+###                 ("_indexdefault") ("_position" w)))
+###             ("_do_cons"
+###               ("_do_bind" ("_pattern" ("_position" w1') ("_position" w2'))
+###                 ("_applC" ("_position" \<A>) ("_position" h)))
+###               ("_do_final"
+###                 ("_applC" ("_position" return_spmf)
+###                   ("\<^const>Cong.unique_euclidean_semiring_class.cong"
+###                     ("_position" w)
+###                     ("\<^const>Groups.plus_class.plus" ("_position" w1')
+###                       ("\<^const>Groups.times_class.times" ("_position" x)
+###                         ("_position" w2')))
+###                     ("_applC" ("_position" order) ("_position" \<G>)))))))))
+###       ("_applC" ("_position" return_spmf) ("_position" False)))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq" ("_applC" ("_position" dis_log2) ("_position" \<A>))
+###     ("\<^const>SPMF.try_spmf"
+###       ("_do_block"
+###         ("_do_cons"
+###           ("_do_bind" ("_position" w)
+###             ("_applC" ("_position" sample_uniform)
+###               ("_applC" ("_position" order) ("_position" \<G>))))
+###           ("_do_cons"
+###             ("_do_let" ("_position" h)
+###               ("\<^const>Group.pow_indexed"
+###                 ("\<^const>Cyclic_Group.cyclic_group.generator_indexed"
+###                   ("_indexdefault"))
+###                 ("_indexdefault") ("_position" w)))
+###             ("_do_cons"
+###               ("_do_bind" ("_pattern" ("_position" w1') ("_position" w2'))
+###                 ("_applC" ("_position" \<A>) ("_position" h)))
+###               ("_do_final"
+###                 ("_applC" ("_position" return_spmf)
+###                   ("\<^const>Cong.unique_euclidean_semiring_class.cong"
+###                     ("_position" w)
+###                     ("\<^const>Groups.plus_class.plus" ("_position" w1')
+###                       ("\<^const>Groups.times_class.times" ("_position" x)
+###                         ("_position" w2')))
+###                     ("_applC" ("_position" order) ("_position" \<G>)))))))))
+###       ("_applC" ("_position" return_spmf) ("_position" False)))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ambiguous input (line 59 of "$AFP/Sigma_Commit_Crypto/Discrete_Log.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq" ("_applC" ("_position" dis_log3) ("_position" \<A>))
+###     ("\<^const>Generative_Probabilistic_Value.try_gpv"
+###       ("_do_block"
+###         ("_do_cons"
+###           ("_do_bind" ("_position" w)
+###             ("_applC" ("_position" sample_uniform)
+###               ("_applC" ("_position" order) ("_position" \<G>))))
+###           ("_do_cons"
+###             ("_do_let" ("_pattern" ("_position" h) ("_position" w))
+###               ("_tuple"
+###                 ("_tuple"
+###                   ("\<^const>Group.pow_indexed"
+###                     ("\<^const>Cyclic_Group.cyclic_group.generator_indexed"
+###                       ("_indexdefault"))
+###                     ("_indexdefault") ("_position" w))
+###                   ("_tuple_arg"
+###                     ("\<^const>Group.pow_indexed" ("_position" g')
+###                       ("_indexdefault") ("_position" w))))
+###                 ("_tuple_arg" ("_position" w))))
+###             ("_do_cons"
+###               ("_do_bind" ("_position" w')
+###                 ("_applC" ("_position" \<A>) ("_position" h)))
+###               ("_do_final"
+###                 ("_applC" ("_position" return_spmf)
+###                   ("\<^const>Cong.unique_euclidean_semiring_class.cong"
+###                     ("_position" w) ("_position" w')
+###                     ("_applC" ("_position" order) ("_position" \<G>)))))))))
+###       ("_applC" ("_position" return_spmf) ("_position" False)))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq" ("_applC" ("_position" dis_log3) ("_position" \<A>))
+###     ("\<^const>SPMF.try_spmf"
+###       ("_do_block"
+###         ("_do_cons"
+###           ("_do_bind" ("_position" w)
+###             ("_applC" ("_position" sample_uniform)
+###               ("_applC" ("_position" order) ("_position" \<G>))))
+###           ("_do_cons"
+###             ("_do_let" ("_pattern" ("_position" h) ("_position" w))
+###               ("_tuple"
+###                 ("_tuple"
+###                   ("\<^const>Group.pow_indexed"
+###                     ("\<^const>Cyclic_Group.cyclic_group.generator_indexed"
+###                       ("_indexdefault"))
+###                     ("_indexdefault") ("_position" w))
+###                   ("_tuple_arg"
+###                     ("\<^const>Group.pow_indexed" ("_position" g')
+###                       ("_indexdefault") ("_position" w))))
+###                 ("_tuple_arg" ("_position" w))))
+###             ("_do_cons"
+###               ("_do_bind" ("_position" w')
+###                 ("_applC" ("_position" \<A>) ("_position" h)))
+###               ("_do_final"
+###                 ("_applC" ("_position" return_spmf)
+###                   ("\<^const>Cong.unique_euclidean_semiring_class.cong"
+###                     ("_position" w) ("_position" w')
+###                     ("_applC" ("_position" order) ("_position" \<G>)))))))))
+###       ("_applC" ("_position" return_spmf) ("_position" False)))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+locale dis_log_alt_reductions
+  fixes \<G> :: "'a cyclic_group"  (structure)
+    and x :: "nat"
+  assumes "dis_log_alt_reductions \<G>"
+### theory "Draft.Discrete_Log"
+### 0.276s elapsed time, 0.684s cpu time, 0.071s GC time
+Loading theory "Draft.Chaum_Pedersen_Sigma_Commit" (required by "Draft.Chaum_Pedersen_Sigma_CommitTemplates")
+val eqpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Var (("_dummy_", 2), "?'a"))
+       ):
+   term Find_Theorems.criterion
+val badeqpattern = Pattern (Const ("Pure.eq", "?'a => ?'a => prop")):
+   term Find_Theorems.criterion
+val undefpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Const ("HOL.undefined", "?'a"))
+       ):
+   term Find_Theorems.criterion
+val thmpattern =
+   Pattern
+    (Const ("HOL.Trueprop", "bool => prop") $ Var (("_dummy_", 1), "bool")):
+   term Find_Theorems.criterion
+val badnames =
+   ["*nitpick*", "*Nitpick*", "*full_exhaustive*", "*_def*", "Enum.finite*",
+    "*Quickcheck*", "ATP*", "*Nunchaku*", "*Code*", "*BNF*", "*SMT*",
+    "*.*.*"]:
+   string list
+val unwanted_names =
+   [(false, Name "*nitpick*"), (false, Name "*Nitpick*"),
+    (false, Name "*full_exhaustive*"), (false, Name "*_def*"),
+    (false, Name "Enum.finite*"), (false, Name "*Quickcheck*"),
+    (false, Name "ATP*"), (false, Name "*Nunchaku*"),
+    (false, Name "*Code*"), (false, Name "*BNF*"), (false, Name "*SMT*"),
+    (false, Name "*.*.*")]:
+   (bool * term Find_Theorems.criterion) list
+val has_vars = fn: term -> bool
+val get_all_eqs = fn: string -> Proof.context -> (string * thm) list
+val get_all_thms = fn: string -> Proof.context -> (string * thm) list
+val get_noneq_thms = fn: string -> Proof.context -> (string * thm) list
+val template_eqs = fn:
+   string -> Proof.context -> (string * thm * template) list
+val template_thms = fn:
+   string -> Proof.context -> (string * thm * template) list
+### theory "Draft.ExtrEqs"
+### 0.675s elapsed time, 1.508s cpu time, 0.463s GC time
+locale chaum_ped_\<Sigma>_base
+  fixes \<G> :: "'grp cyclic_group"  (structure)
+    and x :: "nat"
+  assumes "chaum_ped_\<Sigma>_base \<G>"
+locale chaum_ped_\<Sigma>
+  fixes \<G> :: "'a cyclic_group"  (structure)
+    and x :: "nat"
+  assumes "chaum_ped_\<Sigma> \<G>"
+locale chaum_ped_asymp
+  fixes \<G> :: "nat => 'grp cyclic_group"
+    and x :: "nat"
+  assumes "chaum_ped_asymp \<G>"
+### theory "Draft.Chaum_Pedersen_Sigma_Commit"
+### 1.783s elapsed time, 2.448s cpu time, 0.468s GC time
+Loading theory "Draft.Chaum_Pedersen_Sigma_CommitTemplates"
+val templateLemmas = []: (string * thm * template) list
+### theory "Draft.Chaum_Pedersen_Sigma_CommitTemplates"
+### 2.161s elapsed time, 2.953s cpu time, 0.847s GC time
+val it = (): unit

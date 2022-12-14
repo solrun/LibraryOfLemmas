@@ -1,0 +1,1689 @@
+Loading theory "Draft.MFMC_Misc" (required by "Draft.MFMC_UnboundedTemplates" via "Draft.MFMC_Unbounded" via "Draft.MFMC_Web" via "Draft.MFMC_Network")
+Loading theory "HOL-Library.Function_Algebras" (required by "Draft.MFMC_UnboundedTemplates" via "Draft.ExtrEqs" via "HOL-Library.BigO")
+Loading theory "Draft.Templates" (required by "Draft.MFMC_UnboundedTemplates" via "Draft.ExtrEqs")
+instantiation
+  fun :: (type, plus) plus
+  plus_fun == plus :: ('a => 'b) => ('a => 'b) => 'a => 'b
+instantiation
+  fun :: (type, zero) zero
+  zero_fun == zero_class.zero :: 'a => 'b
+instantiation
+  fun :: (type, times) times
+  times_fun == times :: ('a => 'b) => ('a => 'b) => 'a => 'b
+instantiation
+  fun :: (type, one) one
+  one_fun == one_class.one :: 'a => 'b
+datatype template_term
+=
+     t_empty
+   | template_app of template_term * template_term
+   | template_hole of int
+   | template_var of int
+datatype sign
+= equals | greater_equals | greater_than | less_equals | less_than
+datatype template
+=
+     template_bimplication of template * template
+   | template_dunno
+   | template_equation of template_term * template_term
+   | template_implication of template list * template
+   | template_inequation of sign * template_term * template_term
+   | template_negation of template
+   | template_predicate of template_term
+constructor t_empty: template_term
+constructor template_app: template_term * template_term -> template_term
+constructor template_hole: int -> template_term
+constructor template_var: int -> template_term
+constructor equals: sign
+constructor greater_equals: sign
+constructor greater_than: sign
+constructor less_equals: sign
+constructor less_than: sign
+constructor template_bimplication: template * template -> template
+constructor template_dunno: template
+constructor template_equation: template_term * template_term -> template
+constructor template_implication: template list * template -> template
+constructor template_inequation:
+   sign * template_term * template_term -> template
+constructor template_negation: template -> template
+constructor template_predicate: template_term -> template
+val vfs = fn: term -> (indexname * typ) list * (string * typ) list
+val indexOf = fn: ''a list -> ''a -> int -> int
+val has_eq = fn: term -> bool
+val term2template = fn:
+   (indexname * typ) list -> (string * typ) list -> term -> template_term
+val lemma2predicate = fn: term -> term -> template
+val makeTemplatewithContext = fn: term -> term -> template
+val lemma2template = fn: term -> template
+val thm2template = fn: thm -> template
+val tterm2string = fn: template_term -> string
+val template2string = fn: template -> string
+val t = "height ?t <= size ?t": thm
+val th =
+   Const ("HOL.Trueprop", "bool => prop") $
+     (Const ("Orderings.ord_class.less_eq", "nat => nat => bool") $
+       (Const ("Tree.height_class.height", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree")) $
+       (Const ("Nat.size_class.size", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree"))):
+   term
+### theory "Draft.Templates"
+### 0.078s elapsed time, 0.264s cpu time, 0.000s GC time
+### theory "HOL-Library.Function_Algebras"
+### 0.112s elapsed time, 0.330s cpu time, 0.000s GC time
+Loading theory "HOL-Library.BigO" (required by "Draft.MFMC_UnboundedTemplates" via "Draft.ExtrEqs")
+### theory "Draft.MFMC_Misc"
+### 0.678s elapsed time, 1.503s cpu time, 0.111s GC time
+Loading theory "Draft.MFMC_Network" (required by "Draft.MFMC_UnboundedTemplates" via "Draft.MFMC_Unbounded" via "Draft.MFMC_Web")
+### theory "HOL-Library.BigO"
+### 0.681s elapsed time, 1.403s cpu time, 0.111s GC time
+Loading theory "Draft.ExtrEqs" (required by "Draft.MFMC_UnboundedTemplates")
+Proofs for inductive predicate(s) "cycle"
+  Proving monotonicity ...
+Proofs for inductive predicate(s) "support_flowp"
+  Proving monotonicity ...
+val eqpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Var (("_dummy_", 2), "?'a"))
+       ):
+   term Find_Theorems.criterion
+val badeqpattern = Pattern (Const ("Pure.eq", "?'a => ?'a => prop")):
+   term Find_Theorems.criterion
+val undefpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Const ("HOL.undefined", "?'a"))
+       ):
+   term Find_Theorems.criterion
+val thmpattern =
+   Pattern
+    (Const ("HOL.Trueprop", "bool => prop") $ Var (("_dummy_", 1), "bool")):
+   term Find_Theorems.criterion
+val badnames =
+   ["*nitpick*", "*Nitpick*", "*full_exhaustive*", "*_def*", "Enum.finite*",
+    "*Quickcheck*", "ATP*", "*Nunchaku*", "*Code*", "*BNF*", "*SMT*",
+    "*.*.*"]:
+   string list
+val unwanted_names =
+   [(false, Name "*nitpick*"), (false, Name "*Nitpick*"),
+    (false, Name "*full_exhaustive*"), (false, Name "*_def*"),
+    (false, Name "Enum.finite*"), (false, Name "*Quickcheck*"),
+    (false, Name "ATP*"), (false, Name "*Nunchaku*"),
+    (false, Name "*Code*"), (false, Name "*BNF*"), (false, Name "*SMT*"),
+    (false, Name "*.*.*")]:
+   (bool * term Find_Theorems.criterion) list
+val has_vars = fn: term -> bool
+val get_all_eqs = fn: string -> Proof.context -> (string * thm) list
+val get_all_thms = fn: string -> Proof.context -> (string * thm) list
+val get_noneq_thms = fn: string -> Proof.context -> (string * thm) list
+val template_eqs = fn:
+   string -> Proof.context -> (string * thm * template) list
+val template_thms = fn:
+   string -> Proof.context -> (string * thm * template) list
+### theory "Draft.ExtrEqs"
+### 0.576s elapsed time, 1.199s cpu time, 0.143s GC time
+Proofs for inductive predicate(s) "SINKp"
+  Proving monotonicity ...
+Proofs for inductive predicate(s) "flow"
+  Proving monotonicity ...
+Proofs for inductive predicate(s) "cut"
+  Proving monotonicity ...
+Proofs for inductive predicate(s) "orthogonal"
+  Proving monotonicity ...
+locale countable_network
+  fixes \<Delta> :: "('v, 'more) network_scheme"  (structure)
+  assumes "countable_network \<Delta>"
+locale antiparallel_edges
+  fixes \<Delta> :: "('v, 'more) network_scheme"  (structure)
+  assumes "antiparallel_edges \<Delta>"
+Proofs for inductive predicate(s) "edg"
+  Proving monotonicity ...
+Found termination order: "{}"
+### theory "Draft.MFMC_Network"
+### 1.621s elapsed time, 2.438s cpu time, 0.208s GC time
+Loading theory "Draft.MFMC_Flow_Attainability" (required by "Draft.MFMC_UnboundedTemplates" via "Draft.MFMC_Unbounded")
+Loading theory "Draft.MFMC_Web" (required by "Draft.MFMC_UnboundedTemplates" via "Draft.MFMC_Unbounded")
+locale flow_attainability
+  fixes \<Delta> :: "('v, 'more) network_scheme"  (structure)
+  assumes "flow_attainability \<Delta>"
+locale flow_network
+  fixes \<Delta> :: "('v, 'a) network_scheme"  (structure)
+    and g :: "'v * 'v => ennreal"
+  assumes "flow_network \<Delta> g"
+Proofs for inductive predicate(s) "current"
+  Proving monotonicity ...
+Proofs for inductive predicate(s) "web_flow"
+  Proving monotonicity ...
+Proofs for inductive predicate(s) "SATp"
+  Proving monotonicity ...
+Proofs for inductive predicate(s) "separating_gen"
+  Proving monotonicity ...
+Found termination order: "(%p. size (fst p)) <*mlex*> {}"
+Proofs for inductive predicate(s) "wave"
+  Proving monotonicity ...
+Proofs for inductive predicate(s) "hindrance_by"
+  Proving monotonicity ...
+Proofs for inductive predicate(s) "hindrance"
+  Proving monotonicity ...
+Proofs for inductive predicate(s) "hindered"
+  Proving monotonicity ...
+Proofs for inductive predicate(s) "hindered_by"
+  Proving monotonicity ...
+Proofs for inductive predicate(s) "loose"
+Found termination order: "(%p. size (fst p)) <*mlex*> {}"
+  Proving monotonicity ...
+Proofs for inductive predicate(s) "orthogonal_current"
+  Proving monotonicity ...
+Proofs for inductive predicate(s) "linkage"
+  Proving monotonicity ...
+Proofs for inductive predicate(s) "trimming"
+  Proving monotonicity ...
+Found termination order: "(%p. size (fst p)) <*mlex*> {}"
+### Ambiguous input (line 1252 of "$AFP/MFMC_Countable/MFMC_Web.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC"
+###       ("\<^const>Fields.inverse_class.inverse_divide"
+###         ("\<^const>SPMF.restrict_spmf" ("_position" g)
+###           ("_position" \<Gamma>))
+###         ("_position" f))
+###       ("_tuple" ("_position" x) ("_tuple_arg" ("_position" y))))
+###     ("\<^const>Groups.times_class.times"
+###       ("\<^const>Groups.times_class.times"
+###         ("_applC" ("_position" g)
+###           ("_tuple" ("_position" x) ("_tuple_arg" ("_position" y))))
+###         ("_applC" ("_position" indicator)
+###           ("_cargs"
+###             ("\<^const>Groups.uminus_class.uminus"
+###               ("_applC"
+###                 ("\<^const>MFMC_Web.roofed_circ_indexed" ("_indexdefault"))
+###                 ("_applC"
+###                   ("\<^const>MFMC_Web.terminal_indexed" ("_indexdefault"))
+###                   ("_position" f))))
+###             ("_position" x))))
+###       ("_applC" ("_position" indicator)
+###         ("_cargs"
+###           ("\<^const>Groups.uminus_class.uminus"
+###             ("_applC" ("\<^const>MFMC_Web.roofed_indexed" ("_indexdefault"))
+###               ("_applC"
+###                 ("\<^const>MFMC_Web.terminal_indexed" ("_indexdefault"))
+###                 ("_position" f))))
+###           ("_position" y))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC"
+###       ("\<^const>MFMC_Web.restrict_curr" ("_position" g)
+###         ("_position" \<Gamma>) ("_position" f))
+###       ("_tuple" ("_position" x) ("_tuple_arg" ("_position" y))))
+###     ("\<^const>Groups.times_class.times"
+###       ("\<^const>Groups.times_class.times"
+###         ("_applC" ("_position" g)
+###           ("_tuple" ("_position" x) ("_tuple_arg" ("_position" y))))
+###         ("_applC" ("_position" indicator)
+###           ("_cargs"
+###             ("\<^const>Groups.uminus_class.uminus"
+###               ("_applC"
+###                 ("\<^const>MFMC_Web.roofed_circ_indexed" ("_indexdefault"))
+###                 ("_applC"
+###                   ("\<^const>MFMC_Web.terminal_indexed" ("_indexdefault"))
+###                   ("_position" f))))
+###             ("_position" x))))
+###       ("_applC" ("_position" indicator)
+###         ("_cargs"
+###           ("\<^const>Groups.uminus_class.uminus"
+###             ("_applC" ("\<^const>MFMC_Web.roofed_indexed" ("_indexdefault"))
+###               ("_applC"
+###                 ("\<^const>MFMC_Web.terminal_indexed" ("_indexdefault"))
+###                 ("_position" f))))
+###           ("_position" y))))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ambiguous input (line 1256 of "$AFP/MFMC_Countable/MFMC_Web.thy") produces 2 parse trees:
+### ("\<^const>Pure.imp"
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^const>Set.member" ("_position" x)
+###       ("_applC" ("\<^const>MFMC_Web.roofed_circ_indexed" ("_indexdefault"))
+###         ("_applC" ("\<^const>MFMC_Web.terminal_indexed" ("_indexdefault"))
+###           ("_position" f)))))
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^const>HOL.eq"
+###       ("_applC" ("_position" d_OUT)
+###         ("_cargs"
+###           ("\<^const>MFMC_Web.restrict_curr" ("_position" g)
+###             ("_position" \<Gamma>) ("_position" f))
+###           ("_position" x)))
+###       ("\<^const>Groups.zero_class.zero"))))
+### ("\<^const>Pure.imp"
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^const>Set.member" ("_position" x)
+###       ("_applC" ("\<^const>MFMC_Web.roofed_circ_indexed" ("_indexdefault"))
+###         ("_applC" ("\<^const>MFMC_Web.terminal_indexed" ("_indexdefault"))
+###           ("_position" f)))))
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^const>HOL.eq"
+###       ("_applC" ("_position" d_OUT)
+###         ("_cargs"
+###           ("\<^const>Fields.inverse_class.inverse_divide"
+###             ("\<^const>SPMF.restrict_spmf" ("_position" g)
+###               ("_position" \<Gamma>))
+###             ("_position" f))
+###           ("_position" x)))
+###       ("\<^const>Groups.zero_class.zero"))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ambiguous input (line 1260 of "$AFP/MFMC_Countable/MFMC_Web.thy") produces 2 parse trees:
+### ("\<^const>Pure.imp"
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^const>Set.member" ("_position" x)
+###       ("_applC" ("\<^const>MFMC_Web.roofed_indexed" ("_indexdefault"))
+###         ("_applC" ("\<^const>MFMC_Web.terminal_indexed" ("_indexdefault"))
+###           ("_position" f)))))
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^const>HOL.eq"
+###       ("_applC" ("_position" d_IN)
+###         ("_cargs"
+###           ("\<^const>MFMC_Web.restrict_curr" ("_position" g)
+###             ("_position" \<Gamma>) ("_position" f))
+###           ("_position" x)))
+###       ("\<^const>Groups.zero_class.zero"))))
+### ("\<^const>Pure.imp"
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^const>Set.member" ("_position" x)
+###       ("_applC" ("\<^const>MFMC_Web.roofed_indexed" ("_indexdefault"))
+###         ("_applC" ("\<^const>MFMC_Web.terminal_indexed" ("_indexdefault"))
+###           ("_position" f)))))
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^const>HOL.eq"
+###       ("_applC" ("_position" d_IN)
+###         ("_cargs"
+###           ("\<^const>Fields.inverse_class.inverse_divide"
+###             ("\<^const>SPMF.restrict_spmf" ("_position" g)
+###               ("_position" \<Gamma>))
+###             ("_position" f))
+###           ("_position" x)))
+###       ("\<^const>Groups.zero_class.zero"))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ambiguous input (line 1263 of "$AFP/MFMC_Countable/MFMC_Web.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>Orderings.ord_class.less_eq"
+###     ("_applC"
+###       ("\<^const>Fields.inverse_class.inverse_divide"
+###         ("\<^const>SPMF.restrict_spmf" ("_position" g)
+###           ("_position" \<Gamma>))
+###         ("_position" f))
+###       ("_position" e))
+###     ("_applC" ("_position" g) ("_position" e))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>Orderings.ord_class.less_eq"
+###     ("_applC"
+###       ("\<^const>MFMC_Web.restrict_curr" ("_position" g)
+###         ("_position" \<Gamma>) ("_position" f))
+###       ("_position" e))
+###     ("_applC" ("_position" g) ("_position" e))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+locale countable_network
+  fixes \<Delta> :: "('v, 'more) network_scheme"  (structure)
+  assumes "countable_network \<Delta>"
+### Ambiguous input (line 1266 of "$AFP/MFMC_Countable/MFMC_Web.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>Orderings.ord_class.less_eq"
+###     ("_applC" ("_position" d_OUT)
+###       ("_cargs"
+###         ("\<^const>MFMC_Web.restrict_curr" ("_position" g)
+###           ("_position" \<Gamma>) ("_position" f))
+###         ("_position" x)))
+###     ("_applC" ("_position" d_OUT)
+###       ("_cargs" ("_position" g) ("_position" x)))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>Orderings.ord_class.less_eq"
+###     ("_applC" ("_position" d_OUT)
+###       ("_cargs"
+###         ("\<^const>Fields.inverse_class.inverse_divide"
+###           ("\<^const>SPMF.restrict_spmf" ("_position" g)
+###             ("_position" \<Gamma>))
+###           ("_position" f))
+###         ("_position" x)))
+###     ("_applC" ("_position" d_OUT)
+###       ("_cargs" ("_position" g) ("_position" x)))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ambiguous input (line 1269 of "$AFP/MFMC_Countable/MFMC_Web.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>Orderings.ord_class.less_eq"
+###     ("_applC" ("_position" d_IN)
+###       ("_cargs"
+###         ("\<^const>MFMC_Web.restrict_curr" ("_position" g)
+###           ("_position" \<Gamma>) ("_position" f))
+###         ("_position" x)))
+###     ("_applC" ("_position" d_IN)
+###       ("_cargs" ("_position" g) ("_position" x)))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>Orderings.ord_class.less_eq"
+###     ("_applC" ("_position" d_IN)
+###       ("_cargs"
+###         ("\<^const>Fields.inverse_class.inverse_divide"
+###           ("\<^const>SPMF.restrict_spmf" ("_position" g)
+###             ("_position" \<Gamma>))
+###           ("_position" f))
+###         ("_position" x)))
+###     ("_applC" ("_position" d_IN)
+###       ("_cargs" ("_position" g) ("_position" x)))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ambiguous input (line 1276 of "$AFP/MFMC_Countable/MFMC_Web.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" d_IN)
+###       ("_cargs"
+###         ("\<^const>MFMC_Web.restrict_curr" ("_position" g)
+###           ("_position" \<Gamma>) ("_position" f))
+###         ("_position" x)))
+###     ("_applC" ("_position" d_IN)
+###       ("_cargs" ("_position" g) ("_position" x)))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" d_IN)
+###       ("_cargs"
+###         ("\<^const>Fields.inverse_class.inverse_divide"
+###           ("\<^const>SPMF.restrict_spmf" ("_position" g)
+###             ("_position" \<Gamma>))
+###           ("_position" f))
+###         ("_position" x)))
+###     ("_applC" ("_position" d_IN)
+###       ("_cargs" ("_position" g) ("_position" x)))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ambiguous input (line 1299 of "$AFP/MFMC_Countable/MFMC_Web.thy") produces 2 parse trees:
+### ("\<^const>Pure.imp"
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^const>Set.member" ("_position" a)
+###       ("_applC" ("_position" A)
+###         ("_applC" ("_position" quotient_web)
+###           ("_cargs" ("_position" \<Gamma>) ("_position" f))))))
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^const>HOL.eq"
+###       ("_applC" ("_position" d_IN)
+###         ("_cargs"
+###           ("\<^const>MFMC_Web.restrict_curr" ("_position" g)
+###             ("_position" \<Gamma>) ("_position" f))
+###           ("_position" a)))
+###       ("\<^const>Groups.zero_class.zero"))))
+### ("\<^const>Pure.imp"
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^const>Set.member" ("_position" a)
+###       ("_applC" ("_position" A)
+###         ("_applC" ("_position" quotient_web)
+###           ("_cargs" ("_position" \<Gamma>) ("_position" f))))))
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^const>HOL.eq"
+###       ("_applC" ("_position" d_IN)
+###         ("_cargs"
+###           ("\<^const>Fields.inverse_class.inverse_divide"
+###             ("\<^const>SPMF.restrict_spmf" ("_position" g)
+###               ("_position" \<Gamma>))
+###             ("_position" f))
+###           ("_position" a)))
+###       ("\<^const>Groups.zero_class.zero"))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ambiguous input (line 1302 of "$AFP/MFMC_Countable/MFMC_Web.thy") produces 2 parse trees:
+### ("\<^const>Pure.imp"
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^const>Orderings.ord_class.less_eq"
+###       ("\<^const>Groups.zero_class.zero")
+###       ("_applC" ("_position" g) ("_position" e))))
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^const>Orderings.ord_class.less_eq"
+###       ("\<^const>Groups.zero_class.zero")
+###       ("_applC"
+###         ("\<^const>Fields.inverse_class.inverse_divide"
+###           ("\<^const>SPMF.restrict_spmf" ("_position" g)
+###             ("_position" \<Gamma>))
+###           ("_position" f))
+###         ("_position" e)))))
+### ("\<^const>Pure.imp"
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^const>Orderings.ord_class.less_eq"
+###       ("\<^const>Groups.zero_class.zero")
+###       ("_applC" ("_position" g) ("_position" e))))
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^const>Orderings.ord_class.less_eq"
+###       ("\<^const>Groups.zero_class.zero")
+###       ("_applC"
+###         ("\<^const>MFMC_Web.restrict_curr" ("_position" g)
+###           ("_position" \<Gamma>) ("_position" f))
+###         ("_position" e)))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ambiguous input (line 1305 of "$AFP/MFMC_Countable/MFMC_Web.thy") produces 2 parse trees:
+### ("\<^const>Pure.imp"
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^const>Set.member" ("_position" x)
+###       ("_applC" ("_position" SINK) ("_position" g))))
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^const>Set.member" ("_position" x)
+###       ("_applC" ("_position" SINK)
+###         ("\<^const>MFMC_Web.restrict_curr" ("_position" g)
+###           ("_position" \<Gamma>) ("_position" f))))))
+### ("\<^const>Pure.imp"
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^const>Set.member" ("_position" x)
+###       ("_applC" ("_position" SINK) ("_position" g))))
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^const>Set.member" ("_position" x)
+###       ("_applC" ("_position" SINK)
+###         ("\<^const>Fields.inverse_class.inverse_divide"
+###           ("\<^const>SPMF.restrict_spmf" ("_position" g)
+###             ("_position" \<Gamma>))
+###           ("_position" f))))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ambiguous input (line 1313 of "$AFP/MFMC_Countable/MFMC_Web.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" SAT)
+###       ("_cargs"
+###         ("_applC" ("_position" quotient_web)
+###           ("_cargs" ("_position" \<Gamma>) ("_position" f)))
+###         ("\<^const>Fields.inverse_class.inverse_divide"
+###           ("\<^const>SPMF.restrict_spmf" ("_position" g)
+###             ("_position" \<Gamma>))
+###           ("_position" f))))
+###     ("\<^const>Set.union"
+###       ("_applC" ("\<^const>MFMC_Web.roofed_indexed" ("_indexdefault"))
+###         ("_applC" ("\<^const>MFMC_Web.terminal_indexed" ("_indexdefault"))
+###           ("_position" f)))
+###       ("\<^const>Groups.minus_class.minus"
+###         ("_applC" ("_position" SAT)
+###           ("_cargs" ("_position" \<Gamma>) ("_position" g)))
+###         ("_applC" ("_position" A) ("_position" \<Gamma>))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" SAT)
+###       ("_cargs"
+###         ("_applC" ("_position" quotient_web)
+###           ("_cargs" ("_position" \<Gamma>) ("_position" f)))
+###         ("\<^const>MFMC_Web.restrict_curr" ("_position" g)
+###           ("_position" \<Gamma>) ("_position" f))))
+###     ("\<^const>Set.union"
+###       ("_applC" ("\<^const>MFMC_Web.roofed_indexed" ("_indexdefault"))
+###         ("_applC" ("\<^const>MFMC_Web.terminal_indexed" ("_indexdefault"))
+###           ("_position" f)))
+###       ("\<^const>Groups.minus_class.minus"
+###         ("_applC" ("_position" SAT)
+###           ("_cargs" ("_position" \<Gamma>) ("_position" g)))
+###         ("_applC" ("_position" A) ("_position" \<Gamma>))))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+Proofs for inductive predicate(s) "wf_residual_network"
+### Ambiguous input (line 1331 of "$AFP/MFMC_Countable/MFMC_Web.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("_applC" ("_position" current)
+###     ("_cargs"
+###       ("_applC" ("_position" quotient_web)
+###         ("_cargs" ("_position" \<Gamma>) ("_position" f)))
+###       ("\<^const>Fields.inverse_class.inverse_divide"
+###         ("\<^const>SPMF.restrict_spmf" ("_position" g)
+###           ("_position" \<Gamma>))
+###         ("_position" f)))))
+### ("\<^const>HOL.Trueprop"
+###   ("_applC" ("_position" current)
+###     ("_cargs"
+###       ("_applC" ("_position" quotient_web)
+###         ("_cargs" ("_position" \<Gamma>) ("_position" f)))
+###       ("\<^const>MFMC_Web.restrict_curr" ("_position" g)
+###         ("_position" \<Gamma>) ("_position" f)))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+  Proving monotonicity ...
+### Ambiguous input (line 1376 of "$AFP/MFMC_Countable/MFMC_Web.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>Set.subset_eq"
+###     ("_applC" ("\<^const>MFMC_Web.terminal_indexed" ("_indexdefault"))
+###       ("_position" g))
+###     ("_applC"
+###       ("\<^const>MFMC_Web.terminal_indexed"
+###         ("_index"
+###           ("_applC" ("_position" quotient_web)
+###             ("_cargs" ("_position" \<Gamma>) ("_position" f)))))
+###       ("\<^const>Fields.inverse_class.inverse_divide"
+###         ("\<^const>SPMF.restrict_spmf" ("_position" g)
+###           ("_position" \<Gamma>))
+###         ("_position" f)))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>Set.subset_eq"
+###     ("_applC" ("\<^const>MFMC_Web.terminal_indexed" ("_indexdefault"))
+###       ("_position" g))
+###     ("_applC"
+###       ("\<^const>MFMC_Web.terminal_indexed"
+###         ("_index"
+###           ("_applC" ("_position" quotient_web)
+###             ("_cargs" ("_position" \<Gamma>) ("_position" f)))))
+###       ("\<^const>MFMC_Web.restrict_curr" ("_position" g)
+###         ("_position" \<Gamma>) ("_position" f)))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ambiguous input (line 1393 of "$AFP/MFMC_Countable/MFMC_Web.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("_applC" ("_position" wave)
+###     ("_cargs"
+###       ("_applC" ("_position" quotient_web)
+###         ("_cargs" ("_position" \<Gamma>) ("_position" f)))
+###       ("\<^const>Fields.inverse_class.inverse_divide"
+###         ("\<^const>SPMF.restrict_spmf" ("_position" g)
+###           ("_position" \<Gamma>))
+###         ("_position" f)))))
+### ("\<^const>HOL.Trueprop"
+###   ("_applC" ("_position" wave)
+###     ("_cargs"
+###       ("_applC" ("_position" quotient_web)
+###         ("_cargs" ("_position" \<Gamma>) ("_position" f)))
+###       ("\<^const>MFMC_Web.restrict_curr" ("_position" g)
+###         ("_position" \<Gamma>) ("_position" f)))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+locale antiparallel_edges
+  fixes \<Delta> :: "('v, 'more) network_scheme"  (structure)
+  assumes "antiparallel_edges \<Delta>"
+locale flow_attainability
+  fixes \<Delta> :: "('v, 'more) network_scheme"  (structure)
+  assumes "flow_attainability \<Delta>"
+locale web
+  fixes \<Gamma> :: "('v, 'more) web_scheme"  (structure)
+  assumes "web \<Gamma>"
+locale countable_network
+  fixes \<Delta> :: "('v, 'more) network_scheme"  (structure)
+  assumes "countable_network \<Delta>"
+locale countable_web
+  fixes \<Gamma> :: "('v, 'more) web_scheme"  (structure)
+  assumes "countable_web \<Gamma>"
+locale flow_attainability
+  fixes \<Delta> :: "('v, 'more) network_scheme"  (structure)
+  assumes "flow_attainability \<Delta>"
+locale countable_bipartite_web
+  fixes \<Gamma> :: "('v, 'more) web_scheme"  (structure)
+  assumes "countable_bipartite_web \<Gamma>"
+### theory "Draft.MFMC_Web"
+### 1.511s elapsed time, 3.148s cpu time, 0.369s GC time
+Loading theory "Draft.MFMC_Reduction" (required by "Draft.MFMC_UnboundedTemplates" via "Draft.MFMC_Unbounded")
+locale web
+  fixes \<Gamma> :: "('v, 'more) web_scheme"  (structure)
+  assumes "web \<Gamma>"
+locale countable_web
+  fixes \<Gamma> :: "('v, 'more) web_scheme"  (structure)
+  assumes "countable_web \<Gamma>"
+locale web
+  fixes \<Gamma> :: "('v, 'more) web_scheme"  (structure)
+  assumes "web \<Gamma>"
+locale countable_web
+  fixes \<Gamma> :: "('v, 'more) web_scheme"  (structure)
+  assumes "countable_web \<Gamma>"
+locale antiparallel_edges
+  fixes \<Delta> :: "('v, 'more) network_scheme"  (structure)
+  assumes "antiparallel_edges \<Delta>"
+locale countable_network
+  fixes \<Delta> :: "('v, 'more) network_scheme"  (structure)
+  assumes "countable_network \<Delta>"
+### theory "Draft.MFMC_Reduction"
+### 0.779s elapsed time, 1.865s cpu time, 0.778s GC time
+Proofs for inductive predicate(s) "edge'"
+  Proving monotonicity ...
+Found termination order: "{}"
+Found termination order: "{}"
+### theory "Draft.MFMC_Flow_Attainability"
+### 2.825s elapsed time, 5.608s cpu time, 1.189s GC time
+Loading theory "Draft.MFMC_Unbounded" (required by "Draft.MFMC_UnboundedTemplates")
+### Ambiguous input (line 17 of "$AFP/MFMC_Countable/MFMC_Unbounded.thy") produces 2 parse trees:
+### ("\<^const>Pure.eq"
+###   ("_applC" ("_position" plus_web)
+###     ("_cargs" ("_position" \<Gamma>)
+###       ("_cargs" ("_position" f) ("_position" g))))
+###   ("_applC" ("_position" plus_current)
+###     ("_cargs" ("_position" f)
+###       ("\<^const>Fields.inverse_class.inverse_divide"
+###         ("\<^const>SPMF.restrict_spmf" ("_position" g)
+###           ("_position" \<Gamma>))
+###         ("_position" f)))))
+### ("\<^const>Pure.eq"
+###   ("_applC" ("_position" plus_web)
+###     ("_cargs" ("_position" \<Gamma>)
+###       ("_cargs" ("_position" f) ("_position" g))))
+###   ("_applC" ("_position" plus_current)
+###     ("_cargs" ("_position" f)
+###       ("\<^const>MFMC_Web.restrict_curr" ("_position" g)
+###         ("_position" \<Gamma>) ("_position" f)))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ambiguous input (line 21 of "$AFP/MFMC_Countable/MFMC_Unbounded.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" d_OUT)
+###       ("_cargs"
+###         ("\<^const>MFMC_Unbounded.plus_web_indexed" ("_position" f)
+###           ("_indexdefault") ("_position" g))
+###         ("_position" x)))
+###     ("\<^const>Groups.plus_class.plus"
+###       ("_applC" ("_position" d_OUT)
+###         ("_cargs" ("_position" f) ("_position" x)))
+###       ("_applC" ("_position" d_OUT)
+###         ("_cargs"
+###           ("\<^const>MFMC_Web.restrict_curr" ("_position" g)
+###             ("_position" \<Gamma>) ("_position" f))
+###           ("_position" x))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" d_OUT)
+###       ("_cargs"
+###         ("\<^const>MFMC_Unbounded.plus_web_indexed" ("_position" f)
+###           ("_indexdefault") ("_position" g))
+###         ("_position" x)))
+###     ("\<^const>Groups.plus_class.plus"
+###       ("_applC" ("_position" d_OUT)
+###         ("_cargs" ("_position" f) ("_position" x)))
+###       ("_applC" ("_position" d_OUT)
+###         ("_cargs"
+###           ("\<^const>Fields.inverse_class.inverse_divide"
+###             ("\<^const>SPMF.restrict_spmf" ("_position" g)
+###               ("_position" \<Gamma>))
+###             ("_position" f))
+###           ("_position" x))))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ambiguous input (line 31 of "$AFP/MFMC_Countable/MFMC_Unbounded.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" d_IN)
+###       ("_cargs"
+###         ("\<^const>MFMC_Unbounded.plus_web_indexed" ("_position" f)
+###           ("_indexdefault") ("_position" g))
+###         ("_position" y)))
+###     ("\<^const>Groups.plus_class.plus"
+###       ("_applC" ("_position" d_IN)
+###         ("_cargs" ("_position" f) ("_position" y)))
+###       ("_applC" ("_position" d_IN)
+###         ("_cargs"
+###           ("\<^const>MFMC_Web.restrict_curr" ("_position" g)
+###             ("_position" \<Gamma>) ("_position" f))
+###           ("_position" y))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" d_IN)
+###       ("_cargs"
+###         ("\<^const>MFMC_Unbounded.plus_web_indexed" ("_position" f)
+###           ("_indexdefault") ("_position" g))
+###         ("_position" y)))
+###     ("\<^const>Groups.plus_class.plus"
+###       ("_applC" ("_position" d_IN)
+###         ("_cargs" ("_position" f) ("_position" y)))
+###       ("_applC" ("_position" d_IN)
+###         ("_cargs"
+###           ("\<^const>Fields.inverse_class.inverse_divide"
+###             ("\<^const>SPMF.restrict_spmf" ("_position" g)
+###               ("_position" \<Gamma>))
+###             ("_position" f))
+###           ("_position" y))))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ambiguous input (line 95 of "$AFP/MFMC_Countable/MFMC_Unbounded.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>Set.member" ("_position" x)
+###     ("_applC" ("_position" SINK)
+###       ("\<^const>MFMC_Web.restrict_curr" ("_position" g)
+###         ("_position" \<Gamma>) ("_position" f)))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>Set.member" ("_position" x)
+###     ("_applC" ("_position" SINK)
+###       ("\<^const>Fields.inverse_class.inverse_divide"
+###         ("\<^const>SPMF.restrict_spmf" ("_position" g)
+###           ("_position" \<Gamma>))
+###         ("_position" f)))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ambiguous input (line 154 of "$AFP/MFMC_Countable/MFMC_Unbounded.thy") produces 2 parse trees:
+### ("\<^const>Pure.imp"
+###   ("\<^const>HOL.Trueprop"
+###     ("_applC" ("_position" wave)
+###       ("_cargs"
+###         ("_applC" ("_position" quotient_web)
+###           ("_cargs" ("_position" \<Gamma>) ("_position" f)))
+###         ("\<^const>Fields.inverse_class.inverse_divide"
+###           ("\<^const>SPMF.restrict_spmf" ("_position" g)
+###             ("_position" \<Gamma>))
+###           ("_position" f)))))
+###   ("\<^const>HOL.Trueprop"
+###     ("_applC" ("_position" wave)
+###       ("_cargs" ("_position" \<Gamma>)
+###         ("\<^const>MFMC_Unbounded.plus_web_indexed" ("_position" f)
+###           ("_indexdefault") ("_position" g))))))
+### ("\<^const>Pure.imp"
+###   ("\<^const>HOL.Trueprop"
+###     ("_applC" ("_position" wave)
+###       ("_cargs"
+###         ("_applC" ("_position" quotient_web)
+###           ("_cargs" ("_position" \<Gamma>) ("_position" f)))
+###         ("\<^const>MFMC_Web.restrict_curr" ("_position" g)
+###           ("_position" \<Gamma>) ("_position" f)))))
+###   ("\<^const>HOL.Trueprop"
+###     ("_applC" ("_position" wave)
+###       ("_cargs" ("_position" \<Gamma>)
+###         ("\<^const>MFMC_Unbounded.plus_web_indexed" ("_position" f)
+###           ("_indexdefault") ("_position" g))))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+locale countable_bipartite_web
+  fixes \<Gamma> :: "('v, 'more) web_scheme"  (structure)
+  assumes "countable_bipartite_web \<Gamma>"
+locale countable_bipartite_web
+  fixes \<Gamma> :: "('v, 'more) web_scheme"  (structure)
+  assumes "countable_bipartite_web \<Gamma>"
+locale countable_bipartite_web
+  fixes \<Gamma> :: "('v, 'more) web_scheme"  (structure)
+  assumes "countable_bipartite_web \<Gamma>"
+locale countable_bipartite_web
+  fixes \<Gamma> :: "('v, 'more) web_scheme"  (structure)
+  assumes "countable_bipartite_web \<Gamma>"
+locale countable_web
+  fixes \<Gamma> :: "('v, 'more) web_scheme"  (structure)
+  assumes "countable_web \<Gamma>"
+locale countable_network
+  fixes \<Delta> :: "('v, 'more) network_scheme"  (structure)
+  assumes "countable_network \<Delta>"
+### theory "Draft.MFMC_Unbounded"
+### 1.853s elapsed time, 2.594s cpu time, 1.056s GC time
+Loading theory "Draft.MFMC_UnboundedTemplates"
+val templateLemmas =
+   [("MFMC_Unbounded.essential_minus_web",
+     "essential (?\<Gamma> \<ominus> ?f) = essential ?\<Gamma>",
+     template_equation
+      (template_app
+        (template_hole 1,
+         template_app
+          (template_app (template_hole 0, template_var 1), template_var 0)),
+       template_app (template_hole 1, template_var 1))),
+    ("MFMC_Unbounded.separating_minus_web",
+     "separating_gen (?G \<ominus> ?f) = separating_gen ?G",
+     template_equation
+      (template_app
+        (template_hole 1,
+         template_app
+          (template_app (template_hole 0, template_var 1), template_var 0)),
+       template_app (template_hole 1, template_var 1))),
+    ("MFMC_Unbounded.reduce_weight_sel",
+     "web.more (reduce_weight ?\<Gamma> ?x ?r) = web.more ?\<Gamma>",
+     template_equation
+      (template_app
+        (template_hole 1,
+         template_app
+          (template_app
+            (template_app (template_hole 0, template_var 2),
+             template_var 1),
+           template_var 0)),
+       template_app (template_hole 1, template_var 2))),
+    ("MFMC_Unbounded.reduce_weight_sel",
+     "edge (reduce_weight ?\<Gamma> ?x ?r) = edge ?\<Gamma>",
+     template_equation
+      (template_app
+        (template_hole 1,
+         template_app
+          (template_app
+            (template_app (template_hole 0, template_var 2),
+             template_var 1),
+           template_var 0)),
+       template_app (template_hole 1, template_var 2))),
+    ("MFMC_Unbounded.reduce_weight_sel",
+     "vertex (reduce_weight ?\<Gamma> ?x ?r) = vertex ?\<Gamma>",
+     template_equation
+      (template_app
+        (template_hole 1,
+         template_app
+          (template_app
+            (template_app (template_hole 0, template_var 2),
+             template_var 1),
+           template_var 0)),
+       template_app (template_hole 1, template_var 2))),
+    ("MFMC_Unbounded.essential_reduce_weight",
+     "essential (reduce_weight ?\<Gamma> ?x ?r) = essential ?\<Gamma>",
+     template_equation
+      (template_app
+        (template_hole 1,
+         template_app
+          (template_app
+            (template_app (template_hole 0, template_var 2),
+             template_var 1),
+           template_var 0)),
+       template_app (template_hole 1, template_var 2))),
+    ("MFMC_Unbounded.roofed_reduce_weight",
+     "roofed_gen (reduce_weight ?\<Gamma> ?x ?r) = roofed_gen ?\<Gamma>",
+     template_equation
+      (template_app
+        (template_hole 1,
+         template_app
+          (template_app
+            (template_app (template_hole 0, template_var 2),
+             template_var 1),
+           template_var 0)),
+       template_app (template_hole 1, template_var 2))),
+    ("MFMC_Unbounded.reduce_weight_sel",
+     "A (reduce_weight ?\<Gamma> ?x ?r) = A ?\<Gamma>",
+     template_equation
+      (template_app
+        (template_hole 1,
+         template_app
+          (template_app
+            (template_app (template_hole 0, template_var 2),
+             template_var 1),
+           template_var 0)),
+       template_app (template_hole 1, template_var 2))),
+    ("MFMC_Unbounded.reduce_weight_sel",
+     "B (reduce_weight ?\<Gamma> ?x ?r) = B ?\<Gamma>",
+     template_equation
+      (template_app
+        (template_hole 1,
+         template_app
+          (template_app
+            (template_app (template_hole 0, template_var 2),
+             template_var 1),
+           template_var 0)),
+       template_app (template_hole 1, template_var 2))),
+    ("MFMC_Unbounded.SINK_plus_current",
+     "SINK (plus_current ?f ?g) = SINK ?f Int SINK ?g",
+     template_equation
+      (template_app
+        (template_hole 2,
+         template_app
+          (template_app (template_hole 1, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 0, template_app (template_hole 2, template_var 1)),
+         template_app (template_hole 2, template_var 0)))),
+    ("MFMC_Unbounded.plus_web_greater",
+     "?f ?e <= (?f \<frown>\<^bsub>?\<Gamma>\<^esub> ?g) ?e",
+     template_inequation
+      (less_equals, template_app (template_var 3, template_var 2),
+       template_app
+        (template_app
+          (template_app (template_hole 1, template_var 3),
+           template_app
+            (template_app
+              (template_app (template_hole 0, template_var 1),
+               template_var 3),
+             template_var 0)),
+         template_var 2))),
+    ("MFMC_Unbounded.RF_in_essential",
+     "essential ?\<Gamma> ?B ?S ?x ==>
+      (?x : roofed_gen ?\<Gamma> ?B ?S) = (?x : ?S)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 3, template_var 3),
+                  template_var 2),
+                template_var 1),
+              template_var 0)
+            )],
+       template_equation
+        (template_app
+          (template_app (template_hole 1, template_var 0),
+           template_app
+            (template_app
+              (template_app (template_hole 0, template_var 3),
+               template_var 2),
+             template_var 1)),
+         template_app
+          (template_app (template_hole 1, template_var 0),
+           template_var 1)))),
+    ("MFMC_Unbounded.d_IN_plus_web",
+     "d_IN (?f \<frown>\<^bsub>?\<Gamma>\<^esub> ?g) ?y =
+      d_IN ?f ?y + d_IN (?g \<upharpoonleft> ?\<Gamma> / ?f) ?y",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 3,
+           template_app
+            (template_app (template_hole 2, template_var 3),
+             template_app
+              (template_app
+                (template_app (template_hole 1, template_var 2),
+                 template_var 3),
+               template_var 1))),
+         template_var 0),
+       template_app
+        (template_app
+          (template_hole 0,
+           template_app
+            (template_app (template_hole 3, template_var 3),
+             template_var 0)),
+         template_app
+          (template_app
+            (template_hole 3,
+             template_app
+              (template_app
+                (template_app (template_hole 1, template_var 2),
+                 template_var 3),
+               template_var 1)),
+           template_var 0)))),
+    ("MFMC_Unbounded.d_OUT_plus_web",
+     "d_OUT (?f \<frown>\<^bsub>?\<Gamma>\<^esub> ?g) ?x =
+      d_OUT ?f ?x + d_OUT (?g \<upharpoonleft> ?\<Gamma> / ?f) ?x",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 3,
+           template_app
+            (template_app (template_hole 2, template_var 3),
+             template_app
+              (template_app
+                (template_app (template_hole 1, template_var 2),
+                 template_var 3),
+               template_var 1))),
+         template_var 0),
+       template_app
+        (template_app
+          (template_hole 0,
+           template_app
+            (template_app (template_hole 3, template_var 3),
+             template_var 0)),
+         template_app
+          (template_app
+            (template_hole 3,
+             template_app
+              (template_app
+                (template_app (template_hole 1, template_var 2),
+                 template_var 3),
+               template_var 1)),
+           template_var 0)))),
+    ("MFMC_Unbounded.reduce_weight_sel",
+     "weight (reduce_weight ?\<Gamma> ?x ?r) ?y =
+      (if ?x = ?y then weight ?\<Gamma> ?x - ennreal ?r
+       else weight ?\<Gamma> ?y)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 5,
+                template_app
+                 (template_app
+                   (template_app (template_hole 4, template_var 3),
+                    template_var 2),
+                  template_var 1)),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_hole 3,
+                 template_app
+                  (template_app (template_hole 2, template_var 2),
+                   template_var 0)),
+               template_app
+                (template_app
+                  (template_hole 1,
+                   template_app
+                    (template_app (template_hole 5, template_var 3),
+                     template_var 2)),
+                 template_app (template_hole 0, template_var 1))),
+             template_app
+              (template_app (template_hole 5, template_var 3),
+               template_var 0))
+           ))),
+    ("MFMC_Unbounded.current_plus_web",
+     "[| current ?\<Gamma> ?f; wave ?\<Gamma> ?f; current ?\<Gamma> ?g |]
+      ==> current ?\<Gamma> (?f \<frown>\<^bsub>?\<Gamma>\<^esub> ?g)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 3, template_var 2),
+              template_var 1)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 2, template_var 2),
+              template_var 1)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 3, template_var 2),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 3, template_var 2),
+             template_app
+              (template_app (template_hole 1, template_var 1),
+               template_app
+                (template_app
+                  (template_app (template_hole 0, template_var 2),
+                   template_var 1),
+                 template_var 0)))
+           ))),
+    ("MFMC_Unbounded.wave_plus'",
+     "[| current ?\<Gamma> ?f; wave ?\<Gamma> ?f; current ?\<Gamma> ?g;
+         wave ?\<Gamma> ?g |]
+      ==> wave ?\<Gamma> (?f \<frown>\<^bsub>?\<Gamma>\<^esub> ?g)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 3, template_var 2),
+              template_var 1)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 2, template_var 2),
+              template_var 1)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 3, template_var 2),
+              template_var 0)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 2, template_var 2),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 2, template_var 2),
+             template_app
+              (template_app (template_hole 1, template_var 1),
+               template_app
+                (template_app
+                  (template_app (template_hole 0, template_var 2),
+                   template_var 1),
+                 template_var 0)))
+           ))),
+    ("MFMC_Unbounded.wave_plus",
+     "[| current ?\<Gamma> ?f; wave ?\<Gamma> ?f; current ?\<Gamma> ?g;
+         wave (quotient_web ?\<Gamma> ?f)
+          (?g \<upharpoonleft> ?\<Gamma> / ?f) |]
+      ==> wave ?\<Gamma> (?f \<frown>\<^bsub>?\<Gamma>\<^esub> ?g)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 4, template_var 2),
+              template_var 1)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 3, template_var 2),
+              template_var 1)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 4, template_var 2),
+              template_var 0)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 3,
+                template_app
+                 (template_app (template_hole 2, template_var 2),
+                  template_var 1)),
+              template_app
+               (template_app
+                 (template_app (template_hole 1, template_var 2),
+                  template_var 1),
+                template_var 0))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 3, template_var 2),
+             template_app
+              (template_app (template_hole 0, template_var 1),
+               template_app
+                (template_app
+                  (template_app (template_hole 1, template_var 2),
+                   template_var 1),
+                 template_var 0)))
+           ))),
+    ("MFMC_Unbounded.d_OUT_fun_upd",
+     "[| ?f (?x, ?y) ~= \<top>; 0 <= ?f (?x, ?y); ?k ~= \<top>; 0 <= ?k |]
+      ==> d_OUT (?f((?x, ?y) := ?k)) ?x' =
+          (if ?x = ?x' then d_OUT ?f ?x - ?f (?x, ?y) + ?k
+           else d_OUT ?f ?x')",
+     template_implication
+      ([template_negation
+         (
+            template_equation
+             (template_app
+               (template_var 4,
+                template_app
+                 (template_app (template_hole 9, template_var 3),
+                  template_var 2)),
+              template_hole 8)
+            ),
+        template_inequation
+         (less_equals, template_hole 6,
+          template_app
+           (template_var 4,
+            template_app
+             (template_app (template_hole 9, template_var 3),
+              template_var 2))),
+        template_negation
+         (template_equation (template_var 1, template_hole 8)),
+        template_inequation (less_equals, template_hole 6, template_var 1)],
+       template_implication
+        ([template_predicate
+           (
+              template_app
+               (template_app
+                 (template_hole 5,
+                  template_app
+                   (template_app
+                     (template_app (template_hole 4, template_var 4),
+                      template_app
+                       (template_app (template_hole 9, template_var 3),
+                        template_var 2)),
+                    template_var 1)),
+                template_var 0)
+              )],
+         template_predicate
+          (
+             template_app
+              (template_app
+                (template_app
+                  (template_hole 3,
+                   template_app
+                    (template_app (template_hole 2, template_var 3),
+                     template_var 0)),
+                 template_app
+                  (template_app
+                    (template_hole 1,
+                     template_app
+                      (template_app
+                        (template_hole 0,
+                         template_app
+                          (template_app (template_hole 5, template_var 4),
+                           template_var 3)),
+                       template_app
+                        (template_var 4,
+                         template_app
+                          (template_app (template_hole 9, template_var 3),
+                           template_var 2)))),
+                   template_var 1)),
+               template_app
+                (template_app (template_hole 5, template_var 4),
+                 template_var 0))
+             )))),
+    ("MFMC_Unbounded.RF_TER_plus_web",
+     "[| current ?\<Gamma> ?f; wave ?\<Gamma> ?f; current ?\<Gamma> ?g;
+         wave ?\<Gamma> ?g |]
+      ==> RF\<^bsub>?\<Gamma>\<^esub>
+           (TER\<^bsub>?\<Gamma>\<^esub>
+             (?f \<frown>\<^bsub>?\<Gamma>\<^esub> ?g)) =
+          RF\<^bsub>?\<Gamma>\<^esub>
+           (TER\<^bsub>?\<Gamma>\<^esub> ?f Un
+            TER\<^bsub>?\<Gamma>\<^esub> ?g)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 10, template_var 2),
+              template_var 1)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 9, template_var 2),
+              template_var 1)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 10, template_var 2),
+              template_var 0)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 9, template_var 2),
+              template_var 0)
+            )],
+       template_equation
+        (template_app
+          (template_app
+            (template_app (template_hole 7, template_var 2),
+             template_app (template_hole 6, template_var 2)),
+           template_app
+            (template_app
+              (template_hole 5,
+               template_app
+                (template_app (template_hole 4, template_var 2),
+                 template_app
+                  (template_app (template_hole 3, template_var 1),
+                   template_app
+                    (template_app
+                      (template_app (template_hole 2, template_var 2),
+                       template_var 1),
+                     template_var 0)))),
+             template_app
+              (template_hole 1,
+               template_app
+                (template_app (template_hole 3, template_var 1),
+                 template_app
+                  (template_app
+                    (template_app (template_hole 2, template_var 2),
+                     template_var 1),
+                   template_var 0))))),
+         template_app
+          (template_app
+            (template_app (template_hole 7, template_var 2),
+             template_app (template_hole 6, template_var 2)),
+           template_app
+            (template_app
+              (template_hole 0,
+               template_app
+                (template_app
+                  (template_hole 5,
+                   template_app
+                    (template_app (template_hole 4, template_var 2),
+                     template_var 1)),
+                 template_app (template_hole 1, template_var 1))),
+             template_app
+              (template_app
+                (template_hole 5,
+                 template_app
+                  (template_app (template_hole 4, template_var 2),
+                   template_var 0)),
+               template_app (template_hole 1, template_var 0))))))),
+    ("MFMC_Unbounded.RF_f",
+     "[| current ?\<Gamma> ?f; wave ?\<Gamma> ?f; current ?\<Gamma> ?g;
+         ?x : \<E>\<^bsub>?\<Gamma>\<^esub>
+               (TER\<^bsub>?\<Gamma>\<^esub> ?f Un
+                TER\<^bsub>?\<Gamma>\<^esub> ?g) |]
+      ==> ?x ~: RF\<^sup>\<circ>\<^bsub>?\<Gamma>\<^esub>
+                 (TER\<^bsub>?\<Gamma>\<^esub> ?f)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 12, template_var 3),
+              template_var 2)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 11, template_var 3),
+              template_var 2)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 12, template_var 3),
+              template_var 1)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 10, template_var 0),
+              template_app (template_hole 9, t_empty))
+            )],
+       template_negation
+        (
+           template_predicate
+            (
+               template_app
+                (template_app (template_hole 10, template_var 0),
+                 template_app
+                  (template_app (template_hole 0, template_var 3),
+                   template_app
+                    (template_app
+                      (template_hole 6,
+                       template_app
+                        (template_app (template_hole 5, template_var 3),
+                         template_var 2)),
+                     template_app (template_hole 4, template_var 2))))
+               )
+           ))),
+    ("MFMC_Unbounded.RF_g",
+     "[| current ?\<Gamma> ?f; wave ?\<Gamma> ?f; current ?\<Gamma> ?g;
+         ?x : \<E>\<^bsub>?\<Gamma>\<^esub>
+               (TER\<^bsub>?\<Gamma>\<^esub> ?f Un
+                TER\<^bsub>?\<Gamma>\<^esub> ?g) |]
+      ==> ?x ~: RF\<^sup>\<circ>\<^bsub>?\<Gamma>\<^esub>
+                 (TER\<^bsub>?\<Gamma>\<^esub> ?g)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 12, template_var 3),
+              template_var 2)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 11, template_var 3),
+              template_var 2)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 12, template_var 3),
+              template_var 1)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 10, template_var 0),
+              template_app (template_hole 9, t_empty))
+            )],
+       template_negation
+        (
+           template_predicate
+            (
+               template_app
+                (template_app (template_hole 10, template_var 0),
+                 template_app
+                  (template_app (template_hole 0, template_var 3),
+                   template_app
+                    (template_app
+                      (template_hole 6,
+                       template_app
+                        (template_app (template_hole 5, template_var 3),
+                         template_var 1)),
+                     template_app (template_hole 4, template_var 1))))
+               )
+           ))),
+    ("MFMC_Unbounded.RF_TER_Sup",
+     "[| !!f. f : ?Y ==> current ?\<Gamma> f;
+         !!f. f : ?Y ==> wave ?\<Gamma> f;
+         Complete_Partial_Order.chain (<=) ?Y; ?Y ~= {};
+         countable (support_flow (\<Squnion> ?Y)) |]
+      ==> RF\<^bsub>?\<Gamma>\<^esub>
+           (TER\<^bsub>?\<Gamma>\<^esub> (\<Squnion> ?Y)) =
+          RF\<^bsub>?\<Gamma>\<^esub>
+           (\<Union> (TER\<^bsub>?\<Gamma>\<^esub> ` ?Y))",
+     template_implication
+      ([template_predicate (template_app (template_hole 20, t_empty)),
+        template_predicate (template_app (template_hole 20, t_empty)),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 15, template_hole 14),
+              template_var 1)
+            ),
+        template_negation
+         (template_equation (template_var 1, template_hole 11)),
+        template_predicate
+         (
+            template_app
+             (template_hole 10,
+              template_app
+               (template_hole 9,
+                template_app (template_hole 8, template_var 1)))
+            )],
+       template_equation
+        (template_app
+          (template_app
+            (template_app (template_hole 6, template_var 0),
+             template_app (template_hole 5, template_var 0)),
+           template_app
+            (template_app
+              (template_hole 4,
+               template_app
+                (template_app (template_hole 3, template_var 0),
+                 template_app (template_hole 8, template_var 1))),
+             template_app
+              (template_hole 2,
+               template_app (template_hole 8, template_var 1)))),
+         template_app
+          (template_app
+            (template_app (template_hole 6, template_var 0),
+             template_app (template_hole 5, template_var 0)),
+           template_app
+            (template_hole 1,
+             template_app
+              (template_app (template_hole 0, t_empty),
+               template_var 1)))))),
+    ("MFMC_Unbounded.TER_plus_web'",
+     "[| current ?\<Gamma> ?f; wave ?\<Gamma> ?f; current ?\<Gamma> ?g;
+         wave ?\<Gamma> ?g |]
+      ==> \<E>\<^bsub>?\<Gamma>\<^esub>
+           (TER\<^bsub>?\<Gamma>\<^esub> ?f Un
+            TER\<^bsub>?\<Gamma>\<^esub> ?g)
+          <= TER\<^bsub>?\<Gamma>\<^esub>
+              (?f \<frown>\<^bsub>?\<Gamma>\<^esub> ?g)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 13, template_var 2),
+              template_var 1)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 12, template_var 2),
+              template_var 1)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 13, template_var 2),
+              template_var 0)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 12, template_var 2),
+              template_var 0)
+            )],
+       template_inequation
+        (less_equals, template_app (template_hole 10, t_empty),
+         template_app
+          (template_app
+            (template_hole 6,
+             template_app
+              (template_app (template_hole 5, template_var 2),
+               template_app
+                (template_app (template_hole 1, template_var 1),
+                 template_app
+                  (template_app
+                    (template_app (template_hole 0, template_var 2),
+                     template_var 1),
+                   template_var 0)))),
+           template_app
+            (template_hole 4,
+             template_app
+              (template_app (template_hole 1, template_var 1),
+               template_app
+                (template_app
+                  (template_app (template_hole 0, template_var 2),
+                   template_var 1),
+                 template_var 0))))))),
+    ("MFMC_Unbounded.TER_plus_web_aux",
+     "[| current ?\<Gamma> ?f; wave ?\<Gamma> ?f; current ?\<Gamma> ?g;
+         ?x : \<E>\<^bsub>?\<Gamma>\<^esub>
+               (TER\<^bsub>?\<Gamma>\<^esub> ?f Un
+                TER\<^bsub>?\<Gamma>\<^esub> ?g);
+         ?x : SINK (?g \<upharpoonleft> ?\<Gamma> / ?f) |]
+      ==> ?x : TER\<^bsub>?\<Gamma>\<^esub>
+                (?f \<frown>\<^bsub>?\<Gamma>\<^esub> ?g)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 12, template_var 3),
+              template_var 2)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 11, template_var 3),
+              template_var 2)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 12, template_var 3),
+              template_var 1)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 10, template_var 0),
+              template_app (template_hole 9, t_empty))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 10, template_var 0),
+              template_app
+               (template_hole 4,
+                template_app
+                 (template_app
+                   (template_app (template_hole 1, template_var 3),
+                    template_var 2),
+                  template_var 1)))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 10, template_var 0),
+             template_app
+              (template_app
+                (template_hole 6,
+                 template_app
+                  (template_app (template_hole 5, template_var 3),
+                   template_app
+                    (template_app (template_hole 0, template_var 2),
+                     template_app
+                      (template_app
+                        (template_app (template_hole 1, template_var 3),
+                         template_var 2),
+                       template_var 1)))),
+               template_app
+                (template_hole 4,
+                 template_app
+                  (template_app (template_hole 0, template_var 2),
+                   template_app
+                    (template_app
+                      (template_app (template_hole 1, template_var 3),
+                       template_var 2),
+                     template_var 1)))))
+           ))),
+    ("MFMC_Unbounded.SINK_TER_in''",
+     "[| current ?\<Gamma> ?f; wave ?\<Gamma> ?f; current ?\<Gamma> ?g;
+         ?x : \<E>\<^bsub>?\<Gamma>\<^esub>
+               (TER\<^bsub>?\<Gamma>\<^esub> ?f Un
+                TER\<^bsub>?\<Gamma>\<^esub> ?g);
+         !!x. x ~: RF\<^bsub>?\<Gamma>\<^esub>
+                    (TER\<^bsub>?\<Gamma>\<^esub> ?g) ==>
+              d_OUT ?g x = 0 |]
+      ==> ?x : SINK ?g",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 16, template_var 3),
+              template_var 2)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 15, template_var 3),
+              template_var 2)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 16, template_var 3),
+              template_var 1)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 14, template_var 0),
+              template_app (template_hole 13, t_empty))
+            ),
+        template_predicate (template_app (template_hole 5, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 14, template_var 0),
+             template_app (template_hole 8, template_var 1))
+           ))),
+    ("MFMC_Unbounded.TER_plus_web''",
+     "[| current ?\<Gamma> ?f; wave ?\<Gamma> ?f; current ?\<Gamma> ?g;
+         !!x. x ~: RF\<^bsub>?\<Gamma>\<^esub>
+                    (TER\<^bsub>?\<Gamma>\<^esub> ?g) ==>
+              d_OUT ?g x = 0 |]
+      ==> \<E>\<^bsub>?\<Gamma>\<^esub>
+           (TER\<^bsub>?\<Gamma>\<^esub> ?f Un
+            TER\<^bsub>?\<Gamma>\<^esub> ?g)
+          <= TER\<^bsub>?\<Gamma>\<^esub>
+              (?f \<frown>\<^bsub>?\<Gamma>\<^esub> ?g)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 19, template_var 2),
+              template_var 1)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 18, template_var 2),
+              template_var 1)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 19, template_var 2),
+              template_var 0)
+            ),
+        template_predicate (template_app (template_hole 17, t_empty))],
+       template_inequation
+        (less_equals, template_app (template_hole 5, t_empty),
+         template_app
+          (template_app
+            (template_hole 12,
+             template_app
+              (template_app (template_hole 11, template_var 2),
+               template_app
+                (template_app (template_hole 1, template_var 1),
+                 template_app
+                  (template_app
+                    (template_app (template_hole 0, template_var 2),
+                     template_var 1),
+                   template_var 0)))),
+           template_app
+            (template_hole 10,
+             template_app
+              (template_app (template_hole 1, template_var 1),
+               template_app
+                (template_app
+                  (template_app (template_hole 0, template_var 2),
+                   template_var 1),
+                 template_var 0)))))))]:
+   (string * thm * template) list
+### theory "Draft.MFMC_UnboundedTemplates"
+### 1.421s elapsed time, 1.785s cpu time, 0.223s GC time
+val it = (): unit

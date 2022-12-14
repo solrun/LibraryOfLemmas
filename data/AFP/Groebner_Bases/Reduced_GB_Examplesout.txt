@@ -1,0 +1,632 @@
+Loading theory "Draft.Code_Target_Rat" (required by "Draft.Reduced_GB_ExamplesTemplates" via "Draft.Reduced_GB_Examples")
+Loading theory "Draft.Confluence" (required by "Draft.Reduced_GB_ExamplesTemplates" via "Draft.Reduced_GB_Examples" via "Draft.Buchberger" via "Draft.Algorithm_Schema" via "Draft.Groebner_Bases" via "Draft.Reduction")
+Loading theory "Draft.General" (required by "Draft.Reduced_GB_ExamplesTemplates" via "Draft.Reduced_GB_Examples" via "Draft.Buchberger" via "Draft.Algorithm_Schema")
+Loading theory "Draft.Templates" (required by "Draft.Reduced_GB_ExamplesTemplates" via "Draft.ExtrEqs")
+datatype template_term
+=
+     t_empty
+   | template_app of template_term * template_term
+   | template_hole of int
+   | template_var of int
+datatype sign
+= equals | greater_equals | greater_than | less_equals | less_than
+datatype template
+=
+     template_bimplication of template * template
+   | template_dunno
+   | template_equation of template_term * template_term
+   | template_implication of template list * template
+   | template_inequation of sign * template_term * template_term
+   | template_negation of template
+   | template_predicate of template_term
+constructor t_empty: template_term
+constructor template_app: template_term * template_term -> template_term
+constructor template_hole: int -> template_term
+constructor template_var: int -> template_term
+constructor equals: sign
+constructor greater_equals: sign
+constructor greater_than: sign
+constructor less_equals: sign
+constructor less_than: sign
+constructor template_bimplication: template * template -> template
+constructor template_dunno: template
+constructor template_equation: template_term * template_term -> template
+constructor template_implication: template list * template -> template
+constructor template_inequation:
+   sign * template_term * template_term -> template
+constructor template_negation: template -> template
+constructor template_predicate: template_term -> template
+val vfs = fn: term -> (indexname * typ) list * (string * typ) list
+val indexOf = fn: ''a list -> ''a -> int -> int
+val has_eq = fn: term -> bool
+val term2template = fn:
+   (indexname * typ) list -> (string * typ) list -> term -> template_term
+val lemma2predicate = fn: term -> term -> template
+val makeTemplatewithContext = fn: term -> term -> template
+val lemma2template = fn: term -> template
+val thm2template = fn: thm -> template
+val tterm2string = fn: template_term -> string
+val template2string = fn: template -> string
+val t = "height ?t <= size ?t": thm
+val th =
+   Const ("HOL.Trueprop", "bool => prop") $
+     (Const ("Orderings.ord_class.less_eq", "nat => nat => bool") $
+       (Const ("Tree.height_class.height", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree")) $
+       (Const ("Nat.size_class.size", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree"))):
+   term
+### theory "Draft.Templates"
+### 0.102s elapsed time, 0.461s cpu time, 0.000s GC time
+Loading theory "Draft.ExtrEqs" (required by "Draft.Reduced_GB_ExamplesTemplates")
+### Missing patterns in function definition:
+### max_list [] = undefined
+locale relation
+  fixes r :: "'a => 'a => bool"  (infixl \<open>\<rightarrow>\<close> 50)
+### theory "Draft.Code_Target_Rat"
+### 0.270s elapsed time, 1.036s cpu time, 0.064s GC time
+Found termination order: "length <*mlex*> {}"
+class linorder = order +
+  assumes "linear": "!!x y. x <= y | y <= x"
+consts
+  insort_wrt :: "('c => 'c => bool) => 'c => 'c list => 'c list"
+locale relation_order
+  fixes r :: "'a => 'a => bool"  (infixl \<open>\<rightarrow>\<close> 50)
+    and ord :: "'a => 'a => bool"
+    and A :: "'a set"
+  assumes "relation_order (\<rightarrow>) ord A"
+### theory "Draft.Confluence"
+### 0.522s elapsed time, 1.727s cpu time, 0.224s GC time
+Loading theory "Draft.Reduction" (required by "Draft.Reduced_GB_ExamplesTemplates" via "Draft.Reduced_GB_Examples" via "Draft.Buchberger" via "Draft.Algorithm_Schema" via "Draft.Groebner_Bases")
+consts
+  remdups_wrt :: "('a => 'b) => 'a list => 'a list"
+consts
+  map_idx :: "('a => nat => 'b) => 'a list => nat => 'b list"
+consts
+  map_dup :: "('a => 'b) => ('a => 'b) => 'a list => 'b list"
+consts
+  filter_min_aux :: "'a list => 'a list => 'a list"
+### theory "Draft.General"
+### 0.750s elapsed time, 2.373s cpu time, 0.433s GC time
+Loading theory "Draft.More_MPoly_Type_Class" (required by "Draft.Reduced_GB_ExamplesTemplates" via "Draft.Reduced_GB_Examples" via "Draft.Reduced_GB" via "Draft.Auto_Reduction")
+val eqpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Var (("_dummy_", 2), "?'a"))
+       ):
+   term Find_Theorems.criterion
+val badeqpattern = Pattern (Const ("Pure.eq", "?'a => ?'a => prop")):
+   term Find_Theorems.criterion
+val undefpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Const ("HOL.undefined", "?'a"))
+       ):
+   term Find_Theorems.criterion
+val thmpattern =
+   Pattern
+    (Const ("HOL.Trueprop", "bool => prop") $ Var (("_dummy_", 1), "bool")):
+   term Find_Theorems.criterion
+val badnames =
+   ["*nitpick*", "*Nitpick*", "*full_exhaustive*", "*_def*", "Enum.finite*",
+    "*Quickcheck*", "ATP*", "*Nunchaku*", "*Code*", "*BNF*", "*SMT*",
+    "*.*.*"]:
+   string list
+val unwanted_names =
+   [(false, Name "*nitpick*"), (false, Name "*Nitpick*"),
+    (false, Name "*full_exhaustive*"), (false, Name "*_def*"),
+    (false, Name "Enum.finite*"), (false, Name "*Quickcheck*"),
+    (false, Name "ATP*"), (false, Name "*Nunchaku*"),
+    (false, Name "*Code*"), (false, Name "*BNF*"), (false, Name "*SMT*"),
+    (false, Name "*.*.*")]:
+   (bool * term Find_Theorems.criterion) list
+val has_vars = fn: term -> bool
+val get_all_eqs = fn: string -> Proof.context -> (string * thm) list
+val get_all_thms = fn: string -> Proof.context -> (string * thm) list
+val get_noneq_thms = fn: string -> Proof.context -> (string * thm) list
+val template_eqs = fn:
+   string -> Proof.context -> (string * thm * template) list
+val template_thms = fn:
+   string -> Proof.context -> (string * thm * template) list
+### theory "Draft.ExtrEqs"
+### 0.730s elapsed time, 2.175s cpu time, 0.433s GC time
+locale module
+  fixes scale :: "'a => 'b => 'b"  (infixr \<open>*s\<close> 75)
+  assumes "module (*s)"
+locale ordered_term
+  fixes pair_of_term :: "'t => 'a * 'k"
+    and term_of_pair :: "'a * 'k => 't"
+    and ord :: "'a => 'a => bool"  (infixl \<open>\<preceq>\<close> 50)
+    and ord_strict :: "'a => 'a => bool"  (infixl \<open>\<prec>\<close> 50)
+    and
+    ord_term :: "'t => 't => bool"
+      (infixl \<open>\<preceq>\<^sub>t\<close> 50)
+    and
+    ord_term_strict :: "'t => 't => bool"
+      (infixl \<open>\<prec>\<^sub>t\<close> 50)
+  assumes
+    "ordered_term pair_of_term term_of_pair (\<preceq>) (\<prec>)
+      (\<preceq>\<^sub>t) (\<prec>\<^sub>t)"
+locale ordered_term
+  fixes pair_of_term :: "'t => 'a * 'k"
+    and term_of_pair :: "'a * 'k => 't"
+    and ord :: "'a => 'a => bool"  (infixl \<open>\<preceq>\<close> 50)
+    and ord_strict :: "'a => 'a => bool"  (infixl \<open>\<prec>\<close> 50)
+    and
+    ord_term :: "'t => 't => bool"
+      (infixl \<open>\<preceq>\<^sub>t\<close> 50)
+    and
+    ord_term_strict :: "'t => 't => bool"
+      (infixl \<open>\<prec>\<^sub>t\<close> 50)
+  assumes
+    "ordered_term pair_of_term term_of_pair (\<preceq>) (\<prec>)
+      (\<preceq>\<^sub>t) (\<prec>\<^sub>t)"
+### theory "Draft.More_MPoly_Type_Class"
+### 1.375s elapsed time, 2.967s cpu time, 0.884s GC time
+locale gd_term
+  fixes pair_of_term :: "'t => 'a * 'k"
+    and term_of_pair :: "'a * 'k => 't"
+    and ord :: "'a => 'a => bool"  (infixl \<open>\<preceq>\<close> 50)
+    and ord_strict :: "'a => 'a => bool"  (infixl \<open>\<prec>\<close> 50)
+    and
+    ord_term :: "'t => 't => bool"
+      (infixl \<open>\<preceq>\<^sub>t\<close> 50)
+    and
+    ord_term_strict :: "'t => 't => bool"
+      (infixl \<open>\<prec>\<^sub>t\<close> 50)
+  assumes
+    "gd_term pair_of_term term_of_pair (\<preceq>) (\<prec>)
+      (\<preceq>\<^sub>t) (\<prec>\<^sub>t)"
+locale ordered_term
+  fixes pair_of_term :: "'t => 'a * 'k"
+    and term_of_pair :: "'a * 'k => 't"
+    and ord :: "'a => 'a => bool"  (infixl \<open>\<preceq>\<close> 50)
+    and ord_strict :: "'a => 'a => bool"  (infixl \<open>\<prec>\<close> 50)
+    and
+    ord_term :: "'t => 't => bool"
+      (infixl \<open>\<preceq>\<^sub>t\<close> 50)
+    and
+    ord_term_strict :: "'t => 't => bool"
+      (infixl \<open>\<prec>\<^sub>t\<close> 50)
+  assumes
+    "ordered_term pair_of_term term_of_pair (\<preceq>) (\<prec>)
+      (\<preceq>\<^sub>t) (\<prec>\<^sub>t)"
+consts
+  find_adds ::
+    "('t \<Rightarrow>\<^sub>0 'b) list
+     => 't => ('t \<Rightarrow>\<^sub>0 'b) option"
+locale gd_term
+  fixes pair_of_term :: "'t => 'a * 'k"
+    and term_of_pair :: "'a * 'k => 't"
+    and ord :: "'a => 'a => bool"  (infixl \<open>\<preceq>\<close> 50)
+    and ord_strict :: "'a => 'a => bool"  (infixl \<open>\<prec>\<close> 50)
+    and
+    ord_term :: "'t => 't => bool"
+      (infixl \<open>\<preceq>\<^sub>t\<close> 50)
+    and
+    ord_term_strict :: "'t => 't => bool"
+      (infixl \<open>\<prec>\<^sub>t\<close> 50)
+  assumes
+    "gd_term pair_of_term term_of_pair (\<preceq>) (\<prec>)
+      (\<preceq>\<^sub>t) (\<prec>\<^sub>t)"
+### theory "Draft.Reduction"
+### 4.208s elapsed time, 6.752s cpu time, 2.055s GC time
+Loading theory "Draft.Auto_Reduction" (required by "Draft.Reduced_GB_ExamplesTemplates" via "Draft.Reduced_GB_Examples" via "Draft.Reduced_GB")
+Loading theory "Draft.Groebner_Bases" (required by "Draft.Reduced_GB_ExamplesTemplates" via "Draft.Reduced_GB_Examples" via "Draft.Buchberger" via "Draft.Algorithm_Schema")
+locale gd_term
+  fixes pair_of_term :: "'t => 'a * 'k"
+    and term_of_pair :: "'a * 'k => 't"
+    and ord :: "'a => 'a => bool"  (infixl \<open>\<preceq>\<close> 50)
+    and ord_strict :: "'a => 'a => bool"  (infixl \<open>\<prec>\<close> 50)
+    and
+    ord_term :: "'t => 't => bool"
+      (infixl \<open>\<preceq>\<^sub>t\<close> 50)
+    and
+    ord_term_strict :: "'t => 't => bool"
+      (infixl \<open>\<prec>\<^sub>t\<close> 50)
+  assumes
+    "gd_term pair_of_term term_of_pair (\<preceq>) (\<prec>)
+      (\<preceq>\<^sub>t) (\<prec>\<^sub>t)"
+locale ordered_term
+  fixes pair_of_term :: "'t => 'a * 'k"
+    and term_of_pair :: "'a * 'k => 't"
+    and ord :: "'a => 'a => bool"  (infixl \<open>\<preceq>\<close> 50)
+    and ord_strict :: "'a => 'a => bool"  (infixl \<open>\<prec>\<close> 50)
+    and
+    ord_term :: "'t => 't => bool"
+      (infixl \<open>\<preceq>\<^sub>t\<close> 50)
+    and
+    ord_term_strict :: "'t => 't => bool"
+      (infixl \<open>\<prec>\<^sub>t\<close> 50)
+  assumes
+    "ordered_term pair_of_term term_of_pair (\<preceq>) (\<prec>)
+      (\<preceq>\<^sub>t) (\<prec>\<^sub>t)"
+locale gd_term
+  fixes pair_of_term :: "'t => 'a * 'k"
+    and term_of_pair :: "'a * 'k => 't"
+    and ord :: "'a => 'a => bool"  (infixl \<open>\<preceq>\<close> 50)
+    and ord_strict :: "'a => 'a => bool"  (infixl \<open>\<prec>\<close> 50)
+    and
+    ord_term :: "'t => 't => bool"
+      (infixl \<open>\<preceq>\<^sub>t\<close> 50)
+    and
+    ord_term_strict :: "'t => 't => bool"
+      (infixl \<open>\<prec>\<^sub>t\<close> 50)
+  assumes
+    "gd_term pair_of_term term_of_pair (\<preceq>) (\<prec>)
+      (\<preceq>\<^sub>t) (\<prec>\<^sub>t)"
+consts
+  comp_red_basis_aux ::
+    "('t \<Rightarrow>\<^sub>0 'b) list
+     => ('t \<Rightarrow>\<^sub>0 'b) list
+        => ('t \<Rightarrow>\<^sub>0 'b) list"
+### theory "Draft.Auto_Reduction"
+### 2.211s elapsed time, 4.515s cpu time, 0.917s GC time
+locale od_term
+  fixes pair_of_term :: "'t => 'a * 'k"
+    and term_of_pair :: "'a * 'k => 't"
+    and ord :: "'a => 'a => bool"  (infixl \<open>\<preceq>\<close> 50)
+    and ord_strict :: "'a => 'a => bool"  (infixl \<open>\<prec>\<close> 50)
+    and
+    ord_term :: "'t => 't => bool"
+      (infixl \<open>\<preceq>\<^sub>t\<close> 50)
+    and
+    ord_term_strict :: "'t => 't => bool"
+      (infixl \<open>\<prec>\<^sub>t\<close> 50)
+  assumes
+    "od_term pair_of_term term_of_pair (\<preceq>) (\<prec>)
+      (\<preceq>\<^sub>t) (\<prec>\<^sub>t)"
+### theory "Draft.Groebner_Bases"
+### 5.489s elapsed time, 8.906s cpu time, 2.671s GC time
+Loading theory "Draft.Algorithm_Schema" (required by "Draft.Reduced_GB_ExamplesTemplates" via "Draft.Reduced_GB_Examples" via "Draft.Buchberger")
+Loading theory "Draft.Reduced_GB" (required by "Draft.Reduced_GB_ExamplesTemplates" via "Draft.Reduced_GB_Examples")
+locale ordered_term
+  fixes pair_of_term :: "'t => 'a * 'k"
+    and term_of_pair :: "'a * 'k => 't"
+    and ord :: "'a => 'a => bool"  (infixl \<open>\<preceq>\<close> 50)
+    and ord_strict :: "'a => 'a => bool"  (infixl \<open>\<prec>\<close> 50)
+    and
+    ord_term :: "'t => 't => bool"
+      (infixl \<open>\<preceq>\<^sub>t\<close> 50)
+    and
+    ord_term_strict :: "'t => 't => bool"
+      (infixl \<open>\<prec>\<^sub>t\<close> 50)
+  assumes
+    "ordered_term pair_of_term term_of_pair (\<preceq>) (\<prec>)
+      (\<preceq>\<^sub>t) (\<prec>\<^sub>t)"
+locale ordered_term
+  fixes pair_of_term :: "'t => 'a * 'k"
+    and term_of_pair :: "'a * 'k => 't"
+    and ord :: "'a => 'a => bool"  (infixl \<open>\<preceq>\<close> 50)
+    and ord_strict :: "'a => 'a => bool"  (infixl \<open>\<prec>\<close> 50)
+    and
+    ord_term :: "'t => 't => bool"
+      (infixl \<open>\<preceq>\<^sub>t\<close> 50)
+    and
+    ord_term_strict :: "'t => 't => bool"
+      (infixl \<open>\<prec>\<^sub>t\<close> 50)
+  assumes
+    "ordered_term pair_of_term term_of_pair (\<preceq>) (\<prec>)
+      (\<preceq>\<^sub>t) (\<prec>\<^sub>t)"
+locale gd_term
+  fixes pair_of_term :: "'t => 'a * 'k"
+    and term_of_pair :: "'a * 'k => 't"
+    and ord :: "'a => 'a => bool"  (infixl \<open>\<preceq>\<close> 50)
+    and ord_strict :: "'a => 'a => bool"  (infixl \<open>\<prec>\<close> 50)
+    and
+    ord_term :: "'t => 't => bool"
+      (infixl \<open>\<preceq>\<^sub>t\<close> 50)
+    and
+    ord_term_strict :: "'t => 't => bool"
+      (infixl \<open>\<prec>\<^sub>t\<close> 50)
+  assumes
+    "gd_term pair_of_term term_of_pair (\<preceq>) (\<prec>)
+      (\<preceq>\<^sub>t) (\<prec>\<^sub>t)"
+locale gd_term
+  fixes pair_of_term :: "'t => 'a * 'k"
+    and term_of_pair :: "'a * 'k => 't"
+    and ord :: "'a => 'a => bool"  (infixl \<open>\<preceq>\<close> 50)
+    and ord_strict :: "'a => 'a => bool"  (infixl \<open>\<prec>\<close> 50)
+    and
+    ord_term :: "'t => 't => bool"
+      (infixl \<open>\<preceq>\<^sub>t\<close> 50)
+    and
+    ord_term_strict :: "'t => 't => bool"
+      (infixl \<open>\<prec>\<^sub>t\<close> 50)
+  assumes
+    "gd_term pair_of_term term_of_pair (\<preceq>) (\<prec>)
+      (\<preceq>\<^sub>t) (\<prec>\<^sub>t)"
+locale gd_powerprod
+  fixes ord :: "'a => 'a => bool"  (infixl \<open>\<preceq>\<close> 50)
+    and ord_strict :: "'a => 'a => bool"  (infixl \<open>\<prec>\<close> 50)
+  assumes "gd_powerprod (\<preceq>) (\<prec>)"
+locale od_term
+  fixes pair_of_term :: "'t => 'a * 'k"
+    and term_of_pair :: "'a * 'k => 't"
+    and ord :: "'a => 'a => bool"  (infixl \<open>\<preceq>\<close> 50)
+    and ord_strict :: "'a => 'a => bool"  (infixl \<open>\<prec>\<close> 50)
+    and
+    ord_term :: "'t => 't => bool"
+      (infixl \<open>\<preceq>\<^sub>t\<close> 50)
+    and
+    ord_term_strict :: "'t => 't => bool"
+      (infixl \<open>\<prec>\<^sub>t\<close> 50)
+  assumes
+    "od_term pair_of_term term_of_pair (\<preceq>) (\<prec>)
+      (\<preceq>\<^sub>t) (\<prec>\<^sub>t)"
+### theory "Draft.Reduced_GB"
+### 4.795s elapsed time, 10.207s cpu time, 3.305s GC time
+consts
+  gb_schema_incr ::
+    "((('t \<Rightarrow>\<^sub>0 'b) * nat * 'c) list
+      => (('t \<Rightarrow>\<^sub>0 'b) * nat * 'c) list
+         => ((('t \<Rightarrow>\<^sub>0 'b) * nat * 'c) *
+             ('t \<Rightarrow>\<^sub>0 'b) * nat * 'c) list
+            => nat * 'd
+               => ((('t \<Rightarrow>\<^sub>0 'b) * nat * 'c) *
+                   ('t \<Rightarrow>\<^sub>0 'b) * nat * 'c) list)
+     => ((('t \<Rightarrow>\<^sub>0 'b) * nat * 'c) list
+         => (('t \<Rightarrow>\<^sub>0 'b) * nat * 'c) list
+            => ((('t \<Rightarrow>\<^sub>0 'b) * nat * 'c) *
+                ('t \<Rightarrow>\<^sub>0 'b) * nat * 'c) list
+               => (('t \<Rightarrow>\<^sub>0 'b) * nat * 'c) list
+                  => nat * 'd
+                     => ((('t \<Rightarrow>\<^sub>0 'b) * nat * 'c) *
+                         ('t \<Rightarrow>\<^sub>0 'b) * nat * 'c) list)
+        => ((('t \<Rightarrow>\<^sub>0 'b) * nat * 'c) list
+            => (('t \<Rightarrow>\<^sub>0 'b) * nat * 'c) list
+               => (('t \<Rightarrow>\<^sub>0 'b) * nat * 'c) list
+                  => nat * 'd
+                     => (('t \<Rightarrow>\<^sub>0 'b) * nat * 'c) list)
+           => ((('t \<Rightarrow>\<^sub>0 'b) * nat * 'c) list
+               => (('t \<Rightarrow>\<^sub>0 'b) * nat * 'c) list
+                  => ((('t \<Rightarrow>\<^sub>0 'b) * nat * 'c) *
+                      ('t \<Rightarrow>\<^sub>0 'b) * nat * 'c) list
+                     => ((('t \<Rightarrow>\<^sub>0 'b) * nat * 'c) *
+                         ('t \<Rightarrow>\<^sub>0 'b) * nat * 'c) list
+                        => nat * 'd
+                           => (('t \<Rightarrow>\<^sub>0 'b) * 'c) list *
+                              'd)
+              => ((('t \<Rightarrow>\<^sub>0 'b) * nat * 'c) list
+                  => ('t \<Rightarrow>\<^sub>0 'b) * nat * 'c => 'd => 'd)
+                 => (('t \<Rightarrow>\<^sub>0 'b) * 'c) list
+                    => 'd => (('t \<Rightarrow>\<^sub>0 'b) * 'c) list"
+Found termination order:
+  "(%p. size_list (%p. size (fst (snd (snd (snd p))))) (fst p)) <*mlex*> {}"
+Found termination order:
+  "(%p. size_list (%p. size (fst (snd p)))
+         (fst (snd (snd (snd p))))) <*mlex*>
+   (%p. size_list (%p. size (fst (snd p))) (fst (snd (snd p)))) <*mlex*> {}"
+consts
+  pairs ::
+    "(bool
+      => (('t \<Rightarrow>\<^sub>0 'b) * nat * 'c) list
+         => (('t \<Rightarrow>\<^sub>0 'b) * nat * 'c) list
+            => ('t \<Rightarrow>\<^sub>0 'b) * nat * 'c
+               => (bool *
+                   (('t \<Rightarrow>\<^sub>0 'b) * nat * 'c) *
+                   ('t \<Rightarrow>\<^sub>0 'b) * nat * 'c) list
+                  => (bool *
+                      (('t \<Rightarrow>\<^sub>0 'b) * nat * 'c) *
+                      ('t \<Rightarrow>\<^sub>0 'b) * nat * 'c) list)
+     => bool
+        => (('t \<Rightarrow>\<^sub>0 'b) * nat * 'c) list
+           => (bool *
+               (('t \<Rightarrow>\<^sub>0 'b) * nat * 'c) *
+               ('t \<Rightarrow>\<^sub>0 'b) * nat * 'c) list"
+locale gd_powerprod
+  fixes ord :: "'a => 'a => bool"  (infixl \<open>\<preceq>\<close> 50)
+    and ord_strict :: "'a => 'a => bool"  (infixl \<open>\<prec>\<close> 50)
+  assumes "gd_powerprod (\<preceq>) (\<prec>)"
+### theory "Draft.Algorithm_Schema"
+### 21.892s elapsed time, 32.527s cpu time, 12.421s GC time
+Loading theory "Draft.Buchberger" (required by "Draft.Reduced_GB_ExamplesTemplates" via "Draft.Reduced_GB_Examples")
+locale gd_term
+  fixes pair_of_term :: "'t => 'a * 'k"
+    and term_of_pair :: "'a * 'k => 't"
+    and ord :: "'a => 'a => bool"  (infixl \<open>\<preceq>\<close> 50)
+    and ord_strict :: "'a => 'a => bool"  (infixl \<open>\<prec>\<close> 50)
+    and
+    ord_term :: "'t => 't => bool"
+      (infixl \<open>\<preceq>\<^sub>t\<close> 50)
+    and
+    ord_term_strict :: "'t => 't => bool"
+      (infixl \<open>\<prec>\<^sub>t\<close> 50)
+  assumes
+    "gd_term pair_of_term term_of_pair (\<preceq>) (\<prec>)
+      (\<preceq>\<^sub>t) (\<prec>\<^sub>t)"
+consts
+  gb_sel ::
+    "(('t \<Rightarrow>\<^sub>0 'b) * nat * 'c) list
+     => (('t \<Rightarrow>\<^sub>0 'b) * nat * 'c) list
+        => ((('t \<Rightarrow>\<^sub>0 'b) * nat * 'c) *
+            ('t \<Rightarrow>\<^sub>0 'b) * nat * 'c) list
+           => nat * 'd
+              => ((('t \<Rightarrow>\<^sub>0 'b) * nat * 'c) *
+                  ('t \<Rightarrow>\<^sub>0 'b) * nat * 'c) list"
+### theory "Draft.Buchberger"
+### 16.048s elapsed time, 40.334s cpu time, 37.111s GC time
+Loading theory "Draft.Reduced_GB_Examples" (required by "Draft.Reduced_GB_ExamplesTemplates")
+locale gd_term
+  fixes pair_of_term :: "'t => 'a * 'k"
+    and term_of_pair :: "'a * 'k => 't"
+    and ord :: "'a => 'a => bool"  (infixl \<open>\<preceq>\<close> 50)
+    and ord_strict :: "'a => 'a => bool"  (infixl \<open>\<prec>\<close> 50)
+    and
+    ord_term :: "'t => 't => bool"
+      (infixl \<open>\<preceq>\<^sub>t\<close> 50)
+    and
+    ord_term_strict :: "'t => 't => bool"
+      (infixl \<open>\<prec>\<^sub>t\<close> 50)
+  assumes
+    "gd_term pair_of_term term_of_pair (\<preceq>) (\<prec>)
+      (\<preceq>\<^sub>t) (\<prec>\<^sub>t)"
+### Partially applied constant "MPoly_Type_Class.to_pair_unit" on left hand side of equation, in theorem:
+### gd_term.trd_aux to_pair_unit fst (le_of_nat_term_order ?cmp_term) ?fs ?p
+###  ?r ==
+### if is_zero ?p then ?r
+### else case ordered_term.find_adds to_pair_unit fst
+###            (le_of_nat_term_order ?cmp_term) ?fs (lt_punit ?cmp_term ?p) of
+###      None =>
+###        gd_term.trd_aux to_pair_unit fst (le_of_nat_term_order ?cmp_term) ?fs
+###         (tail_punit ?cmp_term ?p)
+###         (plus_monomial_less ?r (lc_punit ?cmp_term ?p)
+###           (lt_punit ?cmp_term ?p))
+###      | Some f =>
+###          gd_term.trd_aux to_pair_unit fst (le_of_nat_term_order ?cmp_term)
+###           ?fs
+###           (tail_punit ?cmp_term ?p -
+###            monom_mult_punit (lc_punit ?cmp_term ?p / lc_punit ?cmp_term f)
+###             (lt_punit ?cmp_term ?p - lt_punit ?cmp_term f)
+###             (tail_punit ?cmp_term f))
+###           ?r
+### Partially applied constant "MPoly_Type_Class.to_pair_unit" on left hand side of equation, in theorem:
+### gd_term.trd_aux to_pair_unit fst
+###  (%s t. le_of_nat_term_order ?cmp_term (fst (s, the_min))
+###          (fst (t, the_min)))
+###  ?fs ?p ?r ==
+### if is_zero ?p then ?r
+### else case ordered_term.find_adds to_pair_unit fst
+###            (%s t. le_of_nat_term_order ?cmp_term (fst (s, the_min))
+###                    (fst (t, the_min)))
+###            ?fs (punit0.punit.lt ?cmp_term ?p) of
+###      None =>
+###        gd_term.trd_aux to_pair_unit fst
+###         (%s t. le_of_nat_term_order ?cmp_term (fst (s, the_min))
+###                 (fst (t, the_min)))
+###         ?fs (punit0.punit.tail ?cmp_term ?p)
+###         (plus_monomial_less ?r (punit0.punit.lc ?cmp_term ?p)
+###           (punit0.punit.lt ?cmp_term ?p))
+###      | Some f =>
+###          gd_term.trd_aux to_pair_unit fst
+###           (%s t. le_of_nat_term_order ?cmp_term (fst (s, the_min))
+###                   (fst (t, the_min)))
+###           ?fs
+###           (punit0.punit.tail ?cmp_term ?p -
+###            monom_mult_punit
+###             (punit0.punit.lc ?cmp_term ?p / punit0.punit.lc ?cmp_term f)
+###             (punit0.punit.lt ?cmp_term ?p - punit0.punit.lt ?cmp_term f)
+###             (punit0.punit.tail ?cmp_term f))
+###           ?r
+### Cannot skip proof of schematic goal statement
+### Partially applied constant "MPoly_Type_Class_OAlist.ord_pp_punit" on left hand side of equation, in theorem:
+### linorder.Min (ord_pp_punit ?cmp_term) (set (?x # ?xs)) ==
+### fold (punit'.ordered_powerprod_lin.min ?cmp_term) ?xs ?x
+### Partially applied constant "MPoly_Type_Class_OAlist.ord_pp_punit" on left hand side of equation, in theorem:
+### linorder.Max (ord_pp_punit ?cmp_term) (set (?x # ?xs)) ==
+### fold (punit'.ordered_powerprod_lin.max ?cmp_term) ?xs ?x
+### Partially applied constant "MPoly_Type_Class_OAlist.ord_pp_punit" on left hand side of equation, in theorem:
+### punit'.ordered_powerprod_lin.sorted ?cmp_term [] == True
+### Partially applied constant "MPoly_Type_Class_OAlist.ord_pp_punit" on left hand side of equation, in theorem:
+### punit'.ordered_powerprod_lin.sorted ?cmp_term [?x] == True
+### Partially applied constant "MPoly_Type_Class_OAlist.ord_pp_punit" on left hand side of equation, in theorem:
+### punit'.ordered_powerprod_lin.sorted ?cmp_term (?x # ?y # ?zs) ==
+### ord_pp_punit ?cmp_term ?x ?y &
+### punit'.ordered_powerprod_lin.sorted ?cmp_term (?y # ?zs)
+### Partially applied constant "MPoly_Type_Class_OAlist.ord_pp_punit" on left hand side of equation, in theorem:
+### punit'.ordered_powerprod_lin.sorted_list_of_set ?cmp_term (set ?xs) ==
+### punit'.ordered_powerprod_lin.sort ?cmp_term (remdups ?xs)
+### Type
+### (?'a::nat, ?'ba::nat) pp nat_term_order
+### => ((?'a::nat, ?'ba::nat) pp \<Rightarrow>\<^sub>0 ?'b::zero)
+###    => ((?'a::nat, ?'ba::nat) pp \<Rightarrow>\<^sub>0 ?'b::zero) => bool
+### of constant "MPoly_Type_Class_OAlist.ord_strict_p_punit"
+### is too specific compared to declared type
+### ?'a::{} nat_term_order
+### => (?'a::{} \<Rightarrow>\<^sub>0 ?'l::{})
+###    => (?'a::{} \<Rightarrow>\<^sub>0 ?'l::{}) => bool, in theorem:
+### ord_strict_p_punit ?cmp_term ?p ?q ==
+### ?q ~= 0 &
+### (?p = 0 |
+###  (let v1 = lt_punit ?cmp_term ?p; v2 = lt_punit ?cmp_term ?q
+###   in ord_pp_strict_punit ?cmp_term v1 v2 |
+###      v1 = v2 &
+###      lookup ?p v1 = lookup ?q v2 &
+###      ord_strict_p_punit ?cmp_term (punit'.punit.lower ?cmp_term ?p v1)
+###       (punit'.punit.lower ?cmp_term ?q v2)))
+### Partially applied constant "MPoly_Type_Class.to_pair_unit" on left hand side of equation, in theorem:
+### punit'.punit.gb_schema_aux ?cmp_term ?sel ?ap ?ab ?compl ?gs ?data ?bs [] ==
+### ?gs @ ?bs
+### Partially applied constant "MPoly_Type_Class.to_pair_unit" on left hand side of equation, in theorem:
+### punit'.punit.gb_aux ?cmp_term ?gs ?data ?bs ?ps ==
+### if ?ps = [] then ?gs @ ?bs
+### else let sps = gb_sel_punit ?gs ?bs ?ps (snd ?data); ps0 = ?ps -- sps;
+###          aux = gb_red_punit ?cmp_term ?gs ?bs ps0 sps (snd ?data);
+###          remcomps =
+###            fst ?data - count_const_lt_components_punit ?cmp_term (fst aux)
+###      in if remcomps = 0 then full_gb_punit ?cmp_term (?gs @ ?bs)
+###         else let (hs, data') = add_indices aux (snd ?data)
+###              in punit'.punit.gb_aux ?cmp_term ?gs (remcomps, data')
+###                  (add_basis_sorted (canon_basis_order_punit ?cmp_term) ?gs
+###                    ?bs hs data')
+###                  (add_pairs_punit
+###                    (new_pairs_sorted_punit
+###                      (%data p q.
+###                          canon_pair_order_aux_punit ?cmp_term (snd p)
+###                           (snd q)))
+###                    (punit'.punit.component_crit ?cmp_term)
+###                    (chain_ncrit_punit ?cmp_term)
+###                    (chain_ocrit_punit ?cmp_term)
+###                    (merge_wrt (canon_pair_order_aux_punit ?cmp_term)) ?gs
+###                    ?bs ps0 hs data')
+### Partially applied constant "MPoly_Type_Class.to_pair_unit" on left hand side of equation, in theorem:
+### punit'.punit.gb ?cmp_term ?bs0.0 ?data0.0 ==
+### let data = (length ?bs0.0, ?data0.0);
+###     bs1 = fst (add_indices (?bs0.0, ?data0.0) (0, ?data0.0));
+###     bs = add_basis_sorted (canon_basis_order_punit ?cmp_term) [] [] bs1 data
+### in map (%(f, uu_, y). (f, y))
+###     (punit'.punit.gb_aux ?cmp_term []
+###       (count_rem_components_punit ?cmp_term bs, data) bs
+###       (add_pairs_punit
+###         (new_pairs_sorted_punit
+###           (%data p q. canon_pair_order_aux_punit ?cmp_term (snd p) (snd q)))
+###         (punit'.punit.component_crit ?cmp_term)
+###         (chain_ncrit_punit ?cmp_term) (chain_ocrit_punit ?cmp_term)
+###         (merge_wrt (canon_pair_order_aux_punit ?cmp_term)) [] [] [] bs1
+###         data))
+locale experiment16545238
+### theory "Draft.Reduced_GB_Examples"
+### 11.545s elapsed time, 12.644s cpu time, 2.491s GC time
+Loading theory "Draft.Reduced_GB_ExamplesTemplates"
+val templateLemmas =
+   [("Reduced_GB_Examples.compute_trd_punit",
+     "trd_punit ?to ?fs ?p = trd_aux_punit ?to ?fs ?p (change_ord ?to 0)",
+     template_equation
+      (template_app
+        (template_app
+          (template_app (template_hole 3, template_var 2), template_var 1),
+         template_var 0),
+       template_app
+        (template_app
+          (template_app
+            (template_app (template_hole 2, template_var 2),
+             template_var 1),
+           template_var 0),
+         template_app
+          (template_app (template_hole 1, template_var 2),
+           template_hole 0)))),
+    ("Reduced_GB_Examples.compute_spoly_punit",
+     "spoly_punit ?to ?p ?q =
+      (let t1 = lt_punit ?to ?p; t2 = lt_punit ?to ?q; l = lcs t1 t2
+       in monom_mult_punit ((1::?'c) / lc_punit ?to ?p) (l - t1) ?p -
+          monom_mult_punit ((1::?'c) / lc_punit ?to ?q) (l - t2) ?q)",
+     template_equation
+      (template_app
+        (template_app
+          (template_app (template_hole 9, template_var 2), template_var 1),
+         template_var 0),
+       template_app
+        (template_app
+          (template_hole 8,
+           template_app
+            (template_app (template_hole 7, template_var 2),
+             template_var 1)),
+         t_empty)))]:
+   (string * thm * template) list
+### theory "Draft.Reduced_GB_ExamplesTemplates"
+### 1.358s elapsed time, 3.353s cpu time, 0.761s GC time
+val it = (): unit

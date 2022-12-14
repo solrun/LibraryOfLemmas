@@ -1,0 +1,2290 @@
+Loading theory "Draft.Syntax_Match" (required by "Draft.Hash_MapTemplates" via "Draft.Hash_Map" via "Draft.Hash_Table" via "Draft.Sep_Main" via "Draft.Automation" via "Draft.Hoare_Triple" via "Draft.Assertions")
+Loading theory "Draft.Imperative_HOL_Add" (required by "Draft.Hash_MapTemplates" via "Draft.Hash_Map" via "Draft.Hash_Table" via "Draft.Sep_Main" via "Draft.Automation" via "Draft.Hoare_Triple" via "Draft.Assertions")
+Loading theory "Draft.Run" (required by "Draft.Hash_MapTemplates" via "Draft.Hash_Map" via "Draft.Hash_Table" via "Draft.Sep_Main" via "Draft.Automation" via "Draft.Hoare_Triple")
+Loading theory "Draft.Templates" (required by "Draft.Hash_MapTemplates" via "Draft.ExtrEqs")
+### ML warning (line 40 of "$AFP/Separation_Logic_Imperative_HOL/Tools/Syntax_Match.thy"):
+### Pattern is not exhaustive.
+### ML warning (line 53 of "$AFP/Separation_Logic_Imperative_HOL/Tools/Syntax_Match.thy"):
+### Pattern is not exhaustive.
+structure Syntax_Match:
+  sig
+    val fo_nomatch_simproc: Proof.context -> cterm -> thm option
+    val fo_nomatch_thm: thm
+    val nomatch_simproc: Proof.context -> cterm -> thm option
+    val nomatch_thm: thm
+  end
+consts
+  is_exn :: "'a option => bool"
+### No equation for constructor "None"
+consts
+  the_state :: "'a option => 'a"
+locale ac_operator
+  fixes f :: "'a => 'a => 'a"
+  assumes "ac_operator f"
+Proofs for inductive predicate(s) "run"
+### theory "Draft.Imperative_HOL_Add"
+### 0.061s elapsed time, 0.280s cpu time, 0.000s GC time
+Array.update ?a ?i ?x ?h = Array.set ?a ((Array.get ?h ?a)[?i := ?x]) ?h
+  Proving monotonicity ...
+datatype template_term
+=
+     t_empty
+   | template_app of template_term * template_term
+   | template_hole of int
+   | template_var of int
+datatype sign
+= equals | greater_equals | greater_than | less_equals | less_than
+datatype template
+=
+     template_bimplication of template * template
+   | template_dunno
+   | template_equation of template_term * template_term
+   | template_implication of template list * template
+   | template_inequation of sign * template_term * template_term
+   | template_negation of template
+   | template_predicate of template_term
+constructor t_empty: template_term
+constructor template_app: template_term * template_term -> template_term
+constructor template_hole: int -> template_term
+constructor template_var: int -> template_term
+constructor equals: sign
+constructor greater_equals: sign
+constructor greater_than: sign
+constructor less_equals: sign
+constructor less_than: sign
+constructor template_bimplication: template * template -> template
+constructor template_dunno: template
+constructor template_equation: template_term * template_term -> template
+constructor template_implication: template list * template -> template
+constructor template_inequation:
+   sign * template_term * template_term -> template
+constructor template_negation: template -> template
+constructor template_predicate: template_term -> template
+val vfs = fn: term -> (indexname * typ) list * (string * typ) list
+val indexOf = fn: ''a list -> ''a -> int -> int
+val has_eq = fn: term -> bool
+val term2template = fn:
+   (indexname * typ) list -> (string * typ) list -> term -> template_term
+val lemma2predicate = fn: term -> term -> template
+val makeTemplatewithContext = fn: term -> term -> template
+val lemma2template = fn: term -> template
+val thm2template = fn: thm -> template
+val tterm2string = fn: template_term -> string
+val template2string = fn: template -> string
+val t = "height ?t <= size ?t": thm
+val th =
+   Const ("HOL.Trueprop", "bool => prop") $
+     (Const ("Orderings.ord_class.less_eq", "nat => nat => bool") $
+       (Const ("Tree.height_class.height", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree")) $
+       (Const ("Nat.size_class.size", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree"))):
+   term
+### theory "Draft.Syntax_Match"
+### 0.080s elapsed time, 0.337s cpu time, 0.000s GC time
+Loading theory "Draft.Assertions" (required by "Draft.Hash_MapTemplates" via "Draft.Hash_Map" via "Draft.Hash_Table" via "Draft.Sep_Main" via "Draft.Automation" via "Draft.Hoare_Triple")
+### theory "Draft.Templates"
+### 0.082s elapsed time, 0.343s cpu time, 0.000s GC time
+Loading theory "Draft.ExtrEqs" (required by "Draft.Hash_MapTemplates")
+### theory "Draft.Run"
+### 0.275s elapsed time, 0.921s cpu time, 0.035s GC time
+Found termination order: "{}"
+instantiation
+  assn :: one
+  one_assn == one_class.one :: assn
+val eqpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Var (("_dummy_", 2), "?'a"))
+       ):
+   term Find_Theorems.criterion
+val badeqpattern = Pattern (Const ("Pure.eq", "?'a => ?'a => prop")):
+   term Find_Theorems.criterion
+val undefpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Const ("HOL.undefined", "?'a"))
+       ):
+   term Find_Theorems.criterion
+val thmpattern =
+   Pattern
+    (Const ("HOL.Trueprop", "bool => prop") $ Var (("_dummy_", 1), "bool")):
+   term Find_Theorems.criterion
+val badnames =
+   ["*nitpick*", "*Nitpick*", "*full_exhaustive*", "*_def*", "Enum.finite*",
+    "*Quickcheck*", "ATP*", "*Nunchaku*", "*Code*", "*BNF*", "*SMT*",
+    "*.*.*"]:
+   string list
+val unwanted_names =
+   [(false, Name "*nitpick*"), (false, Name "*Nitpick*"),
+    (false, Name "*full_exhaustive*"), (false, Name "*_def*"),
+    (false, Name "Enum.finite*"), (false, Name "*Quickcheck*"),
+    (false, Name "ATP*"), (false, Name "*Nunchaku*"),
+    (false, Name "*Code*"), (false, Name "*BNF*"), (false, Name "*SMT*"),
+    (false, Name "*.*.*")]:
+   (bool * term Find_Theorems.criterion) list
+val has_vars = fn: term -> bool
+val get_all_eqs = fn: string -> Proof.context -> (string * thm) list
+val get_all_thms = fn: string -> Proof.context -> (string * thm) list
+val get_noneq_thms = fn: string -> Proof.context -> (string * thm) list
+val template_eqs = fn:
+   string -> Proof.context -> (string * thm * template) list
+val template_thms = fn:
+   string -> Proof.context -> (string * thm * template) list
+### theory "Draft.ExtrEqs"
+### 0.596s elapsed time, 1.420s cpu time, 0.115s GC time
+Found termination order: "{}"
+instantiation
+  assn :: times
+  times_assn == times :: assn => assn => assn
+Found termination order: "{}"
+instantiation
+  assn :: comm_monoid_mult
+Found termination order: "{}"
+instantiation
+  assn :: boolean_algebra
+  minus_assn == minus :: assn => assn => assn
+  uminus_assn == uminus :: assn => assn
+  bot_assn == bot :: assn
+  top_assn == top :: assn
+  inf_assn == inf :: assn => assn => assn
+  sup_assn == sup :: assn => assn => assn
+  less_eq_assn == less_eq :: assn => assn => bool
+  less_assn == less :: assn => assn => bool
+Found termination order: "{}"
+Found termination order: "{}"
+Found termination order: "{}"
+### theory "Draft.Assertions"
+### 1.111s elapsed time, 1.923s cpu time, 0.135s GC time
+Loading theory "Draft.Hoare_Triple" (required by "Draft.Hash_MapTemplates" via "Draft.Hash_Map" via "Draft.Hash_Table" via "Draft.Sep_Main" via "Draft.Automation")
+### theory "Draft.Hoare_Triple"
+### 0.290s elapsed time, 0.353s cpu time, 0.090s GC time
+Loading theory "Draft.Automation" (required by "Draft.Hash_MapTemplates" via "Draft.Hash_Map" via "Draft.Hash_Table" via "Draft.Sep_Main")
+(EX x xa. ?P \<Longrightarrow>\<^sub>A ?Q1 x xa) -->
+(?P \<Longrightarrow>\<^sub>A \<exists>\<^sub>Ax xa. ?Q1 x xa)
+### ML warning (line 401 of "$AFP/Separation_Logic_Imperative_HOL/Automation.thy"):
+### Pattern is not exhaustive.
+### ML warning (line 407 of "$AFP/Separation_Logic_Imperative_HOL/Automation.thy"):
+### Pattern is not exhaustive.
+### ML warning (line 418 of "$AFP/Separation_Logic_Imperative_HOL/Automation.thy"):
+### Matches are not exhaustive.
+### ML warning (line 424 of "$AFP/Separation_Logic_Imperative_HOL/Automation.thy"):
+### Matches are not exhaustive.
+### ML warning (line 489 of "$AFP/Separation_Logic_Imperative_HOL/Automation.thy"):
+### Handler catches all exceptions.
+infix 1 THEN_IGNORE_NEWGOALS
+structure Seplogic_Auto:
+  sig
+    val REPEAT_DETERM': ('a -> tactic) -> 'a -> thm -> thm Seq.seq
+    val THEN_IGNORE_NEWGOALS:
+       (int -> tactic) * (int -> thm -> thm Seq.seq) ->
+         int -> thm -> thm Seq.seq
+    val assn_simproc: simproc
+    val assn_simproc_fun: Proof.context -> cterm -> thm option
+    val decon_modifiers:
+       (Token.T list -> Method.modifier * Token.T list) list
+    val dflt_simps_modifiers:
+       (Token.T list -> Method.modifier * Token.T list) list
+    val dflt_tac: Proof.context -> int -> tactic
+    val dfs_opr:
+       string ->
+         ('a -> term -> 'a * term option) -> 'a -> term -> 'a * term option
+    val dfs_replace_atomic: string -> term -> term -> term -> term option
+    val eintros_modifiers:
+       (Token.T list -> Method.modifier * Token.T list) list
+    val extract_ex_tac: Proof.context -> int -> thm -> thm Seq.seq
+    val find_similar: (term -> term) -> term list -> (term * term) option
+    val frame_inference_tac: Proof.context -> int -> tactic
+    val heap_modifiers:
+       (Token.T list -> Method.modifier * Token.T list) list
+    val heap_rule_tac: Proof.context -> thm list -> int -> tactic
+    val match_frame_tac: (int -> tactic) -> Proof.context -> int -> tactic
+    val sep_auto_modifiers: Method.modifier parser list
+    val sep_autosolve_tac:
+       bool -> bool -> Proof.context -> int -> thm -> thm Seq.seq
+    val solve_entails_modifiers:
+       (Token.T list -> Method.modifier * Token.T list) list
+    val solve_entails_tac: Proof.context -> int -> tactic
+    val tr_term: term -> string
+    val vcg_modifiers: (Token.T list -> Method.modifier * Token.T list) list
+    val vcg_step_tac: Proof.context -> int -> tactic
+    val vcg_tac: Proof.context -> int -> thm -> thm Seq.seq
+  end
+### Cannot skip proof of schematic goal statement
+?i < length ?xs ==>
+<?a \<mapsto>\<^sub>a ?xs> Array.nth ?a ?i
+<%r. ?a \<mapsto>\<^sub>a ?xs * \<up> (r = ?xs ! ?i)>
+### theory "Draft.Automation"
+### 0.584s elapsed time, 0.621s cpu time, 0.053s GC time
+Loading theory "Draft.Sep_Main" (required by "Draft.Hash_MapTemplates" via "Draft.Hash_Map" via "Draft.Hash_Table")
+### theory "Draft.Sep_Main"
+### 0.022s elapsed time, 0.023s cpu time, 0.000s GC time
+Loading theory "Draft.Hash_Table" (required by "Draft.Hash_MapTemplates" via "Draft.Hash_Map")
+consts
+  the_array :: "('k, 'v) hashtable => ('k * 'v) list array"
+consts
+  the_size :: "('k, 'v) hashtable => nat"
+Found termination order: "{}"
+Found termination order: "(%p. size_list size (snd p)) <*mlex*> {}"
+Found termination order: "(%p. size_list size (snd (snd p))) <*mlex*> {}"
+### Ambiguous input (line 211 of "$AFP/Separation_Logic_Imperative_HOL/Examples/Hash_Table.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" abs_update)
+###       ("_cargs" ("_position" k) ("_cargs" ("_position" v) ("_position" l))))
+###     ("_applC" ("_position" l)
+###       ("_list"
+###         ("\<^const>Ref.update"
+###           ("_applC" ("_position" bounded_hashcode_nat)
+###             ("_cargs" ("_applC" ("_position" length) ("_position" l))
+###               ("_position" k)))
+###           ("_applC" ("_position" fst)
+###             ("_applC" ("_position" ls_update)
+###               ("_cargs" ("_position" k)
+###                 ("_cargs" ("_position" v)
+###                   ("\<^const>List.nth" ("_position" l)
+###                     ("_applC" ("_position" bounded_hashcode_nat)
+###                       ("_cargs"
+###                         ("_applC" ("_position" length) ("_position" l))
+###                         ("_position" k)))))))))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" abs_update)
+###       ("_cargs" ("_position" k) ("_cargs" ("_position" v) ("_position" l))))
+###     ("_LUpdate" ("_position" l)
+###       ("_lupdbind"
+###         ("_applC" ("_position" bounded_hashcode_nat)
+###           ("_cargs" ("_applC" ("_position" length) ("_position" l))
+###             ("_position" k)))
+###         ("_applC" ("_position" fst)
+###           ("_applC" ("_position" ls_update)
+###             ("_cargs" ("_position" k)
+###               ("_cargs" ("_position" v)
+###                 ("\<^const>List.nth" ("_position" l)
+###                   ("_applC" ("_position" bounded_hashcode_nat)
+###                     ("_cargs"
+###                       ("_applC" ("_position" length) ("_position" l))
+###                       ("_position" k))))))))))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ambiguous input (line 351 of "$AFP/Separation_Logic_Imperative_HOL/Examples/Hash_Table.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("_applC" ("_position" ht_size)
+###     ("_cargs"
+###       ("_LUpdate" ("_position" l)
+###         ("_lupdbind" ("_position" i)
+###           ("_applC" ("_position" fst)
+###             ("_applC" ("_position" ls_update)
+###               ("_cargs" ("_position" k)
+###                 ("_cargs" ("_position" v)
+###                   ("\<^const>List.nth" ("_position" l)
+###                     ("_position" i))))))))
+###       ("_position" n))))
+### ("\<^const>HOL.Trueprop"
+###   ("_applC" ("_position" ht_size)
+###     ("_cargs"
+###       ("_applC" ("_position" l)
+###         ("_list"
+###           ("\<^const>Ref.update" ("_position" i)
+###             ("_applC" ("_position" fst)
+###               ("_applC" ("_position" ls_update)
+###                 ("_cargs" ("_position" k)
+###                   ("_cargs" ("_position" v)
+###                     ("\<^const>List.nth" ("_position" l)
+###                       ("_position" i)))))))))
+###       ("_position" n))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ambiguous input (line 369 of "$AFP/Separation_Logic_Imperative_HOL/Examples/Hash_Table.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("_applC" ("_position" ht_size)
+###     ("_cargs"
+###       ("_LUpdate" ("_position" l)
+###         ("_lupdbind" ("_position" i)
+###           ("_applC" ("_position" fst)
+###             ("_applC" ("_position" ls_update)
+###               ("_cargs" ("_position" k)
+###                 ("_cargs" ("_position" v)
+###                   ("\<^const>List.nth" ("_position" l)
+###                     ("_position" i))))))))
+###       ("_applC" ("_position" Suc) ("_position" n)))))
+### ("\<^const>HOL.Trueprop"
+###   ("_applC" ("_position" ht_size)
+###     ("_cargs"
+###       ("_applC" ("_position" l)
+###         ("_list"
+###           ("\<^const>Ref.update" ("_position" i)
+###             ("_applC" ("_position" fst)
+###               ("_applC" ("_position" ls_update)
+###                 ("_cargs" ("_position" k)
+###                   ("_cargs" ("_position" v)
+###                     ("\<^const>List.nth" ("_position" l)
+###                       ("_position" i)))))))))
+###       ("_applC" ("_position" Suc) ("_position" n)))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+Found termination order: "(%p. size_list size (snd p)) <*mlex*> {}"
+### Ambiguous input (line 511 of "$AFP/Separation_Logic_Imperative_HOL/Examples/Hash_Table.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("_applC" ("_position" ht_hash)
+###     ("_LUpdate" ("_position" ls)
+###       ("_lupdbind"
+###         ("_applC" ("_position" bounded_hashcode_nat)
+###           ("_cargs" ("_applC" ("_position" length) ("_position" ls))
+###             ("_position" k)))
+###         ("_applC" ("_position" fst)
+###           ("_applC" ("_position" ls_delete)
+###             ("_cargs" ("_position" k)
+###               ("\<^const>List.nth" ("_position" ls)
+###                 ("_applC" ("_position" bounded_hashcode_nat)
+###                   ("_cargs" ("_applC" ("_position" length) ("_position" ls))
+###                     ("_position" k)))))))))))
+### ("\<^const>HOL.Trueprop"
+###   ("_applC" ("_position" ht_hash)
+###     ("_applC" ("_position" ls)
+###       ("_list"
+###         ("\<^const>Ref.update"
+###           ("_applC" ("_position" bounded_hashcode_nat)
+###             ("_cargs" ("_applC" ("_position" length) ("_position" ls))
+###               ("_position" k)))
+###           ("_applC" ("_position" fst)
+###             ("_applC" ("_position" ls_delete)
+###               ("_cargs" ("_position" k)
+###                 ("\<^const>List.nth" ("_position" ls)
+###                   ("_applC" ("_position" bounded_hashcode_nat)
+###                     ("_cargs"
+###                       ("_applC" ("_position" length) ("_position" ls))
+###                       ("_position" k))))))))))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ambiguous input (line 551 of "$AFP/Separation_Logic_Imperative_HOL/Examples/Hash_Table.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("_applC" ("_position" ht_distinct)
+###     ("_LUpdate" ("_position" l)
+###       ("_lupdbind"
+###         ("_applC" ("_position" bounded_hashcode_nat)
+###           ("_cargs" ("_applC" ("_position" length) ("_position" l))
+###             ("_position" k)))
+###         ("_applC" ("_position" fst)
+###           ("_applC" ("_position" ls_delete)
+###             ("_cargs" ("_position" k)
+###               ("\<^const>List.nth" ("_position" l)
+###                 ("_applC" ("_position" bounded_hashcode_nat)
+###                   ("_cargs" ("_applC" ("_position" length) ("_position" l))
+###                     ("_position" k)))))))))))
+### ("\<^const>HOL.Trueprop"
+###   ("_applC" ("_position" ht_distinct)
+###     ("_applC" ("_position" l)
+###       ("_list"
+###         ("\<^const>Ref.update"
+###           ("_applC" ("_position" bounded_hashcode_nat)
+###             ("_cargs" ("_applC" ("_position" length) ("_position" l))
+###               ("_position" k)))
+###           ("_applC" ("_position" fst)
+###             ("_applC" ("_position" ls_delete)
+###               ("_cargs" ("_position" k)
+###                 ("\<^const>List.nth" ("_position" l)
+###                   ("_applC" ("_position" bounded_hashcode_nat)
+###                     ("_cargs"
+###                       ("_applC" ("_position" length) ("_position" l))
+###                       ("_position" k))))))))))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ambiguous input (line 575 of "$AFP/Separation_Logic_Imperative_HOL/Examples/Hash_Table.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("_applC" ("_position" ht_size)
+###     ("_cargs"
+###       ("_LUpdate" ("_position" l)
+###         ("_lupdbind" ("_position" i)
+###           ("_applC" ("_position" fst)
+###             ("_applC" ("_position" ls_delete)
+###               ("_cargs" ("_position" k)
+###                 ("\<^const>List.nth" ("_position" l) ("_position" i)))))))
+###       ("\<^const>Groups.minus_class.minus" ("_position" n)
+###         ("\<^const>Groups.one_class.one")))))
+### ("\<^const>HOL.Trueprop"
+###   ("_applC" ("_position" ht_size)
+###     ("_cargs"
+###       ("_applC" ("_position" l)
+###         ("_list"
+###           ("\<^const>Ref.update" ("_position" i)
+###             ("_applC" ("_position" fst)
+###               ("_applC" ("_position" ls_delete)
+###                 ("_cargs" ("_position" k)
+###                   ("\<^const>List.nth" ("_position" l)
+###                     ("_position" i))))))))
+###       ("\<^const>Groups.minus_class.minus" ("_position" n)
+###         ("\<^const>Groups.one_class.one")))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ambiguous input (line 593 of "$AFP/Separation_Logic_Imperative_HOL/Examples/Hash_Table.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("_applC" ("_position" ht_size)
+###     ("_cargs"
+###       ("_LUpdate" ("_position" l)
+###         ("_lupdbind" ("_position" i)
+###           ("_applC" ("_position" fst)
+###             ("_applC" ("_position" ls_delete)
+###               ("_cargs" ("_position" k)
+###                 ("\<^const>List.nth" ("_position" l) ("_position" i)))))))
+###       ("_position" n))))
+### ("\<^const>HOL.Trueprop"
+###   ("_applC" ("_position" ht_size)
+###     ("_cargs"
+###       ("_applC" ("_position" l)
+###         ("_list"
+###           ("\<^const>Ref.update" ("_position" i)
+###             ("_applC" ("_position" fst)
+###               ("_applC" ("_position" ls_delete)
+###                 ("_cargs" ("_position" k)
+###                   ("\<^const>List.nth" ("_position" l)
+###                     ("_position" i))))))))
+###       ("_position" n))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ambiguous input (line 607 of "$AFP/Separation_Logic_Imperative_HOL/Examples/Hash_Table.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>Hoare_Triple.hoare_triple"
+###     ("_applC" ("_position" is_hashtable)
+###       ("_cargs" ("_position" l) ("_position" ht)))
+###     ("_applC" ("_position" ht_delete)
+###       ("_cargs" ("_position" k) ("_position" ht)))
+###     ("_applC" ("_position" is_hashtable)
+###       ("_applC" ("_position" l)
+###         ("_list"
+###           ("\<^const>Ref.update"
+###             ("_applC" ("_position" bounded_hashcode_nat)
+###               ("_cargs" ("_applC" ("_position" length) ("_position" l))
+###                 ("_position" k)))
+###             ("_applC" ("_position" fst)
+###               ("_applC" ("_position" ls_delete)
+###                 ("_cargs" ("_position" k)
+###                   ("\<^const>List.nth" ("_position" l)
+###                     ("_applC" ("_position" bounded_hashcode_nat)
+###                       ("_cargs"
+###                         ("_applC" ("_position" length) ("_position" l))
+###                         ("_position" k)))))))))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>Hoare_Triple.hoare_triple"
+###     ("_applC" ("_position" is_hashtable)
+###       ("_cargs" ("_position" l) ("_position" ht)))
+###     ("_applC" ("_position" ht_delete)
+###       ("_cargs" ("_position" k) ("_position" ht)))
+###     ("_applC" ("_position" is_hashtable)
+###       ("_LUpdate" ("_position" l)
+###         ("_lupdbind"
+###           ("_applC" ("_position" bounded_hashcode_nat)
+###             ("_cargs" ("_applC" ("_position" length) ("_position" l))
+###               ("_position" k)))
+###           ("_applC" ("_position" fst)
+###             ("_applC" ("_position" ls_delete)
+###               ("_cargs" ("_position" k)
+###                 ("\<^const>List.nth" ("_position" l)
+###                   ("_applC" ("_position" bounded_hashcode_nat)
+###                     ("_cargs"
+###                       ("_applC" ("_position" length) ("_position" l))
+###                       ("_position" k))))))))))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ambiguous input (line 632 of "$AFP/Separation_Logic_Imperative_HOL/Examples/Hash_Table.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>Hoare_Triple.hoare_triple"
+###     ("_applC" ("_position" is_hashtable)
+###       ("_cargs" ("_position" l) ("_position" ht)))
+###     ("_applC" ("_position" ht_delete)
+###       ("_cargs" ("_position" k) ("_position" ht)))
+###     ("_applC" ("_position" is_hashtable)
+###       ("_applC" ("_position" l)
+###         ("_list"
+###           ("\<^const>Ref.update"
+###             ("_applC" ("_position" bounded_hashcode_nat)
+###               ("_cargs" ("_applC" ("_position" length) ("_position" l))
+###                 ("_position" k)))
+###             ("_applC" ("_position" fst)
+###               ("_applC" ("_position" ls_delete)
+###                 ("_cargs" ("_position" k)
+###                   ("\<^const>List.nth" ("_position" l)
+###                     ("_applC" ("_position" bounded_hashcode_nat)
+###                       ("_cargs"
+###                         ("_applC" ("_position" length) ("_position" l))
+###                         ("_position" k)))))))))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>Hoare_Triple.hoare_triple"
+###     ("_applC" ("_position" is_hashtable)
+###       ("_cargs" ("_position" l) ("_position" ht)))
+###     ("_applC" ("_position" ht_delete)
+###       ("_cargs" ("_position" k) ("_position" ht)))
+###     ("_applC" ("_position" is_hashtable)
+###       ("_LUpdate" ("_position" l)
+###         ("_lupdbind"
+###           ("_applC" ("_position" bounded_hashcode_nat)
+###             ("_cargs" ("_applC" ("_position" length) ("_position" l))
+###               ("_position" k)))
+###           ("_applC" ("_position" fst)
+###             ("_applC" ("_position" ls_delete)
+###               ("_cargs" ("_position" k)
+###                 ("\<^const>List.nth" ("_position" l)
+###                   ("_applC" ("_position" bounded_hashcode_nat)
+###                     ("_cargs"
+###                       ("_applC" ("_position" length) ("_position" l))
+###                       ("_position" k))))))))))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+Found termination order: "(%p. size_list size (fst p)) <*mlex*> {}"
+Found termination order: "(%p. size_list size (fst p)) <*mlex*> {}"
+Found termination order: "(%p. size (fst p)) <*mlex*> {}"
+Found termination order: "(%p. size (fst p)) <*mlex*> {}"
+### theory "Draft.Hash_Table"
+### 2.087s elapsed time, 2.540s cpu time, 0.633s GC time
+Loading theory "Draft.Hash_Map" (required by "Draft.Hash_MapTemplates")
+ht_hash ?l ==
+ALL i<length ?l.
+   ALL x:set (?l ! i). bounded_hashcode_nat (length ?l) (fst x) = i
+### Ambiguous input (line 558 of "$AFP/Separation_Logic_Imperative_HOL/Examples/Hash_Map.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("_applC" ("_position" ht_hash)
+###     ("_LUpdate" ("_position" l)
+###       ("_lupdbind"
+###         ("_applC" ("_position" bounded_hashcode_nat)
+###           ("_cargs" ("_applC" ("_position" length) ("_position" l))
+###             ("_position" k)))
+###         ("_applC" ("_position" fst)
+###           ("_applC" ("_position" ls_delete)
+###             ("_cargs" ("_position" k)
+###               ("\<^const>List.nth" ("_position" l)
+###                 ("_applC" ("_position" bounded_hashcode_nat)
+###                   ("_cargs" ("_applC" ("_position" length) ("_position" l))
+###                     ("_position" k)))))))))))
+### ("\<^const>HOL.Trueprop"
+###   ("_applC" ("_position" ht_hash)
+###     ("_applC" ("_position" l)
+###       ("_list"
+###         ("\<^const>Ref.update"
+###           ("_applC" ("_position" bounded_hashcode_nat)
+###             ("_cargs" ("_applC" ("_position" length) ("_position" l))
+###               ("_position" k)))
+###           ("_applC" ("_position" fst)
+###             ("_applC" ("_position" ls_delete)
+###               ("_cargs" ("_position" k)
+###                 ("\<^const>List.nth" ("_position" l)
+###                   ("_applC" ("_position" bounded_hashcode_nat)
+###                     ("_cargs"
+###                       ("_applC" ("_position" length) ("_position" l))
+###                       ("_position" k))))))))))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ambiguous input (line 560 of "$AFP/Separation_Logic_Imperative_HOL/Examples/Hash_Map.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("_applC" ("_position" ht_distinct)
+###     ("_LUpdate" ("_position" l)
+###       ("_lupdbind"
+###         ("_applC" ("_position" bounded_hashcode_nat)
+###           ("_cargs" ("_applC" ("_position" length) ("_position" l))
+###             ("_position" k)))
+###         ("_applC" ("_position" fst)
+###           ("_applC" ("_position" ls_delete)
+###             ("_cargs" ("_position" k)
+###               ("\<^const>List.nth" ("_position" l)
+###                 ("_applC" ("_position" bounded_hashcode_nat)
+###                   ("_cargs" ("_applC" ("_position" length) ("_position" l))
+###                     ("_position" k)))))))))))
+### ("\<^const>HOL.Trueprop"
+###   ("_applC" ("_position" ht_distinct)
+###     ("_applC" ("_position" l)
+###       ("_list"
+###         ("\<^const>Ref.update"
+###           ("_applC" ("_position" bounded_hashcode_nat)
+###             ("_cargs" ("_applC" ("_position" length) ("_position" l))
+###               ("_position" k)))
+###           ("_applC" ("_position" fst)
+###             ("_applC" ("_position" ls_delete)
+###               ("_cargs" ("_position" k)
+###                 ("\<^const>List.nth" ("_position" l)
+###                   ("_applC" ("_position" bounded_hashcode_nat)
+###                     ("_cargs"
+###                       ("_applC" ("_position" length) ("_position" l))
+###                       ("_position" k))))))))))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ambiguous input (line 563 of "$AFP/Separation_Logic_Imperative_HOL/Examples/Hash_Map.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" map_of)
+###       ("_cargs"
+###         ("_applC" ("_position" concat)
+###           ("_LUpdate" ("_position" l)
+###             ("_lupdbind"
+###               ("_applC" ("_position" bounded_hashcode_nat)
+###                 ("_cargs" ("_applC" ("_position" length) ("_position" l))
+###                   ("_position" k)))
+###               ("_applC" ("_position" fst)
+###                 ("_applC" ("_position" ls_delete)
+###                   ("_cargs" ("_position" k)
+###                     ("\<^const>List.nth" ("_position" l)
+###                       ("_applC" ("_position" bounded_hashcode_nat)
+###                         ("_cargs"
+###                           ("_applC" ("_position" length) ("_position" l))
+###                           ("_position" k))))))))))
+###         ("_position" x)))
+###     ("_applC"
+###       ("\<^const>Map.restrict_map"
+###         ("_applC" ("_position" map_of)
+###           ("_applC" ("_position" concat) ("_position" l)))
+###         ("\<^const>Groups.uminus_class.uminus" ("_Finset" ("_position" k))))
+###       ("_position" x))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" map_of)
+###       ("_cargs"
+###         ("_applC" ("_position" concat)
+###           ("_applC" ("_position" l)
+###             ("_list"
+###               ("\<^const>Ref.update"
+###                 ("_applC" ("_position" bounded_hashcode_nat)
+###                   ("_cargs" ("_applC" ("_position" length) ("_position" l))
+###                     ("_position" k)))
+###                 ("_applC" ("_position" fst)
+###                   ("_applC" ("_position" ls_delete)
+###                     ("_cargs" ("_position" k)
+###                       ("\<^const>List.nth" ("_position" l)
+###                         ("_applC" ("_position" bounded_hashcode_nat)
+###                           ("_cargs"
+###                             ("_applC" ("_position" length) ("_position" l))
+###                             ("_position" k)))))))))))
+###         ("_position" x)))
+###     ("_applC"
+###       ("\<^const>Map.restrict_map"
+###         ("_applC" ("_position" map_of)
+###           ("_applC" ("_position" concat) ("_position" l)))
+###         ("\<^const>Groups.uminus_class.uminus" ("_Finset" ("_position" k))))
+###       ("_position" x))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+Found termination order: "(%p. size (fst p)) <*mlex*> {}"
+### theory "Draft.Hash_Map"
+### 0.413s elapsed time, 0.473s cpu time, 0.083s GC time
+Loading theory "Draft.Hash_MapTemplates"
+val templateLemmas =
+   [("Hash_Map.abs_update_length",
+     "length (abs_update ?k ?v ?l) = length ?l",
+     template_equation
+      (template_app
+        (template_hole 1,
+         template_app
+          (template_app
+            (template_app (template_hole 0, template_var 2),
+             template_var 1),
+           template_var 0)),
+       template_app (template_hole 1, template_var 0))),
+    ("Hash_Map.hm_it_finish",
+     "hm_is_it ?m ?p ?m' ?it \<Longrightarrow>\<^sub>A is_hashmap ?m ?p",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_hole 2,
+             template_app
+              (template_app
+                (template_app
+                  (template_app (template_hole 1, template_var 3),
+                   template_var 2),
+                 template_var 1),
+               template_var 0)),
+           template_app
+            (template_app (template_hole 0, template_var 3),
+             template_var 2))
+         )),
+    ("Hash_Map.ls_update_map_of_eq",
+     "map_of (fst (ls_update ?k ?v ?ls)) ?k = Some ?v",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 3,
+           template_app
+            (template_hole 2,
+             template_app
+              (template_app
+                (template_app (template_hole 1, template_var 2),
+                 template_var 1),
+               template_var 0))),
+         template_var 2),
+       template_app (template_hole 0, template_var 1))),
+    ("Hash_Map.map_of_ls_update",
+     "map_of (fst (ls_update ?k ?v ?l)) = map_of ?l(?k |-> ?v)",
+     template_equation
+      (template_app
+        (template_hole 4,
+         template_app
+          (template_hole 3,
+           template_app
+            (template_app
+              (template_app (template_hole 2, template_var 2),
+               template_var 1),
+             template_var 0))),
+       template_app
+        (template_app
+          (template_app
+            (template_hole 1,
+             template_app (template_hole 4, template_var 0)),
+           template_var 2),
+         template_app (template_hole 0, template_var 1)))),
+    ("Hash_Map.length_card_dom_map_of",
+     "distinct (map fst ?l) ==> length ?l = card (dom (map_of ?l))",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_hole 7,
+              template_app
+               (template_app (template_hole 6, template_hole 5),
+                template_var 0))
+            )],
+       template_equation
+        (template_app (template_hole 3, template_var 0),
+         template_app
+          (template_hole 2,
+           template_app
+            (template_hole 1,
+             template_app (template_hole 0, template_var 0)))))),
+    ("Hash_Map.ls_lookup_map_of_pre",
+     "distinct (map fst ?l) ==> ls_lookup ?k ?l = map_of ?l ?k",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_hole 5,
+              template_app
+               (template_app (template_hole 4, template_hole 3),
+                template_var 1))
+            )],
+       template_equation
+        (template_app
+          (template_app (template_hole 1, template_var 0), template_var 1),
+         template_app
+          (template_app (template_hole 0, template_var 1),
+           template_var 0)))),
+    ("Hash_Map.is_hashmap'_distinct",
+     "is_hashtable ?l ?ht \<Longrightarrow>\<^sub>A
+      is_hashtable ?l ?ht * \<up> (distinct (map fst (concat ?l)))",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_hole 7,
+             template_app
+              (template_app (template_hole 6, template_var 1),
+               template_var 0)),
+           template_app
+            (template_app
+              (template_hole 5,
+               template_app
+                (template_app (template_hole 6, template_var 1),
+                 template_var 0)),
+             template_app
+              (template_hole 4,
+               template_app
+                (template_hole 3,
+                 template_app
+                  (template_app (template_hole 2, template_hole 1),
+                   template_app (template_hole 0, template_var 1))))))
+         )),
+    ("Hash_Map.hm_it_init_rule",
+     "<is_hashmap ?m ?ht> hm_it_init ?ht <hm_is_it ?m ?ht ?m>\<^sub>t",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_app
+              (template_hole 5,
+               template_app
+                (template_app (template_hole 4, template_var 1),
+                 template_var 0)),
+             template_app (template_hole 3, template_var 0)),
+           t_empty)
+         )),
+    ("Hash_Map.hm_delete_rule",
+     "<is_hashmap ?m ?ht> hm_delete ?k ?ht <is_hashmap (?m |` (- {?k}))>",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_app
+              (template_hole 6,
+               template_app
+                (template_app (template_hole 5, template_var 2),
+                 template_var 1)),
+             template_app
+              (template_app (template_hole 4, template_var 0),
+               template_var 1)),
+           template_app
+            (template_hole 5,
+             template_app
+              (template_app (template_hole 3, template_var 2),
+               template_app
+                (template_hole 2,
+                 template_app
+                  (template_app (template_hole 1, template_var 0),
+                   template_hole 0)))))
+         )),
+    ("Hash_Map.distinct_imp_distinct_take",
+     "distinct (map fst (concat ?l)) ==>
+      distinct (map fst (concat (take ?x ?l)))",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_hole 4,
+              template_app
+               (template_app (template_hole 3, template_hole 2),
+                template_app (template_hole 1, template_var 1)))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_hole 4,
+             template_app
+              (template_app (template_hole 3, template_hole 2),
+               template_app
+                (template_hole 1,
+                 template_app
+                  (template_app (template_hole 0, template_var 0),
+                   template_var 1))))
+           ))),
+    ("Hash_Map.hm_delete_rule'",
+     "<is_hashmap' ?m ?l ?ht> hm_delete ?k ?ht
+      <is_hashmap (?m |` (- {?k}))>",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_app
+              (template_hole 7,
+               template_app
+                (template_app
+                  (template_app (template_hole 6, template_var 3),
+                   template_var 2),
+                 template_var 1)),
+             template_app
+              (template_app (template_hole 5, template_var 0),
+               template_var 1)),
+           template_app
+            (template_hole 4,
+             template_app
+              (template_app (template_hole 3, template_var 3),
+               template_app
+                (template_hole 2,
+                 template_app
+                  (template_app (template_hole 1, template_var 0),
+                   template_hole 0)))))
+         )),
+    ("Hash_Map.take_Suc0", "?l ~= [] ==> take (Suc 0) ?l = [?l ! 0]",
+     template_implication
+      ([template_negation
+         (template_equation (template_var 0, template_hole 5))],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 4,
+             template_app (template_hole 3, template_hole 2)),
+           template_var 0),
+         template_app
+          (template_app
+            (template_hole 1,
+             template_app
+              (template_app (template_hole 0, template_var 0),
+               template_hole 2)),
+           template_hole 5)))),
+    ("Hash_Map.take_Suc0", "0 < length ?l ==> take (Suc 0) ?l = [?l ! 0]",
+     template_implication
+      ([template_inequation
+         (less_than, template_hole 7,
+          template_app (template_hole 6, template_var 0))],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 4,
+             template_app (template_hole 3, template_hole 7)),
+           template_var 0),
+         template_app
+          (template_app
+            (template_hole 2,
+             template_app
+              (template_app (template_hole 1, template_var 0),
+               template_hole 7)),
+           template_hole 0)))),
+    ("Hash_Map.hm_size_rule",
+     "<is_hashmap ?m ?ht> hm_size ?ht
+      <%r. is_hashmap ?m ?ht * \<up> (r = card (dom ?m))>",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_app
+              (template_hole 7,
+               template_app
+                (template_app (template_hole 6, template_var 1),
+                 template_var 0)),
+             template_app (template_hole 5, template_var 0)),
+           t_empty)
+         )),
+    ("Hash_Map.hm_lookup_rule",
+     "<is_hashmap ?m ?ht> hm_lookup ?k ?ht
+      <%r. is_hashmap ?m ?ht * \<up> (r = ?m ?k)>",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_app
+              (template_hole 5,
+               template_app
+                (template_app (template_hole 4, template_var 2),
+                 template_var 1)),
+             template_app
+              (template_app (template_hole 3, template_var 0),
+               template_var 1)),
+           t_empty)
+         )),
+    ("Hash_Map.ls_update_map_of_neq",
+     "?x ~= ?k ==> map_of (fst (ls_update ?k ?v ?ls)) ?x = map_of ?ls ?x",
+     template_implication
+      ([template_negation
+         (template_equation (template_var 3, template_var 2))],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 2,
+             template_app
+              (template_hole 1,
+               template_app
+                (template_app
+                  (template_app (template_hole 0, template_var 2),
+                   template_var 1),
+                 template_var 0))),
+           template_var 3),
+         template_app
+          (template_app (template_hole 2, template_var 0),
+           template_var 3)))),
+    ("Hash_Map.take_Suc0",
+     "Suc ?n <= length ?l ==> take (Suc 0) ?l = [?l ! 0]",
+     template_implication
+      ([template_inequation
+         (less_equals, template_app (template_hole 7, template_var 1),
+          template_app (template_hole 6, template_var 0))],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 4,
+             template_app (template_hole 7, template_hole 3)),
+           template_var 0),
+         template_app
+          (template_app
+            (template_hole 2,
+             template_app
+              (template_app (template_hole 1, template_var 0),
+               template_hole 3)),
+           template_hole 0)))),
+    ("Hash_Map.hm_isEmpty_rule",
+     "<is_hashmap ?m ?ht> hm_isEmpty ?ht
+      <%r. is_hashmap ?m ?ht * \<up> (r = (?m = Map.empty))>",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_app
+              (template_hole 7,
+               template_app
+                (template_app (template_hole 6, template_var 1),
+                 template_var 0)),
+             template_app (template_hole 5, template_var 0)),
+           t_empty)
+         )),
+    ("Hash_Map.hm_update_rule",
+     "<is_hashmap ?m
+        ?ht> hm_update ?k ?v ?ht <is_hashmap (?m(?k |-> ?v))>\<^sub>t",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_app
+              (template_hole 6,
+               template_app
+                (template_app (template_hole 5, template_var 3),
+                 template_var 2)),
+             template_app
+              (template_app
+                (template_app (template_hole 4, template_var 1),
+                 template_var 0),
+               template_var 2)),
+           t_empty)
+         )),
+    ("Hash_Map.sum_list_length_card_dom_map_of_concat",
+     "[| ht_hash ?l; ht_distinct ?l |]
+      ==> sum_list (map length ?l) = card (dom (map_of (concat ?l)))",
+     template_implication
+      ([template_predicate (template_app (template_hole 9, template_var 0)),
+        template_predicate
+         (template_app (template_hole 8, template_var 0))],
+       template_equation
+        (template_app
+          (template_hole 6,
+           template_app
+            (template_app (template_hole 5, template_hole 4),
+             template_var 0)),
+         template_app
+          (template_hole 3,
+           template_app
+            (template_hole 2,
+             template_app
+              (template_hole 1,
+               template_app (template_hole 0, template_var 0))))))),
+    ("Hash_Map.hm_size_rule'",
+     "<is_hashmap' ?m ?l ?ht> hm_size ?ht
+      <%r. is_hashmap' ?m ?l ?ht * \<up> (r = card (dom ?m))>",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_app
+              (template_hole 7,
+               template_app
+                (template_app
+                  (template_app (template_hole 6, template_var 2),
+                   template_var 1),
+                 template_var 0)),
+             template_app (template_hole 5, template_var 0)),
+           t_empty)
+         )),
+    ("Hash_Map.hm_lookup_rule'",
+     "<is_hashmap' ?m ?l ?ht> hm_lookup ?k ?ht
+      <%r. is_hashmap' ?m ?l ?ht * \<up> (r = ?m ?k)>",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_app
+              (template_hole 5,
+               template_app
+                (template_app
+                  (template_app (template_hole 4, template_var 3),
+                   template_var 2),
+                 template_var 1)),
+             template_app
+              (template_app (template_hole 3, template_var 0),
+               template_var 1)),
+           t_empty)
+         )),
+    ("Hash_Map.hm_update_rule'",
+     "<is_hashmap' ?m ?l
+        ?ht> hm_update ?k ?v ?ht <is_hashmap (?m(?k |-> ?v))>\<^sub>t",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_app
+              (template_hole 7,
+               template_app
+                (template_app
+                  (template_app (template_hole 6, template_var 4),
+                   template_var 3),
+                 template_var 2)),
+             template_app
+              (template_app
+                (template_app (template_hole 5, template_var 1),
+                 template_var 0),
+               template_var 2)),
+           t_empty)
+         )),
+    ("Hash_Map.hm_isEmpty_rule'",
+     "<is_hashmap' ?m ?l ?ht> hm_isEmpty ?ht
+      <%r. is_hashmap' ?m ?l ?ht * \<up> (r = (?m = Map.empty))>",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_app
+              (template_hole 7,
+               template_app
+                (template_app
+                  (template_app (template_hole 6, template_var 2),
+                   template_var 1),
+                 template_var 0)),
+             template_app (template_hole 5, template_var 0)),
+           t_empty)
+         )),
+    ("Hash_Map.concat_take_Suc_app_nth",
+     "?x < length ?l ==>
+      concat (take (Suc ?x) ?l) = concat (take ?x ?l) @ ?l ! ?x",
+     template_implication
+      ([template_inequation
+         (less_than, template_var 1,
+          template_app (template_hole 6, template_var 0))],
+       template_equation
+        (template_app
+          (template_hole 4,
+           template_app
+            (template_app
+              (template_hole 3,
+               template_app (template_hole 2, template_var 1)),
+             template_var 0)),
+         template_app
+          (template_app
+            (template_hole 1,
+             template_app
+              (template_hole 4,
+               template_app
+                (template_app (template_hole 3, template_var 1),
+                 template_var 0))),
+           template_app
+            (template_app (template_hole 0, template_var 0),
+             template_var 1))))),
+    ("Hash_Map.map_of_concat'",
+     "?k : dom (map_of (?l ! ?i)) & ?i < length ?l ==>
+      ?k : dom (map_of (concat ?l))",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 7,
+                template_app
+                 (template_app (template_hole 6, template_var 2),
+                  template_app
+                   (template_hole 5,
+                    template_app
+                     (template_hole 4,
+                      template_app
+                       (template_app (template_hole 3, template_var 1),
+                        template_var 0))))),
+              template_app
+               (template_app (template_hole 2, template_var 0),
+                template_app (template_hole 1, template_var 1)))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 6, template_var 2),
+             template_app
+              (template_hole 5,
+               template_app
+                (template_hole 4,
+                 template_app (template_hole 0, template_var 1))))
+           ))),
+    ("Hash_Map.map_of_concat''",
+     "(?k : dom (map_of (concat ?l))) =
+      (EX i. ?k : dom (map_of (?l ! i)) & i < length ?l)",
+     template_equation
+      (template_app
+        (template_app (template_hole 8, template_var 1),
+         template_app
+          (template_hole 7,
+           template_app
+            (template_hole 6,
+             template_app (template_hole 5, template_var 0)))),
+       template_app (template_hole 4, t_empty))),
+    ("Hash_Map.ls_delete_map_of",
+     "distinct (map fst ?l) ==>
+      map_of (fst (ls_delete ?k ?l)) ?x = (map_of ?l |` (- {?k})) ?x",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_hole 10,
+              template_app
+               (template_app (template_hole 9, template_hole 8),
+                template_var 2))
+            )],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 6,
+             template_app
+              (template_hole 5,
+               template_app
+                (template_app (template_hole 4, template_var 1),
+                 template_var 2))),
+           template_var 0),
+         template_app
+          (template_app
+            (template_app
+              (template_hole 3,
+               template_app (template_hole 6, template_var 2)),
+             template_app
+              (template_hole 2,
+               template_app
+                (template_app (template_hole 1, template_var 1),
+                 template_hole 0))),
+           template_var 0)))),
+    ("Hash_Map.map_of_concat",
+     "?k : dom (map_of (concat ?l)) ==>
+      EX i. ?k : dom (map_of (?l ! i)) & i < length ?l",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 8, template_var 1),
+              template_app
+               (template_hole 7,
+                template_app
+                 (template_hole 6,
+                  template_app (template_hole 5, template_var 0))))
+            )],
+       template_predicate (template_app (template_hole 4, t_empty)))),
+    ("Hash_Map.map_of_concat'''",
+     "EX i. ?k : dom (map_of (?l ! i)) & i < length ?l ==>
+      ?k : dom (map_of (concat ?l))",
+     template_implication
+      ([template_predicate (template_app (template_hole 8, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 6, template_var 1),
+             template_app
+              (template_hole 5,
+               template_app
+                (template_hole 4,
+                 template_app (template_hole 0, template_var 0))))
+           ))),
+    ("Hash_Map.ht_hash_in_dom_in_dom_bounded_hashcode_nat",
+     "[| ht_hash ?l; ?k : dom (map_of (concat ?l)) |]
+      ==> ?k : dom (map_of (?l ! bounded_hashcode_nat (length ?l) ?k))",
+     template_implication
+      ([template_predicate (template_app (template_hole 7, template_var 1)),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 6, template_var 0),
+              template_app
+               (template_hole 5,
+                template_app
+                 (template_hole 4,
+                  template_app (template_hole 3, template_var 1))))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 6, template_var 0),
+             template_app
+              (template_hole 5,
+               template_app
+                (template_hole 4,
+                 template_app
+                  (template_app (template_hole 2, template_var 1),
+                   template_app
+                    (template_app
+                      (template_hole 1,
+                       template_app (template_hole 0, template_var 1)),
+                     template_var 0)))))
+           ))),
+    ("Hash_Map.ls_rehash_map_of",
+     "[| ht_hash ?l; ht_distinct ?l; 1 < length ?l |]
+      ==> map_of (concat (ls_rehash ?l)) = map_of (concat ?l)",
+     template_implication
+      ([template_predicate (template_app (template_hole 8, template_var 0)),
+        template_predicate (template_app (template_hole 7, template_var 0)),
+        template_inequation
+         (less_than, template_hole 5,
+          template_app (template_hole 4, template_var 0))],
+       template_equation
+        (template_app
+          (template_hole 2,
+           template_app
+            (template_hole 1,
+             template_app (template_hole 0, template_var 0))),
+         template_app
+          (template_hole 2,
+           template_app (template_hole 1, template_var 0))))),
+    ("Hash_Map.take_set",
+     "set (take ?n ?l) = {?l ! i |i. i < ?n & i < length ?l}",
+     template_equation
+      (template_app
+        (template_hole 8,
+         template_app
+          (template_app (template_hole 7, template_var 1), template_var 0)),
+       template_app (template_hole 6, t_empty))),
+    ("Hash_Map.hm_it_has_next_rule",
+     "<hm_is_it ?m ?ht ?m' ?it> hm_it_has_next ?it
+      <%r. hm_is_it ?m ?ht ?m' ?it * \<up> (r = (?m' ~= Map.empty))>",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_app
+              (template_hole 8,
+               template_app
+                (template_app
+                  (template_app
+                    (template_app (template_hole 7, template_var 3),
+                     template_var 2),
+                   template_var 1),
+                 template_var 0)),
+             template_app (template_hole 6, template_var 0)),
+           t_empty)
+         )),
+    ("Hash_Map.concat_take_Suc_empty",
+     "[| ?n < length ?l; ?l ! ?n = [] |]
+      ==> concat (take (Suc ?n) ?l) = concat (take ?n ?l)",
+     template_implication
+      ([template_inequation
+         (less_than, template_var 1,
+          template_app (template_hole 6, template_var 0)),
+        template_equation
+         (template_app
+           (template_app (template_hole 4, template_var 0), template_var 1),
+          template_hole 3)],
+       template_equation
+        (template_app
+          (template_hole 2,
+           template_app
+            (template_app
+              (template_hole 1,
+               template_app (template_hole 0, template_var 1)),
+             template_var 0)),
+         template_app
+          (template_hole 2,
+           template_app
+            (template_app (template_hole 1, template_var 1),
+             template_var 0))))),
+    ("Hash_Map.abs_update_map_of''",
+     "[| ht_hash ?l; ht_distinct ?l; 1 < length ?l |]
+      ==> map_of (concat (abs_update ?k ?v ?l)) ?k = Some ?v",
+     template_implication
+      ([template_predicate (template_app (template_hole 9, template_var 2)),
+        template_predicate (template_app (template_hole 8, template_var 2)),
+        template_inequation
+         (less_than, template_hole 6,
+          template_app (template_hole 5, template_var 2))],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 3,
+             template_app
+              (template_hole 2,
+               template_app
+                (template_app
+                  (template_app (template_hole 1, template_var 1),
+                   template_var 0),
+                 template_var 2))),
+           template_var 1),
+         template_app (template_hole 0, template_var 0)))),
+    ("Hash_Map.ht_hash_dom_map_of_disj_drop",
+     "[| ht_hash ?l; ?i < length ?l |]
+      ==> dom (map_of (?l ! ?i)) Int
+          dom (map_of (concat (drop (Suc ?i) ?l))) =
+          {}",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 11, template_var 1)),
+        template_inequation
+         (less_than, template_var 0,
+          template_app (template_hole 9, template_var 1))],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 7,
+             template_app
+              (template_hole 6,
+               template_app
+                (template_hole 5,
+                 template_app
+                  (template_app (template_hole 4, template_var 1),
+                   template_var 0)))),
+           template_app
+            (template_hole 6,
+             template_app
+              (template_hole 5,
+               template_app
+                (template_hole 3,
+                 template_app
+                  (template_app
+                    (template_hole 2,
+                     template_app (template_hole 1, template_var 0)),
+                   template_var 1))))),
+         template_hole 0))),
+    ("Hash_Map.is_hashmap'_prec",
+     "ALL s s'.
+         ?h \<Turnstile>
+         is_hashmap' ?m ?l ?ht * ?F1.0 \<and>\<^sub>A
+         is_hashmap' ?m' ?l' ?ht * ?F2.0 -->
+         ?l = ?l' & ?m = ?m'",
+     template_predicate (template_app (template_hole 9, t_empty))),
+    ("Hash_Map.ht_hash_in_dom_in_dom_bounded_hashcode_nat_eq",
+     "[| ht_hash ?l; 1 < length ?l |]
+      ==> (?k : dom (map_of (concat ?l))) =
+          (?k : dom (map_of (?l ! bounded_hashcode_nat (length ?l) ?k)))",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 10, template_var 1)),
+        template_inequation
+         (less_than, template_hole 8,
+          template_app (template_hole 7, template_var 1))],
+       template_equation
+        (template_app
+          (template_app (template_hole 5, template_var 0),
+           template_app
+            (template_hole 4,
+             template_app
+              (template_hole 3,
+               template_app (template_hole 2, template_var 1)))),
+         template_app
+          (template_app (template_hole 5, template_var 0),
+           template_app
+            (template_hole 4,
+             template_app
+              (template_hole 3,
+               template_app
+                (template_app (template_hole 1, template_var 1),
+                 template_app
+                  (template_app
+                    (template_hole 0,
+                     template_app (template_hole 7, template_var 1)),
+                   template_var 0)))))))),
+    ("Hash_Map.ht_hash_ht_distinct_map_of",
+     "[| ht_hash ?l; ht_distinct ?l; 1 < length ?l |]
+      ==> map_of (concat ?l) ?k =
+          map_of (?l ! bounded_hashcode_nat (length ?l) ?k) ?k",
+     template_implication
+      ([template_predicate (template_app (template_hole 9, template_var 1)),
+        template_predicate (template_app (template_hole 8, template_var 1)),
+        template_inequation
+         (less_than, template_hole 6,
+          template_app (template_hole 5, template_var 1))],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 3,
+             template_app (template_hole 2, template_var 1)),
+           template_var 0),
+         template_app
+          (template_app
+            (template_hole 3,
+             template_app
+              (template_app (template_hole 1, template_var 1),
+               template_app
+                (template_app
+                  (template_hole 0,
+                   template_app (template_hole 5, template_var 1)),
+                 template_var 0))),
+           template_var 0)))),
+    ("Hash_Map.ls_lookup_map_of",
+     "[| ht_hash ?l; ht_distinct ?l; 1 < length ?l |]
+      ==> ls_lookup ?k (?l ! bounded_hashcode_nat (length ?l) ?k) =
+          map_of (concat ?l) ?k",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 10, template_var 1)),
+        template_predicate (template_app (template_hole 9, template_var 1)),
+        template_inequation
+         (less_than, template_hole 7,
+          template_app (template_hole 6, template_var 1))],
+       template_equation
+        (template_app
+          (template_app (template_hole 4, template_var 0),
+           template_app
+            (template_app (template_hole 3, template_var 1),
+             template_app
+              (template_app
+                (template_hole 2,
+                 template_app (template_hole 6, template_var 1)),
+               template_var 0))),
+         template_app
+          (template_app
+            (template_hole 1,
+             template_app (template_hole 0, template_var 1)),
+           template_var 0)))),
+    ("Hash_Map.abs_update_map_of",
+     "[| ht_hash ?l; ht_distinct ?l; 1 < length ?l |]
+      ==> map_of (concat (abs_update ?k ?v ?l)) = map_of (concat ?l)(?k |->
+          ?v)",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 10, template_var 2)),
+        template_predicate (template_app (template_hole 9, template_var 2)),
+        template_inequation
+         (less_than, template_hole 7,
+          template_app (template_hole 6, template_var 2))],
+       template_equation
+        (template_app
+          (template_hole 4,
+           template_app
+            (template_hole 3,
+             template_app
+              (template_app
+                (template_app (template_hole 2, template_var 1),
+                 template_var 0),
+               template_var 2))),
+         template_app
+          (template_app
+            (template_app
+              (template_hole 1,
+               template_app
+                (template_hole 4,
+                 template_app (template_hole 3, template_var 2))),
+             template_var 1),
+           template_app (template_hole 0, template_var 0))))),
+    ("Hash_Map.ht_hash_in_dom_bounded_hashcode_nat_in_dom",
+     "[| ht_hash ?l; 1 < length ?l;
+         ?k : dom (map_of (?l ! bounded_hashcode_nat (length ?l) ?k)) |]
+      ==> ?k : dom (map_of (concat ?l))",
+     template_implication
+      ([template_predicate (template_app (template_hole 9, template_var 1)),
+        template_inequation
+         (less_than, template_hole 7,
+          template_app (template_hole 6, template_var 1)),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 5, template_var 0),
+              template_app
+               (template_hole 4,
+                template_app
+                 (template_hole 3,
+                  template_app
+                   (template_app (template_hole 2, template_var 1),
+                    template_app
+                     (template_app
+                       (template_hole 1,
+                        template_app (template_hole 6, template_var 1)),
+                      template_var 0)))))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 5, template_var 0),
+             template_app
+              (template_hole 4,
+               template_app
+                (template_hole 3,
+                 template_app (template_hole 0, template_var 1))))
+           ))),
+    ("Hash_Map.abs_update_rehash_map_of",
+     "[| ht_hash ?l; ht_distinct ?l; 1 < length ?l |]
+      ==> map_of (concat (abs_update ?k ?v (ls_rehash ?l))) =
+          map_of (concat ?l)(?k |-> ?v)",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 11, template_var 2)),
+        template_predicate
+         (template_app (template_hole 10, template_var 2)),
+        template_inequation
+         (less_than, template_hole 8,
+          template_app (template_hole 7, template_var 2))],
+       template_equation
+        (template_app
+          (template_hole 5,
+           template_app
+            (template_hole 4,
+             template_app
+              (template_app
+                (template_app (template_hole 3, template_var 1),
+                 template_var 0),
+               template_app (template_hole 2, template_var 2)))),
+         template_app
+          (template_app
+            (template_app
+              (template_hole 1,
+               template_app
+                (template_hole 5,
+                 template_app (template_hole 4, template_var 2))),
+             template_var 1),
+           template_app (template_hole 0, template_var 0))))),
+    ("Hash_Map.abs_update_map_of'",
+     "[| ht_hash ?l; ht_distinct ?l; 1 < length ?l |]
+      ==> map_of (concat (abs_update ?k ?v ?l)) ?x =
+          (map_of (concat ?l)(?k |-> ?v)) ?x",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 10, template_var 3)),
+        template_predicate (template_app (template_hole 9, template_var 3)),
+        template_inequation
+         (less_than, template_hole 7,
+          template_app (template_hole 6, template_var 3))],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 4,
+             template_app
+              (template_hole 3,
+               template_app
+                (template_app
+                  (template_app (template_hole 2, template_var 2),
+                   template_var 1),
+                 template_var 3))),
+           template_var 0),
+         template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_hole 1,
+                 template_app
+                  (template_hole 4,
+                   template_app (template_hole 3, template_var 3))),
+               template_var 2),
+             template_app (template_hole 0, template_var 1)),
+           template_var 0)))),
+    ("Hash_Map.ht_hash_ht_distinct_in_dom_unique_value",
+     "[| ht_hash ?l; ht_distinct ?l; 1 < length ?l;
+         ?k : dom (map_of (concat ?l)) |]
+      ==> EX! v. (?k, v) : set (concat ?l)",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 12, template_var 1)),
+        template_predicate
+         (template_app (template_hole 11, template_var 1)),
+        template_inequation
+         (less_than, template_hole 9,
+          template_app (template_hole 8, template_var 1)),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 7, template_var 0),
+              template_app
+               (template_hole 6,
+                template_app
+                 (template_hole 5,
+                  template_app (template_hole 4, template_var 1))))
+            )],
+       template_predicate (template_app (template_hole 3, t_empty)))),
+    ("Hash_Map.ht_hash_in_dom_i_bounded_hashcode_nat_i",
+     "[| ht_hash ?l; 1 < length ?l; ?i < length ?l;
+         ?k : dom (map_of (?l ! ?i)) |]
+      ==> ?i = bounded_hashcode_nat (length ?l) ?k",
+     template_implication
+      ([template_predicate (template_app (template_hole 9, template_var 2)),
+        template_inequation
+         (less_than, template_hole 7,
+          template_app (template_hole 6, template_var 2)),
+        template_inequation
+         (less_than, template_var 1,
+          template_app (template_hole 6, template_var 2)),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 5, template_var 0),
+              template_app
+               (template_hole 4,
+                template_app
+                 (template_hole 3,
+                  template_app
+                   (template_app (template_hole 2, template_var 2),
+                    template_var 1))))
+            )],
+       template_equation
+        (template_var 1,
+         template_app
+          (template_app
+            (template_hole 0,
+             template_app (template_hole 6, template_var 2)),
+           template_var 0)))),
+    ("Hash_Map.hm_hashcode_eq",
+     "[| ?j < length (?l ! ?i); ?i < length ?l;
+         ?h \<Turnstile> is_hashtable ?l ?ht |]
+      ==> bounded_hashcode_nat (length ?l) (fst (?l ! ?i ! ?j)) = ?i",
+     template_implication
+      ([template_inequation
+         (less_than, template_var 4,
+          template_app
+           (template_hole 8,
+            template_app
+             (template_app (template_hole 7, template_var 3),
+              template_var 2))),
+        template_inequation
+         (less_than, template_var 2,
+          template_app (template_hole 6, template_var 3)),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 5,
+                template_app
+                 (template_app (template_hole 4, template_var 3),
+                  template_var 1)),
+              template_var 0)
+            )],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 2,
+             template_app (template_hole 6, template_var 3)),
+           template_app
+            (template_hole 1,
+             template_app
+              (template_app
+                (template_hole 0,
+                 template_app
+                  (template_app (template_hole 7, template_var 3),
+                   template_var 2)),
+               template_var 4))),
+         template_var 2))),
+    ("Hash_Map.abs_update_map_of'''",
+     "[| ht_hash ?l; ht_distinct ?l; 1 < length ?l; ?x ~= ?k |]
+      ==> map_of (concat (abs_update ?k ?v ?l)) ?x = map_of (concat ?l) ?x",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 10, template_var 3)),
+        template_predicate (template_app (template_hole 9, template_var 3)),
+        template_inequation
+         (less_than, template_hole 7,
+          template_app (template_hole 6, template_var 3)),
+        template_negation
+         (template_equation (template_var 2, template_var 1))],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 2,
+             template_app
+              (template_hole 1,
+               template_app
+                (template_app
+                  (template_app (template_hole 0, template_var 1),
+                   template_var 0),
+                 template_var 3))),
+           template_var 2),
+         template_app
+          (template_app
+            (template_hole 2,
+             template_app (template_hole 1, template_var 3)),
+           template_var 2)))),
+    ("Hash_Map.ls_insls_map_of",
+     "[| ht_hash ?ld; ht_distinct ?ld; 1 < length ?ld;
+         distinct (map fst ?xs) |]
+      ==> map_of (concat (ls_insls ?xs ?ld)) =
+          map_of (concat ?ld) ++ map_of ?xs",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 12, template_var 1)),
+        template_predicate
+         (template_app (template_hole 11, template_var 1)),
+        template_inequation
+         (less_than, template_hole 9,
+          template_app (template_hole 8, template_var 1)),
+        template_predicate
+         (
+            template_app
+             (template_hole 7,
+              template_app
+               (template_app (template_hole 6, template_hole 5),
+                template_var 0))
+            )],
+       template_equation
+        (template_app
+          (template_hole 3,
+           template_app
+            (template_hole 2,
+             template_app
+              (template_app (template_hole 1, template_var 0),
+               template_var 1))),
+         template_app
+          (template_app
+            (template_hole 0,
+             template_app
+              (template_hole 3,
+               template_app (template_hole 2, template_var 1))),
+           template_app (template_hole 3, template_var 0))))),
+    ("Hash_Map.ht_hash_in_bounded_hashcode_nat_not_i_not_in_dom_i",
+     "[| ht_hash ?l; 1 < length ?l; ?i < length ?l;
+         ?i ~= bounded_hashcode_nat (length ?l) ?k |]
+      ==> ?k ~: dom (map_of (?l ! ?i))",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 10, template_var 2)),
+        template_inequation
+         (less_than, template_hole 8,
+          template_app (template_hole 7, template_var 2)),
+        template_inequation
+         (less_than, template_var 1,
+          template_app (template_hole 7, template_var 2)),
+        template_negation
+         (
+            template_equation
+             (template_var 1,
+              template_app
+               (template_app
+                 (template_hole 4,
+                  template_app (template_hole 7, template_var 2)),
+                template_var 0))
+            )],
+       template_negation
+        (
+           template_predicate
+            (
+               template_app
+                (template_app (template_hole 3, template_var 0),
+                 template_app
+                  (template_hole 2,
+                   template_app
+                    (template_hole 1,
+                     template_app
+                      (template_app (template_hole 0, template_var 2),
+                       template_var 1))))
+               )
+           ))),
+    ("Hash_Map.ht_hash_distinct",
+     "ht_hash ?l ==>
+      ALL i j.
+         i ~= j & i < length ?l & j < length ?l -->
+         set (?l ! i) Int set (?l ! j) = {}",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 12, template_var 0))],
+       template_predicate (template_app (template_hole 11, t_empty)))),
+    ("Hash_Map.ht_hash_dom_map_of_disj",
+     "[| ht_hash ?l; ?i < length ?l; ?j < length ?l; ?i ~= ?j |]
+      ==> dom (map_of (?l ! ?i)) Int dom (map_of (?l ! ?j)) = {}",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 10, template_var 2)),
+        template_inequation
+         (less_than, template_var 1,
+          template_app (template_hole 8, template_var 2)),
+        template_inequation
+         (less_than, template_var 0,
+          template_app (template_hole 8, template_var 2)),
+        template_negation
+         (template_equation (template_var 1, template_var 0))],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 4,
+             template_app
+              (template_hole 3,
+               template_app
+                (template_hole 2,
+                 template_app
+                  (template_app (template_hole 1, template_var 2),
+                   template_var 1)))),
+           template_app
+            (template_hole 3,
+             template_app
+              (template_hole 2,
+               template_app
+                (template_app (template_hole 1, template_var 2),
+                 template_var 0)))),
+         template_hole 0))),
+    ("Hash_Map.hm_it_next_rule",
+     "?m' ~= Map.empty ==>
+      <hm_is_it ?m ?ht ?m' ?it> hm_it_next ?it
+      <%((k, v), it').
+          hm_is_it ?m ?ht (?m' |` (- {k})) it' * \<up> (?m' k = Some v)>",
+     template_implication
+      ([template_negation (template_equation (template_var 3, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_hole 12,
+                 template_app
+                  (template_app
+                    (template_app
+                      (template_app (template_hole 11, template_var 2),
+                       template_var 1),
+                     template_var 3),
+                   template_var 0)),
+               template_app (template_hole 10, template_var 0)),
+             template_app
+              (template_hole 9, template_app (template_hole 8, t_empty)))
+           ))),
+    ("Hash_Map.hm_it_next_rule'",
+     "?l' ~= [] ==>
+      <hm_is_it' ?l ?ht ?l' ?it> hm_it_next ?it
+      <%((k, v), it').
+          hm_is_it' ?l ?ht (butlast ?l') it' *
+          \<up> (last ?l' = (k, v) & distinct (map fst ?l'))>",
+     template_implication
+      ([template_negation
+         (template_equation (template_var 3, template_hole 15))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_hole 14,
+                 template_app
+                  (template_app
+                    (template_app
+                      (template_app (template_hole 13, template_var 2),
+                       template_var 1),
+                     template_var 3),
+                   template_var 0)),
+               template_app (template_hole 12, template_var 0)),
+             template_app
+              (template_hole 11, template_app (template_hole 10, t_empty)))
+           ))),
+    ("Hash_Map.skip_empty_aux",
+     "[| concat (take (Suc ?n) ?l) = concat (take (Suc ?x) ?l);
+         Suc ?n <= length ?l; ?x <= ?n |]
+      ==> ALL i. ?x < i & i <= ?n --> ?l ! i = []",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_hole 10,
+            template_app
+             (template_app
+               (template_hole 9,
+                template_app (template_hole 8, template_var 2)),
+              template_var 1)),
+          template_app
+           (template_hole 10,
+            template_app
+             (template_app
+               (template_hole 9,
+                template_app (template_hole 8, template_var 0)),
+              template_var 1))),
+        template_inequation
+         (less_equals, template_app (template_hole 8, template_var 2),
+          template_app (template_hole 6, template_var 1)),
+        template_inequation (less_equals, template_var 0, template_var 2)],
+       template_predicate (template_app (template_hole 5, t_empty)))),
+    ("Hash_Map.abs_update_map_of_hceq",
+     "[| ht_hash ?l; ht_distinct ?l; 1 < length ?l; ?x ~= ?k;
+         bounded_hashcode_nat (length ?l) ?x =
+         bounded_hashcode_nat (length ?l) ?k |]
+      ==> map_of (concat (abs_update ?k ?v ?l)) ?x = map_of (concat ?l) ?x",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 12, template_var 3)),
+        template_predicate
+         (template_app (template_hole 11, template_var 3)),
+        template_inequation
+         (less_than, template_hole 9,
+          template_app (template_hole 8, template_var 3)),
+        template_negation
+         (template_equation (template_var 2, template_var 1)),
+        template_equation
+         (template_app
+           (template_app
+             (template_hole 4,
+              template_app (template_hole 8, template_var 3)),
+            template_var 2),
+          template_app
+           (template_app
+             (template_hole 4,
+              template_app (template_hole 8, template_var 3)),
+            template_var 1))],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 2,
+             template_app
+              (template_hole 1,
+               template_app
+                (template_app
+                  (template_app (template_hole 0, template_var 1),
+                   template_var 0),
+                 template_var 3))),
+           template_var 2),
+         template_app
+          (template_app
+            (template_hole 2,
+             template_app (template_hole 1, template_var 3)),
+           template_var 2)))),
+    ("Hash_Map.abs_update_map_of_hcneq",
+     "[| ht_hash ?l; ht_distinct ?l; 1 < length ?l; ?x ~= ?k;
+         bounded_hashcode_nat (length ?l) ?x ~=
+         bounded_hashcode_nat (length ?l) ?k |]
+      ==> map_of (concat (abs_update ?k ?v ?l)) ?x = map_of (concat ?l) ?x",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 12, template_var 3)),
+        template_predicate
+         (template_app (template_hole 11, template_var 3)),
+        template_inequation
+         (less_than, template_hole 9,
+          template_app (template_hole 8, template_var 3)),
+        template_negation
+         (template_equation (template_var 2, template_var 1)),
+        template_negation
+         (
+            template_equation
+             (template_app
+               (template_app
+                 (template_hole 4,
+                  template_app (template_hole 8, template_var 3)),
+                template_var 2),
+              template_app
+               (template_app
+                 (template_hole 4,
+                  template_app (template_hole 8, template_var 3)),
+                template_var 1))
+            )],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 2,
+             template_app
+              (template_hole 1,
+               template_app
+                (template_app
+                  (template_app (template_hole 0, template_var 1),
+                   template_var 0),
+                 template_var 3))),
+           template_var 2),
+         template_app
+          (template_app
+            (template_hole 2,
+             template_app (template_hole 1, template_var 3)),
+           template_var 2)))),
+    ("Hash_Map.ls_copy_map_of",
+     "[| ht_hash ?ls; ht_distinct ?ls; ht_hash ?ld; ht_distinct ?ld;
+         1 < length ?ld; ?n <= length ?ls |]
+      ==> map_of (concat (ls_copy ?n ?ls ?ld)) =
+          map_of (concat ?ld) ++ map_of (concat (take ?n ?ls))",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 11, template_var 2)),
+        template_predicate
+         (template_app (template_hole 10, template_var 2)),
+        template_predicate
+         (template_app (template_hole 11, template_var 1)),
+        template_predicate
+         (template_app (template_hole 10, template_var 1)),
+        template_inequation
+         (less_than, template_hole 8,
+          template_app (template_hole 7, template_var 1)),
+        template_inequation
+         (less_equals, template_var 0,
+          template_app (template_hole 7, template_var 2))],
+       template_equation
+        (template_app
+          (template_hole 4,
+           template_app
+            (template_hole 3,
+             template_app
+              (template_app
+                (template_app (template_hole 2, template_var 0),
+                 template_var 2),
+               template_var 1))),
+         template_app
+          (template_app
+            (template_hole 1,
+             template_app
+              (template_hole 4,
+               template_app (template_hole 3, template_var 1))),
+           template_app
+            (template_hole 4,
+             template_app
+              (template_hole 3,
+               template_app
+                (template_app (template_hole 0, template_var 0),
+                 template_var 2))))))),
+    ("Hash_Map.hm_it_adjust_rule",
+     "?i < length ?l ==>
+      <is_hashtable ?l ?ht> hm_it_adjust ?i ?ht
+      <%j. is_hashtable ?l ?ht *
+           \<up>
+            (j <= ?i &
+             concat (take (Suc ?i) ?l) = concat (take (Suc j) ?l) &
+             (j = 0 | ?l ! j ~= []))>",
+     template_implication
+      ([template_inequation
+         (less_than, template_var 2,
+          template_app (template_hole 17, template_var 1))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_hole 16,
+                 template_app
+                  (template_app (template_hole 15, template_var 1),
+                   template_var 0)),
+               template_app
+                (template_app (template_hole 14, template_var 2),
+                 template_var 0)),
+             t_empty)
+           ))),
+    ("Hash_Map.nth_concat_splitE",
+     "[| ?i < length (concat ?ls);
+         !!j k.
+            [| j < length ?ls; k < length (?ls ! j);
+               concat ?ls ! ?i = ?ls ! j ! k;
+               ?i = length (concat (take j ?ls)) + k |]
+            ==> ?thesis |]
+      ==> ?thesis",
+     template_implication
+      ([template_inequation
+         (less_than, template_var 2,
+          template_app
+           (template_hole 9,
+            template_app (template_hole 8, template_var 1))),
+        template_predicate (template_app (template_hole 7, t_empty))],
+       template_predicate (template_var 0))),
+    ("Hash_Map.ls_insls_map_of'",
+     "[| ht_hash ?ls; ht_distinct ?ls; ht_hash ?ld; ht_distinct ?ld;
+         1 < length ?ld; ?n < length ?ls |]
+      ==> map_of (concat (ls_insls (?ls ! ?n) ?ld)) ++
+          map_of (concat (take ?n ?ls)) =
+          map_of (concat ?ld) ++ map_of (concat (take (Suc ?n) ?ls))",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 12, template_var 2)),
+        template_predicate
+         (template_app (template_hole 11, template_var 2)),
+        template_predicate
+         (template_app (template_hole 12, template_var 1)),
+        template_predicate
+         (template_app (template_hole 11, template_var 1)),
+        template_inequation
+         (less_than, template_hole 9,
+          template_app (template_hole 8, template_var 1)),
+        template_inequation
+         (less_than, template_var 0,
+          template_app (template_hole 8, template_var 2))],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 6,
+             template_app
+              (template_hole 5,
+               template_app
+                (template_hole 4,
+                 template_app
+                  (template_app
+                    (template_hole 3,
+                     template_app
+                      (template_app (template_hole 2, template_var 2),
+                       template_var 0)),
+                   template_var 1)))),
+           template_app
+            (template_hole 5,
+             template_app
+              (template_hole 4,
+               template_app
+                (template_app (template_hole 1, template_var 0),
+                 template_var 2)))),
+         template_app
+          (template_app
+            (template_hole 6,
+             template_app
+              (template_hole 5,
+               template_app (template_hole 4, template_var 1))),
+           template_app
+            (template_hole 5,
+             template_app
+              (template_hole 4,
+               template_app
+                (template_app
+                  (template_hole 1,
+                   template_app (template_hole 0, template_var 0)),
+                 template_var 2))))))),
+    ("Hash_Map.update_ls_delete_map_of",
+     "[| ht_hash ?l; ht_distinct ?l;
+         ht_hash
+          (?l[bounded_hashcode_nat (length ?l) ?k :=
+                fst (ls_delete ?k
+                      (?l ! bounded_hashcode_nat (length ?l) ?k))]);
+         ht_distinct
+          (?l[bounded_hashcode_nat (length ?l) ?k :=
+                fst (ls_delete ?k
+                      (?l ! bounded_hashcode_nat (length ?l) ?k))]);
+         1 < length ?l |]
+      ==> map_of
+           (concat
+             (?l[bounded_hashcode_nat (length ?l) ?k :=
+                   fst (ls_delete ?k
+                         (?l ! bounded_hashcode_nat (length ?l) ?k))]))
+           ?x =
+          (map_of (concat ?l) |` (- {?k})) ?x",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 16, template_var 2)),
+        template_predicate
+         (template_app (template_hole 15, template_var 2)),
+        template_predicate
+         (
+            template_app
+             (template_hole 16,
+              template_app
+               (template_app
+                 (template_app (template_hole 14, template_var 2),
+                  template_app
+                   (template_app
+                     (template_hole 13,
+                      template_app (template_hole 12, template_var 2)),
+                    template_var 1)),
+                template_app
+                 (template_hole 11,
+                  template_app
+                   (template_app (template_hole 10, template_var 1),
+                    template_app
+                     (template_app (template_hole 9, template_var 2),
+                      template_app
+                       (template_app
+                         (template_hole 13,
+                          template_app (template_hole 12, template_var 2)),
+                        template_var 1))))))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_hole 15,
+              template_app
+               (template_app
+                 (template_app (template_hole 14, template_var 2),
+                  template_app
+                   (template_app
+                     (template_hole 13,
+                      template_app (template_hole 12, template_var 2)),
+                    template_var 1)),
+                template_app
+                 (template_hole 11,
+                  template_app
+                   (template_app (template_hole 10, template_var 1),
+                    template_app
+                     (template_app (template_hole 9, template_var 2),
+                      template_app
+                       (template_app
+                         (template_hole 13,
+                          template_app (template_hole 12, template_var 2)),
+                        template_var 1))))))
+            ),
+        template_inequation
+         (less_than, template_hole 7,
+          template_app (template_hole 12, template_var 2))],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 5,
+             template_app
+              (template_hole 4,
+               template_app
+                (template_app
+                  (template_app (template_hole 14, template_var 2),
+                   template_app
+                    (template_app
+                      (template_hole 13,
+                       template_app (template_hole 12, template_var 2)),
+                     template_var 1)),
+                 template_app
+                  (template_hole 11,
+                   template_app
+                    (template_app (template_hole 10, template_var 1),
+                     template_app
+                      (template_app (template_hole 9, template_var 2),
+                       template_app
+                        (template_app
+                          (template_hole 13,
+                           template_app (template_hole 12, template_var 2)),
+                         template_var 1))))))),
+           template_var 0),
+         template_app
+          (template_app
+            (template_app
+              (template_hole 3,
+               template_app
+                (template_hole 5,
+                 template_app (template_hole 4, template_var 2))),
+             template_app
+              (template_hole 2,
+               template_app
+                (template_app (template_hole 1, template_var 1),
+                 template_hole 0))),
+           template_var 0))))]:
+   (string * thm * template) list
+### theory "Draft.Hash_MapTemplates"
+### 0.900s elapsed time, 1.595s cpu time, 0.787s GC time
+val it = (): unit

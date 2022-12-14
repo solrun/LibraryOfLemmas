@@ -1,0 +1,1811 @@
+Loading theory "Draft.Bit_Strings" (required by "Draft.CombTemplates" via "Draft.Comb" via "Draft.BIT_2comp_on2" via "Draft.BIT")
+Loading theory "HOL-Library.Function_Algebras" (required by "Draft.CombTemplates" via "Draft.ExtrEqs" via "HOL-Library.BigO")
+Loading theory "Draft.On_Off" (required by "Draft.CombTemplates" via "Draft.Comb" via "Draft.TS" via "Draft.OPT2" via "Draft.Partial_Cost_Model" via "Draft.Move_to_Front")
+Loading theory "Draft.Templates" (required by "Draft.CombTemplates" via "Draft.ExtrEqs")
+instantiation
+  fun :: (type, plus) plus
+  plus_fun == plus :: ('a => 'b) => ('a => 'b) => 'a => 'b
+locale On_Off
+  fixes step :: "'state => 'request => 'answer => 'state"
+    and t :: "'state => 'request => 'answer => nat"
+    and wf :: "'state => 'request list => bool"
+instantiation
+  fun :: (type, zero) zero
+  zero_fun == zero_class.zero :: 'a => 'b
+### Missing patterns in function definition:
+### !!a v va. T a (v # va) [] = undefined
+### !!a v va. T a [] (v # va) = undefined
+instantiation
+  fun :: (type, times) times
+  times_fun == times :: ('a => 'b) => ('a => 'b) => 'a => 'b
+instantiation
+  fun :: (type, one) one
+  one_fun == one_class.one :: 'a => 'b
+datatype template_term
+=
+     t_empty
+   | template_app of template_term * template_term
+   | template_hole of int
+   | template_var of int
+datatype sign
+= equals | greater_equals | greater_than | less_equals | less_than
+datatype template
+=
+     template_bimplication of template * template
+   | template_dunno
+   | template_equation of template_term * template_term
+   | template_implication of template list * template
+   | template_inequation of sign * template_term * template_term
+   | template_negation of template
+   | template_predicate of template_term
+constructor t_empty: template_term
+constructor template_app: template_term * template_term -> template_term
+constructor template_hole: int -> template_term
+constructor template_var: int -> template_term
+constructor equals: sign
+constructor greater_equals: sign
+constructor greater_than: sign
+constructor less_equals: sign
+constructor less_than: sign
+constructor template_bimplication: template * template -> template
+constructor template_dunno: template
+constructor template_equation: template_term * template_term -> template
+constructor template_implication: template list * template -> template
+constructor template_inequation:
+   sign * template_term * template_term -> template
+constructor template_negation: template -> template
+constructor template_predicate: template_term -> template
+val vfs = fn: term -> (indexname * typ) list * (string * typ) list
+val indexOf = fn: ''a list -> ''a -> int -> int
+val has_eq = fn: term -> bool
+val term2template = fn:
+   (indexname * typ) list -> (string * typ) list -> term -> template_term
+val lemma2predicate = fn: term -> term -> template
+val makeTemplatewithContext = fn: term -> term -> template
+val lemma2template = fn: term -> template
+val thm2template = fn: thm -> template
+val tterm2string = fn: template_term -> string
+val template2string = fn: template -> string
+val t = "height ?t <= size ?t": thm
+val th =
+   Const ("HOL.Trueprop", "bool => prop") $
+     (Const ("Orderings.ord_class.less_eq", "nat => nat => bool") $
+       (Const ("Tree.height_class.height", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree")) $
+       (Const ("Nat.size_class.size", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree"))):
+   term
+### theory "Draft.Templates"
+### 0.116s elapsed time, 0.468s cpu time, 0.042s GC time
+Loading theory "Draft.Prob_Theory" (required by "Draft.CombTemplates" via "Draft.Comb" via "Draft.TS" via "Draft.OPT2" via "Draft.Partial_Cost_Model" via "Draft.Move_to_Front" via "Draft.Competitive_Analysis")
+### theory "HOL-Library.Function_Algebras"
+### 0.134s elapsed time, 0.530s cpu time, 0.042s GC time
+Loading theory "HOL-Library.BigO" (required by "Draft.CombTemplates" via "Draft.ExtrEqs")
+Found termination order: "(%p. size (snd p)) <*mlex*> {}"
+Found termination order: "(%p. length (snd (snd p))) <*mlex*> {}"
+### theory "Draft.Bit_Strings"
+### 0.204s elapsed time, 0.825s cpu time, 0.042s GC time
+Loading theory "Draft.Inversion" (required by "Draft.CombTemplates" via "Draft.Comb" via "Draft.TS" via "Draft.OPT2" via "Draft.Partial_Cost_Model" via "Draft.Move_to_Front" via "Draft.Swaps")
+Found termination order: "(%p. length (snd (snd p))) <*mlex*> {}"
+### theory "Draft.Inversion"
+### 0.084s elapsed time, 0.336s cpu time, 0.000s GC time
+Loading theory "Draft.Swaps" (required by "Draft.CombTemplates" via "Draft.Comb" via "Draft.TS" via "Draft.OPT2" via "Draft.Partial_Cost_Model" via "Draft.Move_to_Front")
+Found termination order: "size <*mlex*> {}"
+### theory "Draft.Swaps"
+### 0.114s elapsed time, 0.433s cpu time, 0.094s GC time
+Loading theory "Draft.RExp_Var" (required by "Draft.CombTemplates" via "Draft.Comb" via "Draft.TS" via "Draft.OPT2")
+Found termination order: "(%p. length (snd (snd p))) <*mlex*> {}"
+Found termination order: "(%p. length (snd p)) <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+Found termination order: "(%p. length (snd (snd p))) <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+Found termination order: "{}"
+### theory "Draft.On_Off"
+### 0.686s elapsed time, 2.683s cpu time, 0.270s GC time
+[| finite ?A; !!a. [| a : set_pmf ?M; ?f a ~= (0::?'b) |] ==> a : ?A |]
+==> measure_pmf.expectation ?M ?f = (SUM a:?A. pmf ?M a *\<^sub>R ?f a)
+set_pmf ?p Int ?s ~= {} ==>
+pmf (cond_pmf ?p ?s) ?x =
+(if ?x : ?s then pmf ?p ?x / measure_pmf.prob ?p ?s else 0)
+[| 0 < ?p1; ?p1 < 1 |]
+==> pmf (cond_pmf
+          (bernoulli_pmf ?p1 >>=
+           (%b. if b then map_pmf Inl ?Da1 else map_pmf Inr ?Db1))
+          {f. EX e. Inl e = f})
+     ?x =
+    (if ?x : {f. EX e. Inl e = f}
+     then pmf (bernoulli_pmf ?p1 >>=
+               (%b. if b then map_pmf Inl ?Da1 else map_pmf Inr ?Db1))
+           ?x /
+          measure_pmf.prob
+           (bernoulli_pmf ?p1 >>=
+            (%b. if b then map_pmf Inl ?Da1 else map_pmf Inr ?Db1))
+           {f. EX e. Inl e = f}
+     else 0)
+"%a. case a of Inl e => Inl (fa e) | Inr e => Inr (fb e)"
+  :: "'a + 'b => 'c + 'd"
+### theory "Draft.Prob_Theory"
+### 0.572s elapsed time, 2.234s cpu time, 0.228s GC time
+"(>>=)"
+  :: "'a pmf => ('a => 'b pmf) => 'b pmf"
+Loading theory "Draft.Competitive_Analysis" (required by "Draft.CombTemplates" via "Draft.Comb" via "Draft.TS" via "Draft.OPT2" via "Draft.Partial_Cost_Model" via "Draft.Move_to_Front")
+Found termination order: "size_list size <*mlex*> {}"
+Found termination order: "(%p. size (fst p)) <*mlex*> {}"
+### theory "HOL-Library.BigO"
+### 0.731s elapsed time, 2.709s cpu time, 0.289s GC time
+Loading theory "Draft.ExtrEqs" (required by "Draft.CombTemplates")
+Found termination order: "{}"
+Found termination order: "{}"
+Found termination order: "{}"
+Found termination order: "size_list size <*mlex*> {}"
+L (set ?rs) = lang (verund ?rs)
+lang (subst (w2rexp (?xs @ ?ys)) ?\<sigma>) =
+lang (subst (w2rexp ?xs) ?\<sigma>) @@ lang (subst (w2rexp ?ys) ?\<sigma>)
+L (concS ?M1.0 ?M2.0) = L ?M1.0 @@ L ?M2.0
+L (substL (lang ?E) ?\<sigma>) = lang (subst ?E ?\<sigma>)
+check_eqv ?r ?s ==> lang ?r = lang ?s
+locale On_Off
+  fixes step :: "'state => 'request => 'answer => 'state"
+    and t :: "'state => 'request => 'answer => nat"
+    and wf :: "'state => 'request list => bool"
+### Missing patterns in function definition:
+### !!a v va. steps a (v # va) [] = undefined
+### !!a v va. steps a [] (v # va) = undefined
+Found termination order: "size_list size <*mlex*> {}"
+check_eqv ?r ?s ==> lang ?r = lang ?s
+check_eqv ?r ?s ==> lang ?r = lang ?s
+check_eqv ?r ?s ==> lang ?r = lang ?s
+Found termination order: "(%p. length (snd (snd p))) <*mlex*> {}"
+check_eqv ?r ?s ==> lang ?r = lang ?s
+### theory "Draft.RExp_Var"
+### 1.015s elapsed time, 3.344s cpu time, 0.773s GC time
+Found termination order: "(%p. length (snd (snd p))) <*mlex*> {}"
+val eqpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Var (("_dummy_", 2), "?'a"))
+       ):
+   term Find_Theorems.criterion
+val badeqpattern = Pattern (Const ("Pure.eq", "?'a => ?'a => prop")):
+   term Find_Theorems.criterion
+val undefpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Const ("HOL.undefined", "?'a"))
+       ):
+   term Find_Theorems.criterion
+val thmpattern =
+   Pattern
+    (Const ("HOL.Trueprop", "bool => prop") $ Var (("_dummy_", 1), "bool")):
+   term Find_Theorems.criterion
+val badnames =
+   ["*nitpick*", "*Nitpick*", "*full_exhaustive*", "*_def*", "Enum.finite*",
+    "*Quickcheck*", "ATP*", "*Nunchaku*", "*Code*", "*BNF*", "*SMT*",
+    "*.*.*"]:
+   string list
+val unwanted_names =
+   [(false, Name "*nitpick*"), (false, Name "*Nitpick*"),
+    (false, Name "*full_exhaustive*"), (false, Name "*_def*"),
+    (false, Name "Enum.finite*"), (false, Name "*Quickcheck*"),
+    (false, Name "ATP*"), (false, Name "*Nunchaku*"),
+    (false, Name "*Code*"), (false, Name "*BNF*"), (false, Name "*SMT*"),
+    (false, Name "*.*.*")]:
+   (bool * term Find_Theorems.criterion) list
+val has_vars = fn: term -> bool
+val get_all_eqs = fn: string -> Proof.context -> (string * thm) list
+val get_all_thms = fn: string -> Proof.context -> (string * thm) list
+val get_noneq_thms = fn: string -> Proof.context -> (string * thm) list
+val template_eqs = fn:
+   string -> Proof.context -> (string * thm * template) list
+val template_thms = fn:
+   string -> Proof.context -> (string * thm * template) list
+### theory "Draft.ExtrEqs"
+### 0.741s elapsed time, 2.087s cpu time, 0.578s GC time
+Found termination order: "(%p. length (snd (snd p))) <*mlex*> {}"
+Found termination order: "{}"
+### theory "Draft.Competitive_Analysis"
+### 1.247s elapsed time, 3.021s cpu time, 0.708s GC time
+Loading theory "Draft.Move_to_Front" (required by "Draft.CombTemplates" via "Draft.Comb" via "Draft.TS" via "Draft.OPT2" via "Draft.Partial_Cost_Model")
+?A Int set ?xs = set (filter (%x. x : ?A) ?xs)
+locale MTF_Off
+  fixes as :: "(nat * nat list) list"
+    and rs :: "'a list"
+    and s0 :: "'a list"
+  assumes "MTF_Off as rs s0"
+Found termination order: "size <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+Found termination order: "(%p. length (snd (snd p))) <*mlex*> {}"
+Found termination order: "(%p. length (snd p)) <*mlex*> {}"
+Found termination order: "(%p. size (snd (snd p))) <*mlex*> {}"
+### theory "Draft.Move_to_Front"
+### 2.856s elapsed time, 3.661s cpu time, 1.134s GC time
+Loading theory "Draft.MTF2_Effects" (required by "Draft.CombTemplates" via "Draft.Comb" via "Draft.TS" via "Draft.List_Factoring")
+Loading theory "Draft.Partial_Cost_Model" (required by "Draft.CombTemplates" via "Draft.Comb" via "Draft.TS" via "Draft.OPT2")
+"mtf2"
+  :: "nat => 'a => 'a list => 'a list"
+### theory "Draft.MTF2_Effects"
+### 0.261s elapsed time, 0.576s cpu time, 0.090s GC time
+Loading theory "Draft.BIT" (required by "Draft.CombTemplates" via "Draft.Comb" via "Draft.BIT_2comp_on2")
+### theory "Draft.Partial_Cost_Model"
+### 0.691s elapsed time, 1.556s cpu time, 0.377s GC time
+Loading theory "Draft.List_Factoring" (required by "Draft.CombTemplates" via "Draft.Comb" via "Draft.TS")
+Loading theory "Draft.OPT2" (required by "Draft.CombTemplates" via "Draft.Comb" via "Draft.TS")
+Found termination order: "{}"
+### Missing patterns in function definition:
+### !!a va vb v. steps' a (va # vb) [] (Suc v) = undefined
+### !!a va vb v. steps' a [] (va # vb) (Suc v) = undefined
+### Missing patterns in function definition:
+### !!v vb vc. OPT2 (v # vb # vc) [] = undefined
+### !!v vb vc va. OPT2 (v # vb # vc) [va] = undefined
+### !!v vb vc va ve vg vh. OPT2 (v # vb # vc) (va # ve # vg # vh) = undefined
+### (6 more)
+Found termination order: "(%p. size (snd (snd (snd p)))) <*mlex*> {}"
+"config'_rand BIT s0 qs"
+  :: "('a list * bool list * 'a list) pmf"
+locale BIT_Off
+  fixes acts :: "(nat * nat list) list"
+    and qs :: "'a list"
+    and init :: "'a list"
+  assumes "BIT_Off acts qs init"
+Found termination order: "(%p. length (fst p)) <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+Found termination order: "(%p. size_list size (fst p)) <*mlex*> {}"
+"%i. ALG'_det Strat (A @ [b]) init i y"
+  :: "nat => nat"
+### theory "Draft.OPT2"
+### 1.473s elapsed time, 4.657s cpu time, 1.265s GC time
+Loading theory "Draft.Phase_Partitioning" (required by "Draft.CombTemplates" via "Draft.Comb" via "Draft.TS")
+Found termination order: "(%p. size (snd p)) <*mlex*> {}"
+Found termination order: "{}"
+### Ignoring duplicate rewrite rule:
+### distinct init == True
+[| ?c : ?A Un ?B; ?c : ?A ==> ?P; ?c : ?B ==> ?P |] ==> ?P
+[| ?c : ?A Un ?B; ?c : ?A ==> ?P; ?c : ?B ==> ?P |] ==> ?P
+[| ?qs : Lxx ?x ?y; ?qs : lang (seq [Atom ?x, Atom ?x]) ==> ?P ?x ?y ?qs;
+   ?qs
+   : lang
+      (seq [question (Atom ?x), Atom ?y, Atom ?x,
+            Star (Times (Atom ?y) (Atom ?x)), Atom ?y, Atom ?y]) ==>
+   ?P ?x ?y ?qs;
+   ?qs
+   : lang
+      (seq [question (Atom ?x), Atom ?y, Atom ?x,
+            Star (Times (Atom ?y) (Atom ?x)), Atom ?x]) ==>
+   ?P ?x ?y ?qs;
+   ?qs : lang (seq [question (Atom ?x), Atom ?y, Atom ?y]) ==>
+   ?P ?x ?y ?qs |]
+==> ?P ?x ?y ?qs
+### theory "Draft.List_Factoring"
+### 1.715s elapsed time, 5.402s cpu time, 1.371s GC time
+Found termination order: "{}"
+"A"
+  :: "(nat list => 'is) * (nat list * 'is => nat => (nat * nat list) * 'is)"
+"Inv"
+  :: "'b list => 'b list => ('b * 'b) set"
+real (T\<^sub>p ?s0.0 ?qs (Partial_Cost_Model.off2 ?A (?s0.0, ?x) ?qs)) =
+T\<^sub>p_on_rand' (Partial_Cost_Model.embed ?A) (return_pmf (?s0.0, ?x))
+ ?qs
+### theory "Draft.Phase_Partitioning"
+### 0.398s elapsed time, 1.098s cpu time, 0.171s GC time
+Loading theory "Draft.TS" (required by "Draft.CombTemplates" via "Draft.Comb")
+"Partial_Cost_Model.T_on'"
+  :: "('a list => 'b) * ('a list * 'b => 'a => (nat * nat list) * 'b)
+      => 'a list * 'b => 'a list => nat"
+"Partial_Cost_Model.embed"
+  :: "('a list => 'b) * ('a list * 'b => 'a => (nat * nat list) * 'b)
+      => ('a list => 'b pmf) *
+         ('a list * 'b => 'a => ((nat * nat list) * 'b) pmf)"
+[| ?x0.0 ~= ?y0.0; 0 <= ?c; set ?\<sigma> <= {?x0.0, ?y0.0};
+   ?P (map_pmf (Pair [?x0.0, ?y0.0]) (fst ?A [?x0.0, ?y0.0])) ?x0.0
+    [?x0.0, ?y0.0];
+   !!a b \<sigma> s.
+      [| \<sigma> : Lxx a b; a ~= b; {a, b} = {?x0.0, ?y0.0};
+         ?P s a [?x0.0, ?y0.0]; set \<sigma> <= {a, b} |]
+      ==> T\<^sub>p_on_rand' ?A s \<sigma>
+          <= ?c * real (T\<^sub>p [a, b] \<sigma> (OPT2 \<sigma> [a, b])) &
+          ?P (Partial_Cost_Model.config'_rand ?A s \<sigma>) (last \<sigma>)
+           [?x0.0, ?y0.0] |]
+==> T\<^sub>p_on_rand' ?A
+     (fst ?A [?x0.0, ?y0.0] >>= (%is. return_pmf ([?x0.0, ?y0.0], is)))
+     ?\<sigma>
+    <= ?c * real (T\<^sub>p_opt [?x0.0, ?y0.0] ?\<sigma>) + ?c
+### theory "Draft.BIT"
+### 2.408s elapsed time, 6.923s cpu time, 1.563s GC time
+Loading theory "Draft.BIT_pairwise" (required by "Draft.CombTemplates" via "Draft.Comb")
+Loading theory "Draft.BIT_2comp_on2" (required by "Draft.CombTemplates" via "Draft.Comb")
+Found termination order: "{}"
+### theory "Draft.BIT_pairwise"
+### 0.513s elapsed time, 1.557s cpu time, 0.140s GC time
+### theory "Draft.TS"
+### 1.155s elapsed time, 2.962s cpu time, 0.348s GC time
+### theory "Draft.BIT_2comp_on2"
+### 1.226s elapsed time, 2.943s cpu time, 0.469s GC time
+Loading theory "Draft.Comb" (required by "Draft.CombTemplates")
+### theory "Draft.Comb"
+### 0.724s elapsed time, 0.724s cpu time, 0.000s GC time
+Loading theory "Draft.CombTemplates"
+val templateLemmas =
+   [("While_Combinator.while_option_stop",
+     "while_option ?b ?c ?s = Some ?t ==> ~ ?b ?t",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app
+             (template_app (template_hole 2, template_var 3),
+              template_var 2),
+            template_var 1),
+          template_app (template_hole 1, template_var 0))],
+       template_negation
+        (
+           template_predicate
+            (template_app (template_var 3, template_var 0))
+           ))),
+    ("While_Combinator.while_unfold",
+     "while ?b ?c ?s = (if ?b ?s then while ?b ?c (?c ?s) else ?s)",
+     template_equation
+      (template_app
+        (template_app
+          (template_app (template_hole 1, template_var 2), template_var 1),
+         template_var 0),
+       template_app
+        (template_app
+          (template_app
+            (template_hole 0,
+             template_app (template_var 2, template_var 0)),
+           template_app
+            (template_app
+              (template_app (template_hole 1, template_var 2),
+               template_var 1),
+             template_app (template_var 1, template_var 0))),
+         template_var 0))),
+    ("Comb.BIT_config'_fin",
+     "finite (set_pmf ?s) ==>
+      finite (set_pmf (Partial_Cost_Model.config'_rand BIT ?s ?qs))",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_hole 6,
+              template_app (template_hole 5, template_var 1))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_hole 6,
+             template_app
+              (template_hole 5,
+               template_app
+                (template_app
+                  (template_app
+                    (template_app (template_hole 4, template_hole 3),
+                     template_app
+                      (template_app (template_hole 2, template_hole 1),
+                       template_hole 0)),
+                   template_var 1),
+                 template_var 0)))
+           ))),
+    ("Comb.TS_config'_fin",
+     "finite (set_pmf ?s) ==>
+      finite
+       (set_pmf
+         (Partial_Cost_Model.config'_rand
+           (Partial_Cost_Model.embed (rTS ?h)) ?s ?qs))",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_hole 5,
+              template_app (template_hole 4, template_var 2))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_hole 5,
+             template_app
+              (template_hole 4,
+               template_app
+                (template_app
+                  (template_app
+                    (template_app (template_hole 3, template_hole 2),
+                     template_app
+                      (template_hole 1,
+                       template_app (template_hole 0, template_var 1))),
+                   template_var 2),
+                 template_var 0)))
+           ))),
+    ("While_Combinator.while_option_unfold",
+     "while_option ?b ?c ?s =
+      (if ?b ?s then while_option ?b ?c (?c ?s) else Some ?s)",
+     template_equation
+      (template_app
+        (template_app
+          (template_app (template_hole 2, template_var 2), template_var 1),
+         template_var 0),
+       template_app
+        (template_app
+          (template_app
+            (template_hole 1,
+             template_app (template_var 2, template_var 0)),
+           template_app
+            (template_app
+              (template_app (template_hole 2, template_var 2),
+               template_var 1),
+             template_app (template_var 1, template_var 0))),
+         template_app (template_hole 0, template_var 0)))),
+    ("Comb.COMB_no_paid",
+     "ALL ((free, paid), t):set_pmf (snd (COMB []) (?s, ?is) ?q).
+         paid = []",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_hole 8,
+             template_app
+              (template_hole 7,
+               template_app
+                (template_app
+                  (template_app
+                    (template_hole 6,
+                     template_app (template_hole 5, template_hole 4)),
+                   template_app
+                    (template_app (template_hole 3, template_var 2),
+                     template_var 1)),
+                 template_var 0))),
+           template_app
+            (template_hole 2, template_app (template_hole 1, t_empty)))
+         )),
+    ("While_Combinator.rtrancl_while_invariant",
+     "[| While_Combinator.rtrancl_while_invariant ?p ?f ?x ?st;
+         While_Combinator.rtrancl_while_test ?p ?st |]
+      ==> While_Combinator.rtrancl_while_invariant ?p ?f ?x
+           (While_Combinator.rtrancl_while_step ?f ?st)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 2, template_var 3),
+                  template_var 2),
+                template_var 1),
+              template_var 0)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 1, template_var 3),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 2, template_var 3),
+                 template_var 2),
+               template_var 1),
+             template_app
+              (template_app (template_hole 0, template_var 2),
+               template_var 0))
+           ))),
+    ("While_Combinator.wf_finite_greater",
+     "finite ?C ==> wf {(x, y). {x, y} <= ?C & y < x}",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 8, template_var 0))],
+       template_predicate
+        (
+           template_app
+            (template_hole 7,
+             template_app
+              (template_hole 6, template_app (template_hole 5, t_empty)))
+           ))),
+    ("While_Combinator.wf_finite_less",
+     "finite ?C ==> wf {(x, y). {x, y} <= ?C & x < y}",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 8, template_var 0))],
+       template_predicate
+        (
+           template_app
+            (template_hole 7,
+             template_app
+              (template_hole 6, template_app (template_hole 5, t_empty)))
+           ))),
+    ("While_Combinator.gfp_while_lattice",
+     "[| mono ?f; finite UNIV |]
+      ==> gfp ?f = while (%A. ?f A ~= A) ?f \<top>",
+     template_implication
+      ([template_predicate (template_app (template_hole 7, template_var 0)),
+        template_predicate
+         (template_app (template_hole 6, template_hole 5))],
+       template_equation
+        (template_app (template_hole 3, template_var 0),
+         template_app
+          (template_app
+            (template_app (template_hole 2, t_empty), template_var 0),
+           template_hole 0)))),
+    ("While_Combinator.lfp_while_lattice",
+     "[| mono ?f; finite UNIV |]
+      ==> lfp ?f = while (%A. ?f A ~= A) ?f \<bottom>",
+     template_implication
+      ([template_predicate (template_app (template_hole 7, template_var 0)),
+        template_predicate
+         (template_app (template_hole 6, template_hole 5))],
+       template_equation
+        (template_app (template_hole 3, template_var 0),
+         template_app
+          (template_app
+            (template_app (template_hole 2, t_empty), template_var 0),
+           template_hole 0)))),
+    ("Comb.finite_config_TS",
+     "finite
+       (set_pmf
+         (Partial_Cost_Model.config'_rand
+           (Partial_Cost_Model.embed (rTS ?h))
+           (fst (Partial_Cost_Model.embed (rTS ?h)) ?init >>=
+            (%is. return_pmf (?init, is)))
+           (take ?n ?qs)))",
+     template_predicate
+      (
+         template_app
+          (template_hole 10,
+           template_app
+            (template_hole 9,
+             template_app
+              (template_app
+                (template_app
+                  (template_app (template_hole 8, template_hole 7),
+                   template_app
+                    (template_hole 6,
+                     template_app (template_hole 5, template_var 3))),
+                 template_app
+                  (template_app
+                    (template_hole 4,
+                     template_app
+                      (template_app
+                        (template_hole 3,
+                         template_app
+                          (template_hole 6,
+                           template_app (template_hole 5, template_var 3))),
+                       template_var 2)),
+                   t_empty)),
+               template_app
+                (template_app (template_hole 0, template_var 1),
+                 template_var 0))))
+         )),
+    ("While_Combinator.while_option_stop2",
+     "while_option ?b ?c ?s = Some ?t ==>
+      EX k. ?t = (?c ^^ k) ?s & ~ ?b ?t",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app
+             (template_app (template_hole 6, template_var 3),
+              template_var 2),
+            template_var 1),
+          template_app (template_hole 5, template_var 0))],
+       template_predicate (template_app (template_hole 4, t_empty)))),
+    ("While_Combinator.gfp_the_while_option_lattice",
+     "[| mono ?f; finite UNIV |]
+      ==> gfp ?f = the (while_option (%A. ?f A ~= A) ?f \<top>)",
+     template_implication
+      ([template_predicate (template_app (template_hole 8, template_var 0)),
+        template_predicate
+         (template_app (template_hole 7, template_hole 6))],
+       template_equation
+        (template_app (template_hole 4, template_var 0),
+         template_app
+          (template_hole 3,
+           template_app
+            (template_app
+              (template_app (template_hole 2, t_empty), template_var 0),
+             template_hole 0))))),
+    ("While_Combinator.lfp_the_while_option_lattice",
+     "[| mono ?f; finite UNIV |]
+      ==> lfp ?f = the (while_option (%A. ?f A ~= A) ?f \<bottom>)",
+     template_implication
+      ([template_predicate (template_app (template_hole 8, template_var 0)),
+        template_predicate
+         (template_app (template_hole 7, template_hole 6))],
+       template_equation
+        (template_app (template_hole 4, template_var 0),
+         template_app
+          (template_hole 3,
+           template_app
+            (template_app
+              (template_app (template_hole 2, t_empty), template_var 0),
+             template_hole 0))))),
+    ("While_Combinator.rtrancl_while_finite_Some",
+     "finite ({(x, y). y : set (?f x)}^* `` {?x}) ==>
+      EX y. rtrancl_while ?p ?f ?x = Some y",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_hole 12,
+              template_app
+               (template_app
+                 (template_hole 11,
+                  template_app
+                   (template_hole 10,
+                    template_app
+                     (template_hole 9,
+                      template_app (template_hole 8, t_empty)))),
+                template_app
+                 (template_app (template_hole 5, template_var 1),
+                  template_hole 4)))
+            )],
+       template_predicate (template_app (template_hole 3, t_empty)))),
+    ("Comb.COMB_has_finite_config_set",
+     "[| distinct ?init; set ?qs <= set ?init |]
+      ==> finite
+           (set_pmf
+             (Partial_Cost_Model.config'_rand (COMB ?h)
+               (fst (COMB ?h) ?init >>= (%is. return_pmf (?init, is)))
+               ?qs))",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 11, template_var 2)),
+        template_inequation
+         (less_equals, template_app (template_hole 9, template_var 1),
+          template_app (template_hole 9, template_var 2))],
+       template_predicate
+        (
+           template_app
+            (template_hole 8,
+             template_app
+              (template_hole 7,
+               template_app
+                (template_app
+                  (template_app
+                    (template_app (template_hole 6, template_hole 5),
+                     template_app (template_hole 4, template_var 0)),
+                   template_app
+                    (template_app
+                      (template_hole 3,
+                       template_app
+                        (template_app
+                          (template_hole 2,
+                           template_app (template_hole 4, template_var 0)),
+                         template_var 2)),
+                     t_empty)),
+                 template_var 1)))
+           ))),
+    ("While_Combinator.while_option_finite_increasing_Some",
+     "[| mono ?f; finite UNIV; ?s <= ?f ?s |]
+      ==> EX P. while_option (%A. ?f A ~= A) ?f ?s = Some P",
+     template_implication
+      ([template_predicate (template_app (template_hole 9, template_var 1)),
+        template_predicate
+         (template_app (template_hole 8, template_hole 7)),
+        template_inequation
+         (less_equals, template_var 0,
+          template_app (template_var 1, template_var 0))],
+       template_predicate (template_app (template_hole 5, t_empty)))),
+    ("While_Combinator.while_option_finite_decreasing_Some",
+     "[| mono ?f; finite UNIV; ?f ?s <= ?s |]
+      ==> EX P. while_option (%A. ?f A ~= A) ?f ?s = Some P",
+     template_implication
+      ([template_predicate (template_app (template_hole 9, template_var 1)),
+        template_predicate
+         (template_app (template_hole 8, template_hole 7)),
+        template_inequation
+         (less_equals, template_app (template_var 1, template_var 0),
+          template_var 0)],
+       template_predicate (template_app (template_hole 5, t_empty)))),
+    ("While_Combinator.while_option_rule",
+     "[| !!s. [| ?P s; ?b s |] ==> ?P (?c s);
+         while_option ?b ?c ?s = Some ?t; ?P ?s |]
+      ==> ?P ?t",
+     template_implication
+      ([template_predicate (template_app (template_hole 4, t_empty)),
+        template_equation
+         (template_app
+           (template_app
+             (template_app (template_hole 1, template_var 3),
+              template_var 2),
+            template_var 1),
+          template_app (template_hole 0, template_var 0)),
+        template_predicate (template_app (template_var 4, template_var 1))],
+       template_predicate (template_app (template_var 4, template_var 0)))),
+    ("Comb.COMB_init",
+     "COMB_init ?h ?init =
+      bernoulli_pmf (8 / 10) >>=
+      (%b. bv (length ?init) >>=
+           (%xs. return_pmf (if b then Inl (xs, ?init) else Inr ?h)))",
+     template_equation
+      (template_app
+        (template_app (template_hole 15, template_var 1), template_var 0),
+       template_app
+        (template_app
+          (template_hole 14,
+           template_app
+            (template_hole 13,
+             template_app
+              (template_app
+                (template_hole 12,
+                 template_app
+                  (template_hole 11,
+                   template_app
+                    (template_hole 10,
+                     template_app
+                      (template_hole 10,
+                       template_app (template_hole 10, template_hole 9))))),
+               template_app
+                (template_hole 11,
+                 template_app
+                  (template_hole 10,
+                   template_app
+                    (template_hole 8,
+                     template_app (template_hole 10, template_hole 9))))))),
+         t_empty))),
+    ("While_Combinator.funpow_commute",
+     "ALL k'<?k. ?f (?c ((?c ^^ k') ?s)) = ?c' (?f ((?c ^^ k') ?s)) ==>
+      ?f ((?c ^^ ?k) ?s) = (?c' ^^ ?k) (?f ?s)",
+     template_implication
+      ([template_predicate (template_app (template_hole 5, t_empty))],
+       template_equation
+        (template_app
+          (template_var 3,
+           template_app
+            (template_app
+              (template_app (template_hole 1, template_var 4),
+               template_var 2),
+             template_var 1)),
+         template_app
+          (template_app
+            (template_app (template_hole 0, template_var 4),
+             template_var 0),
+           template_app (template_var 3, template_var 1))))),
+    ("While_Combinator.lfp_while",
+     "[| mono ?f; !!X. X <= ?C ==> ?f X <= ?C; finite ?C |]
+      ==> lfp ?f = while (%A. ?f A ~= A) ?f {}",
+     template_implication
+      ([template_predicate (template_app (template_hole 8, template_var 1)),
+        template_predicate (template_app (template_hole 7, t_empty)),
+        template_predicate
+         (template_app (template_hole 5, template_var 0))],
+       template_equation
+        (template_app (template_hole 3, template_var 1),
+         template_app
+          (template_app
+            (template_app (template_hole 2, t_empty), template_var 1),
+           template_hole 0)))),
+    ("While_Combinator.lfp_the_while_option",
+     "[| mono ?f; !!X. X <= ?C ==> ?f X <= ?C; finite ?C |]
+      ==> lfp ?f = the (while_option (%A. ?f A ~= A) ?f {})",
+     template_implication
+      ([template_predicate (template_app (template_hole 9, template_var 1)),
+        template_predicate (template_app (template_hole 8, t_empty)),
+        template_predicate
+         (template_app (template_hole 6, template_var 0))],
+       template_equation
+        (template_app (template_hole 4, template_var 1),
+         template_app
+          (template_hole 3,
+           template_app
+            (template_app
+              (template_app (template_hole 2, t_empty), template_var 1),
+             template_hole 0))))),
+    ("While_Combinator.measure_while_option_Some",
+     "[| !!s. [| ?P s; ?b s |] ==> ?P (?c s) & ?f (?c s) < ?f s; ?P ?s |]
+      ==> EX t. while_option ?b ?c ?s = Some t",
+     template_implication
+      ([template_predicate (template_app (template_hole 7, t_empty)),
+        template_predicate (template_app (template_var 4, template_var 0))],
+       template_predicate (template_app (template_hole 3, t_empty)))),
+    ("While_Combinator.while_option_finite_subset_Some",
+     "[| mono ?f; !!X. X <= ?C ==> ?f X <= ?C; finite ?C |]
+      ==> EX P. while_option (%A. ?f A ~= A) ?f {} = Some P",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 10, template_var 1)),
+        template_predicate (template_app (template_hole 9, t_empty)),
+        template_predicate
+         (template_app (template_hole 7, template_var 0))],
+       template_predicate (template_app (template_hole 6, t_empty)))),
+    ("While_Combinator.while_option_commute",
+     "[| !!s. ?b s = ?b' (?f s); !!s. ?b s ==> ?f (?c s) = ?c' (?f s) |]
+      ==> map_option ?f (while_option ?b ?c ?s) =
+          while_option ?b' ?c' (?f ?s)",
+     template_implication
+      ([template_predicate (template_app (template_hole 7, t_empty)),
+        template_predicate (template_app (template_hole 7, t_empty))],
+       template_equation
+        (template_app
+          (template_app (template_hole 2, template_var 3),
+           template_app
+            (template_app
+              (template_app (template_hole 1, template_var 5),
+               template_var 2),
+             template_var 0)),
+         template_app
+          (template_app
+            (template_app (template_hole 0, template_var 4),
+             template_var 1),
+           template_app (template_var 3, template_var 0))))),
+    ("While_Combinator.wf_while_option_Some",
+     "[| wf {(t, s). (?P s & ?b s) & t = ?c s};
+         !!s. [| ?P s; ?b s |] ==> ?P (?c s); ?P ?s |]
+      ==> EX t. while_option ?b ?c ?s = Some t",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_hole 9,
+              template_app
+               (template_hole 8, template_app (template_hole 7, t_empty)))
+            ),
+        template_predicate (template_app (template_hole 4, t_empty)),
+        template_predicate (template_app (template_var 3, template_var 0))],
+       template_predicate (template_app (template_hole 3, t_empty)))),
+    ("While_Combinator.wf_rel_while_option_Some",
+     "[| wf ?R; !!s. ?P s & ?b s ==> (?c s, s) : ?R;
+         !!s. ?P s & ?b s ==> ?P (?c s); ?P ?s |]
+      ==> EX t. while_option ?b ?c ?s = Some t",
+     template_implication
+      ([template_predicate (template_app (template_hole 8, template_var 4)),
+        template_predicate (template_app (template_hole 7, t_empty)),
+        template_predicate (template_app (template_hole 7, t_empty)),
+        template_predicate (template_app (template_var 3, template_var 0))],
+       template_predicate (template_app (template_hole 3, t_empty)))),
+    ("While_Combinator.while_rule_lemma",
+     "[| !!s. [| ?P s; ?b s |] ==> ?P (?c s);
+         !!s. [| ?P s; ~ ?b s |] ==> ?Q s;
+         wf {(t, s). ?P s & ?b s & t = ?c s}; ?P ?s |]
+      ==> ?Q (while ?b ?c ?s)",
+     template_implication
+      ([template_predicate (template_app (template_hole 8, t_empty)),
+        template_predicate (template_app (template_hole 8, t_empty)),
+        template_predicate
+         (
+            template_app
+             (template_hole 5,
+              template_app
+               (template_hole 4, template_app (template_hole 3, t_empty)))
+            ),
+        template_predicate (template_app (template_var 4, template_var 0))],
+       template_predicate
+        (
+           template_app
+            (template_var 1,
+             template_app
+              (template_app
+                (template_app (template_hole 0, template_var 3),
+                 template_var 2),
+               template_var 0))
+           ))),
+    ("While_Combinator.rtrancl_while_Some",
+     "rtrancl_while ?p ?f ?x = Some (?ws, ?Z) ==>
+      if ?ws = []
+      then ?Z = {(x, y). y : set (?f x)}^* `` {?x} & (ALL z:?Z. ?p z)
+      else ~ ?p (hd ?ws) & hd ?ws : {(x, y). y : set (?f x)}^* `` {?x}",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app
+             (template_app (template_hole 18, template_var 4),
+              template_var 3),
+            template_var 2),
+          template_app
+           (template_hole 17,
+            template_app
+             (template_app (template_hole 16, template_var 1),
+              template_var 0)))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_hole 15,
+                 template_app
+                  (template_app (template_hole 14, template_var 1),
+                   template_hole 13)),
+               template_app
+                (template_app
+                  (template_hole 12,
+                   template_app
+                    (template_app (template_hole 11, template_var 0),
+                     template_app
+                      (template_app
+                        (template_hole 10,
+                         template_app
+                          (template_hole 9,
+                           template_app
+                            (template_hole 8,
+                             template_app (template_hole 7, t_empty)))),
+                       template_app
+                        (template_app (template_hole 4, template_var 2),
+                         template_hole 3)))),
+                 template_app
+                  (template_app (template_hole 2, template_var 0),
+                   t_empty))),
+             template_app
+              (template_app
+                (template_hole 12,
+                 template_app
+                  (template_hole 1,
+                   template_app
+                    (template_var 4,
+                     template_app (template_hole 0, template_var 1)))),
+               template_app
+                (template_app
+                  (template_hole 6,
+                   template_app (template_hole 0, template_var 1)),
+                 template_app
+                  (template_app
+                    (template_hole 10,
+                     template_app
+                      (template_hole 9,
+                       template_app
+                        (template_hole 8,
+                         template_app (template_hole 7, t_empty)))),
+                   template_app
+                    (template_app (template_hole 4, template_var 2),
+                     template_hole 3)))))
+           ))),
+    ("While_Combinator.while_rule",
+     "[| ?P ?s; !!s. [| ?P s; ?b s |] ==> ?P (?c s);
+         !!s. [| ?P s; ~ ?b s |] ==> ?Q s; wf ?r;
+         !!s. [| ?P s; ?b s |] ==> (?c s, s) : ?r |]
+      ==> ?Q (while ?b ?c ?s)",
+     template_implication
+      ([template_predicate (template_app (template_var 5, template_var 4)),
+        template_predicate (template_app (template_hole 5, t_empty)),
+        template_predicate (template_app (template_hole 5, t_empty)),
+        template_predicate (template_app (template_hole 3, template_var 0)),
+        template_predicate (template_app (template_hole 5, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_var 1,
+             template_app
+              (template_app
+                (template_app (template_hole 0, template_var 3),
+                 template_var 2),
+               template_var 4))
+           ))),
+    ("While_Combinator.while_option_commute_invariant",
+     "[| !!s. [| ?P s; ?b s |] ==> ?P (?c s);
+         !!s. ?P s ==> ?b s = ?b' (?f s);
+         !!s. [| ?P s; ?b s |] ==> ?f (?c s) = ?c' (?f s); ?P ?s |]
+      ==> map_option ?f (while_option ?b ?c ?s) =
+          while_option ?b' ?c' (?f ?s)",
+     template_implication
+      ([template_predicate (template_app (template_hole 7, t_empty)),
+        template_predicate (template_app (template_hole 7, t_empty)),
+        template_predicate (template_app (template_hole 7, t_empty)),
+        template_predicate (template_app (template_var 6, template_var 0))],
+       template_equation
+        (template_app
+          (template_app (template_hole 2, template_var 2),
+           template_app
+            (template_app
+              (template_app (template_hole 1, template_var 5),
+               template_var 4),
+             template_var 0)),
+         template_app
+          (template_app
+            (template_app (template_hole 0, template_var 3),
+             template_var 1),
+           template_app (template_var 2, template_var 0))))),
+    ("Comb.COMB_OPT2'",
+     "[| ?x ~= ?y; set ?\<sigma> <= {?x, ?y} |]
+      ==> T\<^sub>p_on_rand' (COMB [])
+           (fst (COMB []) [?x, ?y] >>= (%is. return_pmf ([?x, ?y], is)))
+           ?\<sigma>
+          <= 16 / 10 * real (T\<^sub>p_opt [?x, ?y] ?\<sigma>) + 16 / 10",
+     template_implication
+      ([template_negation
+         (template_equation (template_var 2, template_var 1)),
+        template_inequation
+         (less_equals, template_app (template_hole 22, template_var 0),
+          template_app
+           (template_app (template_hole 21, template_var 2),
+            template_app
+             (template_app (template_hole 21, template_var 1),
+              template_hole 20)))],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 18, template_hole 17),
+                 template_hole 16),
+               template_app (template_hole 15, template_hole 14)),
+             template_app
+              (template_app
+                (template_hole 13,
+                 template_app
+                  (template_app
+                    (template_hole 12,
+                     template_app (template_hole 15, template_hole 14)),
+                   template_app
+                    (template_app (template_hole 11, template_var 2),
+                     template_app
+                      (template_app (template_hole 11, template_var 1),
+                       template_hole 14)))),
+               t_empty)),
+           template_var 0),
+         template_app
+          (template_app
+            (template_hole 8,
+             template_app
+              (template_app
+                (template_hole 7,
+                 template_app
+                  (template_app
+                    (template_hole 6,
+                     template_app
+                      (template_hole 5,
+                       template_app
+                        (template_hole 4,
+                         template_app
+                          (template_hole 4,
+                           template_app
+                            (template_hole 4,
+                             template_app
+                              (template_hole 4, template_hole 3)))))),
+                   template_app
+                    (template_hole 5,
+                     template_app
+                      (template_hole 4,
+                       template_app
+                        (template_hole 2,
+                         template_app
+                          (template_hole 4, template_hole 3)))))),
+               template_app
+                (template_hole 1,
+                 template_app
+                  (template_app
+                    (template_app
+                      (template_app (template_hole 0, template_hole 17),
+                       template_hole 16),
+                     template_app
+                      (template_app (template_hole 11, template_var 2),
+                       template_app
+                        (template_app (template_hole 11, template_var 1),
+                         template_hole 14))),
+                   template_var 0)))),
+           template_app
+            (template_app
+              (template_hole 6,
+               template_app
+                (template_hole 5,
+                 template_app
+                  (template_hole 4,
+                   template_app
+                    (template_hole 4,
+                     template_app
+                      (template_hole 4,
+                       template_app (template_hole 4, template_hole 3)))))),
+             template_app
+              (template_hole 5,
+               template_app
+                (template_hole 4,
+                 template_app
+                  (template_hole 2,
+                   template_app (template_hole 4, template_hole 3))))))))),
+    ("Comb.config_rand_COMB",
+     "Partial_Cost_Model.config'_rand (COMB ?h)
+       (fst (COMB ?h) ?init >>= (%is. return_pmf (?init, is))) ?qs =
+      bernoulli_pmf (8 / 10) >>=
+      (%b. Partial_Cost_Model.config'_rand BIT
+            (fst BIT ?init >>= (%is. return_pmf (?init, is))) ?qs >>=
+           (%(b1, b2).
+               Partial_Cost_Model.config'_rand
+                (Partial_Cost_Model.embed (rTS ?h))
+                (fst (Partial_Cost_Model.embed (rTS ?h)) ?init >>=
+                 (%is. return_pmf (?init, is)))
+                ?qs >>=
+               (%(t1, t2).
+                   return_pmf
+                    (if b then (b1, Inl b2) else (t1, Inr t2)))))",
+     template_equation
+      (template_app
+        (template_app
+          (template_app
+            (template_app (template_hole 35, template_hole 34),
+             template_app (template_hole 33, template_var 2)),
+           template_app
+            (template_app
+              (template_hole 32,
+               template_app
+                (template_app
+                  (template_hole 31,
+                   template_app (template_hole 33, template_var 2)),
+                 template_var 1)),
+             t_empty)),
+         template_var 0),
+       template_app
+        (template_app
+          (template_hole 28,
+           template_app
+            (template_hole 27,
+             template_app
+              (template_app
+                (template_hole 26,
+                 template_app
+                  (template_hole 25,
+                   template_app
+                    (template_hole 24,
+                     template_app
+                      (template_hole 24,
+                       template_app
+                        (template_hole 24, template_hole 23))))),
+               template_app
+                (template_hole 25,
+                 template_app
+                  (template_hole 24,
+                   template_app
+                    (template_hole 22,
+                     template_app
+                      (template_hole 24, template_hole 23))))))),
+         t_empty))),
+    ("Comb.obligation1",
+     "map_pmf con ?s = Sum_pmf (8 / 10) ?Da ?Db ==>
+      map_pmf con (Partial_Cost_Model.config'_rand (COMB []) ?s ?qs) =
+      Sum_pmf (8 / 10) (Partial_Cost_Model.config'_rand BIT ?Da ?qs)
+       (Partial_Cost_Model.config'_rand (Partial_Cost_Model.embed (rTS []))
+         ?Db ?qs)",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app
+             (template_hole 23, template_app (template_hole 22, t_empty)),
+            template_var 3),
+          template_app
+           (template_app
+             (template_app
+               (template_hole 16,
+                template_app
+                 (template_app
+                   (template_hole 15,
+                    template_app
+                     (template_hole 14,
+                      template_app
+                       (template_hole 13,
+                        template_app
+                         (template_hole 13,
+                          template_app
+                           (template_hole 13, template_hole 12))))),
+                  template_app
+                   (template_hole 14,
+                    template_app
+                     (template_hole 13,
+                      template_app
+                       (template_hole 11,
+                        template_app
+                         (template_hole 13, template_hole 12)))))),
+              template_var 2),
+            template_var 1))],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 23, template_app (template_hole 22, t_empty)),
+           template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 10, template_hole 9),
+                 template_app (template_hole 8, template_hole 7)),
+               template_var 3),
+             template_var 0)),
+         template_app
+          (template_app
+            (template_app
+              (template_hole 16,
+               template_app
+                (template_app
+                  (template_hole 15,
+                   template_app
+                    (template_hole 14,
+                     template_app
+                      (template_hole 13,
+                       template_app
+                        (template_hole 13,
+                         template_app
+                          (template_hole 13, template_hole 12))))),
+                 template_app
+                  (template_hole 14,
+                   template_app
+                    (template_hole 13,
+                     template_app
+                      (template_hole 11,
+                       template_app
+                        (template_hole 13, template_hole 12)))))),
+             template_app
+              (template_app
+                (template_app
+                  (template_app (template_hole 6, template_hole 9),
+                   template_app
+                    (template_app (template_hole 5, template_hole 4),
+                     template_hole 3)),
+                 template_var 2),
+               template_var 0)),
+           template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 2, template_hole 9),
+                 template_app
+                  (template_hole 1,
+                   template_app (template_hole 0, template_hole 7))),
+               template_var 1),
+             template_var 0))))),
+    ("Comb.obligation1''",
+     "Partial_Cost_Model.config'_rand (COMB ?h)
+       (fst (COMB ?h) ?init >>= (%is. return_pmf (?init, is))) ?qs =
+      map_pmf noc
+       (Sum_pmf (8 / 10)
+         (Partial_Cost_Model.config'_rand BIT
+           (fst BIT ?init >>= (%is. return_pmf (?init, is))) ?qs)
+         (Partial_Cost_Model.config'_rand
+           (Partial_Cost_Model.embed (rTS ?h))
+           (fst (Partial_Cost_Model.embed (rTS ?h)) ?init >>=
+            (%is. return_pmf (?init, is)))
+           ?qs))",
+     template_equation
+      (template_app
+        (template_app
+          (template_app
+            (template_app (template_hole 33, template_hole 32),
+             template_app (template_hole 31, template_var 2)),
+           template_app
+            (template_app
+              (template_hole 30,
+               template_app
+                (template_app
+                  (template_hole 29,
+                   template_app (template_hole 31, template_var 2)),
+                 template_var 1)),
+             t_empty)),
+         template_var 0),
+       template_app
+        (template_app (template_hole 26, t_empty),
+         template_app
+          (template_app
+            (template_app
+              (template_hole 20,
+               template_app
+                (template_app
+                  (template_hole 19,
+                   template_app
+                    (template_hole 18,
+                     template_app
+                      (template_hole 17,
+                       template_app
+                        (template_hole 17,
+                         template_app
+                          (template_hole 17, template_hole 16))))),
+                 template_app
+                  (template_hole 18,
+                   template_app
+                    (template_hole 17,
+                     template_app
+                      (template_hole 15,
+                       template_app
+                        (template_hole 17, template_hole 16)))))),
+             template_app
+              (template_app
+                (template_app
+                  (template_app (template_hole 14, template_hole 32),
+                   template_app
+                    (template_app (template_hole 13, template_hole 12),
+                     template_hole 11)),
+                 template_app
+                  (template_app
+                    (template_hole 10,
+                     template_app
+                      (template_app
+                        (template_hole 9,
+                         template_app
+                          (template_app
+                            (template_hole 13, template_hole 12),
+                           template_hole 11)),
+                       template_var 1)),
+                   t_empty)),
+               template_var 0)),
+           template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 6, template_hole 32),
+                 template_app
+                  (template_hole 5,
+                   template_app (template_hole 4, template_var 2))),
+               template_app
+                (template_app
+                  (template_hole 3,
+                   template_app
+                    (template_app
+                      (template_hole 2,
+                       template_app
+                        (template_hole 5,
+                         template_app (template_hole 4, template_var 2))),
+                     template_var 1)),
+                 t_empty)),
+             template_var 0))))),
+    ("Comb.obligation1'",
+     "map_pmf con ?s = Sum_pmf (8 / 10) ?Da ?Db ==>
+      Partial_Cost_Model.config'_rand (COMB ?h) ?s ?qs =
+      map_pmf noc
+       (Sum_pmf (8 / 10) (Partial_Cost_Model.config'_rand BIT ?Da ?qs)
+         (Partial_Cost_Model.config'_rand
+           (Partial_Cost_Model.embed (rTS ?h)) ?Db ?qs))",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app
+             (template_hole 30, template_app (template_hole 29, t_empty)),
+            template_var 4),
+          template_app
+           (template_app
+             (template_app
+               (template_hole 23,
+                template_app
+                 (template_app
+                   (template_hole 22,
+                    template_app
+                     (template_hole 21,
+                      template_app
+                       (template_hole 20,
+                        template_app
+                         (template_hole 20,
+                          template_app
+                           (template_hole 20, template_hole 19))))),
+                  template_app
+                   (template_hole 21,
+                    template_app
+                     (template_hole 20,
+                      template_app
+                       (template_hole 18,
+                        template_app
+                         (template_hole 20, template_hole 19)))))),
+              template_var 3),
+            template_var 2))],
+       template_equation
+        (template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 16, template_hole 15),
+               template_app (template_hole 14, template_var 1)),
+             template_var 4),
+           template_var 0),
+         template_app
+          (template_app (template_hole 13, t_empty),
+           template_app
+            (template_app
+              (template_app
+                (template_hole 23,
+                 template_app
+                  (template_app
+                    (template_hole 22,
+                     template_app
+                      (template_hole 21,
+                       template_app
+                        (template_hole 20,
+                         template_app
+                          (template_hole 20,
+                           template_app
+                            (template_hole 20, template_hole 19))))),
+                   template_app
+                    (template_hole 21,
+                     template_app
+                      (template_hole 20,
+                       template_app
+                        (template_hole 18,
+                         template_app
+                          (template_hole 20, template_hole 19)))))),
+               template_app
+                (template_app
+                  (template_app
+                    (template_app (template_hole 6, template_hole 15),
+                     template_app
+                      (template_app (template_hole 5, template_hole 4),
+                       template_hole 3)),
+                   template_var 3),
+                 template_var 0)),
+             template_app
+              (template_app
+                (template_app
+                  (template_app (template_hole 2, template_hole 15),
+                   template_app
+                    (template_hole 1,
+                     template_app (template_hole 0, template_var 1))),
+                 template_var 2),
+               template_var 0)))))),
+    ("Comb.obligation2",
+     "[| map_pmf con ?s = Sum_pmf (8 / 10) ?Da ?Db; finite (set_pmf ?Da);
+         finite (set_pmf ?Db) |]
+      ==> T\<^sub>p_on_rand' (COMB []) ?s ?qs =
+          2 / 10 *
+          T\<^sub>p_on_rand' (Partial_Cost_Model.embed (rTS [])) ?Db ?qs +
+          8 / 10 * T\<^sub>p_on_rand' BIT ?Da ?qs",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app
+             (template_hole 31, template_app (template_hole 30, t_empty)),
+            template_var 3),
+          template_app
+           (template_app
+             (template_app
+               (template_hole 24,
+                template_app
+                 (template_app
+                   (template_hole 23,
+                    template_app
+                     (template_hole 22,
+                      template_app
+                       (template_hole 21,
+                        template_app
+                         (template_hole 21,
+                          template_app
+                           (template_hole 21, template_hole 20))))),
+                  template_app
+                   (template_hole 22,
+                    template_app
+                     (template_hole 21,
+                      template_app
+                       (template_hole 19,
+                        template_app
+                         (template_hole 21, template_hole 20)))))),
+              template_var 2),
+            template_var 1)),
+        template_predicate
+         (
+            template_app
+             (template_hole 18,
+              template_app (template_hole 17, template_var 2))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_hole 16,
+              template_app (template_hole 15, template_var 1))
+            )],
+       template_equation
+        (template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 13, template_hole 12),
+                 template_hole 11),
+               template_app (template_hole 10, template_hole 9)),
+             template_var 3),
+           template_var 0),
+         template_app
+          (template_app
+            (template_hole 8,
+             template_app
+              (template_app
+                (template_hole 7,
+                 template_app
+                  (template_app
+                    (template_hole 23,
+                     template_app
+                      (template_hole 22,
+                       template_app (template_hole 21, template_hole 20))),
+                   template_app
+                    (template_hole 22,
+                     template_app
+                      (template_hole 21,
+                       template_app
+                        (template_hole 19,
+                         template_app
+                          (template_hole 21, template_hole 20)))))),
+               template_app
+                (template_app
+                  (template_app
+                    (template_app
+                      (template_app (template_hole 6, template_hole 12),
+                       template_hole 11),
+                     template_app
+                      (template_hole 5,
+                       template_app (template_hole 4, template_hole 9))),
+                   template_var 1),
+                 template_var 0))),
+           template_app
+            (template_app
+              (template_hole 7,
+               template_app
+                (template_app
+                  (template_hole 23,
+                   template_app
+                    (template_hole 22,
+                     template_app
+                      (template_hole 21,
+                       template_app
+                        (template_hole 21,
+                         template_app
+                          (template_hole 21, template_hole 20))))),
+                 template_app
+                  (template_hole 22,
+                   template_app
+                    (template_hole 21,
+                     template_app
+                      (template_hole 19,
+                       template_app
+                        (template_hole 21, template_hole 20)))))),
+             template_app
+              (template_app
+                (template_app
+                  (template_app
+                    (template_app (template_hole 3, template_hole 12),
+                     template_hole 11),
+                   template_app
+                    (template_app (template_hole 2, template_hole 1),
+                     template_hole 0)),
+                 template_var 2),
+               template_var 0)))))),
+    ("Comb.Combination",
+     "[| ?qs : ?pattern; ?a ~= ?b; {?a, ?b} = {?x, ?y}; set ?qs <= {?a, ?b};
+         inv_COMB ?s ?a [?x, ?y];
+         !!s h.
+            [| ?a ~= ?b; {?a, ?b} = {?x, ?y}; TS_inv s ?a [?x, ?y];
+               set ?qs <= {?a, ?b}; ?qs : ?pattern |]
+            ==> TS_inv
+                 (Partial_Cost_Model.config'_rand
+                   (Partial_Cost_Model.embed (rTS h)) s ?qs)
+                 (last ?qs) [?x, ?y] &
+                T\<^sub>p_on_rand' (Partial_Cost_Model.embed (rTS h)) s
+                 ?qs =
+                ?ts;
+         !!s. [| ?a ~= ?b; {?a, ?b} = {?x, ?y}; BIT_inv s ?a [?x, ?y];
+                 set ?qs <= {?a, ?b}; ?qs : ?pattern |]
+              ==> BIT_inv (Partial_Cost_Model.config'_rand BIT s ?qs)
+                   (last ?qs) [?x, ?y] &
+                  T\<^sub>p_on_rand' BIT s ?qs = ?bit;
+         [| ?a ~= ?b; ?qs : ?pattern |]
+         ==> real (T\<^sub>p [?a, ?b] ?qs (OPT2 ?qs [?a, ?b])) = ?opt;
+         ?qs : ?pattern ==>
+         2 / 10 * ?ts + 8 / 10 * ?bit <= 16 / 10 * ?opt |]
+      ==> T\<^sub>p_on_rand' (COMB []) ?s ?qs
+          <= 16 / 10 * real (T\<^sub>p [?a, ?b] ?qs (OPT2 ?qs [?a, ?b])) &
+          inv_COMB (Partial_Cost_Model.config'_rand (COMB []) ?s ?qs)
+           (last ?qs) [?x, ?y]",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 43, template_var 9),
+              template_var 8)
+            ),
+        template_negation
+         (template_equation (template_var 7, template_var 6)),
+        template_equation
+         (template_app
+           (template_app (template_hole 39, template_var 7),
+            template_app
+             (template_app (template_hole 39, template_var 6),
+              template_hole 38)),
+          template_app
+           (template_app (template_hole 39, template_var 5),
+            template_app
+             (template_app (template_hole 39, template_var 4),
+              template_hole 38))),
+        template_inequation
+         (less_equals, template_app (template_hole 36, template_var 9),
+          template_app
+           (template_app (template_hole 39, template_var 7),
+            template_app
+             (template_app (template_hole 39, template_var 6),
+              template_hole 38))),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 35, template_var 3),
+                template_var 7),
+              template_app
+               (template_app (template_hole 34, template_var 5),
+                template_app
+                 (template_app (template_hole 34, template_var 4),
+                  template_hole 33)))
+            ),
+        template_predicate (template_app (template_hole 32, t_empty)),
+        template_predicate (template_app (template_hole 20, t_empty)),
+        template_implication
+         ([template_negation
+            (template_equation (template_var 7, template_var 6))],
+          template_implication
+           ([template_predicate
+              (
+                 template_app
+                  (template_app (template_hole 43, template_var 9),
+                   template_var 8)
+                 )],
+            template_equation
+             (template_app
+               (template_hole 13,
+                template_app
+                 (template_app
+                   (template_app
+                     (template_app
+                       (template_app (template_hole 12, template_hole 27),
+                        template_hole 21),
+                      template_app
+                       (template_app (template_hole 34, template_var 7),
+                        template_app
+                         (template_app (template_hole 34, template_var 6),
+                          template_hole 33))),
+                    template_var 9),
+                  template_app
+                   (template_app (template_hole 11, template_var 9),
+                    template_app
+                     (template_app (template_hole 34, template_var 7),
+                      template_app
+                       (template_app (template_hole 34, template_var 6),
+                        template_hole 33))))),
+              template_var 0))),
+        template_implication
+         ([template_predicate
+            (
+               template_app
+                (template_app (template_hole 43, template_var 9),
+                 template_var 8)
+               )],
+          template_inequation
+           (less_equals,
+            template_app
+             (template_app
+               (template_hole 9,
+                template_app
+                 (template_app
+                   (template_hole 8,
+                    template_app
+                     (template_app
+                       (template_hole 7,
+                        template_app
+                         (template_hole 6,
+                          template_app (template_hole 5, template_hole 4))),
+                      template_app
+                       (template_hole 6,
+                        template_app
+                         (template_hole 5,
+                          template_app
+                           (template_hole 3,
+                            template_app
+                             (template_hole 5, template_hole 4)))))),
+                  template_var 2)),
+              template_app
+               (template_app
+                 (template_hole 8,
+                  template_app
+                   (template_app
+                     (template_hole 7,
+                      template_app
+                       (template_hole 6,
+                        template_app
+                         (template_hole 5,
+                          template_app
+                           (template_hole 5,
+                            template_app
+                             (template_hole 5, template_hole 4))))),
+                    template_app
+                     (template_hole 6,
+                      template_app
+                       (template_hole 5,
+                        template_app
+                         (template_hole 3,
+                          template_app
+                           (template_hole 5, template_hole 4)))))),
+                template_var 1)),
+            template_app
+             (template_app
+               (template_hole 8,
+                template_app
+                 (template_app
+                   (template_hole 7,
+                    template_app
+                     (template_hole 6,
+                      template_app
+                       (template_hole 5,
+                        template_app
+                         (template_hole 5,
+                          template_app
+                           (template_hole 5,
+                            template_app
+                             (template_hole 5, template_hole 4)))))),
+                  template_app
+                   (template_hole 6,
+                    template_app
+                     (template_hole 5,
+                      template_app
+                       (template_hole 3,
+                        template_app
+                         (template_hole 5, template_hole 4)))))),
+              template_var 0)))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 29,
+               template_app
+                (template_app
+                  (template_hole 10,
+                   template_app
+                    (template_app
+                      (template_app
+                        (template_app
+                          (template_app (template_hole 2, template_hole 27),
+                           template_hole 21),
+                         template_app (template_hole 1, template_hole 33)),
+                       template_var 3),
+                     template_var 9)),
+                 template_app
+                  (template_app
+                    (template_hole 8,
+                     template_app
+                      (template_app
+                        (template_hole 7,
+                         template_app
+                          (template_hole 6,
+                           template_app
+                            (template_hole 5,
+                             template_app
+                              (template_hole 5,
+                               template_app
+                                (template_hole 5,
+                                 template_app
+                                  (template_hole 5, template_hole 4)))))),
+                       template_app
+                        (template_hole 6,
+                         template_app
+                          (template_hole 5,
+                           template_app
+                            (template_hole 3,
+                             template_app
+                              (template_hole 5, template_hole 4)))))),
+                   template_app
+                    (template_hole 13,
+                     template_app
+                      (template_app
+                        (template_app
+                          (template_app
+                            (template_app
+                              (template_hole 12, template_hole 27),
+                             template_hole 21),
+                           template_app
+                            (template_app
+                              (template_hole 34, template_var 7),
+                             template_app
+                              (template_app
+                                (template_hole 34, template_var 6),
+                               template_hole 33))),
+                         template_var 9),
+                       template_app
+                        (template_app (template_hole 11, template_var 9),
+                         template_app
+                          (template_app (template_hole 34, template_var 7),
+                           template_app
+                            (template_app
+                              (template_hole 34, template_var 6),
+                             template_hole 33)))))))),
+             template_app
+              (template_app
+                (template_app
+                  (template_hole 35,
+                   template_app
+                    (template_app
+                      (template_app
+                        (template_app (template_hole 0, template_hole 27),
+                         template_app (template_hole 1, template_hole 33)),
+                       template_var 3),
+                     template_var 9)),
+                 template_app (template_hole 24, template_var 9)),
+               template_app
+                (template_app (template_hole 34, template_var 5),
+                 template_app
+                  (template_app (template_hole 34, template_var 4),
+                   template_hole 33))))
+           )))]:
+   (string * thm * template) list
+### theory "Draft.CombTemplates"
+### 1.844s elapsed time, 3.366s cpu time, 1.783s GC time
+val it = (): unit

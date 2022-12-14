@@ -1,0 +1,139 @@
+Loading theory "Draft.Containers_Auxiliary" (required by "Draft.Containers_GeneratorTemplates" via "Draft.Containers_Generator")
+Loading theory "Draft.Templates" (required by "Draft.Containers_GeneratorTemplates" via "Draft.ExtrEqs")
+datatype template_term
+=
+     t_empty
+   | template_app of template_term * template_term
+   | template_hole of int
+   | template_var of int
+datatype sign
+= equals | greater_equals | greater_than | less_equals | less_than
+datatype template
+=
+     template_bimplication of template * template
+   | template_dunno
+   | template_equation of template_term * template_term
+   | template_implication of template list * template
+   | template_inequation of sign * template_term * template_term
+   | template_negation of template
+   | template_predicate of template_term
+constructor t_empty: template_term
+constructor template_app: template_term * template_term -> template_term
+constructor template_hole: int -> template_term
+constructor template_var: int -> template_term
+constructor equals: sign
+constructor greater_equals: sign
+constructor greater_than: sign
+constructor less_equals: sign
+constructor less_than: sign
+constructor template_bimplication: template * template -> template
+constructor template_dunno: template
+constructor template_equation: template_term * template_term -> template
+constructor template_implication: template list * template -> template
+constructor template_inequation:
+   sign * template_term * template_term -> template
+constructor template_negation: template -> template
+constructor template_predicate: template_term -> template
+val vfs = fn: term -> (indexname * typ) list * (string * typ) list
+val indexOf = fn: ''a list -> ''a -> int -> int
+val has_eq = fn: term -> bool
+val term2template = fn:
+   (indexname * typ) list -> (string * typ) list -> term -> template_term
+val lemma2predicate = fn: term -> term -> template
+val makeTemplatewithContext = fn: term -> term -> template
+val lemma2template = fn: term -> template
+val thm2template = fn: thm -> template
+val tterm2string = fn: template_term -> string
+val template2string = fn: template -> string
+val t = "height ?t <= size ?t": thm
+val th =
+   Const ("HOL.Trueprop", "bool => prop") $
+     (Const ("Orderings.ord_class.less_eq", "nat => nat => bool") $
+       (Const ("Tree.height_class.height", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree")) $
+       (Const ("Nat.size_class.size", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree"))):
+   term
+### theory "Draft.Templates"
+### 0.070s elapsed time, 0.165s cpu time, 0.000s GC time
+Loading theory "Draft.ExtrEqs" (required by "Draft.Containers_GeneratorTemplates")
+class linorder = order +
+  assumes "linear": "!!x y. x <= y | y <= x"
+### Dropping global mixfix syntax: "less_eq_prod" (infix \<open>\<sqsubseteq>\<close> 50)
+### Dropping global mixfix syntax: "less_prod" (infix \<open>\<sqsubset>\<close> 50)
+### Dropping global mixfix syntax: "less_eq_prod'" (infix \<open>\<sqsubseteq>\<close> 50)
+### Dropping global mixfix syntax: "less_prod'" (infix \<open>\<sqsubset>\<close> 50)
+### theory "Draft.Containers_Auxiliary"
+### 0.196s elapsed time, 0.421s cpu time, 0.036s GC time
+Loading theory "Draft.Containers_Generator" (required by "Draft.Containers_GeneratorTemplates")
+signature CONTAINERS_GENERATOR =
+  sig
+    val HOLogic_list_conj: term list -> term
+    val all_tys: term -> typ list -> term -> term
+    val derive_is_c_dots_lemma:
+       typ -> string -> thm list -> string -> theory -> theory
+    val derive_none:
+       string -> sort -> (typ -> term) -> string -> theory -> theory
+    val derive_set_map_impl:
+       string ->
+         sort ->
+           (string * term) list -> string -> string -> theory -> theory
+    val is_class_instance: theory -> string -> sort -> bool
+    val mk_Some: term -> term
+    val mk_is_c_dots: typ -> string -> term
+    val register_is_c_dots_lemma:
+       string -> string -> thm -> theory -> theory
+  end
+structure Containers_Generator: CONTAINERS_GENERATOR
+### theory "Draft.Containers_Generator"
+### 0.315s elapsed time, 0.633s cpu time, 0.000s GC time
+val eqpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Var (("_dummy_", 2), "?'a"))
+       ):
+   term Find_Theorems.criterion
+val badeqpattern = Pattern (Const ("Pure.eq", "?'a => ?'a => prop")):
+   term Find_Theorems.criterion
+val undefpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Const ("HOL.undefined", "?'a"))
+       ):
+   term Find_Theorems.criterion
+val thmpattern =
+   Pattern
+    (Const ("HOL.Trueprop", "bool => prop") $ Var (("_dummy_", 1), "bool")):
+   term Find_Theorems.criterion
+val badnames =
+   ["*nitpick*", "*Nitpick*", "*full_exhaustive*", "*_def*", "Enum.finite*",
+    "*Quickcheck*", "ATP*", "*Nunchaku*", "*Code*", "*BNF*", "*SMT*",
+    "*.*.*"]:
+   string list
+val unwanted_names =
+   [(false, Name "*nitpick*"), (false, Name "*Nitpick*"),
+    (false, Name "*full_exhaustive*"), (false, Name "*_def*"),
+    (false, Name "Enum.finite*"), (false, Name "*Quickcheck*"),
+    (false, Name "ATP*"), (false, Name "*Nunchaku*"),
+    (false, Name "*Code*"), (false, Name "*BNF*"), (false, Name "*SMT*"),
+    (false, Name "*.*.*")]:
+   (bool * term Find_Theorems.criterion) list
+val has_vars = fn: term -> bool
+val get_all_eqs = fn: string -> Proof.context -> (string * thm) list
+val get_all_thms = fn: string -> Proof.context -> (string * thm) list
+val get_noneq_thms = fn: string -> Proof.context -> (string * thm) list
+val template_eqs = fn:
+   string -> Proof.context -> (string * thm * template) list
+val template_thms = fn:
+   string -> Proof.context -> (string * thm * template) list
+### theory "Draft.ExtrEqs"
+### 0.554s elapsed time, 1.041s cpu time, 0.083s GC time
+Loading theory "Draft.Containers_GeneratorTemplates"
+val templateLemmas = []: (string * thm * template) list
+### theory "Draft.Containers_GeneratorTemplates"
+### 0.312s elapsed time, 0.396s cpu time, 0.000s GC time
+val it = (): unit

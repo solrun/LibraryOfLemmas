@@ -1,0 +1,925 @@
+Loading theory "HOL-Library.Function_Algebras" (required by "Draft.Deriv_PDerivTemplates" via "Draft.ExtrEqs" via "HOL-Library.BigO")
+Loading theory "HOL-Library.Nat_Bijection" (required by "Draft.Deriv_PDerivTemplates" via "Draft.ExtrEqs" via "HOL-Library.Stream")
+Loading theory "HOL-Library.Set_Algebras" (required by "Draft.Deriv_PDerivTemplates" via "Draft.ExtrEqs" via "HOL-Library.BigO")
+Loading theory "HOL-Library.Tree" (required by "Draft.Deriv_PDerivTemplates" via "Draft.ExtrEqs" via "Draft.Templates")
+instantiation
+  fun :: (type, plus) plus
+  plus_fun == plus :: ('a => 'b) => ('a => 'b) => 'a => 'b
+instantiation
+  set :: (plus) plus
+  plus_set == plus :: 'a set => 'a set => 'a set
+instantiation
+  fun :: (type, zero) zero
+  zero_fun == zero_class.zero :: 'a => 'b
+instantiation
+  set :: (times) times
+  times_set == times :: 'a set => 'a set => 'a set
+instantiation
+  fun :: (type, times) times
+  times_fun == times :: ('a => 'b) => ('a => 'b) => 'a => 'b
+instantiation
+  set :: (zero) zero
+  zero_set == zero_class.zero :: 'a set
+instantiation
+  fun :: (type, one) one
+  one_fun == one_class.one :: 'a => 'b
+instantiation
+  set :: (one) one
+  one_set == one_class.one :: 'a set
+### theory "HOL-Library.Function_Algebras"
+### 0.125s elapsed time, 0.513s cpu time, 0.052s GC time
+Loading theory "Draft.Derivatives_Finite" (required by "Draft.Deriv_PDerivTemplates" via "Draft.Deriv_PDeriv")
+Found termination order: "(%p. size (snd p)) <*mlex*> {}"
+### theory "HOL-Library.Set_Algebras"
+### 0.220s elapsed time, 0.895s cpu time, 0.052s GC time
+Loading theory "HOL-Library.BigO" (required by "Draft.Deriv_PDerivTemplates" via "Draft.ExtrEqs")
+Found termination order: "(%p. length (snd (snd p))) <*mlex*> {}"
+Found termination order: "size_list size <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+consts
+  ACI_norm :: "'a rexp => 'a rexp"
+### theory "HOL-Library.Nat_Bijection"
+### 0.417s elapsed time, 1.671s cpu time, 0.127s GC time
+Loading theory "HOL-Library.Stream" (required by "Draft.Deriv_PDerivTemplates" via "Draft.ExtrEqs")
+consts
+  left :: "'a tree => 'a tree"
+consts
+  right :: "'a tree => 'a tree"
+Found termination order: "size <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+consts
+  shift :: "'a list => 'a stream => 'a stream"
+class height = type +
+  fixes height :: "'a => nat"
+Proofs for coinductive predicate(s) "streamsp"
+instantiation
+  tree :: (type) height
+  height_tree == height :: 'a tree => nat
+  Proving monotonicity ...
+Found termination order: "size <*mlex*> {}"
+consts
+  snth :: "'a stream => nat => 'a"
+consts
+  stake :: "nat => 'a stream => 'a list"
+consts
+  sdrop :: "nat => 'a stream => 'a stream"
+Found termination order: "size <*mlex*> {}"
+### theory "HOL-Library.BigO"
+### 0.961s elapsed time, 3.652s cpu time, 0.803s GC time
+consts
+  sfilter :: "('a => bool) => 'a stream => 'a stream"
+Found termination order: "size <*mlex*> {}"
+consts
+  cycle :: "'a list => 'a stream"
+consts
+  siterate :: "('a => 'a) => 'a => 'a stream"
+Found termination order: "size <*mlex*> {}"
+consts
+  flat :: "'a list stream => 'a stream"
+Found termination order: "size <*mlex*> {}"
+consts
+  sinterleave :: "'a stream => 'a stream => 'a stream"
+consts
+  szip :: "'a stream => 'b stream => ('a * 'b) stream"
+Found termination order: "size <*mlex*> {}"
+consts
+  smap2 :: "('a => 'b => 'c) => 'a stream => 'b stream => 'c stream"
+### theory "HOL-Library.Stream"
+### 1.105s elapsed time, 4.130s cpu time, 0.842s GC time
+Found termination order: "size <*mlex*> {}"
+Found termination order: "(%p. size (fst p)) <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+Found termination order: "(%p. size (snd p)) <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+### theory "HOL-Library.Tree"
+### 2.136s elapsed time, 7.336s cpu time, 1.097s GC time
+Loading theory "Draft.Templates" (required by "Draft.Deriv_PDerivTemplates" via "Draft.ExtrEqs")
+Found termination order:
+  "(%p. size (fst p)) <*mlex*> (%p. size (snd p)) <*mlex*> {}"
+datatype template_term
+=
+     t_empty
+   | template_app of template_term * template_term
+   | template_hole of int
+   | template_var of int
+datatype sign
+= equals | greater_equals | greater_than | less_equals | less_than
+datatype template
+=
+     template_bimplication of template * template
+   | template_dunno
+   | template_equation of template_term * template_term
+   | template_implication of template list * template
+   | template_inequation of sign * template_term * template_term
+   | template_negation of template
+   | template_predicate of template_term
+constructor t_empty: template_term
+constructor template_app: template_term * template_term -> template_term
+constructor template_hole: int -> template_term
+constructor template_var: int -> template_term
+constructor equals: sign
+constructor greater_equals: sign
+constructor greater_than: sign
+constructor less_equals: sign
+constructor less_than: sign
+constructor template_bimplication: template * template -> template
+constructor template_dunno: template
+constructor template_equation: template_term * template_term -> template
+constructor template_implication: template list * template -> template
+constructor template_inequation:
+   sign * template_term * template_term -> template
+constructor template_negation: template -> template
+constructor template_predicate: template_term -> template
+val vfs = fn: term -> (indexname * typ) list * (string * typ) list
+val indexOf = fn: ''a list -> ''a -> int -> int
+val has_eq = fn: term -> bool
+val term2template = fn:
+   (indexname * typ) list -> (string * typ) list -> term -> template_term
+val lemma2predicate = fn: term -> term -> template
+val makeTemplatewithContext = fn: term -> term -> template
+val lemma2template = fn: term -> template
+val thm2template = fn: thm -> template
+val tterm2string = fn: template_term -> string
+val template2string = fn: template -> string
+val t = "height ?t <= size ?t": thm
+val th =
+   Const ("HOL.Trueprop", "bool => prop") $
+     (Const ("Orderings.ord_class.less_eq", "nat => nat => bool") $
+       (Const ("Tree.height_class.height", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree")) $
+       (Const ("Nat.size_class.size", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree"))):
+   term
+### theory "Draft.Templates"
+### 0.078s elapsed time, 0.205s cpu time, 0.070s GC time
+Loading theory "Draft.ExtrEqs" (required by "Draft.Deriv_PDerivTemplates")
+consts
+  ACI_norm_alt :: "'a rexp => 'a rexp"
+Proofs for inductive predicate(s) "ACI"
+  Proving monotonicity ...
+### theory "Draft.Derivatives_Finite"
+### 2.211s elapsed time, 7.284s cpu time, 1.115s GC time
+Loading theory "Draft.Deriv_PDeriv" (required by "Draft.Deriv_PDerivTemplates")
+consts
+  pset :: "'a rexp => 'a rexp set"
+val eqpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Var (("_dummy_", 2), "?'a"))
+       ):
+   term Find_Theorems.criterion
+val badeqpattern = Pattern (Const ("Pure.eq", "?'a => ?'a => prop")):
+   term Find_Theorems.criterion
+val undefpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Const ("HOL.undefined", "?'a"))
+       ):
+   term Find_Theorems.criterion
+val thmpattern =
+   Pattern
+    (Const ("HOL.Trueprop", "bool => prop") $ Var (("_dummy_", 1), "bool")):
+   term Find_Theorems.criterion
+val badnames =
+   ["*nitpick*", "*Nitpick*", "*full_exhaustive*", "*_def*", "Enum.finite*",
+    "*Quickcheck*", "ATP*", "*Nunchaku*", "*Code*", "*BNF*", "*SMT*",
+    "*.*.*"]:
+   string list
+val unwanted_names =
+   [(false, Name "*nitpick*"), (false, Name "*Nitpick*"),
+    (false, Name "*full_exhaustive*"), (false, Name "*_def*"),
+    (false, Name "Enum.finite*"), (false, Name "*Quickcheck*"),
+    (false, Name "ATP*"), (false, Name "*Nunchaku*"),
+    (false, Name "*Code*"), (false, Name "*BNF*"), (false, Name "*SMT*"),
+    (false, Name "*.*.*")]:
+   (bool * term Find_Theorems.criterion) list
+val has_vars = fn: term -> bool
+val get_all_eqs = fn: string -> Proof.context -> (string * thm) list
+val get_all_thms = fn: string -> Proof.context -> (string * thm) list
+val get_noneq_thms = fn: string -> Proof.context -> (string * thm) list
+val template_eqs = fn:
+   string -> Proof.context -> (string * thm * template) list
+val template_thms = fn:
+   string -> Proof.context -> (string * thm * template) list
+### theory "Draft.ExtrEqs"
+### 0.751s elapsed time, 1.805s cpu time, 0.741s GC time
+Found termination order:
+  "(%p. size (fst p)) <*mlex*> (%p. size (snd p)) <*mlex*> {}"
+Found termination order: "(%p. size (fst p)) <*mlex*> {}"
+consts
+  pnorm_alt :: "'a rexp => 'a rexp"
+consts
+  pnderiv :: "'a => 'a rexp => 'a rexp"
+### theory "Draft.Deriv_PDeriv"
+### 1.583s elapsed time, 3.019s cpu time, 0.857s GC time
+Loading theory "Draft.Deriv_PDerivTemplates"
+val templateLemmas =
+   [("Deriv_PDeriv.finite_pset", "finite (pset ?r)",
+     template_predicate
+      (
+         template_app
+          (template_hole 1, template_app (template_hole 0, template_var 0))
+         )),
+    ("Deriv_PDeriv.finite_pderiv", "finite (pderiv ?a ?r)",
+     template_predicate
+      (
+         template_app
+          (template_hole 1,
+           template_app
+            (template_app (template_hole 0, template_var 1),
+             template_var 0))
+         )),
+    ("Deriv_PDeriv.pnorm_alt", "pnorm ?r = pnorm_alt ?r",
+     template_equation
+      (template_app (template_hole 1, template_var 0),
+       template_app (template_hole 0, template_var 0))),
+    ("Deriv_PDeriv.pnPlus_ZeroR", "pnPlus ?r Zero = ?r",
+     template_equation
+      (template_app
+        (template_app (template_hole 1, template_var 0), template_hole 0),
+       template_var 0)),
+    ("Deriv_PDeriv.pnorm_pnorm_alt", "pnorm (pnorm_alt ?r) = pnorm ?r",
+     template_equation
+      (template_app
+        (template_hole 1, template_app (template_hole 0, template_var 0)),
+       template_app (template_hole 1, template_var 0))),
+    ("Deriv_PDeriv.pnorm_alt_image_pset", "pnorm_alt ` pset ?r = pset ?r",
+     template_equation
+      (template_app
+        (template_app (template_hole 2, template_hole 1),
+         template_app (template_hole 0, template_var 0)),
+       template_app (template_hole 0, template_var 0))),
+    ("Deriv_PDeriv.pset_deriv", "pset (deriv ?a ?r) = pderiv ?a ?r",
+     template_equation
+      (template_app
+        (template_hole 2,
+         template_app
+          (template_app (template_hole 1, template_var 1), template_var 0)),
+       template_app
+        (template_app (template_hole 0, template_var 1), template_var 0))),
+    ("Deriv_PDeriv.pset_pnorm_alt",
+     "pset (pnorm_alt ?r) = pnorm_alt ` pset ?r",
+     template_equation
+      (template_app
+        (template_hole 2, template_app (template_hole 1, template_var 0)),
+       template_app
+        (template_app (template_hole 0, template_hole 1),
+         template_app (template_hole 2, template_var 0)))),
+    ("Deriv_PDeriv.pnderiv_alt", "pnderiv ?a ?r = pnorm (deriv ?a ?r)",
+     template_equation
+      (template_app
+        (template_app (template_hole 2, template_var 1), template_var 0),
+       template_app
+        (template_hole 1,
+         template_app
+          (template_app (template_hole 0, template_var 1),
+           template_var 0)))),
+    ("Deriv_PDeriv.pset_pnPlus", "pset (pnPlus ?r ?s) = pset (Plus ?r ?s)",
+     template_equation
+      (template_app
+        (template_hole 2,
+         template_app
+          (template_app (template_hole 1, template_var 1), template_var 0)),
+       template_app
+        (template_hole 2,
+         template_app
+          (template_app (template_hole 0, template_var 1),
+           template_var 0)))),
+    ("Deriv_PDeriv.pset_pnTimes",
+     "pset (pnTimes ?r ?s) = pset (Times ?r ?s)",
+     template_equation
+      (template_app
+        (template_hole 2,
+         template_app
+          (template_app (template_hole 1, template_var 1), template_var 0)),
+       template_app
+        (template_hole 2,
+         template_app
+          (template_app (template_hole 0, template_var 1),
+           template_var 0)))),
+    ("Deriv_PDeriv.pnTimes_pnorm",
+     "pnTimes (pnorm ?r1.0) ?r2.0 = pnorm (Times ?r1.0 ?r2.0)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 2, template_app (template_hole 1, template_var 1)),
+         template_var 0),
+       template_app
+        (template_hole 1,
+         template_app
+          (template_app (template_hole 0, template_var 1),
+           template_var 0)))),
+    ("Deriv_PDeriv.pnPlus_pnorm",
+     "pnPlus (pnorm ?r) (pnorm ?s) = pnorm (Plus ?r ?s)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 2, template_app (template_hole 1, template_var 1)),
+         template_app (template_hole 1, template_var 0)),
+       template_app
+        (template_hole 1,
+         template_app
+          (template_app (template_hole 0, template_var 1),
+           template_var 0)))),
+    ("Deriv_PDeriv.pset_pnorm_alt_id", "?s : pset ?r ==> pnorm_alt ?s = ?s",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 3, template_var 1),
+              template_app (template_hole 2, template_var 0))
+            )],
+       template_equation
+        (template_app (template_hole 0, template_var 1), template_var 1))),
+    ("Deriv_PDeriv.pnderiv_pderiv",
+     "pnderiv ?a ?r = flatten PLUS (pderiv ?a ?r)",
+     template_equation
+      (template_app
+        (template_app (template_hole 5, template_var 1), template_var 0),
+       template_app
+        (template_app
+          (template_app (template_hole 4, template_hole 3),
+           template_hole 2),
+         template_app
+          (template_hole 1,
+           template_app
+            (template_app (template_hole 0, template_var 1),
+             template_var 0))))),
+    ("Deriv_PDeriv.pset_not_is_Zero_is_Plus",
+     "ALL x:pset ?r. ~ is_Zero x & ~ is_Plus x",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_hole 5,
+             template_app (template_hole 4, template_var 0)),
+           t_empty)
+         )),
+    ("Deriv_PDeriv.pderiv_not_is_Zero_is_Plus",
+     "ALL x:pderiv ?a ?r. ~ is_Zero x & ~ is_Plus x",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_hole 5,
+             template_app
+              (template_app (template_hole 4, template_var 1),
+               template_var 0)),
+           t_empty)
+         )),
+    ("Deriv_PDeriv.pset_pnTimes_Times",
+     "?s : pset ?r ==> pnTimes ?s ?t = Times ?s ?t",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 4, template_var 2),
+              template_app (template_hole 3, template_var 1))
+            )],
+       template_equation
+        (template_app
+          (template_app (template_hole 1, template_var 2), template_var 0),
+         template_app
+          (template_app (template_hole 0, template_var 2),
+           template_var 0)))),
+    ("Deriv_PDeriv.pset_pnorm_alt_Times",
+     "?s : pset ?r ==> pnTimes (pnorm_alt ?s) ?t = Times (pnorm_alt ?s) ?t",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 5, template_var 2),
+              template_app (template_hole 4, template_var 1))
+            )],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 2,
+             template_app (template_hole 1, template_var 2)),
+           template_var 0),
+         template_app
+          (template_app
+            (template_hole 0,
+             template_app (template_hole 1, template_var 2)),
+           template_var 0)))),
+    ("Deriv_PDeriv.PLUS_eq_Zero",
+     "(PLUS ?xs = Zero) = (?xs = [] | ?xs = [Zero])",
+     template_bimplication
+      (template_equation
+        (template_app
+          (template_app
+            (template_app (template_hole 6, template_hole 5),
+             template_hole 4),
+           template_var 0),
+         template_hole 4),
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 3,
+               template_app
+                (template_app (template_hole 2, template_var 0),
+                 template_hole 1)),
+             template_app
+              (template_app (template_hole 2, template_var 0),
+               template_app
+                (template_app (template_hole 0, template_hole 4),
+                 template_hole 1)))
+           ))),
+    ("Deriv_PDeriv.pnorm_deriv_eq_iff_pderiv_eq",
+     "(pnorm (deriv ?a ?r) = pnorm (deriv ?a ?s)) =
+      (pderiv ?a ?r = pderiv ?a ?s)",
+     template_bimplication
+      (template_equation
+        (template_app
+          (template_hole 3,
+           template_app
+            (template_app (template_hole 2, template_var 2),
+             template_var 1)),
+         template_app
+          (template_hole 3,
+           template_app
+            (template_app (template_hole 2, template_var 2),
+             template_var 0))),
+       template_equation
+        (template_app
+          (template_app (template_hole 0, template_var 2), template_var 1),
+         template_app
+          (template_app (template_hole 0, template_var 2),
+           template_var 0)))),
+    ("Deriv_PDeriv.pderiv_set_flatten_PLUS",
+     "finite ?X ==> pderiv ?a (flatten PLUS ?X) = pderiv_set ?a ?X",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 8, template_var 1))],
+       template_equation
+        (template_app
+          (template_app (template_hole 6, template_var 0),
+           template_app
+            (template_app
+              (template_app (template_hole 5, template_hole 4),
+               template_hole 3),
+             template_app (template_hole 2, template_var 1))),
+         template_app
+          (template_hole 1,
+           template_app
+            (template_app
+              (template_hole 0,
+               template_app (template_hole 6, template_var 0)),
+             template_var 1))))),
+    ("Deriv_PDeriv.pnPlus_PlusL",
+     "?t ~= Zero ==> pnPlus (Plus ?r ?s) ?t = pnPlus ?r (pnPlus ?s ?t)",
+     template_implication
+      ([template_negation
+         (template_equation (template_var 2, template_hole 2))],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 1,
+             template_app
+              (template_app (template_hole 0, template_var 1),
+               template_var 0)),
+           template_var 2),
+         template_app
+          (template_app (template_hole 1, template_var 1),
+           template_app
+            (template_app (template_hole 1, template_var 0),
+             template_var 2))))),
+    ("Deriv_PDeriv.sorted_list_of_set_inject",
+     "[| finite ?R; finite ?S |]
+      ==> flatten (flatten (=) ?R) ?S = (?R = ?S)",
+     template_implication
+      ([template_predicate (template_app (template_hole 4, template_var 1)),
+        template_predicate
+         (template_app (template_hole 4, template_var 0))],
+       template_bimplication
+        (template_equation
+          (template_app (template_hole 1, template_var 1),
+           template_app (template_hole 1, template_var 0)),
+         template_equation (template_var 1, template_var 0)))),
+    ("Deriv_PDeriv.pnTimes_not_Zero_or_Plus",
+     "[| ~ is_Zero ?x; ~ is_Plus ?x |] ==> pnTimes ?x ?r = Times ?x ?r",
+     template_implication
+      ([template_negation
+         (
+            template_predicate
+             (template_app (template_hole 4, template_var 1))
+            ),
+        template_negation
+         (
+            template_predicate
+             (template_app (template_hole 3, template_var 1))
+            )],
+       template_equation
+        (template_app
+          (template_app (template_hole 1, template_var 1), template_var 0),
+         template_app
+          (template_app (template_hole 0, template_var 1),
+           template_var 0)))),
+    ("Deriv_PDeriv.pderiv_PLUS",
+     "pderiv ?a (PLUS (?x # ?xs)) = pderiv ?a ?x Un pderiv ?a (PLUS ?xs)",
+     template_equation
+      (template_app
+        (template_app (template_hole 5, template_var 2),
+         template_app
+          (template_app
+            (template_app (template_hole 4, template_hole 3),
+             template_hole 2),
+           template_app
+            (template_app (template_hole 1, template_var 1),
+             template_var 0))),
+       template_app
+        (template_app
+          (template_hole 0,
+           template_app
+            (template_app (template_hole 5, template_var 2),
+             template_var 1)),
+         template_app
+          (template_app (template_hole 5, template_var 2),
+           template_app
+            (template_app
+              (template_app (template_hole 4, template_hole 3),
+               template_hole 2),
+             template_var 0))))),
+    ("Deriv_PDeriv.insort_eq_Cons",
+     "[| ALL a:set ?xs. ?b < a; sorted ?xs |] ==> insort ?b ?xs = ?b # ?xs",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 7,
+                template_app (template_hole 6, template_var 1)),
+              t_empty)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 4, template_hole 3),
+              template_var 1)
+            )],
+       template_equation
+        (template_app
+          (template_app
+            (template_app (template_hole 1, t_empty), template_var 0),
+           template_var 1),
+         template_app
+          (template_app (template_hole 0, template_var 0),
+           template_var 1)))),
+    ("Deriv_PDeriv.fold_pnorm_deriv",
+     "fold (%a r. pnorm (deriv a r)) ?w ?s =
+      flatten PLUS (fold pderiv_set ?w {?s})",
+     template_equation
+      (template_app
+        (template_app
+          (template_app (template_hole 12, t_empty), template_var 1),
+         template_var 0),
+       template_app
+        (template_app
+          (template_app (template_hole 9, template_hole 8),
+           template_hole 7),
+         template_app
+          (template_hole 6,
+           template_app
+            (template_app
+              (template_app (template_hole 5, t_empty), template_var 1),
+             template_app
+              (template_app (template_hole 1, template_var 0),
+               template_hole 0)))))),
+    ("Deriv_PDeriv.fold_pderiv_set_flatten_PLUS",
+     "[| ?w ~= []; finite ?X |]
+      ==> fold pderiv_set ?w {flatten PLUS ?X} = fold pderiv_set ?w ?X",
+     template_implication
+      ([template_negation
+         (template_equation (template_var 1, template_hole 12)),
+        template_predicate
+         (template_app (template_hole 11, template_var 0))],
+       template_equation
+        (template_app
+          (template_app
+            (template_app (template_hole 9, t_empty), template_var 1),
+           template_app
+            (template_app
+              (template_hole 5,
+               template_app
+                (template_app
+                  (template_app (template_hole 4, template_hole 3),
+                   template_hole 2),
+                 template_app (template_hole 1, template_var 0))),
+             template_hole 0)),
+         template_app
+          (template_app
+            (template_app (template_hole 9, t_empty), template_var 1),
+           template_var 0)))),
+    ("Deriv_PDeriv.flatten_PLUS_inject",
+     "[| ALL x:?R Un ?S. ~ is_Zero x & ~ is_Plus x; finite ?R; finite ?S |]
+      ==> (flatten PLUS ?R = flatten PLUS ?S) = (?R = ?S)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 13,
+                template_app
+                 (template_app (template_hole 12, template_var 1),
+                  template_var 0)),
+              t_empty)
+            ),
+        template_predicate (template_app (template_hole 7, template_var 1)),
+        template_predicate
+         (template_app (template_hole 7, template_var 0))],
+       template_bimplication
+        (template_equation
+          (template_app
+            (template_app
+              (template_app (template_hole 4, template_hole 3),
+               template_hole 2),
+             template_app (template_hole 1, template_var 1)),
+           template_app
+            (template_app
+              (template_app (template_hole 4, template_hole 3),
+               template_hole 2),
+             template_app (template_hole 1, template_var 0))),
+         template_equation (template_var 1, template_var 0)))),
+    ("Deriv_PDeriv.PLUS_inject",
+     "[| ALL x:set ?xs Un set ?ys. ~ is_Zero x & ~ is_Plus x; sorted ?xs;
+         sorted ?ys |]
+      ==> (PLUS ?xs = PLUS ?ys) = (?xs = ?ys)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 14,
+                template_app
+                 (template_app
+                   (template_hole 13,
+                    template_app (template_hole 12, template_var 1)),
+                  template_app (template_hole 12, template_var 0))),
+              t_empty)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 7, template_hole 6),
+              template_var 1)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 7, template_hole 6),
+              template_var 0)
+            )],
+       template_bimplication
+        (template_equation
+          (template_app
+            (template_app
+              (template_app (template_hole 3, template_hole 2),
+               template_hole 1),
+             template_var 1),
+           template_app
+            (template_app
+              (template_app (template_hole 3, template_hole 2),
+               template_hole 1),
+             template_var 0)),
+         template_equation (template_var 1, template_var 0)))),
+    ("Deriv_PDeriv.pnTimes_PLUS",
+     "[| ?xs ~= []; ALL x:set ?xs. ~ is_Zero x & ~ is_Plus x |]
+      ==> pnTimes (PLUS ?xs) ?r = flatten PLUS (Timess (set ?xs) ?r)",
+     template_implication
+      ([template_negation
+         (template_equation (template_var 1, template_hole 16)),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 15,
+                template_app (template_hole 14, template_var 1)),
+              t_empty)
+            )],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 9,
+             template_app
+              (template_app
+                (template_app (template_hole 8, template_hole 7),
+                 template_hole 6),
+               template_var 1)),
+           template_var 0),
+         template_app
+          (template_app
+            (template_app (template_hole 8, template_hole 7),
+             template_hole 6),
+           template_app
+            (template_hole 5,
+             template_app
+              (template_hole 4,
+               template_app
+                (template_app (template_hole 3, t_empty),
+                 template_app (template_hole 14, template_var 1)))))))),
+    ("Deriv_PDeriv.pnTimes_flatten_PLUS",
+     "[| ?X1.0 ~= {}; finite ?X1.0;
+         ALL x:?X1.0. ~ is_Zero x & ~ is_Plus x |]
+      ==> pnTimes (flatten PLUS ?X1.0) ?r = flatten PLUS (Timess ?X1.0 ?r)",
+     template_implication
+      ([template_negation
+         (template_equation (template_var 1, template_hole 15)),
+        template_predicate
+         (template_app (template_hole 14, template_var 1)),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 13, template_var 1), t_empty)
+            )],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 8,
+             template_app
+              (template_app
+                (template_app (template_hole 7, template_hole 6),
+                 template_hole 5),
+               template_app (template_hole 4, template_var 1))),
+           template_var 0),
+         template_app
+          (template_app
+            (template_app (template_hole 7, template_hole 6),
+             template_hole 5),
+           template_app
+            (template_hole 4,
+             template_app
+              (template_hole 3,
+               template_app
+                (template_app (template_hole 2, t_empty),
+                 template_var 1))))))),
+    ("Deriv_PDeriv.pnPlus_flatten_PLUS",
+     "[| ?X1.0 ~= {}; ?X2.0 ~= {}; finite ?X1.0; finite ?X2.0;
+         ALL x:?X1.0 Un ?X2.0. ~ is_Zero x & ~ is_Plus x |]
+      ==> pnPlus (flatten PLUS ?X1.0) (flatten PLUS ?X2.0) =
+          flatten PLUS (?X1.0 Un ?X2.0)",
+     template_implication
+      ([template_negation
+         (template_equation (template_var 1, template_hole 12)),
+        template_negation
+         (template_equation (template_var 0, template_hole 12)),
+        template_predicate
+         (template_app (template_hole 11, template_var 1)),
+        template_predicate
+         (template_app (template_hole 11, template_var 0)),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 10,
+                template_app
+                 (template_app (template_hole 9, template_var 1),
+                  template_var 0)),
+              t_empty)
+            )],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 4,
+             template_app
+              (template_app
+                (template_app (template_hole 3, template_hole 2),
+                 template_hole 1),
+               template_app (template_hole 0, template_var 1))),
+           template_app
+            (template_app
+              (template_app (template_hole 3, template_hole 2),
+               template_hole 1),
+             template_app (template_hole 0, template_var 0))),
+         template_app
+          (template_app
+            (template_app (template_hole 3, template_hole 2),
+             template_hole 1),
+           template_app
+            (template_hole 0,
+             template_app
+              (template_app (template_hole 9, template_var 1),
+               template_var 0)))))),
+    ("Deriv_PDeriv.pnPlus_PLUS",
+     "[| ?xs1.0 ~= []; ?xs2.0 ~= [];
+         ALL x:set (?xs1.0 @ ?xs2.0). ~ is_Zero x & ~ is_Plus x;
+         sorted ?xs2.0; distinct ?xs2.0 |]
+      ==> pnPlus (PLUS ?xs1.0) (PLUS ?xs2.0) =
+          flatten PLUS (set (?xs1.0 @ ?xs2.0))",
+     template_implication
+      ([template_negation
+         (template_equation (template_var 1, template_hole 15)),
+        template_negation
+         (template_equation (template_var 0, template_hole 15)),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 14,
+                template_app
+                 (template_hole 13,
+                  template_app
+                   (template_app (template_hole 12, template_var 1),
+                    template_var 0))),
+              t_empty)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 8, template_hole 7),
+              template_var 0)
+            ),
+        template_predicate
+         (template_app (template_hole 6, template_var 0))],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 4,
+             template_app
+              (template_app
+                (template_app (template_hole 3, template_hole 2),
+                 template_hole 1),
+               template_var 1)),
+           template_app
+            (template_app
+              (template_app (template_hole 3, template_hole 2),
+               template_hole 1),
+             template_var 0)),
+         template_app
+          (template_app
+            (template_app (template_hole 3, template_hole 2),
+             template_hole 1),
+           template_app
+            (template_hole 0,
+             template_app
+              (template_hole 13,
+               template_app
+                (template_app (template_hole 12, template_var 1),
+                 template_var 0))))))),
+    ("Deriv_PDeriv.pnPlus_singleton_PLUS",
+     "[| ?xs ~= []; sorted ?xs; distinct ?xs;
+         ALL x:{?x} Un set ?xs. ~ is_Zero x & ~ is_Plus x |]
+      ==> pnPlus ?x (PLUS ?xs) =
+          (if ?x : set ?xs then PLUS ?xs else PLUS (insort ?x ?xs))",
+     template_implication
+      ([template_negation
+         (template_equation (template_var 1, template_hole 19)),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 18, template_hole 17),
+              template_var 1)
+            ),
+        template_predicate
+         (template_app (template_hole 16, template_var 1)),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 15,
+                template_app
+                 (template_app
+                   (template_hole 14,
+                    template_app
+                     (template_app (template_hole 13, template_var 0),
+                      template_hole 12)),
+                  template_app (template_hole 11, template_var 1))),
+              t_empty)
+            )],
+       template_equation
+        (template_app
+          (template_app (template_hole 6, template_var 0),
+           template_app
+            (template_app
+              (template_app (template_hole 5, template_hole 4),
+               template_hole 3),
+             template_var 1)),
+         template_app
+          (template_app
+            (template_app
+              (template_hole 2,
+               template_app
+                (template_app (template_hole 1, template_var 0),
+                 template_app (template_hole 11, template_var 1))),
+             template_app
+              (template_app
+                (template_app (template_hole 5, template_hole 4),
+                 template_hole 3),
+               template_var 1)),
+           template_app
+            (template_app
+              (template_app (template_hole 5, template_hole 4),
+               template_hole 3),
+             template_app
+              (template_app
+                (template_app (template_hole 0, t_empty), template_var 0),
+               template_var 1))))))]:
+   (string * thm * template) list
+### theory "Draft.Deriv_PDerivTemplates"
+### 0.352s elapsed time, 0.517s cpu time, 0.086s GC time
+val it = (): unit

@@ -1,0 +1,756 @@
+Loading theory "Draft.Missing_Misc" (required by "Draft.Matrix_ComparisonTemplates" via "Draft.Matrix_Comparison" via "Draft.Matrix" via "Draft.Missing_Ring")
+Loading theory "Draft.Conjugate" (required by "Draft.Matrix_ComparisonTemplates" via "Draft.Matrix_Comparison" via "Draft.Matrix")
+Loading theory "Draft.Templates" (required by "Draft.Matrix_ComparisonTemplates" via "Draft.ExtrEqs")
+datatype template_term
+=
+     t_empty
+   | template_app of template_term * template_term
+   | template_hole of int
+   | template_var of int
+datatype sign
+= equals | greater_equals | greater_than | less_equals | less_than
+datatype template
+=
+     template_bimplication of template * template
+   | template_dunno
+   | template_equation of template_term * template_term
+   | template_implication of template list * template
+   | template_inequation of sign * template_term * template_term
+   | template_negation of template
+   | template_predicate of template_term
+constructor t_empty: template_term
+constructor template_app: template_term * template_term -> template_term
+constructor template_hole: int -> template_term
+constructor template_var: int -> template_term
+constructor equals: sign
+constructor greater_equals: sign
+constructor greater_than: sign
+constructor less_equals: sign
+constructor less_than: sign
+constructor template_bimplication: template * template -> template
+constructor template_dunno: template
+constructor template_equation: template_term * template_term -> template
+constructor template_implication: template list * template -> template
+constructor template_inequation:
+   sign * template_term * template_term -> template
+constructor template_negation: template -> template
+constructor template_predicate: template_term -> template
+val vfs = fn: term -> (indexname * typ) list * (string * typ) list
+val indexOf = fn: ''a list -> ''a -> int -> int
+val has_eq = fn: term -> bool
+val term2template = fn:
+   (indexname * typ) list -> (string * typ) list -> term -> template_term
+val lemma2predicate = fn: term -> term -> template
+val makeTemplatewithContext = fn: term -> term -> template
+val lemma2template = fn: term -> template
+val thm2template = fn: thm -> template
+val tterm2string = fn: template_term -> string
+val template2string = fn: template -> string
+val t = "height ?t <= size ?t": thm
+val th =
+   Const ("HOL.Trueprop", "bool => prop") $
+     (Const ("Orderings.ord_class.less_eq", "nat => nat => bool") $
+       (Const ("Tree.height_class.height", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree")) $
+       (Const ("Nat.size_class.size", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree"))):
+   term
+### theory "Draft.Templates"
+### 0.067s elapsed time, 0.232s cpu time, 0.000s GC time
+Loading theory "Draft.ExtrEqs" (required by "Draft.Matrix_ComparisonTemplates")
+class conjugate = type +
+  fixes conjugate :: "'a => 'a"
+  assumes "conjugate_id": "!!a. conjugate (conjugate a) = a"
+    and
+    "conjugate_cancel_iff": "!!a b. (conjugate a = conjugate b) = (a = b)"
+### theory "Draft.Missing_Misc"
+### 0.133s elapsed time, 0.384s cpu time, 0.045s GC time
+Loading theory "Draft.Missing_Ring" (required by "Draft.Matrix_ComparisonTemplates" via "Draft.Matrix_Comparison" via "Draft.Matrix")
+class conjugatable_ring = conjugate + ring +
+  assumes
+    "conjugate_dist_mul":
+      "!!a b. conjugate (a * b) = conjugate a * conjugate b"
+    and
+    "conjugate_dist_add":
+      "!!a b. conjugate (a + b) = conjugate a + conjugate b"
+    and "conjugate_neg": "!!a. conjugate (- a) = - conjugate a"
+    and "conjugate_zero": "conjugate (0::'a) = (0::'a)"
+val eqpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Var (("_dummy_", 2), "?'a"))
+       ):
+   term Find_Theorems.criterion
+val badeqpattern = Pattern (Const ("Pure.eq", "?'a => ?'a => prop")):
+   term Find_Theorems.criterion
+val undefpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Const ("HOL.undefined", "?'a"))
+       ):
+   term Find_Theorems.criterion
+val thmpattern =
+   Pattern
+    (Const ("HOL.Trueprop", "bool => prop") $ Var (("_dummy_", 1), "bool")):
+   term Find_Theorems.criterion
+val badnames =
+   ["*nitpick*", "*Nitpick*", "*full_exhaustive*", "*_def*", "Enum.finite*",
+    "*Quickcheck*", "ATP*", "*Nunchaku*", "*Code*", "*BNF*", "*SMT*",
+    "*.*.*"]:
+   string list
+val unwanted_names =
+   [(false, Name "*nitpick*"), (false, Name "*Nitpick*"),
+    (false, Name "*full_exhaustive*"), (false, Name "*_def*"),
+    (false, Name "Enum.finite*"), (false, Name "*Quickcheck*"),
+    (false, Name "ATP*"), (false, Name "*Nunchaku*"),
+    (false, Name "*Code*"), (false, Name "*BNF*"), (false, Name "*SMT*"),
+    (false, Name "*.*.*")]:
+   (bool * term Find_Theorems.criterion) list
+val has_vars = fn: term -> bool
+val get_all_eqs = fn: string -> Proof.context -> (string * thm) list
+val get_all_thms = fn: string -> Proof.context -> (string * thm) list
+val get_noneq_thms = fn: string -> Proof.context -> (string * thm) list
+val template_eqs = fn:
+   string -> Proof.context -> (string * thm * template) list
+val template_thms = fn:
+   string -> Proof.context -> (string * thm * template) list
+### theory "Draft.ExtrEqs"
+### 0.626s elapsed time, 1.762s cpu time, 0.167s GC time
+class ordered_semiring_strict = comm_monoid_add +
+  ordered_cancel_ab_semigroup_add + semiring +
+  assumes
+    "mult_strict_left_mono":
+      "!!a b c. [| a < b; (0::'a) < c |] ==> c * a < c * b"
+  assumes
+    "mult_strict_right_mono":
+      "!!a b c. [| a < b; (0::'a) < c |] ==> a * c < b * c"
+class conjugatable_ordered_ring = conjugatable_ring +
+  ordered_comm_monoid_add +
+  assumes "conjugate_square_positive": "!!a. (0::'a) <= a * conjugate a"
+class ordered_idom = ordered_semiring_strict + idom +
+  assumes "zero_less_one": "(0::'a) < (1::'a)"
+instantiation
+  complex :: conjugatable_ordered_field
+  conjugate_complex == conjugate :: complex => complex
+instantiation
+  real :: conjugatable_ordered_field
+  conjugate_real == conjugate :: real => real
+instantiation
+  rat :: conjugatable_ordered_field
+  conjugate_rat == conjugate :: rat => rat
+instantiation
+  int :: conjugatable_ordered_ring
+  conjugate_int == conjugate :: int => int
+### theory "Draft.Conjugate"
+### 2.653s elapsed time, 5.933s cpu time, 0.742s GC time
+locale Group.comm_monoid
+  fixes G :: "('a, 'b) monoid_scheme"  (structure)
+  assumes "Group.comm_monoid G"
+locale csemiring
+  fixes R :: "('a, 'b) ring_scheme"  (structure)
+  assumes "csemiring R"
+locale cring
+  fixes R :: "('a, 'b) ring_scheme"  (structure)
+  assumes "cring R"
+locale Group.comm_monoid
+  fixes G :: "('a, 'b) monoid_scheme"  (structure)
+  assumes "Group.comm_monoid G"
+locale cring
+  fixes R :: "('a, 'b) ring_scheme"  (structure)
+  assumes "cring R"
+### theory "Draft.Missing_Ring"
+### 3.020s elapsed time, 6.046s cpu time, 0.731s GC time
+Loading theory "Draft.Matrix" (required by "Draft.Matrix_ComparisonTemplates" via "Draft.Matrix_Comparison")
+instantiation
+  vec :: (plus) plus
+  plus_vec == plus :: 'a vec => 'a vec => 'a vec
+instantiation
+  vec :: (minus) minus
+  minus_vec == minus :: 'a vec => 'a vec => 'a vec
+Found termination order: "(%p. size (snd p)) <*mlex*> {}"
+Found termination order: "(%p. size (snd p)) <*mlex*> {}"
+instantiation
+  vec :: (uminus) uminus
+  uminus_vec == uminus :: 'a vec => 'a vec
+instantiation
+  vec :: (ord) ord
+  less_eq_vec == less_eq :: 'a vec => 'a vec => bool
+  less_vec == less :: 'a vec => 'a vec => bool
+instantiation
+  vec :: (preorder) preorder
+instantiation
+  vec :: (order) order
+Found termination order: "{}"
+instantiation
+  mat :: (ord) ord
+  less_eq_mat == less_eq :: 'a mat => 'a mat => bool
+  less_mat == less :: 'a mat => 'a mat => bool
+instantiation
+  mat :: (preorder) preorder
+instantiation
+  mat :: (order) order
+instantiation
+  mat :: (plus) plus
+  plus_mat == plus :: 'a mat => 'a mat => 'a mat
+instantiation
+  mat :: (uminus) uminus
+  uminus_mat == uminus :: 'a mat => 'a mat
+instantiation
+  mat :: (minus) minus
+  minus_mat == minus :: 'a mat => 'a mat => 'a mat
+instantiation
+  mat :: (semiring_0) times
+  times_mat == times :: 'a mat => 'a mat => 'a mat
+Found termination order: "(%p. size (snd p)) <*mlex*> {}"
+Found termination order: "length <*mlex*> {}"
+locale semiring_hom
+  fixes hom :: "'a => 'b"
+  assumes "semiring_hom hom"
+instantiation
+  vec :: (conjugate) conjugate
+  conjugate_vec == conjugate :: 'a vec => 'a vec
+### theory "Draft.Matrix"
+### 2.963s elapsed time, 3.468s cpu time, 0.808s GC time
+Loading theory "Draft.Matrix_Comparison" (required by "Draft.Matrix_ComparisonTemplates")
+class ord = type +
+  fixes less_eq :: "'a => 'a => bool"
+    and less :: "'a => 'a => bool"
+class non_strict_order = ord +
+  assumes "ge_refl": "!!x. x <= x"
+    and "ge_trans": "!!y x z. [| y <= x; z <= y |] ==> z <= x"
+    and "max_comm": "!!x y. max x y = max y x"
+    and "max_ge_x": "!!x y. x <= max x y"
+    and "max_id": "!!y x. y <= x ==> max x y = x"
+    and "max_mono": "!!y x z. y <= x ==> max z y <= max z x"
+### Ambiguous input (line 141 of "$AFP/Jordan_Normal_Form/Matrix_Comparison.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>Ordered_Semiring.ordered_semiring.gt_indexed"
+###     ("_applC" ("_position" f) ("_position" i)) ("_indexdefault")
+###     ("_applC" ("_position" g) ("_position" i))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^fixed>gt" ("_applC" ("_position" f) ("_position" i))
+###     ("_applC" ("_position" g) ("_position" i))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ambiguous input (line 143 of "$AFP/Jordan_Normal_Form/Matrix_Comparison.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>Ordered_Semiring.ordered_semiring.gt_indexed"
+###     ("_sum" ("_position" i) ("_position" K)
+###       ("_applC" ("_position" f) ("_position" i)))
+###     ("_indexdefault")
+###     ("_sum" ("_position" i) ("_position" K)
+###       ("_applC" ("_position" g) ("_position" i)))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^fixed>gt"
+###     ("_sum" ("_position" i) ("_position" K)
+###       ("_applC" ("_position" f) ("_position" i)))
+###     ("_sum" ("_position" i) ("_position" K)
+###       ("_applC" ("_position" g) ("_position" i)))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+locale order_pair
+  fixes gt :: "'a => 'a => bool"  (infix \<open>\<succ>\<close> 50)
+    and default :: "'a"
+  assumes "order_pair (\<succ>) default"
+locale weak_SN_strict_mono_ordered_semiring_1
+  fixes weak_gt :: "'a => 'a => bool"
+    and default :: "'a"
+    and mono :: "'a => bool"
+  assumes "weak_SN_strict_mono_ordered_semiring_1 weak_gt default mono"
+locale one_mono_ordered_semiring_1
+  fixes default :: "'a"
+    and gt :: "'a => 'a => bool"  (infix \<open>\<succ>\<close> 50)
+  assumes "one_mono_ordered_semiring_1 default (\<succ>)"
+### Ambiguous input (line 310 of "$AFP/Jordan_Normal_Form/Matrix_Comparison.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>Ordered_Semiring.ordered_semiring.gt_indexed"
+###     ("_applC" ("_position" sum_mat) ("_position" A)) ("_indexdefault")
+###     ("_applC" ("_position" sum_mat) ("_position" B))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^fixed>gt" ("_applC" ("_position" sum_mat) ("_position" A))
+###     ("_applC" ("_position" sum_mat) ("_position" B))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+locale SN_one_mono_ordered_semiring_1
+  fixes default :: "'a"
+    and gt :: "'a => 'a => bool"  (infix \<open>\<succ>\<close> 50)
+  assumes "SN_one_mono_ordered_semiring_1 default (\<succ>)"
+locale SN_strict_mono_ordered_semiring_1
+  fixes default :: "'a"
+    and gt :: "'a => 'a => bool"  (infix \<open>\<succ>\<close> 50)
+    and mono :: "'a => bool"
+  assumes "SN_strict_mono_ordered_semiring_1 default (\<succ>) mono"
+locale weak_SN_both_mono_ordered_semiring_1
+  fixes weak_gt :: "'a => 'a => bool"
+    and default :: "'a"
+    and arc_pos :: "'a => bool"
+  assumes "weak_SN_both_mono_ordered_semiring_1 weak_gt default arc_pos"
+locale both_mono_ordered_semiring_1
+  fixes default :: "'a"
+    and gt :: "'a => 'a => bool"  (infix \<open>\<succ>\<close> 50)
+    and arc_pos :: "'a => bool"
+  assumes "both_mono_ordered_semiring_1 default (\<succ>) arc_pos"
+### Ambiguous input (line 653 of "$AFP/Jordan_Normal_Form/Matrix_Comparison.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>Ordered_Semiring.ordered_semiring.gt_indexed"
+###     ("_applC" ("_position" scalar_prod)
+###       ("_cargs" ("_position" u) ("_position" w)))
+###     ("_indexdefault")
+###     ("_applC" ("_position" scalar_prod)
+###       ("_cargs" ("_position" v) ("_position" w)))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^fixed>gt"
+###     ("_applC" ("_position" scalar_prod)
+###       ("_cargs" ("_position" u) ("_position" w)))
+###     ("_applC" ("_position" scalar_prod)
+###       ("_cargs" ("_position" v) ("_position" w)))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ambiguous input (line 679 of "$AFP/Jordan_Normal_Form/Matrix_Comparison.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>Ordered_Semiring.ordered_semiring.gt_indexed"
+###     ("_applC" ("_position" scalar_prod)
+###       ("_cargs" ("_position" u) ("_position" v)))
+###     ("_indexdefault")
+###     ("_applC" ("_position" scalar_prod)
+###       ("_cargs" ("_position" u) ("_position" w)))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^fixed>gt"
+###     ("_applC" ("_position" scalar_prod)
+###       ("_cargs" ("_position" u) ("_position" v)))
+###     ("_applC" ("_position" scalar_prod)
+###       ("_cargs" ("_position" u) ("_position" w)))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+locale SN_both_mono_ordered_semiring_1
+  fixes default :: "'a"
+    and gt :: "'a => 'a => bool"  (infix \<open>\<succ>\<close> 50)
+    and arc_pos :: "'a => bool"
+  assumes "SN_both_mono_ordered_semiring_1 default (\<succ>) arc_pos"
+### theory "Draft.Matrix_Comparison"
+### 0.755s elapsed time, 0.833s cpu time, 0.136s GC time
+Loading theory "Draft.Matrix_ComparisonTemplates"
+val templateLemmas =
+   [("Matrix_Comparison.one_mat_ge_zero",
+     "1\<^sub>m ?n \<ge>\<^sub>m 0\<^sub>m ?n ?n",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_hole 2,
+             template_app (template_hole 1, template_var 0)),
+           template_app
+            (template_app (template_hole 0, template_var 0),
+             template_var 0))
+         )),
+    ("Matrix_Comparison.plus_mono",
+     "[| ?x\<^sub>2 <= ?x\<^sub>1; ?y\<^sub>2 <= ?y\<^sub>1 |]
+      ==> ?x\<^sub>2 + ?y\<^sub>2 <= ?x\<^sub>1 + ?y\<^sub>1",
+     template_implication
+      ([template_inequation (less_equals, template_var 3, template_var 2),
+        template_inequation (less_equals, template_var 1, template_var 0)],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_app (template_hole 0, template_var 3), template_var 1),
+         template_app
+          (template_app (template_hole 0, template_var 2),
+           template_var 0)))),
+    ("Matrix_Comparison.sum_mat_mono",
+     "[| ?A : carrier_mat ?nr ?nc; ?B : carrier_mat ?nr ?nc;
+         ?A \<ge>\<^sub>m ?B |]
+      ==> sum_mat ?B <= sum_mat ?A",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 4, template_var 3),
+              template_app
+               (template_app (template_hole 3, template_var 2),
+                template_var 1))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 4, template_var 0),
+              template_app
+               (template_app (template_hole 3, template_var 2),
+                template_var 1))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 2, template_var 3),
+              template_var 0)
+            )],
+       template_inequation
+        (less_equals, template_app (template_hole 0, template_var 0),
+         template_app (template_hole 0, template_var 3)))),
+    ("Matrix_Comparison.sum_mono_ge",
+     "(!!i. i : ?K ==> ?g i <= ?f i) ==> sum ?g ?K <= sum ?f ?K",
+     template_implication
+      ([template_predicate (template_app (template_hole 4, t_empty))],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_app (template_hole 0, t_empty), template_var 2),
+         template_app
+          (template_app (template_hole 0, t_empty), template_var 2)))),
+    ("Matrix_Comparison.mat_plus_left_mono",
+     "[| ?A \<ge>\<^sub>m ?B; ?A : carrier_mat ?nr ?nc;
+         ?B : carrier_mat ?nr ?nc; ?C : carrier_mat ?nr ?nc |]
+      ==> ?A + ?C \<ge>\<^sub>m ?B + ?C",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 3, template_var 4),
+              template_var 3)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 2, template_var 4),
+              template_app
+               (template_app (template_hole 1, template_var 2),
+                template_var 1))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 2, template_var 3),
+              template_app
+               (template_app (template_hole 1, template_var 2),
+                template_var 1))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 2, template_var 0),
+              template_app
+               (template_app (template_hole 1, template_var 2),
+                template_var 1))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 3,
+               template_app
+                (template_app (template_hole 0, template_var 4),
+                 template_var 0)),
+             template_app
+              (template_app (template_hole 0, template_var 3),
+               template_var 0))
+           ))),
+    ("Matrix_Comparison.mat_plus_right_mono",
+     "[| ?B \<ge>\<^sub>m ?C; ?A : carrier_mat ?nr ?nc;
+         ?B : carrier_mat ?nr ?nc; ?C : carrier_mat ?nr ?nc |]
+      ==> ?A + ?B \<ge>\<^sub>m ?A + ?C",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 3, template_var 4),
+              template_var 3)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 2, template_var 2),
+              template_app
+               (template_app (template_hole 1, template_var 1),
+                template_var 0))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 2, template_var 4),
+              template_app
+               (template_app (template_hole 1, template_var 1),
+                template_var 0))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 2, template_var 3),
+              template_app
+               (template_app (template_hole 1, template_var 1),
+                template_var 0))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 3,
+               template_app
+                (template_app (template_hole 0, template_var 2),
+                 template_var 4)),
+             template_app
+              (template_app (template_hole 0, template_var 2),
+               template_var 3))
+           ))),
+    ("Matrix_Comparison.mat_mult_right_mono",
+     "[| ?A \<ge>\<^sub>m 0\<^sub>m ?n ?n; ?B \<ge>\<^sub>m ?C;
+         ?A : carrier_mat ?n ?n; ?B : carrier_mat ?n ?n;
+         ?C : carrier_mat ?n ?n |]
+      ==> ?A * ?B \<ge>\<^sub>m ?A * ?C",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 4, template_var 3),
+              template_app
+               (template_app (template_hole 3, template_var 2),
+                template_var 2))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 4, template_var 1),
+              template_var 0)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 2, template_var 3),
+              template_app
+               (template_app (template_hole 1, template_var 2),
+                template_var 2))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 2, template_var 1),
+              template_app
+               (template_app (template_hole 1, template_var 2),
+                template_var 2))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 2, template_var 0),
+              template_app
+               (template_app (template_hole 1, template_var 2),
+                template_var 2))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 4,
+               template_app
+                (template_app (template_hole 0, template_var 3),
+                 template_var 1)),
+             template_app
+              (template_app (template_hole 0, template_var 3),
+               template_var 0))
+           ))),
+    ("Matrix_Comparison.mat_mult_left_mono",
+     "[| ?C \<ge>\<^sub>m 0\<^sub>m ?n ?n; ?A \<ge>\<^sub>m ?B;
+         ?A : carrier_mat ?n ?n; ?B : carrier_mat ?n ?n;
+         ?C : carrier_mat ?n ?n |]
+      ==> ?A * ?C \<ge>\<^sub>m ?B * ?C",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 4, template_var 3),
+              template_app
+               (template_app (template_hole 3, template_var 2),
+                template_var 2))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 4, template_var 1),
+              template_var 0)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 2, template_var 1),
+              template_app
+               (template_app (template_hole 1, template_var 2),
+                template_var 2))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 2, template_var 0),
+              template_app
+               (template_app (template_hole 1, template_var 2),
+                template_var 2))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 2, template_var 3),
+              template_app
+               (template_app (template_hole 1, template_var 2),
+                template_var 2))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 4,
+               template_app
+                (template_app (template_hole 0, template_var 1),
+                 template_var 3)),
+             template_app
+              (template_app (template_hole 0, template_var 0),
+               template_var 3))
+           ))),
+    ("Matrix_Comparison.mat_comp_allE",
+     "[| mat_comp_all ?r ?A ?B; ?A : carrier_mat ?nr ?nc;
+         ?B : carrier_mat ?nr ?nc; ?i < ?nr; ?j < ?nc |]
+      ==> ?r (?A $$ (?i, ?j)) (?B $$ (?i, ?j))",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 5, template_var 6),
+                template_var 5),
+              template_var 4)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 4, template_var 5),
+              template_app
+               (template_app (template_hole 3, template_var 3),
+                template_var 2))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 4, template_var 4),
+              template_app
+               (template_app (template_hole 3, template_var 3),
+                template_var 2))
+            ),
+        template_inequation (less_than, template_var 1, template_var 3),
+        template_inequation (less_than, template_var 0, template_var 2)],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_var 6,
+               template_app
+                (template_app (template_hole 1, template_var 5),
+                 template_app
+                  (template_app (template_hole 0, template_var 1),
+                   template_var 0))),
+             template_app
+              (template_app (template_hole 1, template_var 4),
+               template_app
+                (template_app (template_hole 0, template_var 1),
+                 template_var 0)))
+           ))),
+    ("Matrix_Comparison.mat_comp_allI",
+     "[| ?A : carrier_mat ?nr ?nc; ?B : carrier_mat ?nr ?nc;
+         !!i j.
+            [| i < ?nr; j < ?nc |] ==> ?r (?A $$ (i, j)) (?B $$ (i, j)) |]
+      ==> mat_comp_all ?r ?A ?B",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 6, template_var 4),
+              template_app
+               (template_app (template_hole 5, template_var 3),
+                template_var 2))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 6, template_var 1),
+              template_app
+               (template_app (template_hole 5, template_var 3),
+                template_var 2))
+            ),
+        template_predicate (template_app (template_hole 4, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app (template_hole 0, template_var 0),
+               template_var 4),
+             template_var 1)
+           ))),
+    ("Matrix_Comparison.scalar_left_mono",
+     "[| ?u : carrier_vec ?n; ?v : carrier_vec ?n; ?w : carrier_vec ?n;
+         !!i. i < ?n ==> ?v $ i <= ?u $ i;
+         !!i. i < ?n ==> (0::?'a) <= ?w $ i |]
+      ==> ?v \<bullet> ?w <= ?u \<bullet> ?w",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 7, template_var 3),
+              template_app (template_hole 6, template_var 2))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 7, template_var 1),
+              template_app (template_hole 6, template_var 2))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 7, template_var 0),
+              template_app (template_hole 6, template_var 2))
+            ),
+        template_predicate (template_app (template_hole 5, t_empty)),
+        template_predicate (template_app (template_hole 5, t_empty))],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_app (template_hole 0, template_var 1), template_var 0),
+         template_app
+          (template_app (template_hole 0, template_var 3),
+           template_var 0)))),
+    ("Matrix_Comparison.scalar_right_mono",
+     "[| ?u : carrier_vec ?n; ?v : carrier_vec ?n; ?w : carrier_vec ?n;
+         !!i. i < ?n ==> ?w $ i <= ?v $ i;
+         !!i. i < ?n ==> (0::?'a) <= ?u $ i |]
+      ==> ?u \<bullet> ?w <= ?u \<bullet> ?v",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 7, template_var 3),
+              template_app (template_hole 6, template_var 2))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 7, template_var 1),
+              template_app (template_hole 6, template_var 2))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 7, template_var 0),
+              template_app (template_hole 6, template_var 2))
+            ),
+        template_predicate (template_app (template_hole 5, t_empty)),
+        template_predicate (template_app (template_hole 5, t_empty))],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_app (template_hole 0, template_var 3), template_var 0),
+         template_app
+          (template_app (template_hole 0, template_var 3),
+           template_var 1))))]:
+   (string * thm * template) list
+### theory "Draft.Matrix_ComparisonTemplates"
+### 0.567s elapsed time, 0.709s cpu time, 0.076s GC time
+val it = (): unit

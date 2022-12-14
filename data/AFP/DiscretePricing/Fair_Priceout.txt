@@ -1,0 +1,1722 @@
+Loading theory "HOL-Library.Function_Algebras" (required by "Draft.Fair_PriceTemplates" via "Draft.ExtrEqs" via "HOL-Library.BigO")
+Loading theory "Draft.Filtration" (required by "Draft.Fair_PriceTemplates" via "Draft.Fair_Price")
+Loading theory "Draft.Generated_Subalgebra" (required by "Draft.Fair_PriceTemplates" via "Draft.Fair_Price" via "Draft.Geometric_Random_Walk" via "Draft.Infinite_Coin_Toss_Space")
+Loading theory "Draft.Templates" (required by "Draft.Fair_PriceTemplates" via "Draft.ExtrEqs")
+instantiation
+  fun :: (type, plus) plus
+  plus_fun == plus :: ('a => 'b) => ('a => 'b) => 'a => 'b
+instantiation
+  fun :: (type, zero) zero
+  zero_fun == zero_class.zero :: 'a => 'b
+instantiation
+  fun :: (type, times) times
+  times_fun == times :: ('a => 'b) => ('a => 'b) => 'a => 'b
+instantiation
+  fun :: (type, one) one
+  one_fun == one_class.one :: 'a => 'b
+datatype template_term
+=
+     t_empty
+   | template_app of template_term * template_term
+   | template_hole of int
+   | template_var of int
+datatype sign
+= equals | greater_equals | greater_than | less_equals | less_than
+datatype template
+=
+     template_bimplication of template * template
+   | template_dunno
+   | template_equation of template_term * template_term
+   | template_implication of template list * template
+   | template_inequation of sign * template_term * template_term
+   | template_negation of template
+   | template_predicate of template_term
+constructor t_empty: template_term
+constructor template_app: template_term * template_term -> template_term
+constructor template_hole: int -> template_term
+constructor template_var: int -> template_term
+constructor equals: sign
+constructor greater_equals: sign
+constructor greater_than: sign
+constructor less_equals: sign
+constructor less_than: sign
+constructor template_bimplication: template * template -> template
+constructor template_dunno: template
+constructor template_equation: template_term * template_term -> template
+constructor template_implication: template list * template -> template
+constructor template_inequation:
+   sign * template_term * template_term -> template
+constructor template_negation: template -> template
+constructor template_predicate: template_term -> template
+val vfs = fn: term -> (indexname * typ) list * (string * typ) list
+val indexOf = fn: ''a list -> ''a -> int -> int
+val has_eq = fn: term -> bool
+val term2template = fn:
+   (indexname * typ) list -> (string * typ) list -> term -> template_term
+val lemma2predicate = fn: term -> term -> template
+val makeTemplatewithContext = fn: term -> term -> template
+val lemma2template = fn: term -> template
+val thm2template = fn: thm -> template
+val tterm2string = fn: template_term -> string
+val template2string = fn: template -> string
+val t = "height ?t <= size ?t": thm
+val th =
+   Const ("HOL.Trueprop", "bool => prop") $
+     (Const ("Orderings.ord_class.less_eq", "nat => nat => bool") $
+       (Const ("Tree.height_class.height", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree")) $
+       (Const ("Nat.size_class.size", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree"))):
+   term
+### theory "Draft.Templates"
+### 0.113s elapsed time, 0.460s cpu time, 0.040s GC time
+### theory "HOL-Library.Function_Algebras"
+### 0.127s elapsed time, 0.497s cpu time, 0.040s GC time
+Loading theory "HOL-Library.BigO" (required by "Draft.Fair_PriceTemplates" via "Draft.ExtrEqs")
+### theory "Draft.Generated_Subalgebra"
+### 0.223s elapsed time, 0.797s cpu time, 0.040s GC time
+Loading theory "Draft.Disc_Cond_Expect" (required by "Draft.Fair_PriceTemplates" via "Draft.Fair_Price" via "Draft.Geometric_Random_Walk" via "Draft.Infinite_Coin_Toss_Space")
+instantiation
+  nat :: linorder_bot
+locale filtrated_prob_space
+  fixes M :: "'a measure"
+    and F :: "'b => 'a measure"
+  assumes "filtrated_prob_space M F"
+### theory "Draft.Disc_Cond_Expect"
+### 0.416s elapsed time, 1.239s cpu time, 0.130s GC time
+locale disc_filtr_prob_space
+  fixes M :: "'a measure"
+    and F :: "nat => 'a measure"
+  assumes "disc_filtr_prob_space M F"
+### theory "HOL-Library.BigO"
+### 0.708s elapsed time, 1.977s cpu time, 0.219s GC time
+Loading theory "Draft.ExtrEqs" (required by "Draft.Fair_PriceTemplates")
+locale trivial_init_filtrated_prob_space
+  fixes M :: "'a measure"
+    and F :: "'b => 'a measure"
+  assumes "trivial_init_filtrated_prob_space M F"
+locale triv_init_disc_filtr_prob_space
+  fixes M :: "'a measure"
+    and F :: "nat => 'a measure"
+  assumes "triv_init_disc_filtr_prob_space M F"
+### theory "Draft.Filtration"
+### 1.229s elapsed time, 3.277s cpu time, 0.318s GC time
+Loading theory "Draft.Martingale" (required by "Draft.Fair_PriceTemplates" via "Draft.Fair_Price")
+Loading theory "Draft.Infinite_Coin_Toss_Space" (required by "Draft.Fair_PriceTemplates" via "Draft.Fair_Price" via "Draft.Geometric_Random_Walk")
+### theory "Draft.Martingale"
+### 0.284s elapsed time, 0.882s cpu time, 0.550s GC time
+val eqpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Var (("_dummy_", 2), "?'a"))
+       ):
+   term Find_Theorems.criterion
+val badeqpattern = Pattern (Const ("Pure.eq", "?'a => ?'a => prop")):
+   term Find_Theorems.criterion
+val undefpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Const ("HOL.undefined", "?'a"))
+       ):
+   term Find_Theorems.criterion
+val thmpattern =
+   Pattern
+    (Const ("HOL.Trueprop", "bool => prop") $ Var (("_dummy_", 1), "bool")):
+   term Find_Theorems.criterion
+val badnames =
+   ["*nitpick*", "*Nitpick*", "*full_exhaustive*", "*_def*", "Enum.finite*",
+    "*Quickcheck*", "ATP*", "*Nunchaku*", "*Code*", "*BNF*", "*SMT*",
+    "*.*.*"]:
+   string list
+val unwanted_names =
+   [(false, Name "*nitpick*"), (false, Name "*Nitpick*"),
+    (false, Name "*full_exhaustive*"), (false, Name "*_def*"),
+    (false, Name "Enum.finite*"), (false, Name "*Quickcheck*"),
+    (false, Name "ATP*"), (false, Name "*Nunchaku*"),
+    (false, Name "*Code*"), (false, Name "*BNF*"), (false, Name "*SMT*"),
+    (false, Name "*.*.*")]:
+   (bool * term Find_Theorems.criterion) list
+val has_vars = fn: term -> bool
+val get_all_eqs = fn: string -> Proof.context -> (string * thm) list
+val get_all_thms = fn: string -> Proof.context -> (string * thm) list
+val get_noneq_thms = fn: string -> Proof.context -> (string * thm) list
+val template_eqs = fn:
+   string -> Proof.context -> (string * thm * template) list
+val template_thms = fn:
+   string -> Proof.context -> (string * thm * template) list
+### theory "Draft.ExtrEqs"
+### 0.726s elapsed time, 1.794s cpu time, 0.609s GC time
+locale infinite_coin_toss_space
+  fixes p :: "real"
+    and M :: "bool stream measure"
+  assumes "infinite_coin_toss_space p M"
+locale infinite_cts_filtration
+  fixes p :: "real"
+    and M :: "bool stream measure"
+    and F :: "nat => bool stream measure"
+  assumes "infinite_cts_filtration p M F"
+consts
+  smap_stoch_proc :: "nat => (nat => 'a => 'b) => nat => 'a => 'b list"
+### theory "Draft.Infinite_Coin_Toss_Space"
+### 3.095s elapsed time, 4.386s cpu time, 1.629s GC time
+Loading theory "Draft.Geometric_Random_Walk" (required by "Draft.Fair_PriceTemplates" via "Draft.Fair_Price")
+Found termination order: "(%p. size (snd (snd (snd p)))) <*mlex*> {}"
+locale prob_grw
+  fixes p :: "real"
+    and M :: "bool stream measure"
+    and geom_proc :: "nat => bool stream => real"
+    and u :: "real"
+    and d :: "real"
+    and init :: "real"
+  assumes "prob_grw p M geom_proc u d init"
+### theory "Draft.Geometric_Random_Walk"
+### 0.364s elapsed time, 0.437s cpu time, 0.102s GC time
+Loading theory "Draft.Fair_Price" (required by "Draft.Fair_PriceTemplates")
+locale disc_equity_market
+  fixes M :: "'a measure"
+    and F :: "nat => 'a measure"
+    and Mkt :: "('a, 'b) discrete_market"
+  assumes "disc_equity_market M F"
+Found termination order: "{}"
+Found termination order: "(%p. size (snd (snd (snd (snd p))))) <*mlex*> {}"
+locale disc_market_pos_stock
+  fixes M :: "'a measure"
+    and F :: "nat => 'a measure"
+    and Mkt :: "('a, 'b) discrete_market"
+    and pos_stock :: "'b"
+  assumes "disc_market_pos_stock M F Mkt pos_stock"
+Found termination order: "(%p. size (fst (snd p))) <*mlex*> {}"
+locale rsk_free_asset
+  fixes Mkt :: "('a, 'b) discrete_market"
+    and r :: "real"
+    and risk_free_asset :: "'b"
+  assumes "rsk_free_asset Mkt r risk_free_asset"
+locale rfr_disc_equity_market
+  fixes M :: "'a measure"
+    and F :: "nat => 'a measure"
+    and Mkt :: "('a, 'b) discrete_market"
+    and r :: "real"
+    and risk_free_asset :: "'b"
+  assumes "rfr_disc_equity_market M F Mkt r risk_free_asset"
+### theory "Draft.Fair_Price"
+### 2.507s elapsed time, 3.489s cpu time, 1.379s GC time
+Loading theory "Draft.Fair_PriceTemplates"
+val templateLemmas =
+   [("Fair_Price.mkt_stocks_assets", "stk_strict_subs (stocks ?Mkt)",
+     template_predicate
+      (
+         template_app
+          (template_hole 1, template_app (template_hole 0, template_var 0))
+         )),
+    ("Fair_Price.single_comp_portfolio",
+     "portfolio (qty_single ?asset ?qty)",
+     template_predicate
+      (
+         template_app
+          (template_hole 1,
+           template_app
+            (template_app (template_hole 0, template_var 1),
+             template_var 0))
+         )),
+    ("Fair_Price.prices_of", "prices (discrete_market_of ?S ?A) = ?A",
+     template_equation
+      (template_app
+        (template_hole 1,
+         template_app
+          (template_app (template_hole 0, template_var 1), template_var 0)),
+       template_var 0)),
+    ("Fair_Price.discount_factor_init", "discount_factor ?r 0 = (%w. 1)",
+     template_equation
+      (template_app
+        (template_app (template_hole 2, template_var 0), template_hole 1),
+       t_empty)),
+    ("Fair_Price.rfr_base", "disc_rfr_proc ?r 0 ?w = 1",
+     template_equation
+      (template_app
+        (template_app
+          (template_app (template_hole 2, template_var 1), template_hole 1),
+         template_var 0),
+       template_hole 0)),
+    ("Fair_Price.mult_comp_support_set",
+     "support_set (qty_mult_comp ?pf1.0 ?qty) <= support_set ?pf1.0",
+     template_inequation
+      (less_equals,
+       template_app
+        (template_hole 1,
+         template_app
+          (template_app (template_hole 0, template_var 1), template_var 0)),
+       template_app (template_hole 1, template_var 1))),
+    ("Fair_Price.disc_rfr_proc_borel_measurable",
+     "disc_rfr_proc ?r ?n : borel_measurable ?M",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_hole 3,
+             template_app
+              (template_app (template_hole 2, template_var 2),
+               template_var 1)),
+           template_app
+            (template_app (template_hole 1, template_var 0),
+             template_hole 0))
+         )),
+    ("Fair_Price.discount_factor_nonrandom",
+     "discount_factor ?r ?n : borel_measurable ?M",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_hole 3,
+             template_app
+              (template_app (template_hole 2, template_var 2),
+               template_var 1)),
+           template_app
+            (template_app (template_hole 1, template_var 0),
+             template_hole 0))
+         )),
+    ("Fair_Price.single_comp_support",
+     "support_set (qty_single ?asset ?qty) <= {?asset}",
+     template_inequation
+      (less_equals,
+       template_app
+        (template_hole 3,
+         template_app
+          (template_app (template_hole 2, template_var 1), template_var 0)),
+       template_app
+        (template_app (template_hole 1, template_var 1), template_hole 0))),
+    ("Fair_Price.disc_rfr_proc_nonrandom",
+     "disc_rfr_proc ?r ?n : borel_measurable (?F (0::?'b))",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_hole 4,
+             template_app
+              (template_app (template_hole 3, template_var 2),
+               template_var 1)),
+           template_app
+            (template_app
+              (template_hole 2,
+               template_app (template_var 0, template_hole 1)),
+             template_hole 0))
+         )),
+    ("Fair_Price.mult_comp_portfolio",
+     "portfolio ?pf1.0 ==> portfolio (qty_mult_comp ?pf1.0 ?qty)",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 1, template_var 1))],
+       template_predicate
+        (
+           template_app
+            (template_hole 1,
+             template_app
+              (template_app (template_hole 0, template_var 1),
+               template_var 0))
+           ))),
+    ("Fair_Price.remove_comp_portfolio",
+     "portfolio ?pf1.0 ==> portfolio (qty_rem_comp ?pf1.0 ?x)",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 1, template_var 1))],
+       template_predicate
+        (
+           template_app
+            (template_hole 1,
+             template_app
+              (template_app (template_hole 0, template_var 1),
+               template_var 0))
+           ))),
+    ("Fair_Price.init", "remaining_qty ?Mkt ?v ?pf ?asset 0 = (%w. 0)",
+     template_equation
+      (template_app
+        (template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 2, template_var 3),
+               template_var 2),
+             template_var 1),
+           template_var 0),
+         template_hole 1),
+       t_empty)),
+    ("Fair_Price.sum_support_set",
+     "support_set (qty_sum ?pf1.0 ?pf2.0)
+      <= support_set ?pf1.0 Un support_set ?pf2.0",
+     template_inequation
+      (less_equals,
+       template_app
+        (template_hole 2,
+         template_app
+          (template_app (template_hole 1, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 0, template_app (template_hole 2, template_var 1)),
+         template_app (template_hole 2, template_var 0)))),
+    ("Fair_Price.self_finance_portfolio",
+     "portfolio ?pf ==> portfolio (self_finance ?Mkt ?v ?pf ?asset)",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 1, template_var 3))],
+       template_predicate
+        (
+           template_app
+            (template_hole 1,
+             template_app
+              (template_app
+                (template_app
+                  (template_app (template_hole 0, template_var 2),
+                   template_var 1),
+                 template_var 3),
+               template_var 0))
+           ))),
+    ("Fair_Price.mult_comp_basic_support_set",
+     "stock_portfolio ?Mkt ?pf1.0 ==>
+      stock_portfolio ?Mkt (qty_mult_comp ?pf1.0 ?qty)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 1, template_var 2),
+              template_var 1)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 1, template_var 2),
+             template_app
+              (template_app (template_hole 0, template_var 1),
+               template_var 0))
+           ))),
+    ("Fair_Price.discounted_init",
+     "ALL w. discounted_value ?r ?X 0 w = ?X 0 w",
+     template_predicate (template_app (template_hole 3, t_empty))),
+    ("Fair_Price.remove_comp_support_set",
+     "support_set (qty_rem_comp ?pf1.0 ?x) <= support_set ?pf1.0 - {?x}",
+     template_inequation
+      (less_equals,
+       template_app
+        (template_hole 4,
+         template_app
+          (template_app (template_hole 3, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 2, template_app (template_hole 4, template_var 1)),
+         template_app
+          (template_app (template_hole 1, template_var 0),
+           template_hole 0)))),
+    ("Fair_Price.discounted_adapted",
+     "borel_adapt_stoch_proc ?F ?X ==>
+      borel_adapt_stoch_proc ?F (discounted_value ?r ?X)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 2, template_var 2),
+                template_var 1),
+              template_hole 1)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app (template_hole 2, template_var 2),
+               template_app
+                (template_app (template_hole 0, template_var 0),
+                 template_var 1)),
+             template_hole 1)
+           ))),
+    ("Fair_Price.stocks_of",
+     "UNIV ~= ?S ==> stocks (discrete_market_of ?S ?A) = ?S",
+     template_implication
+      ([template_negation
+         (template_equation (template_hole 2, template_var 1))],
+       template_equation
+        (template_app
+          (template_hole 1,
+           template_app
+            (template_app (template_hole 0, template_var 1),
+             template_var 0)),
+         template_var 1))),
+    ("Fair_Price.disc_rfr_proc_positive",
+     "- 1 < ?r ==> 0 < disc_rfr_proc ?r ?n ?w",
+     template_implication
+      ([template_inequation
+         (less_than, template_app (template_hole 3, template_hole 2),
+          template_var 2)],
+       template_inequation
+        (less_than, template_hole 1,
+         template_app
+          (template_app
+            (template_app (template_hole 0, template_var 2),
+             template_var 1),
+           template_var 0)))),
+    ("Fair_Price.discount_factor_positive",
+     "- 1 < ?r ==> 0 < discount_factor ?r ?n ?w",
+     template_implication
+      ([template_inequation
+         (less_than, template_app (template_hole 3, template_hole 2),
+          template_var 2)],
+       template_inequation
+        (less_than, template_hole 1,
+         template_app
+          (template_app
+            (template_app (template_hole 0, template_var 2),
+             template_var 1),
+           template_var 0)))),
+    ("Fair_Price.sum_portfolio",
+     "[| portfolio ?pf1.0; portfolio ?pf2.0 |]
+      ==> portfolio (qty_sum ?pf1.0 ?pf2.0)",
+     template_implication
+      ([template_predicate (template_app (template_hole 1, template_var 1)),
+        template_predicate
+         (template_app (template_hole 1, template_var 0))],
+       template_predicate
+        (
+           template_app
+            (template_hole 1,
+             template_app
+              (template_app (template_hole 0, template_var 1),
+               template_var 0))
+           ))),
+    ("Fair_Price.replace_comp_portfolio",
+     "[| portfolio ?pf1.0; portfolio ?pf2.0 |]
+      ==> portfolio (qty_replace_comp ?pf1.0 ?x ?pf2.0)",
+     template_implication
+      ([template_predicate (template_app (template_hole 1, template_var 2)),
+        template_predicate
+         (template_app (template_hole 1, template_var 1))],
+       template_predicate
+        (
+           template_app
+            (template_hole 1,
+             template_app
+              (template_app
+                (template_app (template_hole 0, template_var 2),
+                 template_var 0),
+               template_var 1))
+           ))),
+    ("Fair_Price.rfr_step",
+     "disc_rfr_proc ?r (Suc ?n) ?w = (1 + ?r) * disc_rfr_proc ?r ?n ?w",
+     template_equation
+      (template_app
+        (template_app
+          (template_app (template_hole 4, template_var 2),
+           template_app (template_hole 3, template_var 1)),
+         template_var 0),
+       template_app
+        (template_app
+          (template_hole 2,
+           template_app
+            (template_app (template_hole 1, template_hole 0),
+             template_var 2)),
+         template_app
+          (template_app
+            (template_app (template_hole 4, template_var 2),
+             template_var 1),
+           template_var 0)))),
+    ("Fair_Price.replace_comp_support_set",
+     "support_set (qty_replace_comp ?pf1.0 ?x ?pf2.0)
+      <= support_set ?pf1.0 - {?x} Un support_set ?pf2.0",
+     template_inequation
+      (less_equals,
+       template_app
+        (template_hole 5,
+         template_app
+          (template_app
+            (template_app (template_hole 4, template_var 2),
+             template_var 1),
+           template_var 0)),
+       template_app
+        (template_app
+          (template_hole 3,
+           template_app
+            (template_app
+              (template_hole 2,
+               template_app (template_hole 5, template_var 2)),
+             template_app
+              (template_app (template_hole 1, template_var 1),
+               template_hole 0))),
+         template_app (template_hole 5, template_var 0)))),
+    ("Fair_Price.sum_basic_support_set",
+     "[| stock_portfolio ?Mkt ?pf1.0; stock_portfolio ?Mkt ?pf2.0 |]
+      ==> stock_portfolio ?Mkt (qty_sum ?pf1.0 ?pf2.0)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 1, template_var 2),
+              template_var 1)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 1, template_var 2),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 1, template_var 2),
+             template_app
+              (template_app (template_hole 0, template_var 1),
+               template_var 0))
+           ))),
+    ("Fair_Price.self_financingE",
+     "self_financing ?Mkt ?p ==>
+      ALL n. val_process ?Mkt ?p n = cls_val_process ?Mkt ?p n",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 4, template_var 1),
+              template_var 0)
+            )],
+       template_predicate (template_app (template_hole 3, t_empty)))),
+    ("Fair_Price.discounted_measurable",
+     "?X : borel_measurable ?N ==>
+      discounted_value ?r (%m. ?X) ?m : borel_measurable ?N",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 3, template_var 3),
+              template_app
+               (template_app (template_hole 2, template_var 2),
+                template_hole 1))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 3,
+               template_app
+                (template_app
+                  (template_app (template_hole 0, template_var 1), t_empty),
+                 template_var 0)),
+             template_app
+              (template_app (template_hole 2, template_var 2),
+               template_hole 1))
+           ))),
+    ("Fair_Price.qty_single_val_process",
+     "val_process ?Mkt (qty_single ?asset ?qty) ?n ?w =
+      prices ?Mkt ?asset ?n ?w * ?qty (Suc ?n) ?w",
+     template_equation
+      (template_app
+        (template_app
+          (template_app
+            (template_app (template_hole 4, template_var 4),
+             template_app
+              (template_app (template_hole 3, template_var 3),
+               template_var 2)),
+           template_var 1),
+         template_var 0),
+       template_app
+        (template_app
+          (template_hole 2,
+           template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 1, template_var 4),
+                 template_var 3),
+               template_var 1),
+             template_var 0)),
+         template_app
+          (template_app
+            (template_var 2,
+             template_app (template_hole 0, template_var 1)),
+           template_var 0)))),
+    ("Fair_Price.qty_single_updated",
+     "cls_val_process ?Mkt (qty_single ?asset ?qty) (Suc ?n) ?w =
+      prices ?Mkt ?asset (Suc ?n) ?w * ?qty (Suc ?n) ?w",
+     template_equation
+      (template_app
+        (template_app
+          (template_app
+            (template_app (template_hole 4, template_var 4),
+             template_app
+              (template_app (template_hole 3, template_var 3),
+               template_var 2)),
+           template_app (template_hole 2, template_var 1)),
+         template_var 0),
+       template_app
+        (template_app
+          (template_hole 1,
+           template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 0, template_var 4),
+                 template_var 3),
+               template_app (template_hole 2, template_var 1)),
+             template_var 0)),
+         template_app
+          (template_app
+            (template_var 2,
+             template_app (template_hole 2, template_var 1)),
+           template_var 0)))),
+    ("Fair_Price.discount_factor_times_rfr",
+     "- 1 < ?r ==>
+      (1 + ?r) * discount_factor ?r (Suc ?n) ?w = discount_factor ?r ?n ?w",
+     template_implication
+      ([template_inequation
+         (less_than, template_app (template_hole 6, template_hole 5),
+          template_var 2)],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 3,
+             template_app
+              (template_app (template_hole 2, template_hole 5),
+               template_var 2)),
+           template_app
+            (template_app
+              (template_app (template_hole 1, template_var 2),
+               template_app (template_hole 0, template_var 1)),
+             template_var 0)),
+         template_app
+          (template_app
+            (template_app (template_hole 1, template_var 2),
+             template_var 1),
+           template_var 0)))),
+    ("Fair_Price.disc_rfr_proc_Suc_div",
+     "- 1 < ?r ==>
+      disc_rfr_proc ?r (Suc ?n) ?w / disc_rfr_proc ?r ?n ?w = 1 + ?r",
+     template_implication
+      ([template_inequation
+         (less_than, template_app (template_hole 6, template_hole 5),
+          template_var 2)],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 3,
+             template_app
+              (template_app
+                (template_app (template_hole 2, template_var 2),
+                 template_app (template_hole 1, template_var 1)),
+               template_var 0)),
+           template_app
+            (template_app
+              (template_app (template_hole 2, template_var 2),
+               template_var 1),
+             template_var 0)),
+         template_app
+          (template_app (template_hole 0, template_hole 5),
+           template_var 2)))),
+    ("Fair_Price.discounted_cong'",
+     "?X ?n ?w = ?Y ?n ?w ==>
+      discounted_value ?r ?X ?n ?w = discounted_value ?r ?Y ?n ?w",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app (template_var 4, template_var 3), template_var 2),
+          template_app
+           (template_app (template_var 1, template_var 3),
+            template_var 2))],
+       template_equation
+        (template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 0, template_var 0),
+               template_var 4),
+             template_var 3),
+           template_var 2),
+         template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 0, template_var 0),
+               template_var 1),
+             template_var 3),
+           template_var 2)))),
+    ("Fair_Price.single_comp_nz_support",
+     "EX n w. ?qty n w ~= 0 ==>
+      support_set (qty_single ?asset ?qty) = {?asset}",
+     template_implication
+      ([template_predicate (template_app (template_hole 9, t_empty))],
+       template_equation
+        (template_app
+          (template_hole 3,
+           template_app
+            (template_app (template_hole 2, template_var 0),
+             template_var 1)),
+         template_app
+          (template_app (template_hole 1, template_var 0),
+           template_hole 0)))),
+    ("Fair_Price.fix_asset_price",
+     "EX x Mkt2.
+         x ~: stocks ?Mkt &
+         coincides_on ?Mkt Mkt2 (stocks ?Mkt) & prices Mkt2 x = ?pr",
+     template_predicate (template_app (template_hole 8, t_empty))),
+    ("Fair_Price.remove_comp_values",
+     "?x ~= ?y ==> ALL n w. ?pf1.0 ?x n w = qty_rem_comp ?pf1.0 ?y ?x n w",
+     template_implication
+      ([template_negation
+         (template_equation (template_var 2, template_var 1))],
+       template_predicate (template_app (template_hole 3, t_empty)))),
+    ("Fair_Price.AE_eq_cst",
+     "[| AEeq ?M (%w. ?c) (%w. ?d); emeasure ?M (space ?M) ~= 0 |]
+      ==> ?c = ?d",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 7, t_empty),
+              template_app (template_hole 5, template_var 0))
+            ),
+        template_negation
+         (
+            template_equation
+             (template_app
+               (template_app (template_hole 2, template_var 0),
+                template_app (template_hole 1, template_var 0)),
+              template_hole 0)
+            )],
+       template_equation (template_var 2, template_var 1))),
+    ("Fair_Price.first",
+     "remaining_qty ?Mkt ?v ?pf ?asset (Suc 0) =
+      (%w. (?v - val_process ?Mkt ?pf 0 w) / prices ?Mkt ?asset 0 w)",
+     template_equation
+      (template_app
+        (template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 6, template_var 3),
+               template_var 2),
+             template_var 1),
+           template_var 0),
+         template_app (template_hole 5, template_hole 4)),
+       t_empty)),
+    ("Fair_Price.discounted_mult'",
+     "discounted_value ?r (%m x. ?X m x * ?Y m x) ?n ?w =
+      ?X ?n ?w * discounted_value ?r ?Y ?n ?w",
+     template_equation
+      (template_app
+        (template_app
+          (template_app
+            (template_app (template_hole 1, template_var 4), t_empty),
+           template_var 1),
+         template_var 0),
+       template_app
+        (template_app
+          (template_hole 0,
+           template_app
+            (template_app (template_var 3, template_var 1),
+             template_var 0)),
+         template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 1, template_var 4),
+               template_var 2),
+             template_var 1),
+           template_var 0)))),
+    ("Fair_Price.static_portfolio_self_financing",
+     "ALL x:support_set ?p. ALL w i. ?p x i w = ?p x (Suc i) w ==>
+      self_financing ?Mkt ?p",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 6,
+                template_app (template_hole 5, template_var 1)),
+              t_empty)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 0, template_var 0), template_var 1)
+           ))),
+    ("Fair_Price.sum_self_financing",
+     "[| portfolio ?pf1.0; portfolio ?pf2.0; self_financing ?Mkt ?pf1.0;
+         self_financing ?Mkt ?pf2.0 |]
+      ==> self_financing ?Mkt (qty_sum ?pf1.0 ?pf2.0)",
+     template_implication
+      ([template_predicate (template_app (template_hole 2, template_var 2)),
+        template_predicate (template_app (template_hole 2, template_var 1)),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 1, template_var 0),
+              template_var 2)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 1, template_var 0),
+              template_var 1)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 1, template_var 0),
+             template_app
+              (template_app (template_hole 0, template_var 2),
+               template_var 1))
+           ))),
+    ("Fair_Price.mult_comp_cls_val_process0",
+     "portfolio ?pf1.0 ==>
+      ALL w.
+         cls_val_process ?Mkt (qty_mult_comp ?pf1.0 ?qty) 0 w =
+         cls_val_process ?Mkt ?pf1.0 0 w * ?qty (Suc 0) w",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 7, template_var 2))],
+       template_predicate (template_app (template_hole 6, t_empty)))),
+    ("Fair_Price.mult_comp_val_process",
+     "portfolio ?pf1.0 ==>
+      ALL n w.
+         val_process ?Mkt (qty_mult_comp ?pf1.0 ?qty) n w =
+         val_process ?Mkt ?pf1.0 n w * ?qty (Suc n) w",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 7, template_var 2))],
+       template_predicate (template_app (template_hole 6, t_empty)))),
+    ("Fair_Price.integrable_val_process",
+     "ALL asset:support_set ?pf.
+         integrable ?M
+          (%w. prices ?Mkt asset ?n w * ?pf asset (Suc ?n) w) ==>
+      integrable ?M (val_process ?Mkt ?pf ?n)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 6,
+                template_app (template_hole 5, template_var 3)),
+              t_empty)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 4, template_var 2),
+             template_app
+              (template_app
+                (template_app (template_hole 0, template_var 1),
+                 template_var 3),
+               template_var 0))
+           ))),
+    ("Fair_Price.replace_comp_stocks",
+     "[| support_set ?pf1.0 <= stocks ?Mkt Un {?x};
+         support_set ?pf2.0 <= stocks ?Mkt |]
+      ==> support_set (qty_replace_comp ?pf1.0 ?x ?pf2.0) <= stocks ?Mkt",
+     template_implication
+      ([template_inequation
+         (less_equals, template_app (template_hole 5, template_var 3),
+          template_app
+           (template_app
+             (template_hole 4,
+              template_app (template_hole 3, template_var 2)),
+            template_app
+             (template_app (template_hole 2, template_var 1),
+              template_hole 1))),
+        template_inequation
+         (less_equals, template_app (template_hole 5, template_var 0),
+          template_app (template_hole 3, template_var 2))],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_hole 5,
+           template_app
+            (template_app
+              (template_app (template_hole 0, template_var 3),
+               template_var 1),
+             template_var 0)),
+         template_app (template_hole 3, template_var 2)))),
+    ("Fair_Price.self_finance_charact",
+     "[| ALL n w. prices ?Mkt ?asset (Suc n) w ~= 0; portfolio ?pf |]
+      ==> self_financing ?Mkt (self_finance ?Mkt ?v ?pf ?asset)",
+     template_implication
+      ([template_predicate (template_app (template_hole 9, t_empty)),
+        template_predicate
+         (template_app (template_hole 2, template_var 1))],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 1, template_var 3),
+             template_app
+              (template_app
+                (template_app
+                  (template_app (template_hole 0, template_var 3),
+                   template_var 0),
+                 template_var 1),
+               template_var 2))
+           ))),
+    ("Fair_Price.discounted_mult",
+     "ALL n w.
+         discounted_value ?r (%m x. ?X m x * ?Y m x) n w =
+         ?X n w * discounted_value ?r ?Y n w",
+     template_predicate (template_app (template_hole 4, t_empty))),
+    ("Fair_Price.coincides_stocks_cls_val_process",
+     "[| stock_portfolio ?Mkt ?pf;
+         coincides_on ?Mkt ?Mkt2.0 (stocks ?Mkt) |]
+      ==> ALL n w.
+             cls_val_process ?Mkt ?pf n w =
+             cls_val_process ?Mkt2.0 ?pf n w",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 6, template_var 2),
+              template_var 1)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 5, template_var 2),
+                template_var 0),
+              template_app (template_hole 4, template_var 2))
+            )],
+       template_predicate (template_app (template_hole 3, t_empty)))),
+    ("Fair_Price.coincides_stocks_val_process",
+     "[| stock_portfolio ?Mkt ?pf;
+         coincides_on ?Mkt ?Mkt2.0 (stocks ?Mkt) |]
+      ==> ALL n w. val_process ?Mkt ?pf n w = val_process ?Mkt2.0 ?pf n w",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 6, template_var 2),
+              template_var 1)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 5, template_var 2),
+                template_var 0),
+              template_app (template_hole 4, template_var 2))
+            )],
+       template_predicate (template_app (template_hole 3, t_empty)))),
+    ("Fair_Price.coincides_cls_val_process",
+     "[| coincides_on ?Mkt ?Mkt2.0 ?A; support_set ?pf <= ?A |]
+      ==> ALL n w.
+             cls_val_process ?Mkt ?pf n w =
+             cls_val_process ?Mkt2.0 ?pf n w",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 6, template_var 3),
+                template_var 2),
+              template_var 1)
+            ),
+        template_inequation
+         (less_equals, template_app (template_hole 4, template_var 0),
+          template_var 1)],
+       template_predicate (template_app (template_hole 3, t_empty)))),
+    ("Fair_Price.coincides_val_process",
+     "[| coincides_on ?Mkt ?Mkt2.0 ?A; support_set ?pf <= ?A |]
+      ==> ALL n w. val_process ?Mkt ?pf n w = val_process ?Mkt2.0 ?pf n w",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 6, template_var 3),
+                template_var 2),
+              template_var 1)
+            ),
+        template_inequation
+         (less_equals, template_app (template_hole 4, template_var 0),
+          template_var 1)],
+       template_predicate (template_app (template_hole 3, t_empty)))),
+    ("Fair_Price.self_finance_init",
+     "[| ALL w. prices ?Mkt ?asset 0 w ~= 0; portfolio ?pf |]
+      ==> val_process ?Mkt (self_finance ?Mkt ?v ?pf ?asset) 0 ?w = ?v",
+     template_implication
+      ([template_predicate (template_app (template_hole 8, t_empty)),
+        template_predicate
+         (template_app (template_hole 2, template_var 2))],
+       template_equation
+        (template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 1, template_var 4),
+               template_app
+                (template_app
+                  (template_app
+                    (template_app (template_hole 0, template_var 4),
+                     template_var 1),
+                   template_var 2),
+                 template_var 3)),
+             template_hole 4),
+           template_var 0),
+         template_var 1))),
+    ("Fair_Price.mult_comp_cls_val_process_Suc",
+     "portfolio ?pf1.0 ==>
+      ALL n w.
+         cls_val_process ?Mkt (qty_mult_comp ?pf1.0 ?qty) (Suc n) w =
+         cls_val_process ?Mkt ?pf1.0 (Suc n) w * ?qty (Suc n) w",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 7, template_var 2))],
+       template_predicate (template_app (template_hole 6, t_empty)))),
+    ("Fair_Price.discounted_mult_times_rfr",
+     "- 1 < ?r ==>
+      discounted_value ?r (%m w. (1 + ?r) * ?X w) (Suc ?n) ?w =
+      discounted_value ?r (%m. ?X) ?n ?w",
+     template_implication
+      ([template_inequation
+         (less_than, template_app (template_hole 6, template_hole 5),
+          template_var 3)],
+       template_equation
+        (template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 3, template_var 3), t_empty),
+             template_app (template_hole 0, template_var 1)),
+           template_var 0),
+         template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 3, template_var 3), t_empty),
+             template_var 1),
+           template_var 0)))),
+    ("Fair_Price.discounted_AE_cong",
+     "AEeq ?N (?X ?n) (?Y ?n) ==>
+      AEeq ?N (discounted_value ?r ?X ?n) (discounted_value ?r ?Y ?n)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 3, t_empty),
+              template_app (template_hole 1, template_var 1))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 3, t_empty),
+             template_app (template_hole 1, template_var 1))
+           ))),
+    ("Fair_Price.discounted_cong",
+     "ALL n w. ?X n w = ?Y n w ==>
+      ALL n w. discounted_value ?r ?X n w = discounted_value ?r ?Y n w",
+     template_implication
+      ([template_predicate (template_app (template_hole 3, t_empty))],
+       template_predicate (template_app (template_hole 3, t_empty)))),
+    ("Fair_Price.mult_time_constant_self_financing",
+     "[| portfolio ?pf1.0; self_financing ?Mkt ?pf1.0;
+         ALL n w. ?qty n w = ?qty (Suc n) w |]
+      ==> self_financing ?Mkt (qty_mult_comp ?pf1.0 ?qty)",
+     template_implication
+      ([template_predicate (template_app (template_hole 6, template_var 2)),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 5, template_var 1),
+              template_var 2)
+            ),
+        template_predicate (template_app (template_hole 4, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 5, template_var 1),
+             template_app
+              (template_app (template_hole 0, template_var 2),
+               template_var 0))
+           ))),
+    ("Fair_Price.sum_cls_val_process0",
+     "[| portfolio ?pf1.0; portfolio ?pf2.0 |]
+      ==> ALL w.
+             cls_val_process ?Mkt (qty_sum ?pf1.0 ?pf2.0) 0 w =
+             cls_val_process ?Mkt ?pf1.0 0 w +
+             cls_val_process ?Mkt ?pf2.0 0 w",
+     template_implication
+      ([template_predicate (template_app (template_hole 6, template_var 2)),
+        template_predicate
+         (template_app (template_hole 6, template_var 1))],
+       template_predicate (template_app (template_hole 5, t_empty)))),
+    ("Fair_Price.coincides_cls_val_process'",
+     "[| coincides_on ?Mkt ?Mkt2.0 ?A; support_set ?pf <= ?A |]
+      ==> ALL n w.
+             cls_val_process ?Mkt ?pf (Suc n) w =
+             cls_val_process ?Mkt2.0 ?pf (Suc n) w",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 7, template_var 3),
+                template_var 2),
+              template_var 1)
+            ),
+        template_inequation
+         (less_equals, template_app (template_hole 5, template_var 0),
+          template_var 1)],
+       template_predicate (template_app (template_hole 4, t_empty)))),
+    ("Fair_Price.subset_val_process'",
+     "[| finite ?A; support_set ?p <= ?A |]
+      ==> val_process ?Mkt ?p ?n ?w =
+          (SUM x:?A. prices ?Mkt x ?n ?w * ?p x (Suc ?n) ?w)",
+     template_implication
+      ([template_predicate (template_app (template_hole 8, template_var 4)),
+        template_inequation
+         (less_equals, template_app (template_hole 6, template_var 3),
+          template_var 4)],
+       template_equation
+        (template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 4, template_var 2),
+               template_var 3),
+             template_var 1),
+           template_var 0),
+         template_app
+          (template_app (template_hole 3, t_empty), template_var 4)))),
+    ("Fair_Price.remove_comp_cls_val_process0",
+     "portfolio ?pf1.0 ==>
+      ALL w.
+         cls_val_process ?Mkt (qty_rem_comp ?pf1.0 ?y) 0 w =
+         cls_val_process ?Mkt ?pf1.0 0 w -
+         prices ?Mkt ?y 0 w * ?pf1.0 ?y (Suc 0) w",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 9, template_var 2))],
+       template_predicate (template_app (template_hole 8, t_empty)))),
+    ("Fair_Price.sum_cls_val_process",
+     "[| portfolio ?pf1.0; portfolio ?pf2.0 |]
+      ==> ALL n w.
+             cls_val_process ?Mkt (qty_sum ?pf1.0 ?pf2.0) n w =
+             cls_val_process ?Mkt ?pf1.0 n w +
+             cls_val_process ?Mkt ?pf2.0 n w",
+     template_implication
+      ([template_predicate (template_app (template_hole 6, template_var 2)),
+        template_predicate
+         (template_app (template_hole 6, template_var 1))],
+       template_predicate (template_app (template_hole 5, t_empty)))),
+    ("Fair_Price.sum_val_process",
+     "[| portfolio ?pf1.0; portfolio ?pf2.0 |]
+      ==> ALL n w.
+             val_process ?Mkt (qty_sum ?pf1.0 ?pf2.0) n w =
+             val_process ?Mkt ?pf1.0 n w + val_process ?Mkt ?pf2.0 n w",
+     template_implication
+      ([template_predicate (template_app (template_hole 6, template_var 2)),
+        template_predicate
+         (template_app (template_hole 6, template_var 1))],
+       template_predicate (template_app (template_hole 5, t_empty)))),
+    ("Fair_Price.AE_eq_trans",
+     "[| AEeq ?M ?A ?B; AEeq ?M ?B ?C |] ==> AEeq ?M ?A ?C",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 2, t_empty),
+              template_app (template_hole 0, template_var 1))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 2, t_empty),
+              template_app (template_hole 0, template_var 1))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 2, t_empty),
+             template_app (template_hole 0, template_var 1))
+           ))),
+    ("Fair_Price.quantity_update_support_set",
+     "[| EX n w. ?pr n w ~= 0; ?x ~: support_set ?p |]
+      ==> support_set (?p(?x := ?pr)) = support_set ?p Un {?x}",
+     template_implication
+      ([template_predicate (template_app (template_hole 11, t_empty)),
+        template_negation
+         (
+            template_predicate
+             (
+                template_app
+                 (template_app (template_hole 6, template_var 1),
+                  template_app (template_hole 5, template_var 0))
+                )
+            )],
+       template_equation
+        (template_app
+          (template_hole 5,
+           template_app
+            (template_app
+              (template_app (template_hole 3, template_var 0),
+               template_var 1),
+             template_var 2)),
+         template_app
+          (template_app
+            (template_hole 2,
+             template_app (template_hole 5, template_var 0)),
+           template_app
+            (template_app (template_hole 1, template_var 1),
+             template_hole 0))))),
+    ("Fair_Price.integrable_self_fin_uvp",
+     "[| ALL asset:support_set ?pf.
+            integrable ?M
+             (%w. prices ?Mkt asset ?n w * ?pf asset (Suc ?n) w);
+         self_financing ?Mkt ?pf |]
+      ==> integrable ?M (cls_val_process ?Mkt ?pf ?n)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 7,
+                template_app (template_hole 6, template_var 3)),
+              t_empty)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 1, template_var 1),
+              template_var 3)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 5, template_var 2),
+             template_app
+              (template_app
+                (template_app (template_hole 0, template_var 1),
+                 template_var 3),
+               template_var 0))
+           ))),
+    ("Fair_Price.subset_cls_val_process'",
+     "[| finite ?A; support_set ?p <= ?A |]
+      ==> cls_val_process ?Mkt ?p (Suc ?n) ?w =
+          (SUM x:?A. prices ?Mkt x (Suc ?n) ?w * ?p x (Suc ?n) ?w)",
+     template_implication
+      ([template_predicate (template_app (template_hole 8, template_var 4)),
+        template_inequation
+         (less_equals, template_app (template_hole 6, template_var 3),
+          template_var 4)],
+       template_equation
+        (template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 4, template_var 2),
+               template_var 3),
+             template_app (template_hole 3, template_var 1)),
+           template_var 0),
+         template_app
+          (template_app (template_hole 2, t_empty), template_var 4)))),
+    ("Fair_Price.remove_comp_val_process",
+     "portfolio ?pf1.0 ==>
+      ALL n w.
+         val_process ?Mkt (qty_rem_comp ?pf1.0 ?y) n w =
+         val_process ?Mkt ?pf1.0 n w -
+         prices ?Mkt ?y n w * ?pf1.0 ?y (Suc n) w",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 9, template_var 2))],
+       template_predicate (template_app (template_hole 8, t_empty)))),
+    ("Fair_Price.sum_cls_val_process_Suc",
+     "[| portfolio ?pf1.0; portfolio ?pf2.0 |]
+      ==> ALL n w.
+             cls_val_process ?Mkt (qty_sum ?pf1.0 ?pf2.0) (Suc n) w =
+             cls_val_process ?Mkt ?pf1.0 (Suc n) w +
+             cls_val_process ?Mkt ?pf2.0 (Suc n) w",
+     template_implication
+      ([template_predicate (template_app (template_hole 7, template_var 2)),
+        template_predicate
+         (template_app (template_hole 7, template_var 1))],
+       template_predicate (template_app (template_hole 6, t_empty)))),
+    ("Fair_Price.discounted_sum",
+     "finite ?I ==>
+      ALL n w.
+         (SUM i:?I. discounted_value ?r (?f i) n w) =
+         discounted_value ?r (%m x. SUM i:?I. ?f i m x) n w",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 5, template_var 2))],
+       template_predicate (template_app (template_hole 4, t_empty)))),
+    ("Fair_Price.remove_comp_cls_val_process_Suc",
+     "portfolio ?pf1.0 ==>
+      ALL n w.
+         cls_val_process ?Mkt (qty_rem_comp ?pf1.0 ?y) (Suc n) w =
+         cls_val_process ?Mkt ?pf1.0 (Suc n) w -
+         prices ?Mkt ?y (Suc n) w * ?pf1.0 ?y (Suc n) w",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 9, template_var 2))],
+       template_predicate (template_app (template_hole 8, t_empty)))),
+    ("Fair_Price.subset_cls_val_process",
+     "[| finite ?A; support_set ?p <= ?A |]
+      ==> ALL n w.
+             cls_val_process ?Mkt ?p (Suc n) w =
+             (SUM x:?A. prices ?Mkt x (Suc n) w * ?p x (Suc n) w)",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 10, template_var 2)),
+        template_inequation
+         (less_equals, template_app (template_hole 8, template_var 1),
+          template_var 2)],
+       template_predicate (template_app (template_hole 7, t_empty)))),
+    ("Fair_Price.AE_sum",
+     "[| finite ?I; ALL i:?I. AEeq ?M (?f i) (?g i) |]
+      ==> AEeq ?M (%w. SUM i:?I. ?f i w) (%w. SUM i:?I. ?g i w)",
+     template_implication
+      ([template_predicate (template_app (template_hole 5, template_var 3)),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 4, template_var 3), t_empty)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 3, t_empty),
+             template_app (template_hole 1, template_var 0))
+           ))),
+    ("Fair_Price.AE_add",
+     "[| AEeq ?M ?f ?g; AEeq ?M ?f' ?g' |]
+      ==> AEeq ?M (%w. ?f w + ?f' w) (%w. ?g w + ?g' w)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 3, t_empty),
+              template_app (template_hole 1, template_var 2))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 3, t_empty),
+              template_app (template_hole 1, template_var 2))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 3, t_empty),
+             template_app (template_hole 1, template_var 2))
+           ))),
+    ("Fair_Price.step",
+     "remaining_qty ?Mkt ?v ?pf ?asset (Suc (Suc ?n)) =
+      (%w. remaining_qty ?Mkt ?v ?pf ?asset (Suc ?n) w +
+           (cls_val_process ?Mkt ?pf (Suc ?n) w -
+            val_process ?Mkt ?pf (Suc ?n) w) /
+           prices ?Mkt ?asset (Suc ?n) w)",
+     template_equation
+      (template_app
+        (template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 7, template_var 4),
+               template_var 3),
+             template_var 2),
+           template_var 1),
+         template_app
+          (template_hole 6,
+           template_app (template_hole 6, template_var 0))),
+       t_empty)),
+    ("Fair_Price.replace_comp_cls_val_process0",
+     "[| ALL w. prices ?Mkt ?x 0 w = cls_val_process ?Mkt ?pf2.0 0 w;
+         portfolio ?pf1.0; portfolio ?pf2.0 |]
+      ==> ALL w.
+             cls_val_process ?Mkt (qty_replace_comp ?pf1.0 ?x ?pf2.0) 0 w =
+             cls_val_process ?Mkt ?pf1.0 0 w",
+     template_implication
+      ([template_predicate (template_app (template_hole 6, t_empty)),
+        template_predicate (template_app (template_hole 1, template_var 0)),
+        template_predicate
+         (template_app (template_hole 1, template_var 1))],
+       template_predicate (template_app (template_hole 6, t_empty)))),
+    ("Fair_Price.replace_comp_self_financing",
+     "[| ALL n w. prices ?Mkt ?x n w = cls_val_process ?Mkt ?pf2.0 n w;
+         portfolio ?pf1.0; portfolio ?pf2.0; self_financing ?Mkt ?pf1.0;
+         self_financing ?Mkt ?pf2.0 |]
+      ==> self_financing ?Mkt (qty_replace_comp ?pf1.0 ?x ?pf2.0)",
+     template_implication
+      ([template_predicate (template_app (template_hole 7, t_empty)),
+        template_predicate (template_app (template_hole 2, template_var 0)),
+        template_predicate (template_app (template_hole 2, template_var 1)),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 1, template_var 3),
+              template_var 0)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 1, template_var 3),
+              template_var 1)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 1, template_var 3),
+             template_app
+              (template_app
+                (template_app (template_hole 0, template_var 0),
+                 template_var 2),
+               template_var 1))
+           ))),
+    ("Fair_Price.replace_comp_cls_val_process",
+     "[| ALL n w. prices ?Mkt ?x n w = cls_val_process ?Mkt ?pf2.0 n w;
+         portfolio ?pf1.0; portfolio ?pf2.0 |]
+      ==> ALL n w.
+             cls_val_process ?Mkt (qty_replace_comp ?pf1.0 ?x ?pf2.0) n w =
+             cls_val_process ?Mkt ?pf1.0 n w",
+     template_implication
+      ([template_predicate (template_app (template_hole 6, t_empty)),
+        template_predicate (template_app (template_hole 1, template_var 0)),
+        template_predicate
+         (template_app (template_hole 1, template_var 1))],
+       template_predicate (template_app (template_hole 6, t_empty)))),
+    ("Fair_Price.replace_comp_val_process",
+     "[| ALL n w. prices ?Mkt ?x n w = val_process ?Mkt ?pf2.0 n w;
+         portfolio ?pf1.0; portfolio ?pf2.0 |]
+      ==> ALL n w.
+             val_process ?Mkt (qty_replace_comp ?pf1.0 ?x ?pf2.0) n w =
+             val_process ?Mkt ?pf1.0 n w",
+     template_implication
+      ([template_predicate (template_app (template_hole 6, t_empty)),
+        template_predicate (template_app (template_hole 1, template_var 0)),
+        template_predicate
+         (template_app (template_hole 1, template_var 1))],
+       template_predicate (template_app (template_hole 6, t_empty)))),
+    ("Fair_Price.two_component_support_set",
+     "[| EX n w. ?a n w ~= 0; EX n w. ?b n w ~= 0; ?x ~= ?y |]
+      ==> support_set ((%x n w. 0)(?x := ?a, ?y := ?b)) = {?x, ?y}",
+     template_implication
+      ([template_predicate (template_app (template_hole 10, t_empty)),
+        template_predicate (template_app (template_hole 10, t_empty)),
+        template_negation
+         (template_equation (template_var 1, template_var 0))],
+       template_equation
+        (template_app
+          (template_hole 3,
+           template_app
+            (template_app
+              (template_app
+                (template_hole 2,
+                 template_app
+                  (template_app
+                    (template_app (template_hole 2, t_empty),
+                     template_var 1),
+                   template_var 3)),
+               template_var 0),
+             template_var 2)),
+         template_app
+          (template_app (template_hole 1, template_var 1),
+           template_app
+            (template_app (template_hole 1, template_var 0),
+             template_hole 0))))),
+    ("Fair_Price.replace_comp_cls_val_process_Suc",
+     "[| ALL n w.
+            prices ?Mkt ?x (Suc n) w =
+            cls_val_process ?Mkt ?pf2.0 (Suc n) w;
+         portfolio ?pf1.0; portfolio ?pf2.0 |]
+      ==> ALL n w.
+             cls_val_process ?Mkt (qty_replace_comp ?pf1.0 ?x ?pf2.0)
+              (Suc n) w =
+             cls_val_process ?Mkt ?pf1.0 (Suc n) w",
+     template_implication
+      ([template_predicate (template_app (template_hole 7, t_empty)),
+        template_predicate (template_app (template_hole 1, template_var 0)),
+        template_predicate
+         (template_app (template_hole 1, template_var 1))],
+       template_predicate (template_app (template_hole 7, t_empty)))),
+    ("Fair_Price.self_finance_updated",
+     "[| prices ?Mkt ?asset (Suc ?n) ?w ~= 0; portfolio ?pf |]
+      ==> cls_val_process ?Mkt (self_finance ?Mkt ?v ?pf ?asset) (Suc ?n)
+           ?w =
+          cls_val_process ?Mkt ?pf (Suc ?n) ?w +
+          prices ?Mkt ?asset (Suc ?n) ?w *
+          remaining_qty ?Mkt ?v ?pf ?asset (Suc ?n) ?w",
+     template_implication
+      ([template_negation
+         (
+            template_equation
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app (template_hole 8, template_var 5),
+                    template_var 4),
+                  template_app (template_hole 7, template_var 3)),
+                template_var 2),
+              template_hole 6)
+            ),
+        template_predicate
+         (template_app (template_hole 5, template_var 1))],
+       template_equation
+        (template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 4, template_var 5),
+               template_app
+                (template_app
+                  (template_app
+                    (template_app (template_hole 3, template_var 5),
+                     template_var 0),
+                   template_var 1),
+                 template_var 4)),
+             template_app (template_hole 7, template_var 3)),
+           template_var 2),
+         template_app
+          (template_app
+            (template_hole 2,
+             template_app
+              (template_app
+                (template_app
+                  (template_app (template_hole 4, template_var 5),
+                   template_var 1),
+                 template_app (template_hole 7, template_var 3)),
+               template_var 2)),
+           template_app
+            (template_app
+              (template_hole 1,
+               template_app
+                (template_app
+                  (template_app
+                    (template_app (template_hole 8, template_var 5),
+                     template_var 4),
+                   template_app (template_hole 7, template_var 3)),
+                 template_var 2)),
+             template_app
+              (template_app
+                (template_app
+                  (template_app
+                    (template_app
+                      (template_app (template_hole 0, template_var 5),
+                       template_var 0),
+                     template_var 1),
+                   template_var 4),
+                 template_app (template_hole 7, template_var 3)),
+               template_var 2)))))),
+    ("Fair_Price.self_finance_succ",
+     "[| prices ?Mkt ?asset (Suc ?n) ?w ~= 0; portfolio ?pf |]
+      ==> val_process ?Mkt (self_finance ?Mkt ?v ?pf ?asset) (Suc ?n) ?w =
+          prices ?Mkt ?asset (Suc ?n) ?w *
+          remaining_qty ?Mkt ?v ?pf ?asset (Suc ?n) ?w +
+          cls_val_process ?Mkt ?pf (Suc ?n) ?w",
+     template_implication
+      ([template_negation
+         (
+            template_equation
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app (template_hole 9, template_var 5),
+                    template_var 4),
+                  template_app (template_hole 8, template_var 3)),
+                template_var 2),
+              template_hole 7)
+            ),
+        template_predicate
+         (template_app (template_hole 6, template_var 1))],
+       template_equation
+        (template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 5, template_var 5),
+               template_app
+                (template_app
+                  (template_app
+                    (template_app (template_hole 4, template_var 5),
+                     template_var 0),
+                   template_var 1),
+                 template_var 4)),
+             template_app (template_hole 8, template_var 3)),
+           template_var 2),
+         template_app
+          (template_app
+            (template_hole 3,
+             template_app
+              (template_app
+                (template_hole 2,
+                 template_app
+                  (template_app
+                    (template_app
+                      (template_app (template_hole 9, template_var 5),
+                       template_var 4),
+                     template_app (template_hole 8, template_var 3)),
+                   template_var 2)),
+               template_app
+                (template_app
+                  (template_app
+                    (template_app
+                      (template_app
+                        (template_app (template_hole 1, template_var 5),
+                         template_var 0),
+                       template_var 1),
+                     template_var 4),
+                   template_app (template_hole 8, template_var 3)),
+                 template_var 2))),
+           template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 0, template_var 5),
+                 template_var 1),
+               template_app (template_hole 8, template_var 3)),
+             template_var 2))))),
+    ("Fair_Price.two_component_val_process",
+     "[| ?arb_pf = (%x n w. 0)(?x := ?a, ?y := ?b); portfolio ?arb_pf;
+         ?x ~= ?y; EX n w. ?a n w ~= 0; EX n w. ?b n w ~= 0 |]
+      ==> val_process ?Mkt ?arb_pf ?n ?w =
+          prices ?Mkt ?y ?n ?w * ?b (Suc ?n) ?w +
+          prices ?Mkt ?x ?n ?w * ?a (Suc ?n) ?w",
+     template_implication
+      ([template_equation
+         (template_var 7,
+          template_app
+           (template_app
+             (template_app
+               (template_hole 12,
+                template_app
+                 (template_app
+                   (template_app (template_hole 12, t_empty),
+                    template_var 6),
+                  template_var 5)),
+              template_var 4),
+            template_var 3)),
+        template_predicate
+         (template_app (template_hole 10, template_var 7)),
+        template_negation
+         (template_equation (template_var 6, template_var 4)),
+        template_predicate (template_app (template_hole 7, t_empty)),
+        template_predicate (template_app (template_hole 7, t_empty))],
+       template_equation
+        (template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 4, template_var 2),
+               template_var 7),
+             template_var 1),
+           template_var 0),
+         template_app
+          (template_app
+            (template_hole 3,
+             template_app
+              (template_app
+                (template_hole 2,
+                 template_app
+                  (template_app
+                    (template_app
+                      (template_app (template_hole 1, template_var 2),
+                       template_var 4),
+                     template_var 1),
+                   template_var 0)),
+               template_app
+                (template_app
+                  (template_var 3,
+                   template_app (template_hole 0, template_var 1)),
+                 template_var 0))),
+           template_app
+            (template_app
+              (template_hole 2,
+               template_app
+                (template_app
+                  (template_app
+                    (template_app (template_hole 1, template_var 2),
+                     template_var 6),
+                   template_var 1),
+                 template_var 0)),
+             template_app
+              (template_app
+                (template_var 5,
+                 template_app (template_hole 0, template_var 1)),
+               template_var 0))))))]:
+   (string * thm * template) list
+### theory "Draft.Fair_PriceTemplates"
+### 1.270s elapsed time, 1.719s cpu time, 0.362s GC time
+val it = (): unit

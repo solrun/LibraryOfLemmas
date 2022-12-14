@@ -1,0 +1,699 @@
+Loading theory "Draft.utp_parser_utils" (required by "Draft.utp_simple_timeTemplates" via "Draft.utp_simple_time" via "Draft.utp" via "Draft.utp_var")
+Loading theory "Draft.Templates" (required by "Draft.utp_simple_timeTemplates" via "Draft.ExtrEqs")
+signature UTP_PARSER_UTILS =
+  sig
+    val mk_char: string -> Ast.ast
+    val mk_nib: int -> Ast.ast
+    val mk_string: string list -> Ast.ast
+    val string_ast_tr: Ast.ast list -> Ast.ast
+  end
+signature NAME_UTILS =
+  sig
+    val deep_unmark_const: term -> term
+    val last_char_str: string -> string
+    val mk_id: string -> term
+    val repeat_char: char -> int -> string
+    val right_crop_by: int -> string -> string
+  end
+structure Utp_Parser_Utils: UTP_PARSER_UTILS
+structure Name_Utils: NAME_UTILS
+### theory "Draft.utp_parser_utils"
+### 0.041s elapsed time, 0.109s cpu time, 0.000s GC time
+Loading theory "Draft.utp_var" (required by "Draft.utp_simple_timeTemplates" via "Draft.utp_simple_time" via "Draft.utp")
+datatype template_term
+=
+     t_empty
+   | template_app of template_term * template_term
+   | template_hole of int
+   | template_var of int
+datatype sign
+= equals | greater_equals | greater_than | less_equals | less_than
+datatype template
+=
+     template_bimplication of template * template
+   | template_dunno
+   | template_equation of template_term * template_term
+   | template_implication of template list * template
+   | template_inequation of sign * template_term * template_term
+   | template_negation of template
+   | template_predicate of template_term
+constructor t_empty: template_term
+constructor template_app: template_term * template_term -> template_term
+constructor template_hole: int -> template_term
+constructor template_var: int -> template_term
+constructor equals: sign
+constructor greater_equals: sign
+constructor greater_than: sign
+constructor less_equals: sign
+constructor less_than: sign
+constructor template_bimplication: template * template -> template
+constructor template_dunno: template
+constructor template_equation: template_term * template_term -> template
+constructor template_implication: template list * template -> template
+constructor template_inequation:
+   sign * template_term * template_term -> template
+constructor template_negation: template -> template
+constructor template_predicate: template_term -> template
+val vfs = fn: term -> (indexname * typ) list * (string * typ) list
+val indexOf = fn: ''a list -> ''a -> int -> int
+val has_eq = fn: term -> bool
+val term2template = fn:
+   (indexname * typ) list -> (string * typ) list -> term -> template_term
+val lemma2predicate = fn: term -> term -> template
+val makeTemplatewithContext = fn: term -> term -> template
+val lemma2template = fn: term -> template
+val thm2template = fn: thm -> template
+val tterm2string = fn: template_term -> string
+val template2string = fn: template -> string
+val t = "height ?t <= size ?t": thm
+val th =
+   Const ("HOL.Trueprop", "bool => prop") $
+     (Const ("Orderings.ord_class.less_eq", "nat => nat => bool") $
+       (Const ("Tree.height_class.height", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree")) $
+       (Const ("Nat.size_class.size", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree"))):
+   term
+### theory "Draft.Templates"
+### 0.084s elapsed time, 0.197s cpu time, 0.000s GC time
+Loading theory "Draft.ExtrEqs" (required by "Draft.utp_simple_timeTemplates")
+val eqpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Var (("_dummy_", 2), "?'a"))
+       ):
+   term Find_Theorems.criterion
+val badeqpattern = Pattern (Const ("Pure.eq", "?'a => ?'a => prop")):
+   term Find_Theorems.criterion
+val undefpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Const ("HOL.undefined", "?'a"))
+       ):
+   term Find_Theorems.criterion
+val thmpattern =
+   Pattern
+    (Const ("HOL.Trueprop", "bool => prop") $ Var (("_dummy_", 1), "bool")):
+   term Find_Theorems.criterion
+val badnames =
+   ["*nitpick*", "*Nitpick*", "*full_exhaustive*", "*_def*", "Enum.finite*",
+    "*Quickcheck*", "ATP*", "*Nunchaku*", "*Code*", "*BNF*", "*SMT*",
+    "*.*.*"]:
+   string list
+val unwanted_names =
+   [(false, Name "*nitpick*"), (false, Name "*Nitpick*"),
+    (false, Name "*full_exhaustive*"), (false, Name "*_def*"),
+    (false, Name "Enum.finite*"), (false, Name "*Quickcheck*"),
+    (false, Name "ATP*"), (false, Name "*Nunchaku*"),
+    (false, Name "*Code*"), (false, Name "*BNF*"), (false, Name "*SMT*"),
+    (false, Name "*.*.*")]:
+   (bool * term Find_Theorems.criterion) list
+val has_vars = fn: term -> bool
+val get_all_eqs = fn: string -> Proof.context -> (string * thm) list
+val get_all_thms = fn: string -> Proof.context -> (string * thm) list
+val get_noneq_thms = fn: string -> Proof.context -> (string * thm) list
+val template_eqs = fn:
+   string -> Proof.context -> (string * thm * template) list
+val template_thms = fn:
+   string -> Proof.context -> (string * thm * template) list
+### theory "Draft.ExtrEqs"
+### 0.587s elapsed time, 1.181s cpu time, 0.100s GC time
+### theory "Draft.utp_var"
+### 0.691s elapsed time, 1.331s cpu time, 0.100s GC time
+Loading theory "Draft.utp_expr" (required by "Draft.utp_simple_timeTemplates" via "Draft.utp_simple_time" via "Draft.utp")
+instantiation
+  uexpr :: (zero, type) zero
+  zero_uexpr == zero_class.zero :: ('a, 'b) uexpr
+instantiation
+  uexpr :: (one, type) one
+  one_uexpr == one_class.one :: ('a, 'b) uexpr
+instantiation
+  uexpr :: (plus, type) plus
+  plus_uexpr == plus :: ('a, 'b) uexpr => ('a, 'b) uexpr => ('a, 'b) uexpr
+instantiation
+  uexpr :: (ord, type) ord
+  less_eq_uexpr == less_eq :: ('a, 'b) uexpr => ('a, 'b) uexpr => bool
+  less_uexpr == less :: ('a, 'b) uexpr => ('a, 'b) uexpr => bool
+### theory "Draft.utp_expr"
+### 0.787s elapsed time, 0.821s cpu time, 0.061s GC time
+Loading theory "Draft.utp_expr_insts" (required by "Draft.utp_simple_timeTemplates" via "Draft.utp_simple_time" via "Draft.utp")
+instantiation
+  uexpr :: (uminus, type) uminus
+  uminus_uexpr == uminus :: ('a, 'b) uexpr => ('a, 'b) uexpr
+instantiation
+  uexpr :: (minus, type) minus
+  minus_uexpr == minus :: ('a, 'b) uexpr => ('a, 'b) uexpr => ('a, 'b) uexpr
+instantiation
+  uexpr :: (times, type) times
+  times_uexpr == times :: ('a, 'b) uexpr => ('a, 'b) uexpr => ('a, 'b) uexpr
+instantiation
+  uexpr :: (divide, type) divide
+  divide_uexpr == divide ::
+    ('a, 'b) uexpr => ('a, 'b) uexpr => ('a, 'b) uexpr
+instantiation
+  uexpr :: (inverse, type) inverse
+  inverse_uexpr == inverse :: ('a, 'b) uexpr => ('a, 'b) uexpr
+instantiation
+  uexpr :: (modulo, type) modulo
+  modulo_uexpr == modulo ::
+    ('a, 'b) uexpr => ('a, 'b) uexpr => ('a, 'b) uexpr
+instantiation
+  uexpr :: (sgn, type) sgn
+  sgn_uexpr == sgn :: ('a, 'b) uexpr => ('a, 'b) uexpr
+instantiation
+  uexpr :: (abs, type) abs
+  abs_uexpr == abs :: ('a, 'b) uexpr => ('a, 'b) uexpr
+### theory "Draft.utp_expr_insts"
+### 0.226s elapsed time, 0.226s cpu time, 0.000s GC time
+Loading theory "Draft.utp_expr_funcs" (required by "Draft.utp_simple_timeTemplates" via "Draft.utp_simple_time" via "Draft.utp")
+Loading theory "Draft.utp_unrest" (required by "Draft.utp_simple_timeTemplates" via "Draft.utp_simple_time" via "Draft.utp")
+### theory "Draft.utp_expr_funcs"
+### 0.158s elapsed time, 0.322s cpu time, 0.058s GC time
+### theory "Draft.utp_unrest"
+### 0.241s elapsed time, 0.406s cpu time, 0.058s GC time
+Loading theory "Draft.utp_usedby" (required by "Draft.utp_simple_timeTemplates" via "Draft.utp_simple_time" via "Draft.utp")
+Loading theory "Draft.utp_subst" (required by "Draft.utp_simple_timeTemplates" via "Draft.utp_simple_time" via "Draft.utp")
+### theory "Draft.utp_usedby"
+### 0.083s elapsed time, 0.165s cpu time, 0.000s GC time
+Loading theory "Draft.utp_tactics" (required by "Draft.utp_simple_timeTemplates" via "Draft.utp_simple_time" via "Draft.utp" via "Draft.utp_meta_subst")
+signature UEXPR_REP_EQ =
+  sig
+    val get_uexpr_rep_eq_thms: theory -> thm list
+    val read_uexpr_rep_eq_thms: theory -> theory
+  end
+structure uexpr_rep_eq: UEXPR_REP_EQ
+val it = (): unit
+### theory "Draft.utp_subst"
+### 0.425s elapsed time, 0.852s cpu time, 0.050s GC time
+structure List_Extra: sig val contains: ''a -> ''a list -> bool end
+signature BASIC_TACTICS =
+  sig
+    val fast_transfer: Proof.context -> thm list -> context_tactic
+    val interp_tac: Proof.context -> thm list -> context_tactic
+    val slow_transfer: Proof.context -> thm list -> context_tactic
+    val utp_auto_tac: Proof.context -> thm list -> context_tactic
+    val utp_blast_tac: Proof.context -> thm list -> context_tactic
+    val utp_simp_tac: Proof.context -> thm list -> context_tactic
+  end
+structure Basic_Tactics: BASIC_TACTICS
+signature UTP_TACTICS =
+  sig
+    val inst_gen_pred_tac:
+       utp_tac_args ->
+         (Proof.context -> thm list -> context_tactic) ->
+           Proof.context -> thm list -> context_tactic
+    val inst_gen_rel_tac:
+       utp_tac_args ->
+         (Proof.context -> thm list -> context_tactic) ->
+           Proof.context -> thm list -> context_tactic
+    val no_interpN: string
+    val robustN: string
+    val scan_args: utp_tac_args parser
+    type utp_tac_args
+  end
+structure UTP_Tactics: UTP_TACTICS
+### theory "Draft.utp_tactics"
+### 1.497s elapsed time, 1.911s cpu time, 0.089s GC time
+Loading theory "Draft.utp_meta_subst" (required by "Draft.utp_simple_timeTemplates" via "Draft.utp_simple_time" via "Draft.utp")
+### theory "Draft.utp_meta_subst"
+### 0.399s elapsed time, 0.461s cpu time, 0.031s GC time
+Loading theory "Draft.utp_pred" (required by "Draft.utp_simple_timeTemplates" via "Draft.utp_simple_time" via "Draft.utp" via "Draft.utp_alphabet")
+instantiation
+  uexpr :: (lattice, type) lattice
+  inf_uexpr == inf :: ('a, 'b) uexpr => ('a, 'b) uexpr => ('a, 'b) uexpr
+  sup_uexpr == sup :: ('a, 'b) uexpr => ('a, 'b) uexpr => ('a, 'b) uexpr
+instantiation
+  uexpr :: (bounded_lattice, type) bounded_lattice
+  bot_uexpr == bot :: ('a, 'b) uexpr
+  top_uexpr == top_class.top :: ('a, 'b) uexpr
+instantiation
+  uexpr :: (complete_lattice, type) complete_lattice
+  Inf_uexpr == Inf :: ('a, 'b) uexpr set => ('a, 'b) uexpr
+  Sup_uexpr == Sup :: ('a, 'b) uexpr set => ('a, 'b) uexpr
+### Ignoring duplicate rewrite rule:
+### ?X1 \<subseteq>\<^sub>L ?X1 == True
+### Ignoring duplicate rewrite rule:
+### wb_lens ?Y1 ==> ?X1 \<subseteq>\<^sub>L ?X1 +\<^sub>L ?Y1 == True
+### theory "Draft.utp_pred"
+### 1.481s elapsed time, 1.861s cpu time, 0.501s GC time
+Loading theory "Draft.utp_pred_laws" (required by "Draft.utp_simple_timeTemplates" via "Draft.utp_simple_time" via "Draft.utp")
+Loading theory "Draft.utp_alphabet" (required by "Draft.utp_simple_timeTemplates" via "Draft.utp_simple_time" via "Draft.utp")
+### Partially applied constant "utp_pred.conj_upred" on left hand side of equation, in theorem:
+### semilattice_inf.Inf_fin (\<and>) (ran\<^sub>l (?x # ?xs)) ==
+### fold (\<and>) ?xs ?x
+### Partially applied constant "utp_pred.disj_upred" on left hand side of equation, in theorem:
+### semilattice_sup.Sup_fin (\<or>) (ran\<^sub>l (?x # ?xs)) ==
+### fold (\<or>) ?xs ?x
+### theory "Draft.utp_alphabet"
+### 0.605s elapsed time, 1.309s cpu time, 0.103s GC time
+Loading theory "Draft.utp_lift" (required by "Draft.utp_simple_timeTemplates" via "Draft.utp_simple_time" via "Draft.utp")
+### theory "Draft.utp_lift"
+### 0.067s elapsed time, 0.128s cpu time, 0.040s GC time
+### theory "Draft.utp_pred_laws"
+### 0.959s elapsed time, 1.724s cpu time, 0.143s GC time
+Loading theory "Draft.utp_healthy" (required by "Draft.utp_simple_timeTemplates" via "Draft.utp_simple_time" via "Draft.utp" via "Draft.utp_recursion" via "Draft.utp_rel")
+Loading theory "Draft.utp_sequent" (required by "Draft.utp_simple_timeTemplates" via "Draft.utp_simple_time" via "Draft.utp" via "Draft.utp_dynlog")
+### theory "Draft.utp_sequent"
+### 0.202s elapsed time, 0.623s cpu time, 0.485s GC time
+### Ambiguous input (line 129 of "$AFP/UTP/utp/utp_healthy.thy") produces 4 parse trees:
+### ("\<^const>Pure.imp"
+###   ("\<^const>HOL.Trueprop"
+###     ("_applC" ("_position" Idempotent) ("_position" f)))
+###   ("\<^const>HOL.Trueprop"
+###     ("_applC" ("_position" f)
+###       ("_cargs"
+###         ("\<^const>utp_pred.taut"
+###           ("\<^const>HOL.eq"
+###             ("\<^const>Set.image" ("_position" f) ("_position" A))
+###             ("_position" f)))
+###         ("_position" A)))))
+### ("\<^const>Pure.imp"
+###   ("\<^const>HOL.Trueprop"
+###     ("_applC" ("_position" Idempotent) ("_position" f)))
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^const>Set.image" ("_position" f)
+###       ("_applC" ("_position" f)
+###         ("_cargs"
+###           ("\<^const>utp_pred.taut"
+###             ("\<^const>HOL.eq" ("_position" A) ("_position" f)))
+###           ("_position" A))))))
+### ("\<^const>Pure.imp"
+###   ("\<^const>HOL.Trueprop"
+###     ("_applC" ("_position" Idempotent) ("_position" f)))
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^const>HOL.eq"
+###       ("\<^const>Set.image" ("_position" f)
+###         ("\<^const>Set.image" ("_position" f) ("_position" A)))
+###       ("\<^const>Set.image" ("_position" f) ("_position" A)))))
+### ("\<^const>Pure.imp"
+###   ("\<^const>HOL.Trueprop"
+###     ("_applC" ("_position" Idempotent) ("_position" f)))
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^const>HOL.eq"
+###       ("_applC" ("_position" f)
+###         ("_cargs" ("\<^const>utp_pred.taut" ("_position" f))
+###           ("_position" A)))
+###       ("\<^const>Set.image" ("_position" f) ("_position" A)))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### theory "Draft.utp_healthy"
+### 0.545s elapsed time, 0.976s cpu time, 0.517s GC time
+Loading theory "Draft.utp_rel" (required by "Draft.utp_simple_timeTemplates" via "Draft.utp_simple_time" via "Draft.utp" via "Draft.utp_recursion")
+### theory "Draft.utp_rel"
+### 0.988s elapsed time, 1.101s cpu time, 0.095s GC time
+Loading theory "Draft.utp_recursion" (required by "Draft.utp_simple_timeTemplates" via "Draft.utp_simple_time" via "Draft.utp")
+Loading theory "Draft.utp_state_parser" (required by "Draft.utp_simple_timeTemplates" via "Draft.utp_simple_time" via "Draft.utp")
+### theory "Draft.utp_state_parser"
+### 0.053s elapsed time, 0.109s cpu time, 0.000s GC time
+"LOCAL (x, y, z) \<bullet> x := &x + &z"
+  :: "(int * real * int) hrel"
+### theory "Draft.utp_recursion"
+### 0.141s elapsed time, 0.198s cpu time, 0.000s GC time
+Loading theory "Draft.utp_rel_laws" (required by "Draft.utp_simple_timeTemplates" via "Draft.utp_simple_time" via "Draft.utp" via "Draft.utp_dynlog" via "Draft.utp_wp" via "Draft.utp_hoare")
+### Ambiguous input (line 409 of "$AFP/UTP/utp/utp_rel_laws.thy") produces 2 parse trees:
+### ("_bigimpl"
+###   ("_asms"
+###     ("\<^const>HOL.Trueprop"
+###       ("_applC" ("_position" vwb_lens) ("_position" x)))
+###     ("_asms"
+###       ("\<^const>HOL.Trueprop"
+###         ("_applC" ("_position" vwb_lens) ("_position" y)))
+###       ("_asm"
+###         ("\<^const>HOL.Trueprop"
+###           ("\<^const>Lens_Laws.lens_indep" ("_position" x)
+###             ("_position" y))))))
+###   ("\<^const>HOL.Trueprop"
+###     ("_applC" ("_position" uinj)
+###       ("_assignment" ("_svid_list" ("_svid" x) ("_svid_unit" ("_svid" y)))
+###         ("_uexprs" ("_uexp_l" ("_uuvar" ("_spvar" ("_svid" y))))
+###           ("_uexp_l" ("_uuvar" ("_spvar" ("_svid" x)))))))))
+### ("_bigimpl"
+###   ("_asms"
+###     ("\<^const>HOL.Trueprop"
+###       ("_applC" ("_position" vwb_lens) ("_position" x)))
+###     ("_asms"
+###       ("\<^const>HOL.Trueprop"
+###         ("_applC" ("_position" vwb_lens) ("_position" y)))
+###       ("_asm"
+###         ("\<^const>HOL.Trueprop"
+###           ("\<^const>Lens_Laws.lens_indep" ("_position" x)
+###             ("_position" y))))))
+###   ("\<^const>HOL.Trueprop"
+###     ("_Update" ("_position" uinj)
+###       ("_updbind" ("_tuple" ("_position" x) ("_tuple_arg" ("_position" y)))
+###         ("_tuple" ("_uuvar" ("_spvar" ("_svid" y)))
+###           ("_tuple_arg" ("_uuvar" ("_spvar" ("_svid" x)))))))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Partially applied constant "utp_rel.seqr" on left hand side of equation, in theorem:
+### monoid_mult.prod_list II (;;) ?xs == foldr (;;) ?xs II
+### Partially applied constant "Lattices.sup_class.sup" on left hand side of equation, in theorem:
+### monoid_add.sum_list (\<sqinter>) false ?xs == foldr (\<sqinter>) ?xs false
+### Partially applied constant "Lattices.sup_class.sup" on left hand side of equation, in theorem:
+### comm_monoid_add.sum (\<sqinter>) false ?g (ran\<^sub>l ?xs) ==
+### monoid_add.sum_list (\<sqinter>) false (map ?g (remdups ?xs))
+### Type
+### ?'a::type hrel => ?'a::type hrel => bool => ?'a::type hrel
+### of constant "Rings.zero_neq_one.of_bool"
+### is too specific compared to declared type
+### ?'a::{} => ?'a::{} => bool => ?'a::{}, in theorem:
+### zero_neq_one.of_bool II false False == false
+### Type
+### ?'a::type hrel => ?'a::type hrel => bool => ?'a::type hrel
+### of constant "Rings.zero_neq_one.of_bool"
+### is too specific compared to declared type
+### ?'a::{} => ?'a::{} => bool => ?'a::{}, in theorem:
+### zero_neq_one.of_bool II false True == II
+### Partially applied constant "Lattices.sup_class.sup" on left hand side of equation, in theorem:
+### numeral.numeral II (\<sqinter>) num.One == II
+### Partially applied constant "Lattices.sup_class.sup" on left hand side of equation, in theorem:
+### numeral.numeral II (\<sqinter>) (num.Bit0 ?n) ==
+### let m = numeral.numeral II (\<sqinter>) ?n in m \<sqinter> m
+### Partially applied constant "Lattices.sup_class.sup" on left hand side of equation, in theorem:
+### numeral.numeral II (\<sqinter>) (num.Bit1 ?n) ==
+### let m = numeral.numeral II (\<sqinter>) ?n in m \<sqinter> m \<sqinter> II
+### theory "Draft.utp_rel_laws"
+### 1.711s elapsed time, 2.546s cpu time, 1.004s GC time
+Loading theory "Draft.utp_theory" (required by "Draft.utp_simple_timeTemplates" via "Draft.utp_simple_time" via "Draft.utp" via "Draft.utp_dynlog" via "Draft.utp_wp" via "Draft.utp_hoare")
+locale utp_theory
+  fixes hcond :: "'\<alpha> hrel => '\<alpha> hrel"  (\<open>\<H>\<close>)
+  assumes "utp_theory \<H>"
+locale utp_theory_lattice
+  fixes hcond :: "'a hrel => 'a hrel"  (\<open>\<H>\<close>)
+  assumes "utp_theory_lattice \<H>"
+locale utp_theory_lattice
+  fixes hcond :: "'a hrel => 'a hrel"  (\<open>\<H>\<close>)
+  assumes "utp_theory_lattice \<H>"
+locale utp_theory_mono
+  fixes hcond :: "'a hrel => 'a hrel"  (\<open>\<H>\<close>)
+  assumes "utp_theory_mono \<H>"
+locale utp_theory_mono
+  fixes hcond :: "'a hrel => 'a hrel"  (\<open>\<H>\<close>)
+  assumes "utp_theory_mono \<H>"
+locale utp_theory_continuous
+  fixes hcond :: "'a hrel => 'a hrel"  (\<open>\<H>\<close>)
+  assumes "utp_theory_continuous \<H>"
+locale utp_theory_continuous
+  fixes hcond :: "'a hrel => 'a hrel"  (\<open>\<H>\<close>)
+  assumes "utp_theory_continuous \<H>"
+locale utp_theory_rel
+  fixes hcond :: "'a hrel => 'a hrel"  (\<open>\<H>\<close>)
+  assumes "utp_theory_rel \<H>"
+locale utp_theory_cont_rel
+  fixes hcond :: "'a hrel => 'a hrel"  (\<open>\<H>\<close>)
+  assumes "utp_theory_cont_rel \<H>"
+locale utp_theory_units
+  fixes hcond :: "'a hrel => 'a hrel"  (\<open>\<H>\<close>)
+    and utp_unit :: "'a hrel"  (\<open>\<I>\<I>\<close>)
+  assumes "utp_theory_units \<H> \<I>\<I>"
+locale utp_theory_left_unital
+  fixes hcond :: "'a hrel => 'a hrel"  (\<open>\<H>\<close>)
+    and utp_unit :: "'a hrel"  (\<open>\<I>\<I>\<close>)
+  assumes "utp_theory_left_unital \<H> \<I>\<I>"
+locale utp_theory_right_unital
+  fixes hcond :: "'a hrel => 'a hrel"  (\<open>\<H>\<close>)
+    and utp_unit :: "'a hrel"  (\<open>\<I>\<I>\<close>)
+  assumes "utp_theory_right_unital \<H> \<I>\<I>"
+locale utp_theory_unital
+  fixes hcond :: "'a hrel => 'a hrel"  (\<open>\<H>\<close>)
+    and utp_unit :: "'a hrel"  (\<open>\<I>\<I>\<close>)
+  assumes "utp_theory_unital \<H> \<I>\<I>"
+locale utp_theory_mono_unital
+  fixes hcond :: "'a hrel => 'a hrel"  (\<open>\<H>\<close>)
+    and utp_unit :: "'a hrel"  (\<open>\<I>\<I>\<close>)
+  assumes "utp_theory_mono_unital \<H> \<I>\<I>"
+locale utp_theory_cont_unital
+  fixes hcond :: "'a hrel => 'a hrel"  (\<open>\<H>\<close>)
+    and utp_unit :: "'a hrel"  (\<open>\<I>\<I>\<close>)
+  assumes "utp_theory_cont_unital \<H> \<I>\<I>"
+locale utp_theory_unital_zerol
+  fixes hcond :: "'a hrel => 'a hrel"  (\<open>\<H>\<close>)
+    and utp_unit :: "'a hrel"  (\<open>\<I>\<I>\<close>)
+  assumes "utp_theory_unital_zerol \<H> \<I>\<I>"
+locale utp_theory_cont_unital_zerol
+  fixes hcond :: "'a hrel => 'a hrel"  (\<open>\<H>\<close>)
+    and utp_unit :: "'a hrel"  (\<open>\<I>\<I>\<close>)
+  assumes "utp_theory_cont_unital_zerol \<H> \<I>\<I>"
+### Cannot skip proof of schematic goal statement
+[| Mono\<^bsub>rel_theory.thy_order\<^esub> ?f;
+   ?f : UNIV \<rightarrow> UNIV |]
+==> rel_theory.utp_gfp ?f = ?f (rel_theory.utp_gfp ?f)
+### theory "Draft.utp_theory"
+### 1.503s elapsed time, 1.638s cpu time, 0.220s GC time
+Loading theory "Draft.utp_hoare" (required by "Draft.utp_simple_timeTemplates" via "Draft.utp_simple_time" via "Draft.utp" via "Draft.utp_dynlog" via "Draft.utp_wp")
+### theory "Draft.utp_hoare"
+### 0.570s elapsed time, 0.715s cpu time, 0.114s GC time
+Loading theory "Draft.utp_concurrency" (required by "Draft.utp_simple_timeTemplates" via "Draft.utp_simple_time" via "Draft.utp")
+Loading theory "Draft.utp_rel_opsem" (required by "Draft.utp_simple_timeTemplates" via "Draft.utp_simple_time" via "Draft.utp" via "Draft.utp_sym_eval")
+Loading theory "Draft.utp_wp" (required by "Draft.utp_simple_timeTemplates" via "Draft.utp_simple_time" via "Draft.utp" via "Draft.utp_dynlog")
+Found termination order: "{}"
+### Ambiguous input (line 26 of "$AFP/UTP/utp/utp_rel_opsem.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>utp_rel_opsem.trel"
+###     ("_tuple" ("_position" \<sigma>)
+###       ("_tuple_arg"
+###         ("_assignment" ("_svid_unit" ("_svid" x))
+###           ("_uexp_l" ("_position" v)))))
+###     ("_tuple"
+###       ("_SubstUpd" ("_position" \<sigma>)
+###         ("_smaplet" ("_salphavar" ("_spvar" ("_svid" x)))
+###           ("\<^const>utp_subst.usubst" ("_position" \<sigma>)
+###             ("_position" v))))
+###       ("_tuple_arg" ("\<^const>utp_rel.uskip")))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>utp_rel_opsem.trel"
+###     ("_assignment"
+###       ("_svid_list" ("_svid" \<sigma>) ("_svid_unit" ("_svid" x)))
+###       ("_uexp_l" ("_position" v)))
+###     ("_tuple"
+###       ("_SubstUpd" ("_position" \<sigma>)
+###         ("_smaplet" ("_salphavar" ("_spvar" ("_svid" x)))
+###           ("\<^const>utp_subst.usubst" ("_position" \<sigma>)
+###             ("_position" v))))
+###       ("_tuple_arg" ("\<^const>utp_rel.uskip")))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### theory "Draft.utp_rel_opsem"
+### 0.136s elapsed time, 0.407s cpu time, 0.000s GC time
+Loading theory "Draft.utp_sym_eval" (required by "Draft.utp_simple_timeTemplates" via "Draft.utp_simple_time" via "Draft.utp")
+### theory "Draft.utp_wp"
+### 0.225s elapsed time, 0.655s cpu time, 0.087s GC time
+Loading theory "Draft.utp_dynlog" (required by "Draft.utp_simple_timeTemplates" via "Draft.utp_simple_time" via "Draft.utp")
+Loading theory "Draft.utp_sp" (required by "Draft.utp_simple_timeTemplates" via "Draft.utp_simple_time" via "Draft.utp")
+consts
+  mrg_prior :: "'a \<Longrightarrow> ('a, 'b, 'c, 'd) mrg_scheme"
+consts
+  mrg_left :: "'e \<Longrightarrow> ('f, 'e, 'g, 'h) mrg_scheme"
+consts
+  mrg_right :: "'i \<Longrightarrow> ('j, 'k, 'i, 'l) mrg_scheme"
+consts
+  base\<^sub>L ::
+    "('m, 'n, 'o) mrg \<Longrightarrow> ('m, 'n, 'o, 'p) mrg_scheme"
+consts
+  more\<^sub>L :: "'q \<Longrightarrow> ('r, 's, 't, 'q) mrg_scheme"
+consts
+  all\<^sub>L ::
+    "<('a, 'b,
+       'c) mrg, 'd> \<Longleftrightarrow> ('a, 'b, 'c, 'd) mrg_scheme"
+### theory "Draft.utp_sym_eval"
+### 0.237s elapsed time, 0.838s cpu time, 0.087s GC time
+### theory "Draft.utp_sp"
+### 0.224s elapsed time, 0.820s cpu time, 0.000s GC time
+### theory "Draft.utp_dynlog"
+### 0.730s elapsed time, 1.859s cpu time, 0.140s GC time
+### theory "Draft.utp_concurrency"
+### 1.166s elapsed time, 2.726s cpu time, 0.226s GC time
+Loading theory "Draft.utp" (required by "Draft.utp_simple_timeTemplates" via "Draft.utp_simple_time")
+### theory "Draft.utp"
+### 0.860s elapsed time, 0.920s cpu time, 0.071s GC time
+Loading theory "Draft.utp_simple_time" (required by "Draft.utp_simple_timeTemplates")
+consts
+  clock :: "nat \<Longrightarrow> ('a, 'b) st_time_scheme"
+consts
+  st :: "'c \<Longrightarrow> ('c, 'd) st_time_scheme"
+consts
+  base\<^sub>L :: "'e st_time \<Longrightarrow> ('e, 'f) st_time_scheme"
+consts
+  more\<^sub>L :: "'g \<Longrightarrow> ('h, 'g) st_time_scheme"
+consts
+  all\<^sub>L ::
+    "<'a st_time, 'b> \<Longleftrightarrow> ('a, 'b) st_time_scheme"
+\<bottom>\<^sub>t is HT
+?x is HT ==> ?x \<sqsubseteq> \<top>\<^sub>t
+?P is HT ==> ?P \<sqinter> \<bottom>\<^sub>t = \<bottom>\<^sub>t
+[| Mono\<^bsub>time_theory.thy_order\<^esub> ?f;
+   ?f : \<lbrakk>HT\<rbrakk>\<^sub>H \<rightarrow>
+        \<lbrakk>HT\<rbrakk>\<^sub>H |]
+==> \<mu>\<^sub>t ?f = ?f (\<mu>\<^sub>t ?f)
+### theory "Draft.utp_simple_time"
+### 0.724s elapsed time, 0.811s cpu time, 0.143s GC time
+Loading theory "Draft.utp_simple_timeTemplates"
+val templateLemmas =
+   [("utp_simple_time.HT_Wait_closed", "Wait ?n is HT",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_hole 2,
+             template_app (template_hole 1, template_var 0)),
+           template_hole 0)
+         )),
+    ("utp_simple_time.HT_idem", "HT (HT ?P) = HT ?P",
+     template_equation
+      (template_app
+        (template_hole 0, template_app (template_hole 0, template_var 0)),
+       template_app (template_hole 0, template_var 0))),
+    ("utp_simple_time.HT_Wait", "HT (Wait ?n) = Wait ?n",
+     template_equation
+      (template_app
+        (template_hole 1, template_app (template_hole 0, template_var 0)),
+       template_app (template_hole 0, template_var 0))),
+    ("utp_simple_time.Wait_Wait", "Wait ?m ;; Wait ?n = Wait (?m + ?n)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 2, template_app (template_hole 1, template_var 1)),
+         template_app (template_hole 1, template_var 0)),
+       template_app
+        (template_hole 1,
+         template_app
+          (template_app (template_hole 0, template_var 1),
+           template_var 0)))),
+    ("utp_simple_time.HT_mono",
+     "?P \<sqsubseteq> ?Q ==> HT ?P \<sqsubseteq> HT ?Q",
+     template_implication
+      ([template_inequation (less_equals, template_var 1, template_var 0)],
+       template_inequation
+        (less_equals, template_app (template_hole 0, template_var 1),
+         template_app (template_hole 0, template_var 0)))),
+    ("utp_simple_time.HT_seqr_closed",
+     "[| ?P is HT; ?Q is HT |] ==> ?P ;; ?Q is HT",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 2, template_var 1),
+              template_hole 1)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 2, template_var 0),
+              template_hole 1)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 2,
+               template_app
+                (template_app (template_hole 0, template_var 1),
+                 template_var 0)),
+             template_hole 1)
+           ))),
+    ("utp_simple_time.HT_assign_closed",
+     "[| vwb_lens ?x; clock \<bowtie> ?x |] ==> ?x := ?v is HT",
+     template_implication
+      ([template_predicate (template_app (template_hole 8, template_var 1)),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 7, template_hole 6),
+              template_var 1)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 5,
+               template_app
+                (template_hole 4,
+                 template_app
+                  (template_app
+                    (template_app (template_hole 3, template_hole 2),
+                     template_app (template_hole 1, template_var 1)),
+                   template_var 0))),
+             template_hole 0)
+           ))),
+    ("utp_simple_time.HT_assign_closed'",
+     "[| vwb_lens ?x; ?x \<subseteq>\<^sub>L st |] ==> ?x := ?v is HT",
+     template_implication
+      ([template_predicate (template_app (template_hole 8, template_var 1)),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 7, template_var 1),
+              template_hole 6)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 5,
+               template_app
+                (template_hole 4,
+                 template_app
+                  (template_app
+                    (template_app (template_hole 3, template_hole 2),
+                     template_app (template_hole 1, template_var 1)),
+                   template_var 0))),
+             template_hole 0)
+           ))),
+    ("utp_simple_time.Wait_cond",
+     "Wait ?m ;; (?P \<triangleleft> ?b \<triangleright>\<^sub>r ?Q) =
+      Wait ?m ;;
+      ?P \<triangleleft> ?b\<lbrakk>&clock +
+                                    \<guillemotleft>?m\<guillemotright>/&clock\<rbrakk> \<triangleright>\<^sub>r
+         Wait ?m ;; ?Q",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 12,
+           template_app (template_hole 11, template_var 3)),
+         template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 10, template_hole 9),
+               template_app (template_hole 8, template_var 2)),
+             template_var 1),
+           template_var 0)),
+       template_app
+        (template_app
+          (template_app
+            (template_app (template_hole 10, template_hole 9),
+             template_app
+              (template_hole 8,
+               template_app
+                (template_app
+                  (template_hole 7,
+                   template_app
+                    (template_app
+                      (template_app (template_hole 6, template_hole 5),
+                       template_app (template_hole 4, template_hole 3)),
+                     template_app
+                      (template_app
+                        (template_hole 2,
+                         template_app
+                          (template_hole 1,
+                           template_app
+                            (template_hole 4, template_hole 3))),
+                       template_app (template_hole 0, template_var 3)))),
+                 template_var 2))),
+           template_app
+            (template_app
+              (template_hole 12,
+               template_app (template_hole 11, template_var 3)),
+             template_var 1)),
+         template_app
+          (template_app
+            (template_hole 12,
+             template_app (template_hole 11, template_var 3)),
+           template_var 0))))]:
+   (string * thm * template) list
+### theory "Draft.utp_simple_timeTemplates"
+### 0.807s elapsed time, 1.107s cpu time, 0.124s GC time
+val it = (): unit

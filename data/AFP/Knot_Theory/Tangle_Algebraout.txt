@@ -1,0 +1,2932 @@
+Loading theory "Draft.Preliminaries" (required by "Draft.Tangle_AlgebraTemplates" via "Draft.Tangle_Algebra" via "Draft.Tangles")
+Loading theory "Draft.Templates" (required by "Draft.Tangle_AlgebraTemplates" via "Draft.ExtrEqs")
+datatype template_term
+=
+     t_empty
+   | template_app of template_term * template_term
+   | template_hole of int
+   | template_var of int
+datatype sign
+= equals | greater_equals | greater_than | less_equals | less_than
+datatype template
+=
+     template_bimplication of template * template
+   | template_dunno
+   | template_equation of template_term * template_term
+   | template_implication of template list * template
+   | template_inequation of sign * template_term * template_term
+   | template_negation of template
+   | template_predicate of template_term
+constructor t_empty: template_term
+constructor template_app: template_term * template_term -> template_term
+constructor template_hole: int -> template_term
+constructor template_var: int -> template_term
+constructor equals: sign
+constructor greater_equals: sign
+constructor greater_than: sign
+constructor less_equals: sign
+constructor less_than: sign
+constructor template_bimplication: template * template -> template
+constructor template_dunno: template
+constructor template_equation: template_term * template_term -> template
+constructor template_implication: template list * template -> template
+constructor template_inequation:
+   sign * template_term * template_term -> template
+constructor template_negation: template -> template
+constructor template_predicate: template_term -> template
+val vfs = fn: term -> (indexname * typ) list * (string * typ) list
+val indexOf = fn: ''a list -> ''a -> int -> int
+val has_eq = fn: term -> bool
+val term2template = fn:
+   (indexname * typ) list -> (string * typ) list -> term -> template_term
+val lemma2predicate = fn: term -> term -> template
+val makeTemplatewithContext = fn: term -> term -> template
+val lemma2template = fn: term -> template
+val thm2template = fn: thm -> template
+val tterm2string = fn: template_term -> string
+val template2string = fn: template -> string
+val t = "height ?t <= size ?t": thm
+val th =
+   Const ("HOL.Trueprop", "bool => prop") $
+     (Const ("Orderings.ord_class.less_eq", "nat => nat => bool") $
+       (Const ("Tree.height_class.height", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree")) $
+       (Const ("Nat.size_class.size", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree"))):
+   term
+### theory "Draft.Templates"
+### 0.065s elapsed time, 0.157s cpu time, 0.000s GC time
+Loading theory "Draft.ExtrEqs" (required by "Draft.Tangle_AlgebraTemplates")
+val eqpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Var (("_dummy_", 2), "?'a"))
+       ):
+   term Find_Theorems.criterion
+val badeqpattern = Pattern (Const ("Pure.eq", "?'a => ?'a => prop")):
+   term Find_Theorems.criterion
+val undefpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Const ("HOL.undefined", "?'a"))
+       ):
+   term Find_Theorems.criterion
+val thmpattern =
+   Pattern
+    (Const ("HOL.Trueprop", "bool => prop") $ Var (("_dummy_", 1), "bool")):
+   term Find_Theorems.criterion
+val badnames =
+   ["*nitpick*", "*Nitpick*", "*full_exhaustive*", "*_def*", "Enum.finite*",
+    "*Quickcheck*", "ATP*", "*Nunchaku*", "*Code*", "*BNF*", "*SMT*",
+    "*.*.*"]:
+   string list
+val unwanted_names =
+   [(false, Name "*nitpick*"), (false, Name "*Nitpick*"),
+    (false, Name "*full_exhaustive*"), (false, Name "*_def*"),
+    (false, Name "Enum.finite*"), (false, Name "*Quickcheck*"),
+    (false, Name "ATP*"), (false, Name "*Nunchaku*"),
+    (false, Name "*Code*"), (false, Name "*BNF*"), (false, Name "*SMT*"),
+    (false, Name "*.*.*")]:
+   (bool * term Find_Theorems.criterion) list
+val has_vars = fn: term -> bool
+val get_all_eqs = fn: string -> Proof.context -> (string * thm) list
+val get_all_thms = fn: string -> Proof.context -> (string * thm) list
+val get_noneq_thms = fn: string -> Proof.context -> (string * thm) list
+val template_eqs = fn:
+   string -> Proof.context -> (string * thm * template) list
+val template_thms = fn:
+   string -> Proof.context -> (string * thm * template) list
+### theory "Draft.ExtrEqs"
+### 0.607s elapsed time, 1.238s cpu time, 0.101s GC time
+consts
+  concatenate :: "brick list => brick list => brick list"
+### Ambiguous input (line 56 of "$AFP/Knot_Theory/Preliminaries.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("\<^const>Fun.comp" ("_applC" ("_position" basic) ("_position" x))
+###       ("_position" ys))
+###     ("_applC" ("_position" prod)
+###       ("_cargs" ("_position" x) ("_position" ys)))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("\<^fixed>compose" ("_applC" ("_position" basic) ("_position" x))
+###       ("_position" ys))
+###     ("_applC" ("_position" prod)
+###       ("_cargs" ("_position" x) ("_position" ys)))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ambiguous input (line 57 of "$AFP/Knot_Theory/Preliminaries.thy") produces 4 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("\<^fixed>compose"
+###       ("_applC" ("_position" prod)
+###         ("_cargs" ("_position" x) ("_position" xs)))
+###       ("_position" ys))
+###     ("_applC" ("_position" prod)
+###       ("_cargs" ("_position" x)
+###         ("\<^fixed>compose" ("_position" xs) ("_position" ys))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("\<^const>Fun.comp"
+###       ("_applC" ("_position" prod)
+###         ("_cargs" ("_position" x) ("_position" xs)))
+###       ("_position" ys))
+###     ("_applC" ("_position" prod)
+###       ("_cargs" ("_position" x)
+###         ("\<^fixed>compose" ("_position" xs) ("_position" ys))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("\<^fixed>compose"
+###       ("_applC" ("_position" prod)
+###         ("_cargs" ("_position" x) ("_position" xs)))
+###       ("_position" ys))
+###     ("_applC" ("_position" prod)
+###       ("_cargs" ("_position" x)
+###         ("\<^const>Fun.comp" ("_position" xs) ("_position" ys))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("\<^const>Fun.comp"
+###       ("_applC" ("_position" prod)
+###         ("_cargs" ("_position" x) ("_position" xs)))
+###       ("_position" ys))
+###     ("_applC" ("_position" prod)
+###       ("_cargs" ("_position" x)
+###         ("\<^const>Fun.comp" ("_position" xs) ("_position" ys))))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+consts
+  compose :: "wall => wall => wall"
+### Ambiguous input (line 60 of "$AFP/Knot_Theory/Preliminaries.thy") produces 16 parse trees (10 displayed):
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("\<^const>Preliminaries.compose"
+###       ("\<^const>Fun.comp"
+###         ("_constrain" ("_position" x) ("_type_name" wall)) ("_position" y))
+###       ("_position" z))
+###     ("\<^const>Fun.comp"
+###       ("\<^const>Preliminaries.compose" ("_position" x) ("_position" y))
+###       ("_position" z))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("\<^const>Fun.comp"
+###       ("\<^const>Fun.comp"
+###         ("_constrain" ("_position" x) ("_type_name" wall)) ("_position" y))
+###       ("_position" z))
+###     ("\<^const>Fun.comp"
+###       ("\<^const>Preliminaries.compose" ("_position" x) ("_position" y))
+###       ("_position" z))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("\<^const>Preliminaries.compose"
+###       ("\<^const>Preliminaries.compose"
+###         ("_constrain" ("_position" x) ("_type_name" wall)) ("_position" y))
+###       ("_position" z))
+###     ("\<^const>Fun.comp"
+###       ("\<^const>Preliminaries.compose" ("_position" x) ("_position" y))
+###       ("_position" z))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("\<^const>Fun.comp"
+###       ("\<^const>Preliminaries.compose"
+###         ("_constrain" ("_position" x) ("_type_name" wall)) ("_position" y))
+###       ("_position" z))
+###     ("\<^const>Fun.comp"
+###       ("\<^const>Preliminaries.compose" ("_position" x) ("_position" y))
+###       ("_position" z))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("\<^const>Preliminaries.compose"
+###       ("\<^const>Fun.comp"
+###         ("_constrain" ("_position" x) ("_type_name" wall)) ("_position" y))
+###       ("_position" z))
+###     ("\<^const>Preliminaries.compose" ("_position" x)
+###       ("\<^const>Preliminaries.compose" ("_position" y) ("_position" z)))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("\<^const>Fun.comp"
+###       ("\<^const>Fun.comp"
+###         ("_constrain" ("_position" x) ("_type_name" wall)) ("_position" y))
+###       ("_position" z))
+###     ("\<^const>Preliminaries.compose" ("_position" x)
+###       ("\<^const>Preliminaries.compose" ("_position" y) ("_position" z)))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("\<^const>Preliminaries.compose"
+###       ("\<^const>Preliminaries.compose"
+###         ("_constrain" ("_position" x) ("_type_name" wall)) ("_position" y))
+###       ("_position" z))
+###     ("\<^const>Preliminaries.compose" ("_position" x)
+###       ("\<^const>Preliminaries.compose" ("_position" y) ("_position" z)))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("\<^const>Fun.comp"
+###       ("\<^const>Preliminaries.compose"
+###         ("_constrain" ("_position" x) ("_type_name" wall)) ("_position" y))
+###       ("_position" z))
+###     ("\<^const>Preliminaries.compose" ("_position" x)
+###       ("\<^const>Preliminaries.compose" ("_position" y) ("_position" z)))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("\<^const>Preliminaries.compose"
+###       ("\<^const>Fun.comp"
+###         ("_constrain" ("_position" x) ("_type_name" wall)) ("_position" y))
+###       ("_position" z))
+###     ("\<^const>Fun.comp" ("_position" x)
+###       ("\<^const>Preliminaries.compose" ("_position" y) ("_position" z)))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("\<^const>Fun.comp"
+###       ("\<^const>Fun.comp"
+###         ("_constrain" ("_position" x) ("_type_name" wall)) ("_position" y))
+###       ("_position" z))
+###     ("\<^const>Fun.comp" ("_position" x)
+###       ("\<^const>Preliminaries.compose" ("_position" y) ("_position" z)))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ambiguous input (line 64 of "$AFP/Knot_Theory/Preliminaries.thy") produces 16 parse trees (10 displayed):
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("\<^const>Fun.comp" ("_constrain" ("_position" x) ("_type_name" wall))
+###       ("\<^const>Preliminaries.compose" ("_position" y) ("_position" z)))
+###     ("\<^const>Fun.comp"
+###       ("\<^const>Preliminaries.compose" ("_position" x) ("_position" y))
+###       ("_position" z))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("\<^const>Preliminaries.compose"
+###       ("_constrain" ("_position" x) ("_type_name" wall))
+###       ("\<^const>Preliminaries.compose" ("_position" y) ("_position" z)))
+###     ("\<^const>Fun.comp"
+###       ("\<^const>Preliminaries.compose" ("_position" x) ("_position" y))
+###       ("_position" z))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("\<^const>Fun.comp" ("_constrain" ("_position" x) ("_type_name" wall))
+###       ("\<^const>Fun.comp" ("_position" y) ("_position" z)))
+###     ("\<^const>Fun.comp"
+###       ("\<^const>Preliminaries.compose" ("_position" x) ("_position" y))
+###       ("_position" z))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("\<^const>Preliminaries.compose"
+###       ("_constrain" ("_position" x) ("_type_name" wall))
+###       ("\<^const>Fun.comp" ("_position" y) ("_position" z)))
+###     ("\<^const>Fun.comp"
+###       ("\<^const>Preliminaries.compose" ("_position" x) ("_position" y))
+###       ("_position" z))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("\<^const>Fun.comp" ("_constrain" ("_position" x) ("_type_name" wall))
+###       ("\<^const>Preliminaries.compose" ("_position" y) ("_position" z)))
+###     ("\<^const>Preliminaries.compose" ("_position" x)
+###       ("\<^const>Preliminaries.compose" ("_position" y) ("_position" z)))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("\<^const>Preliminaries.compose"
+###       ("_constrain" ("_position" x) ("_type_name" wall))
+###       ("\<^const>Preliminaries.compose" ("_position" y) ("_position" z)))
+###     ("\<^const>Preliminaries.compose" ("_position" x)
+###       ("\<^const>Preliminaries.compose" ("_position" y) ("_position" z)))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("\<^const>Fun.comp" ("_constrain" ("_position" x) ("_type_name" wall))
+###       ("\<^const>Fun.comp" ("_position" y) ("_position" z)))
+###     ("\<^const>Preliminaries.compose" ("_position" x)
+###       ("\<^const>Preliminaries.compose" ("_position" y) ("_position" z)))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("\<^const>Preliminaries.compose"
+###       ("_constrain" ("_position" x) ("_type_name" wall))
+###       ("\<^const>Fun.comp" ("_position" y) ("_position" z)))
+###     ("\<^const>Preliminaries.compose" ("_position" x)
+###       ("\<^const>Preliminaries.compose" ("_position" y) ("_position" z)))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("\<^const>Fun.comp" ("_constrain" ("_position" x) ("_type_name" wall))
+###       ("\<^const>Preliminaries.compose" ("_position" y) ("_position" z)))
+###     ("\<^const>Fun.comp" ("_position" x)
+###       ("\<^const>Preliminaries.compose" ("_position" y) ("_position" z)))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("\<^const>Preliminaries.compose"
+###       ("_constrain" ("_position" x) ("_type_name" wall))
+###       ("\<^const>Preliminaries.compose" ("_position" y) ("_position" z)))
+###     ("\<^const>Fun.comp" ("_position" x)
+###       ("\<^const>Preliminaries.compose" ("_position" y) ("_position" z)))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+consts
+  block_length :: "brick list => nat"
+consts
+  domain :: "brick => int"
+consts
+  codomain :: "brick => int"
+consts
+  domain_block :: "brick list => int"
+consts
+  codomain_block :: "brick list => int"
+### Ambiguous input (line 128 of "$AFP/Knot_Theory/Preliminaries.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" domain_wall)
+###       ("\<^const>Groups.times_class.times" ("_position" x)
+###         ("_position" ys)))
+###     ("_applC" ("_position" domain_block) ("_position" x))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" domain_wall)
+###       ("\<^const>Preliminaries.wall.prod" ("_position" x) ("_position" ys)))
+###     ("_applC" ("_position" domain_block) ("_position" x))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+consts
+  domain_wall :: "wall => int"
+### Ambiguous input (line 134 of "$AFP/Knot_Theory/Preliminaries.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" codomain_wall)
+###       ("\<^const>Groups.times_class.times" ("_position" x)
+###         ("_position" ys)))
+###     ("_applC" ("_position" codomain_wall) ("_position" ys))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" codomain_wall)
+###       ("\<^const>Preliminaries.wall.prod" ("_position" x) ("_position" ys)))
+###     ("_applC" ("_position" codomain_wall) ("_position" ys))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+Found termination order: "size <*mlex*> {}"
+### Ambiguous input (line 136 of "$AFP/Knot_Theory/Preliminaries.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" domain_wall)
+###       ("\<^const>Preliminaries.compose" ("_position" xs) ("_position" ys)))
+###     ("_applC" ("_position" domain_wall) ("_position" xs))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" domain_wall)
+###       ("\<^const>Fun.comp" ("_position" xs) ("_position" ys)))
+###     ("_applC" ("_position" domain_wall) ("_position" xs))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ambiguous input (line 140 of "$AFP/Knot_Theory/Preliminaries.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" codomain_wall)
+###       ("\<^const>Preliminaries.compose" ("_position" xs) ("_position" ys)))
+###     ("_applC" ("_position" codomain_wall) ("_position" ys))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" codomain_wall)
+###       ("\<^const>Fun.comp" ("_position" xs) ("_position" ys)))
+###     ("_applC" ("_position" codomain_wall) ("_position" ys))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+consts
+  brick_is_cup :: "brick => bool"
+consts
+  is_cup :: "brick list => bool"
+### Ambiguous input (line 297 of "$AFP/Knot_Theory/Preliminaries.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" is_tangle_diagram)
+###       ("\<^const>Groups.times_class.times" ("_position" x)
+###         ("_position" xs)))
+###     ("\<^const>HOL.If"
+###       ("_applC" ("_position" is_tangle_diagram) ("_position" xs))
+###       ("\<^const>HOL.eq"
+###         ("_applC" ("_position" codomain_block) ("_position" x))
+###         ("_applC" ("_position" domain_wall) ("_position" xs)))
+###       ("_position" False))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" is_tangle_diagram)
+###       ("\<^const>Preliminaries.wall.prod" ("_position" x) ("_position" xs)))
+###     ("\<^const>HOL.If"
+###       ("_applC" ("_position" is_tangle_diagram) ("_position" xs))
+###       ("\<^const>HOL.eq"
+###         ("_applC" ("_position" codomain_block) ("_position" x))
+###         ("_applC" ("_position" domain_wall) ("_position" xs)))
+###       ("_position" False))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+consts
+  is_tangle_diagram :: "wall => bool"
+### theory "Draft.Preliminaries"
+### 0.928s elapsed time, 1.655s cpu time, 0.101s GC time
+Loading theory "Draft.Tangles" (required by "Draft.Tangle_AlgebraTemplates" via "Draft.Tangle_Algebra")
+### Ambiguous input (line 49 of "$AFP/Knot_Theory/Tangles.thy") produces 2 parse trees:
+### ("\<^const>Pure.imp"
+###   ("\<^const>HOL.Trueprop"
+###     ("_applC" ("_position" is_tangle_diagram)
+###       ("\<^const>Preliminaries.compose" ("_position" x) ("_position" y))))
+###   ("\<^const>HOL.Trueprop"
+###     ("_applC" ("_position" is_tangle_diagram) ("_position" x))))
+### ("\<^const>Pure.imp"
+###   ("\<^const>HOL.Trueprop"
+###     ("_applC" ("_position" is_tangle_diagram)
+###       ("\<^const>Fun.comp" ("_position" x) ("_position" y))))
+###   ("\<^const>HOL.Trueprop"
+###     ("_applC" ("_position" is_tangle_diagram) ("_position" x))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ambiguous input (line 71 of "$AFP/Knot_Theory/Tangles.thy") produces 2 parse trees:
+### ("\<^const>Pure.imp"
+###   ("\<^const>HOL.Trueprop"
+###     ("_applC" ("_position" is_tangle_diagram)
+###       ("\<^const>Preliminaries.compose" ("_position" x) ("_position" y))))
+###   ("\<^const>HOL.Trueprop"
+###     ("_applC" ("_position" is_tangle_diagram) ("_position" y))))
+### ("\<^const>Pure.imp"
+###   ("\<^const>HOL.Trueprop"
+###     ("_applC" ("_position" is_tangle_diagram)
+###       ("\<^const>Fun.comp" ("_position" x) ("_position" y))))
+###   ("\<^const>HOL.Trueprop"
+###     ("_applC" ("_position" is_tangle_diagram) ("_position" y))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ambiguous input (line 91 of "$AFP/Knot_Theory/Tangles.thy") produces 2 parse trees:
+### ("\<^const>Pure.imp"
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^const>HOL.conj"
+###       ("_applC" ("_position" is_tangle_diagram) ("_position" x))
+###       ("\<^const>HOL.eq"
+###         ("_applC" ("_position" codomain_wall) ("_position" x))
+###         ("_applC" ("_position" domain_wall) ("_position" y)))))
+###   ("\<^const>HOL.Trueprop"
+###     ("_applC" ("_position" is_tangle_diagram)
+###       ("\<^const>Preliminaries.compose" ("_position" x) ("_position" y)))))
+### ("\<^const>Pure.imp"
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^const>HOL.conj"
+###       ("_applC" ("_position" is_tangle_diagram) ("_position" x))
+###       ("\<^const>HOL.eq"
+###         ("_applC" ("_position" codomain_wall) ("_position" x))
+###         ("_applC" ("_position" domain_wall) ("_position" y)))))
+###   ("\<^const>HOL.Trueprop"
+###     ("_applC" ("_position" is_tangle_diagram)
+###       ("\<^const>Fun.comp" ("_position" x) ("_position" y)))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ambiguous input (line 126 of "$AFP/Knot_Theory/Tangles.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("_applC" ("_position" is_tangle_diagram)
+###     ("\<^const>Preliminaries.compose" ("_position" x) ("_position" y))))
+### ("\<^const>HOL.Trueprop"
+###   ("_applC" ("_position" is_tangle_diagram)
+###     ("\<^const>Fun.comp" ("_position" x) ("_position" y))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ambiguous input (line 131 of "$AFP/Knot_Theory/Tangles.thy") produces 2 parse trees:
+### ("\<^const>Pure.imp"
+###   ("\<^const>HOL.Trueprop"
+###     ("_applC" ("_position" is_tangle_diagram)
+###       ("\<^const>Preliminaries.compose" ("_position" x) ("_position" y))))
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^const>HOL.eq" ("_applC" ("_position" domain_wall) ("_position" y))
+###       ("_applC" ("_position" codomain_wall) ("_position" x)))))
+### ("\<^const>Pure.imp"
+###   ("\<^const>HOL.Trueprop"
+###     ("_applC" ("_position" is_tangle_diagram)
+###       ("\<^const>Fun.comp" ("_position" x) ("_position" y))))
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^const>HOL.eq" ("_applC" ("_position" domain_wall) ("_position" y))
+###       ("_applC" ("_position" codomain_wall) ("_position" x)))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ambiguous input (line 162 of "$AFP/Knot_Theory/Tangles.thy") produces 3 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" compose_Tangle)
+###       ("_cargs" ("_position" x) ("_position" y)))
+###     ("_applC" ("_position" Abs_Tangle_Diagram)
+###       ("\<^fixed>compose_Tangle"
+###         ("_applC" ("_position" Rep_Tangle_Diagram) ("_position" x))
+###         ("_applC" ("_position" Rep_Tangle_Diagram) ("_position" y))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" compose_Tangle)
+###       ("_cargs" ("_position" x) ("_position" y)))
+###     ("_applC" ("_position" Abs_Tangle_Diagram)
+###       ("\<^const>Preliminaries.compose"
+###         ("_applC" ("_position" Rep_Tangle_Diagram) ("_position" x))
+###         ("_applC" ("_position" Rep_Tangle_Diagram) ("_position" y))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" compose_Tangle)
+###       ("_cargs" ("_position" x) ("_position" y)))
+###     ("_applC" ("_position" Abs_Tangle_Diagram)
+###       ("\<^const>Fun.comp"
+###         ("_applC" ("_position" Rep_Tangle_Diagram) ("_position" x))
+###         ("_applC" ("_position" Rep_Tangle_Diagram) ("_position" y))))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ambiguous input (line 169 of "$AFP/Knot_Theory/Tangles.thy") produces 9 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("\<^const>Fun.comp"
+###       ("_applC" ("_position" Abs_Tangle_Diagram) ("_position" x))
+###       ("_applC" ("_position" Abs_Tangle_Diagram) ("_position" y)))
+###     ("_applC" ("_position" Abs_Tangle_Diagram)
+###       ("\<^const>Fun.comp" ("_position" x) ("_position" y)))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("\<^const>Preliminaries.compose"
+###       ("_applC" ("_position" Abs_Tangle_Diagram) ("_position" x))
+###       ("_applC" ("_position" Abs_Tangle_Diagram) ("_position" y)))
+###     ("_applC" ("_position" Abs_Tangle_Diagram)
+###       ("\<^const>Fun.comp" ("_position" x) ("_position" y)))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("\<^const>Tangles.compose_Tangle"
+###       ("_applC" ("_position" Abs_Tangle_Diagram) ("_position" x))
+###       ("_applC" ("_position" Abs_Tangle_Diagram) ("_position" y)))
+###     ("_applC" ("_position" Abs_Tangle_Diagram)
+###       ("\<^const>Fun.comp" ("_position" x) ("_position" y)))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("\<^const>Fun.comp"
+###       ("_applC" ("_position" Abs_Tangle_Diagram) ("_position" x))
+###       ("_applC" ("_position" Abs_Tangle_Diagram) ("_position" y)))
+###     ("_applC" ("_position" Abs_Tangle_Diagram)
+###       ("\<^const>Preliminaries.compose" ("_position" x) ("_position" y)))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("\<^const>Preliminaries.compose"
+###       ("_applC" ("_position" Abs_Tangle_Diagram) ("_position" x))
+###       ("_applC" ("_position" Abs_Tangle_Diagram) ("_position" y)))
+###     ("_applC" ("_position" Abs_Tangle_Diagram)
+###       ("\<^const>Preliminaries.compose" ("_position" x) ("_position" y)))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("\<^const>Tangles.compose_Tangle"
+###       ("_applC" ("_position" Abs_Tangle_Diagram) ("_position" x))
+###       ("_applC" ("_position" Abs_Tangle_Diagram) ("_position" y)))
+###     ("_applC" ("_position" Abs_Tangle_Diagram)
+###       ("\<^const>Preliminaries.compose" ("_position" x) ("_position" y)))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("\<^const>Fun.comp"
+###       ("_applC" ("_position" Abs_Tangle_Diagram) ("_position" x))
+###       ("_applC" ("_position" Abs_Tangle_Diagram) ("_position" y)))
+###     ("_applC" ("_position" Abs_Tangle_Diagram)
+###       ("\<^const>Tangles.compose_Tangle" ("_position" x) ("_position" y)))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("\<^const>Preliminaries.compose"
+###       ("_applC" ("_position" Abs_Tangle_Diagram) ("_position" x))
+###       ("_applC" ("_position" Abs_Tangle_Diagram) ("_position" y)))
+###     ("_applC" ("_position" Abs_Tangle_Diagram)
+###       ("\<^const>Tangles.compose_Tangle" ("_position" x) ("_position" y)))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("\<^const>Tangles.compose_Tangle"
+###       ("_applC" ("_position" Abs_Tangle_Diagram) ("_position" x))
+###       ("_applC" ("_position" Abs_Tangle_Diagram) ("_position" y)))
+###     ("_applC" ("_position" Abs_Tangle_Diagram)
+###       ("\<^const>Tangles.compose_Tangle" ("_position" x) ("_position" y)))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### theory "Draft.Tangles"
+### 0.111s elapsed time, 0.157s cpu time, 0.063s GC time
+Loading theory "Draft.Tangle_Algebra" (required by "Draft.Tangle_AlgebraTemplates")
+consts
+  make_vert_block :: "nat => brick list"
+### Ambiguous input (line 26 of "$AFP/Knot_Theory/Tangle_Algebra.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" tensor)
+###       ("_cargs" ("_applC" ("_position" basic) ("_position" x))
+###         ("_applC" ("_position" basic) ("_position" y))))
+###     ("_applC" ("_position" basic)
+###       ("\<^const>Preliminaries.concatenate" ("_position" x)
+###         ("_position" y)))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" tensor)
+###       ("_cargs" ("_applC" ("_position" basic) ("_position" x))
+###         ("_applC" ("_position" basic) ("_position" y))))
+###     ("_applC" ("_position" basic)
+###       ("\<^fixed>tensor" ("_position" x) ("_position" y)))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ambiguous input (line 27 of "$AFP/Knot_Theory/Tangle_Algebra.thy") produces 64 parse trees (10 displayed):
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" tensor)
+###       ("_cargs"
+###         ("\<^const>Preliminaries.wall.prod" ("_position" x)
+###           ("_position" xs))
+###         ("_applC" ("_position" basic) ("_position" y))))
+###     ("\<^const>HOL.If"
+###       ("\<^const>HOL.eq"
+###         ("_applC" ("_position" codomain_block) ("_position" y))
+###         ("\<^const>Groups.zero_class.zero"))
+###       ("\<^const>Groups.times_class.times"
+###         ("\<^const>Preliminaries.concatenate" ("_position" x)
+###           ("_position" y))
+###         ("_position" xs))
+###       ("\<^const>Preliminaries.wall.prod"
+###         ("\<^const>Preliminaries.concatenate" ("_position" x)
+###           ("_position" y))
+###         ("\<^const>Preliminaries.concatenate" ("_position" xs)
+###           ("_applC" ("_position" basic)
+###             ("_applC" ("_position" make_vert_block)
+###               ("_applC" ("_position" nat)
+###                 ("_applC" ("_position" codomain_block)
+###                   ("_position" y))))))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" tensor)
+###       ("_cargs"
+###         ("\<^const>Groups.times_class.times" ("_position" x)
+###           ("_position" xs))
+###         ("_applC" ("_position" basic) ("_position" y))))
+###     ("\<^const>HOL.If"
+###       ("\<^const>HOL.eq"
+###         ("_applC" ("_position" codomain_block) ("_position" y))
+###         ("\<^const>Groups.zero_class.zero"))
+###       ("\<^const>Groups.times_class.times"
+###         ("\<^const>Preliminaries.concatenate" ("_position" x)
+###           ("_position" y))
+###         ("_position" xs))
+###       ("\<^const>Preliminaries.wall.prod"
+###         ("\<^const>Preliminaries.concatenate" ("_position" x)
+###           ("_position" y))
+###         ("\<^const>Preliminaries.concatenate" ("_position" xs)
+###           ("_applC" ("_position" basic)
+###             ("_applC" ("_position" make_vert_block)
+###               ("_applC" ("_position" nat)
+###                 ("_applC" ("_position" codomain_block)
+###                   ("_position" y))))))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" tensor)
+###       ("_cargs"
+###         ("\<^const>Preliminaries.wall.prod" ("_position" x)
+###           ("_position" xs))
+###         ("_applC" ("_position" basic) ("_position" y))))
+###     ("\<^const>HOL.If"
+###       ("\<^const>HOL.eq"
+###         ("_applC" ("_position" codomain_block) ("_position" y))
+###         ("\<^const>Groups.zero_class.zero"))
+###       ("\<^const>Groups.times_class.times"
+###         ("\<^fixed>tensor" ("_position" x) ("_position" y))
+###         ("_position" xs))
+###       ("\<^const>Preliminaries.wall.prod"
+###         ("\<^const>Preliminaries.concatenate" ("_position" x)
+###           ("_position" y))
+###         ("\<^const>Preliminaries.concatenate" ("_position" xs)
+###           ("_applC" ("_position" basic)
+###             ("_applC" ("_position" make_vert_block)
+###               ("_applC" ("_position" nat)
+###                 ("_applC" ("_position" codomain_block)
+###                   ("_position" y))))))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" tensor)
+###       ("_cargs"
+###         ("\<^const>Groups.times_class.times" ("_position" x)
+###           ("_position" xs))
+###         ("_applC" ("_position" basic) ("_position" y))))
+###     ("\<^const>HOL.If"
+###       ("\<^const>HOL.eq"
+###         ("_applC" ("_position" codomain_block) ("_position" y))
+###         ("\<^const>Groups.zero_class.zero"))
+###       ("\<^const>Groups.times_class.times"
+###         ("\<^fixed>tensor" ("_position" x) ("_position" y))
+###         ("_position" xs))
+###       ("\<^const>Preliminaries.wall.prod"
+###         ("\<^const>Preliminaries.concatenate" ("_position" x)
+###           ("_position" y))
+###         ("\<^const>Preliminaries.concatenate" ("_position" xs)
+###           ("_applC" ("_position" basic)
+###             ("_applC" ("_position" make_vert_block)
+###               ("_applC" ("_position" nat)
+###                 ("_applC" ("_position" codomain_block)
+###                   ("_position" y))))))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" tensor)
+###       ("_cargs"
+###         ("\<^const>Preliminaries.wall.prod" ("_position" x)
+###           ("_position" xs))
+###         ("_applC" ("_position" basic) ("_position" y))))
+###     ("\<^const>HOL.If"
+###       ("\<^const>HOL.eq"
+###         ("_applC" ("_position" codomain_block) ("_position" y))
+###         ("\<^const>Groups.zero_class.zero"))
+###       ("\<^const>Preliminaries.wall.prod"
+###         ("\<^const>Preliminaries.concatenate" ("_position" x)
+###           ("_position" y))
+###         ("_position" xs))
+###       ("\<^const>Preliminaries.wall.prod"
+###         ("\<^const>Preliminaries.concatenate" ("_position" x)
+###           ("_position" y))
+###         ("\<^const>Preliminaries.concatenate" ("_position" xs)
+###           ("_applC" ("_position" basic)
+###             ("_applC" ("_position" make_vert_block)
+###               ("_applC" ("_position" nat)
+###                 ("_applC" ("_position" codomain_block)
+###                   ("_position" y))))))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" tensor)
+###       ("_cargs"
+###         ("\<^const>Groups.times_class.times" ("_position" x)
+###           ("_position" xs))
+###         ("_applC" ("_position" basic) ("_position" y))))
+###     ("\<^const>HOL.If"
+###       ("\<^const>HOL.eq"
+###         ("_applC" ("_position" codomain_block) ("_position" y))
+###         ("\<^const>Groups.zero_class.zero"))
+###       ("\<^const>Preliminaries.wall.prod"
+###         ("\<^const>Preliminaries.concatenate" ("_position" x)
+###           ("_position" y))
+###         ("_position" xs))
+###       ("\<^const>Preliminaries.wall.prod"
+###         ("\<^const>Preliminaries.concatenate" ("_position" x)
+###           ("_position" y))
+###         ("\<^const>Preliminaries.concatenate" ("_position" xs)
+###           ("_applC" ("_position" basic)
+###             ("_applC" ("_position" make_vert_block)
+###               ("_applC" ("_position" nat)
+###                 ("_applC" ("_position" codomain_block)
+###                   ("_position" y))))))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" tensor)
+###       ("_cargs"
+###         ("\<^const>Preliminaries.wall.prod" ("_position" x)
+###           ("_position" xs))
+###         ("_applC" ("_position" basic) ("_position" y))))
+###     ("\<^const>HOL.If"
+###       ("\<^const>HOL.eq"
+###         ("_applC" ("_position" codomain_block) ("_position" y))
+###         ("\<^const>Groups.zero_class.zero"))
+###       ("\<^const>Preliminaries.wall.prod"
+###         ("\<^fixed>tensor" ("_position" x) ("_position" y))
+###         ("_position" xs))
+###       ("\<^const>Preliminaries.wall.prod"
+###         ("\<^const>Preliminaries.concatenate" ("_position" x)
+###           ("_position" y))
+###         ("\<^const>Preliminaries.concatenate" ("_position" xs)
+###           ("_applC" ("_position" basic)
+###             ("_applC" ("_position" make_vert_block)
+###               ("_applC" ("_position" nat)
+###                 ("_applC" ("_position" codomain_block)
+###                   ("_position" y))))))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" tensor)
+###       ("_cargs"
+###         ("\<^const>Groups.times_class.times" ("_position" x)
+###           ("_position" xs))
+###         ("_applC" ("_position" basic) ("_position" y))))
+###     ("\<^const>HOL.If"
+###       ("\<^const>HOL.eq"
+###         ("_applC" ("_position" codomain_block) ("_position" y))
+###         ("\<^const>Groups.zero_class.zero"))
+###       ("\<^const>Preliminaries.wall.prod"
+###         ("\<^fixed>tensor" ("_position" x) ("_position" y))
+###         ("_position" xs))
+###       ("\<^const>Preliminaries.wall.prod"
+###         ("\<^const>Preliminaries.concatenate" ("_position" x)
+###           ("_position" y))
+###         ("\<^const>Preliminaries.concatenate" ("_position" xs)
+###           ("_applC" ("_position" basic)
+###             ("_applC" ("_position" make_vert_block)
+###               ("_applC" ("_position" nat)
+###                 ("_applC" ("_position" codomain_block)
+###                   ("_position" y))))))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" tensor)
+###       ("_cargs"
+###         ("\<^const>Preliminaries.wall.prod" ("_position" x)
+###           ("_position" xs))
+###         ("_applC" ("_position" basic) ("_position" y))))
+###     ("\<^const>HOL.If"
+###       ("\<^const>HOL.eq"
+###         ("_applC" ("_position" codomain_block) ("_position" y))
+###         ("\<^const>Groups.zero_class.zero"))
+###       ("\<^const>Groups.times_class.times"
+###         ("\<^const>Preliminaries.concatenate" ("_position" x)
+###           ("_position" y))
+###         ("_position" xs))
+###       ("\<^const>Preliminaries.wall.prod"
+###         ("\<^fixed>tensor" ("_position" x) ("_position" y))
+###         ("\<^const>Preliminaries.concatenate" ("_position" xs)
+###           ("_applC" ("_position" basic)
+###             ("_applC" ("_position" make_vert_block)
+###               ("_applC" ("_position" nat)
+###                 ("_applC" ("_position" codomain_block)
+###                   ("_position" y))))))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" tensor)
+###       ("_cargs"
+###         ("\<^const>Groups.times_class.times" ("_position" x)
+###           ("_position" xs))
+###         ("_applC" ("_position" basic) ("_position" y))))
+###     ("\<^const>HOL.If"
+###       ("\<^const>HOL.eq"
+###         ("_applC" ("_position" codomain_block) ("_position" y))
+###         ("\<^const>Groups.zero_class.zero"))
+###       ("\<^const>Groups.times_class.times"
+###         ("\<^const>Preliminaries.concatenate" ("_position" x)
+###           ("_position" y))
+###         ("_position" xs))
+###       ("\<^const>Preliminaries.wall.prod"
+###         ("\<^fixed>tensor" ("_position" x) ("_position" y))
+###         ("\<^const>Preliminaries.concatenate" ("_position" xs)
+###           ("_applC" ("_position" basic)
+###             ("_applC" ("_position" make_vert_block)
+###               ("_applC" ("_position" nat)
+###                 ("_applC" ("_position" codomain_block)
+###                   ("_position" y))))))))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ambiguous input (line 33 of "$AFP/Knot_Theory/Tangle_Algebra.thy") produces 64 parse trees (10 displayed):
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" tensor)
+###       ("_cargs" ("_applC" ("_position" basic) ("_position" x))
+###         ("\<^const>Groups.times_class.times" ("_position" y)
+###           ("_position" ys))))
+###     ("\<^const>HOL.If"
+###       ("\<^const>HOL.eq"
+###         ("_applC" ("_position" codomain_block) ("_position" x))
+###         ("\<^const>Groups.zero_class.zero"))
+###       ("\<^const>Groups.times_class.times"
+###         ("\<^const>Preliminaries.concatenate" ("_position" x)
+###           ("_position" y))
+###         ("_position" ys))
+###       ("\<^const>Preliminaries.wall.prod"
+###         ("\<^const>Preliminaries.concatenate" ("_position" x)
+###           ("_position" y))
+###         ("\<^const>Preliminaries.concatenate"
+###           ("_applC" ("_position" basic)
+###             ("_applC" ("_position" make_vert_block)
+###               ("_applC" ("_position" nat)
+###                 ("_applC" ("_position" codomain_block) ("_position" x)))))
+###           ("_position" ys))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" tensor)
+###       ("_cargs" ("_applC" ("_position" basic) ("_position" x))
+###         ("\<^const>Preliminaries.wall.prod" ("_position" y)
+###           ("_position" ys))))
+###     ("\<^const>HOL.If"
+###       ("\<^const>HOL.eq"
+###         ("_applC" ("_position" codomain_block) ("_position" x))
+###         ("\<^const>Groups.zero_class.zero"))
+###       ("\<^const>Groups.times_class.times"
+###         ("\<^const>Preliminaries.concatenate" ("_position" x)
+###           ("_position" y))
+###         ("_position" ys))
+###       ("\<^const>Preliminaries.wall.prod"
+###         ("\<^const>Preliminaries.concatenate" ("_position" x)
+###           ("_position" y))
+###         ("\<^const>Preliminaries.concatenate"
+###           ("_applC" ("_position" basic)
+###             ("_applC" ("_position" make_vert_block)
+###               ("_applC" ("_position" nat)
+###                 ("_applC" ("_position" codomain_block) ("_position" x)))))
+###           ("_position" ys))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" tensor)
+###       ("_cargs" ("_applC" ("_position" basic) ("_position" x))
+###         ("\<^const>Groups.times_class.times" ("_position" y)
+###           ("_position" ys))))
+###     ("\<^const>HOL.If"
+###       ("\<^const>HOL.eq"
+###         ("_applC" ("_position" codomain_block) ("_position" x))
+###         ("\<^const>Groups.zero_class.zero"))
+###       ("\<^const>Groups.times_class.times"
+###         ("\<^fixed>tensor" ("_position" x) ("_position" y))
+###         ("_position" ys))
+###       ("\<^const>Preliminaries.wall.prod"
+###         ("\<^const>Preliminaries.concatenate" ("_position" x)
+###           ("_position" y))
+###         ("\<^const>Preliminaries.concatenate"
+###           ("_applC" ("_position" basic)
+###             ("_applC" ("_position" make_vert_block)
+###               ("_applC" ("_position" nat)
+###                 ("_applC" ("_position" codomain_block) ("_position" x)))))
+###           ("_position" ys))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" tensor)
+###       ("_cargs" ("_applC" ("_position" basic) ("_position" x))
+###         ("\<^const>Preliminaries.wall.prod" ("_position" y)
+###           ("_position" ys))))
+###     ("\<^const>HOL.If"
+###       ("\<^const>HOL.eq"
+###         ("_applC" ("_position" codomain_block) ("_position" x))
+###         ("\<^const>Groups.zero_class.zero"))
+###       ("\<^const>Groups.times_class.times"
+###         ("\<^fixed>tensor" ("_position" x) ("_position" y))
+###         ("_position" ys))
+###       ("\<^const>Preliminaries.wall.prod"
+###         ("\<^const>Preliminaries.concatenate" ("_position" x)
+###           ("_position" y))
+###         ("\<^const>Preliminaries.concatenate"
+###           ("_applC" ("_position" basic)
+###             ("_applC" ("_position" make_vert_block)
+###               ("_applC" ("_position" nat)
+###                 ("_applC" ("_position" codomain_block) ("_position" x)))))
+###           ("_position" ys))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" tensor)
+###       ("_cargs" ("_applC" ("_position" basic) ("_position" x))
+###         ("\<^const>Groups.times_class.times" ("_position" y)
+###           ("_position" ys))))
+###     ("\<^const>HOL.If"
+###       ("\<^const>HOL.eq"
+###         ("_applC" ("_position" codomain_block) ("_position" x))
+###         ("\<^const>Groups.zero_class.zero"))
+###       ("\<^const>Preliminaries.wall.prod"
+###         ("\<^const>Preliminaries.concatenate" ("_position" x)
+###           ("_position" y))
+###         ("_position" ys))
+###       ("\<^const>Preliminaries.wall.prod"
+###         ("\<^const>Preliminaries.concatenate" ("_position" x)
+###           ("_position" y))
+###         ("\<^const>Preliminaries.concatenate"
+###           ("_applC" ("_position" basic)
+###             ("_applC" ("_position" make_vert_block)
+###               ("_applC" ("_position" nat)
+###                 ("_applC" ("_position" codomain_block) ("_position" x)))))
+###           ("_position" ys))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" tensor)
+###       ("_cargs" ("_applC" ("_position" basic) ("_position" x))
+###         ("\<^const>Preliminaries.wall.prod" ("_position" y)
+###           ("_position" ys))))
+###     ("\<^const>HOL.If"
+###       ("\<^const>HOL.eq"
+###         ("_applC" ("_position" codomain_block) ("_position" x))
+###         ("\<^const>Groups.zero_class.zero"))
+###       ("\<^const>Preliminaries.wall.prod"
+###         ("\<^const>Preliminaries.concatenate" ("_position" x)
+###           ("_position" y))
+###         ("_position" ys))
+###       ("\<^const>Preliminaries.wall.prod"
+###         ("\<^const>Preliminaries.concatenate" ("_position" x)
+###           ("_position" y))
+###         ("\<^const>Preliminaries.concatenate"
+###           ("_applC" ("_position" basic)
+###             ("_applC" ("_position" make_vert_block)
+###               ("_applC" ("_position" nat)
+###                 ("_applC" ("_position" codomain_block) ("_position" x)))))
+###           ("_position" ys))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" tensor)
+###       ("_cargs" ("_applC" ("_position" basic) ("_position" x))
+###         ("\<^const>Groups.times_class.times" ("_position" y)
+###           ("_position" ys))))
+###     ("\<^const>HOL.If"
+###       ("\<^const>HOL.eq"
+###         ("_applC" ("_position" codomain_block) ("_position" x))
+###         ("\<^const>Groups.zero_class.zero"))
+###       ("\<^const>Preliminaries.wall.prod"
+###         ("\<^fixed>tensor" ("_position" x) ("_position" y))
+###         ("_position" ys))
+###       ("\<^const>Preliminaries.wall.prod"
+###         ("\<^const>Preliminaries.concatenate" ("_position" x)
+###           ("_position" y))
+###         ("\<^const>Preliminaries.concatenate"
+###           ("_applC" ("_position" basic)
+###             ("_applC" ("_position" make_vert_block)
+###               ("_applC" ("_position" nat)
+###                 ("_applC" ("_position" codomain_block) ("_position" x)))))
+###           ("_position" ys))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" tensor)
+###       ("_cargs" ("_applC" ("_position" basic) ("_position" x))
+###         ("\<^const>Preliminaries.wall.prod" ("_position" y)
+###           ("_position" ys))))
+###     ("\<^const>HOL.If"
+###       ("\<^const>HOL.eq"
+###         ("_applC" ("_position" codomain_block) ("_position" x))
+###         ("\<^const>Groups.zero_class.zero"))
+###       ("\<^const>Preliminaries.wall.prod"
+###         ("\<^fixed>tensor" ("_position" x) ("_position" y))
+###         ("_position" ys))
+###       ("\<^const>Preliminaries.wall.prod"
+###         ("\<^const>Preliminaries.concatenate" ("_position" x)
+###           ("_position" y))
+###         ("\<^const>Preliminaries.concatenate"
+###           ("_applC" ("_position" basic)
+###             ("_applC" ("_position" make_vert_block)
+###               ("_applC" ("_position" nat)
+###                 ("_applC" ("_position" codomain_block) ("_position" x)))))
+###           ("_position" ys))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" tensor)
+###       ("_cargs" ("_applC" ("_position" basic) ("_position" x))
+###         ("\<^const>Groups.times_class.times" ("_position" y)
+###           ("_position" ys))))
+###     ("\<^const>HOL.If"
+###       ("\<^const>HOL.eq"
+###         ("_applC" ("_position" codomain_block) ("_position" x))
+###         ("\<^const>Groups.zero_class.zero"))
+###       ("\<^const>Groups.times_class.times"
+###         ("\<^const>Preliminaries.concatenate" ("_position" x)
+###           ("_position" y))
+###         ("_position" ys))
+###       ("\<^const>Preliminaries.wall.prod"
+###         ("\<^fixed>tensor" ("_position" x) ("_position" y))
+###         ("\<^const>Preliminaries.concatenate"
+###           ("_applC" ("_position" basic)
+###             ("_applC" ("_position" make_vert_block)
+###               ("_applC" ("_position" nat)
+###                 ("_applC" ("_position" codomain_block) ("_position" x)))))
+###           ("_position" ys))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" tensor)
+###       ("_cargs" ("_applC" ("_position" basic) ("_position" x))
+###         ("\<^const>Preliminaries.wall.prod" ("_position" y)
+###           ("_position" ys))))
+###     ("\<^const>HOL.If"
+###       ("\<^const>HOL.eq"
+###         ("_applC" ("_position" codomain_block) ("_position" x))
+###         ("\<^const>Groups.zero_class.zero"))
+###       ("\<^const>Groups.times_class.times"
+###         ("\<^const>Preliminaries.concatenate" ("_position" x)
+###           ("_position" y))
+###         ("_position" ys))
+###       ("\<^const>Preliminaries.wall.prod"
+###         ("\<^fixed>tensor" ("_position" x) ("_position" y))
+###         ("\<^const>Preliminaries.concatenate"
+###           ("_applC" ("_position" basic)
+###             ("_applC" ("_position" make_vert_block)
+###               ("_applC" ("_position" nat)
+###                 ("_applC" ("_position" codomain_block) ("_position" x)))))
+###           ("_position" ys))))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ambiguous input (line 39 of "$AFP/Knot_Theory/Tangle_Algebra.thy") produces 32 parse trees (10 displayed):
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" tensor)
+###       ("_cargs"
+###         ("\<^const>Preliminaries.wall.prod" ("_position" x)
+###           ("_position" xs))
+###         ("\<^const>Groups.times_class.times" ("_position" y)
+###           ("_position" ys))))
+###     ("\<^const>Groups.times_class.times"
+###       ("\<^fixed>tensor" ("_position" x) ("_position" y))
+###       ("\<^fixed>tensor" ("_position" xs) ("_position" ys)))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" tensor)
+###       ("_cargs"
+###         ("\<^const>Groups.times_class.times" ("_position" x)
+###           ("_position" xs))
+###         ("\<^const>Groups.times_class.times" ("_position" y)
+###           ("_position" ys))))
+###     ("\<^const>Groups.times_class.times"
+###       ("\<^fixed>tensor" ("_position" x) ("_position" y))
+###       ("\<^fixed>tensor" ("_position" xs) ("_position" ys)))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" tensor)
+###       ("_cargs"
+###         ("\<^const>Preliminaries.wall.prod" ("_position" x)
+###           ("_position" xs))
+###         ("\<^const>Preliminaries.wall.prod" ("_position" y)
+###           ("_position" ys))))
+###     ("\<^const>Groups.times_class.times"
+###       ("\<^fixed>tensor" ("_position" x) ("_position" y))
+###       ("\<^fixed>tensor" ("_position" xs) ("_position" ys)))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" tensor)
+###       ("_cargs"
+###         ("\<^const>Groups.times_class.times" ("_position" x)
+###           ("_position" xs))
+###         ("\<^const>Preliminaries.wall.prod" ("_position" y)
+###           ("_position" ys))))
+###     ("\<^const>Groups.times_class.times"
+###       ("\<^fixed>tensor" ("_position" x) ("_position" y))
+###       ("\<^fixed>tensor" ("_position" xs) ("_position" ys)))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" tensor)
+###       ("_cargs"
+###         ("\<^const>Preliminaries.wall.prod" ("_position" x)
+###           ("_position" xs))
+###         ("\<^const>Groups.times_class.times" ("_position" y)
+###           ("_position" ys))))
+###     ("\<^const>Groups.times_class.times"
+###       ("\<^const>Preliminaries.concatenate" ("_position" x) ("_position" y))
+###       ("\<^fixed>tensor" ("_position" xs) ("_position" ys)))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" tensor)
+###       ("_cargs"
+###         ("\<^const>Groups.times_class.times" ("_position" x)
+###           ("_position" xs))
+###         ("\<^const>Groups.times_class.times" ("_position" y)
+###           ("_position" ys))))
+###     ("\<^const>Groups.times_class.times"
+###       ("\<^const>Preliminaries.concatenate" ("_position" x) ("_position" y))
+###       ("\<^fixed>tensor" ("_position" xs) ("_position" ys)))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" tensor)
+###       ("_cargs"
+###         ("\<^const>Preliminaries.wall.prod" ("_position" x)
+###           ("_position" xs))
+###         ("\<^const>Preliminaries.wall.prod" ("_position" y)
+###           ("_position" ys))))
+###     ("\<^const>Groups.times_class.times"
+###       ("\<^const>Preliminaries.concatenate" ("_position" x) ("_position" y))
+###       ("\<^fixed>tensor" ("_position" xs) ("_position" ys)))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" tensor)
+###       ("_cargs"
+###         ("\<^const>Groups.times_class.times" ("_position" x)
+###           ("_position" xs))
+###         ("\<^const>Preliminaries.wall.prod" ("_position" y)
+###           ("_position" ys))))
+###     ("\<^const>Groups.times_class.times"
+###       ("\<^const>Preliminaries.concatenate" ("_position" x) ("_position" y))
+###       ("\<^fixed>tensor" ("_position" xs) ("_position" ys)))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" tensor)
+###       ("_cargs"
+###         ("\<^const>Preliminaries.wall.prod" ("_position" x)
+###           ("_position" xs))
+###         ("\<^const>Groups.times_class.times" ("_position" y)
+###           ("_position" ys))))
+###     ("\<^const>Preliminaries.wall.prod"
+###       ("\<^fixed>tensor" ("_position" x) ("_position" y))
+###       ("\<^fixed>tensor" ("_position" xs) ("_position" ys)))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" tensor)
+###       ("_cargs"
+###         ("\<^const>Groups.times_class.times" ("_position" x)
+###           ("_position" xs))
+###         ("\<^const>Groups.times_class.times" ("_position" y)
+###           ("_position" ys))))
+###     ("\<^const>Preliminaries.wall.prod"
+###       ("\<^fixed>tensor" ("_position" x) ("_position" y))
+###       ("\<^fixed>tensor" ("_position" xs) ("_position" ys)))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+Found termination order:
+  "(%p. size (snd p)) <*mlex*> (%p. size (fst p)) <*mlex*> {}"
+### Ambiguous input (line 44 of "$AFP/Knot_Theory/Tangle_Algebra.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("\<^const>Preliminaries.concatenate" ("_position" xs)
+###       ("_applC" ("_position" basic) ("\<^const>List.list.Nil")))
+###     ("_position" xs)))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("\<^const>Tangle_Algebra.tensor" ("_position" xs)
+###       ("_applC" ("_position" basic) ("\<^const>List.list.Nil")))
+###     ("_position" xs)))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ambiguous input (line 48 of "$AFP/Knot_Theory/Tangle_Algebra.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("\<^const>Preliminaries.concatenate"
+###       ("_applC" ("_position" basic) ("\<^const>List.list.Nil"))
+###       ("_position" xs))
+###     ("_position" xs)))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("\<^const>Tangle_Algebra.tensor"
+###       ("_applC" ("_position" basic) ("\<^const>List.list.Nil"))
+###       ("_position" xs))
+###     ("_position" xs)))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ambiguous input (line 57 of "$AFP/Knot_Theory/Tangle_Algebra.thy") produces 3 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" tensor_Tangle)
+###       ("_cargs" ("_position" x) ("_position" y)))
+###     ("_applC" ("_position" Abs_Tangle_Diagram)
+###       ("\<^fixed>tensor_Tangle"
+###         ("_applC" ("_position" Rep_Tangle_Diagram) ("_position" x))
+###         ("_applC" ("_position" Rep_Tangle_Diagram) ("_position" y))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" tensor_Tangle)
+###       ("_cargs" ("_position" x) ("_position" y)))
+###     ("_applC" ("_position" Abs_Tangle_Diagram)
+###       ("\<^const>Tangle_Algebra.tensor"
+###         ("_applC" ("_position" Rep_Tangle_Diagram) ("_position" x))
+###         ("_applC" ("_position" Rep_Tangle_Diagram) ("_position" y))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" tensor_Tangle)
+###       ("_cargs" ("_position" x) ("_position" y)))
+###     ("_applC" ("_position" Abs_Tangle_Diagram)
+###       ("\<^const>Preliminaries.concatenate"
+###         ("_applC" ("_position" Rep_Tangle_Diagram) ("_position" x))
+###         ("_applC" ("_position" Rep_Tangle_Diagram) ("_position" y))))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ambiguous input (line 60 of "$AFP/Knot_Theory/Tangle_Algebra.thy") produces 3 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" tensor)
+###       ("_cargs" ("_applC" ("_position" basic) ("_list" ("_position" vert)))
+###         ("_applC" ("_position" basic) ("_list" ("_position" vert)))))
+###     ("_applC" ("_position" basic)
+###       ("\<^const>Preliminaries.concatenate" ("_list" ("_position" vert))
+###         ("_list" ("_position" vert))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" tensor)
+###       ("_cargs" ("_applC" ("_position" basic) ("_list" ("_position" vert)))
+###         ("_applC" ("_position" basic) ("_list" ("_position" vert)))))
+###     ("_applC" ("_position" basic)
+###       ("\<^const>Tangle_Algebra.tensor" ("_list" ("_position" vert))
+###         ("_list" ("_position" vert))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" tensor)
+###       ("_cargs" ("_applC" ("_position" basic) ("_list" ("_position" vert)))
+###         ("_applC" ("_position" basic) ("_list" ("_position" vert)))))
+###     ("_applC" ("_position" basic)
+###       ("\<^const>Tangle_Algebra.tensor_Tangle" ("_list" ("_position" vert))
+###         ("_list" ("_position" vert))))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ambiguous input (line 68 of "$AFP/Knot_Theory/Tangle_Algebra.thy") produces 3 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" domain_wall)
+###       ("\<^const>Tangle_Algebra.tensor_Tangle" ("_position" xs)
+###         ("_position" ys)))
+###     ("\<^const>Groups.plus_class.plus"
+###       ("_applC" ("_position" domain_wall) ("_position" xs))
+###       ("_applC" ("_position" domain_wall) ("_position" ys)))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" domain_wall)
+###       ("\<^const>Tangle_Algebra.tensor" ("_position" xs) ("_position" ys)))
+###     ("\<^const>Groups.plus_class.plus"
+###       ("_applC" ("_position" domain_wall) ("_position" xs))
+###       ("_applC" ("_position" domain_wall) ("_position" ys)))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" domain_wall)
+###       ("\<^const>Preliminaries.concatenate" ("_position" xs)
+###         ("_position" ys)))
+###     ("\<^const>Groups.plus_class.plus"
+###       ("_applC" ("_position" domain_wall) ("_position" xs))
+###       ("_applC" ("_position" domain_wall) ("_position" ys)))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ambiguous input (line 178 of "$AFP/Knot_Theory/Tangle_Algebra.thy") produces 3 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" codomain_wall)
+###       ("\<^const>Tangle_Algebra.tensor_Tangle" ("_position" xs)
+###         ("_position" ys)))
+###     ("\<^const>Groups.plus_class.plus"
+###       ("_applC" ("_position" codomain_wall) ("_position" xs))
+###       ("_applC" ("_position" codomain_wall) ("_position" ys)))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" codomain_wall)
+###       ("\<^const>Tangle_Algebra.tensor" ("_position" xs) ("_position" ys)))
+###     ("\<^const>Groups.plus_class.plus"
+###       ("_applC" ("_position" codomain_wall) ("_position" xs))
+###       ("_applC" ("_position" codomain_wall) ("_position" ys)))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" codomain_wall)
+###       ("\<^const>Preliminaries.concatenate" ("_position" xs)
+###         ("_position" ys)))
+###     ("\<^const>Groups.plus_class.plus"
+###       ("_applC" ("_position" codomain_wall) ("_position" xs))
+###       ("_applC" ("_position" codomain_wall) ("_position" ys)))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ambiguous input (line 302 of "$AFP/Knot_Theory/Tangle_Algebra.thy") produces 3 parse trees:
+### ("\<^const>Pure.imp"
+###   ("\<^const>HOL.Trueprop"
+###     ("_applC" ("_position" is_tangle_diagram) ("_position" xs)))
+###   ("\<^const>HOL.Trueprop"
+###     ("_applC" ("_position" is_tangle_diagram)
+###       ("\<^const>Tangle_Algebra.tensor_Tangle" ("_position" xs)
+###         ("_applC" ("_position" basic)
+###           ("_applC" ("_position" make_vert_block) ("_position" n)))))))
+### ("\<^const>Pure.imp"
+###   ("\<^const>HOL.Trueprop"
+###     ("_applC" ("_position" is_tangle_diagram) ("_position" xs)))
+###   ("\<^const>HOL.Trueprop"
+###     ("_applC" ("_position" is_tangle_diagram)
+###       ("\<^const>Tangle_Algebra.tensor" ("_position" xs)
+###         ("_applC" ("_position" basic)
+###           ("_applC" ("_position" make_vert_block) ("_position" n)))))))
+### ("\<^const>Pure.imp"
+###   ("\<^const>HOL.Trueprop"
+###     ("_applC" ("_position" is_tangle_diagram) ("_position" xs)))
+###   ("\<^const>HOL.Trueprop"
+###     ("_applC" ("_position" is_tangle_diagram)
+###       ("\<^const>Preliminaries.concatenate" ("_position" xs)
+###         ("_applC" ("_position" basic)
+###           ("_applC" ("_position" make_vert_block) ("_position" n)))))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ambiguous input (line 375 of "$AFP/Knot_Theory/Tangle_Algebra.thy") produces 3 parse trees:
+### ("\<^const>Pure.imp"
+###   ("\<^const>HOL.Trueprop"
+###     ("_applC" ("_position" is_tangle_diagram) ("_position" xs)))
+###   ("\<^const>HOL.Trueprop"
+###     ("_applC" ("_position" is_tangle_diagram)
+###       ("\<^const>Tangle_Algebra.tensor_Tangle"
+###         ("_applC" ("_position" basic)
+###           ("_applC" ("_position" make_vert_block) ("_position" n)))
+###         ("_position" xs)))))
+### ("\<^const>Pure.imp"
+###   ("\<^const>HOL.Trueprop"
+###     ("_applC" ("_position" is_tangle_diagram) ("_position" xs)))
+###   ("\<^const>HOL.Trueprop"
+###     ("_applC" ("_position" is_tangle_diagram)
+###       ("\<^const>Tangle_Algebra.tensor"
+###         ("_applC" ("_position" basic)
+###           ("_applC" ("_position" make_vert_block) ("_position" n)))
+###         ("_position" xs)))))
+### ("\<^const>Pure.imp"
+###   ("\<^const>HOL.Trueprop"
+###     ("_applC" ("_position" is_tangle_diagram) ("_position" xs)))
+###   ("\<^const>HOL.Trueprop"
+###     ("_applC" ("_position" is_tangle_diagram)
+###       ("\<^const>Preliminaries.concatenate"
+###         ("_applC" ("_position" basic)
+###           ("_applC" ("_position" make_vert_block) ("_position" n)))
+###         ("_position" xs)))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ambiguous input (line 447 of "$AFP/Knot_Theory/Tangle_Algebra.thy") produces 36 parse trees (10 displayed):
+### ("\<^const>Pure.imp"
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^const>HOL.not_equal"
+###       ("_applC" ("_position" codomain_block) ("_position" y))
+###       ("\<^const>Groups.zero_class.zero")))
+###   ("\<^const>Pure.imp"
+###     ("\<^const>HOL.Trueprop"
+###       ("\<^const>HOL.implies"
+###         ("\<^const>HOL.conj"
+###           ("_applC" ("_position" is_tangle_diagram) ("_position" xs))
+###           ("_applC" ("_position" is_tangle_diagram)
+###             ("_applC" ("_position" basic)
+###               ("_applC" ("_position" make_vert_block)
+###                 ("_applC" ("_position" nat)
+###                   ("_applC" ("_position" codomain_block)
+###                     ("_position" y)))))))
+###         ("_applC" ("_position" is_tangle_diagram)
+###           ("\<^const>Tangle_Algebra.tensor_Tangle" ("_position" xs)
+###             ("_applC" ("_position" basic)
+###               ("_applC" ("_position" make_vert_block)
+###                 ("_applC" ("_position" nat)
+###                   ("_applC" ("_position" codomain_block)
+###                     ("_position" y)))))))))
+###     ("\<^const>HOL.Trueprop"
+###       ("\<^const>HOL.implies"
+###         ("\<^const>HOL.conj"
+###           ("_applC" ("_position" is_tangle_diagram)
+###             ("\<^const>Preliminaries.wall.prod" ("_position" x)
+###               ("_position" xs)))
+###           ("_applC" ("_position" is_tangle_diagram)
+###             ("_applC" ("_position" basic) ("_position" y))))
+###         ("_applC" ("_position" is_tangle_diagram)
+###           ("\<^const>Preliminaries.concatenate"
+###             ("\<^const>Preliminaries.wall.prod" ("_position" x)
+###               ("_position" xs))
+###             ("_applC" ("_position" basic) ("_position" y))))))))
+### ("\<^const>Pure.imp"
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^const>HOL.not_equal"
+###       ("_applC" ("_position" codomain_block) ("_position" y))
+###       ("\<^const>Groups.zero_class.zero")))
+###   ("\<^const>Pure.imp"
+###     ("\<^const>HOL.Trueprop"
+###       ("\<^const>HOL.implies"
+###         ("\<^const>HOL.conj"
+###           ("_applC" ("_position" is_tangle_diagram) ("_position" xs))
+###           ("_applC" ("_position" is_tangle_diagram)
+###             ("_applC" ("_position" basic)
+###               ("_applC" ("_position" make_vert_block)
+###                 ("_applC" ("_position" nat)
+###                   ("_applC" ("_position" codomain_block)
+###                     ("_position" y)))))))
+###         ("_applC" ("_position" is_tangle_diagram)
+###           ("\<^const>Tangle_Algebra.tensor" ("_position" xs)
+###             ("_applC" ("_position" basic)
+###               ("_applC" ("_position" make_vert_block)
+###                 ("_applC" ("_position" nat)
+###                   ("_applC" ("_position" codomain_block)
+###                     ("_position" y)))))))))
+###     ("\<^const>HOL.Trueprop"
+###       ("\<^const>HOL.implies"
+###         ("\<^const>HOL.conj"
+###           ("_applC" ("_position" is_tangle_diagram)
+###             ("\<^const>Preliminaries.wall.prod" ("_position" x)
+###               ("_position" xs)))
+###           ("_applC" ("_position" is_tangle_diagram)
+###             ("_applC" ("_position" basic) ("_position" y))))
+###         ("_applC" ("_position" is_tangle_diagram)
+###           ("\<^const>Preliminaries.concatenate"
+###             ("\<^const>Preliminaries.wall.prod" ("_position" x)
+###               ("_position" xs))
+###             ("_applC" ("_position" basic) ("_position" y))))))))
+### ("\<^const>Pure.imp"
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^const>HOL.not_equal"
+###       ("_applC" ("_position" codomain_block) ("_position" y))
+###       ("\<^const>Groups.zero_class.zero")))
+###   ("\<^const>Pure.imp"
+###     ("\<^const>HOL.Trueprop"
+###       ("\<^const>HOL.implies"
+###         ("\<^const>HOL.conj"
+###           ("_applC" ("_position" is_tangle_diagram) ("_position" xs))
+###           ("_applC" ("_position" is_tangle_diagram)
+###             ("_applC" ("_position" basic)
+###               ("_applC" ("_position" make_vert_block)
+###                 ("_applC" ("_position" nat)
+###                   ("_applC" ("_position" codomain_block)
+###                     ("_position" y)))))))
+###         ("_applC" ("_position" is_tangle_diagram)
+###           ("\<^const>Preliminaries.concatenate" ("_position" xs)
+###             ("_applC" ("_position" basic)
+###               ("_applC" ("_position" make_vert_block)
+###                 ("_applC" ("_position" nat)
+###                   ("_applC" ("_position" codomain_block)
+###                     ("_position" y)))))))))
+###     ("\<^const>HOL.Trueprop"
+###       ("\<^const>HOL.implies"
+###         ("\<^const>HOL.conj"
+###           ("_applC" ("_position" is_tangle_diagram)
+###             ("\<^const>Preliminaries.wall.prod" ("_position" x)
+###               ("_position" xs)))
+###           ("_applC" ("_position" is_tangle_diagram)
+###             ("_applC" ("_position" basic) ("_position" y))))
+###         ("_applC" ("_position" is_tangle_diagram)
+###           ("\<^const>Preliminaries.concatenate"
+###             ("\<^const>Preliminaries.wall.prod" ("_position" x)
+###               ("_position" xs))
+###             ("_applC" ("_position" basic) ("_position" y))))))))
+### ("\<^const>Pure.imp"
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^const>HOL.not_equal"
+###       ("_applC" ("_position" codomain_block) ("_position" y))
+###       ("\<^const>Groups.zero_class.zero")))
+###   ("\<^const>Pure.imp"
+###     ("\<^const>HOL.Trueprop"
+###       ("\<^const>HOL.implies"
+###         ("\<^const>HOL.conj"
+###           ("_applC" ("_position" is_tangle_diagram) ("_position" xs))
+###           ("_applC" ("_position" is_tangle_diagram)
+###             ("_applC" ("_position" basic)
+###               ("_applC" ("_position" make_vert_block)
+###                 ("_applC" ("_position" nat)
+###                   ("_applC" ("_position" codomain_block)
+###                     ("_position" y)))))))
+###         ("_applC" ("_position" is_tangle_diagram)
+###           ("\<^const>Tangle_Algebra.tensor_Tangle" ("_position" xs)
+###             ("_applC" ("_position" basic)
+###               ("_applC" ("_position" make_vert_block)
+###                 ("_applC" ("_position" nat)
+###                   ("_applC" ("_position" codomain_block)
+###                     ("_position" y)))))))))
+###     ("\<^const>HOL.Trueprop"
+###       ("\<^const>HOL.implies"
+###         ("\<^const>HOL.conj"
+###           ("_applC" ("_position" is_tangle_diagram)
+###             ("\<^const>Groups.times_class.times" ("_position" x)
+###               ("_position" xs)))
+###           ("_applC" ("_position" is_tangle_diagram)
+###             ("_applC" ("_position" basic) ("_position" y))))
+###         ("_applC" ("_position" is_tangle_diagram)
+###           ("\<^const>Preliminaries.concatenate"
+###             ("\<^const>Preliminaries.wall.prod" ("_position" x)
+###               ("_position" xs))
+###             ("_applC" ("_position" basic) ("_position" y))))))))
+### ("\<^const>Pure.imp"
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^const>HOL.not_equal"
+###       ("_applC" ("_position" codomain_block) ("_position" y))
+###       ("\<^const>Groups.zero_class.zero")))
+###   ("\<^const>Pure.imp"
+###     ("\<^const>HOL.Trueprop"
+###       ("\<^const>HOL.implies"
+###         ("\<^const>HOL.conj"
+###           ("_applC" ("_position" is_tangle_diagram) ("_position" xs))
+###           ("_applC" ("_position" is_tangle_diagram)
+###             ("_applC" ("_position" basic)
+###               ("_applC" ("_position" make_vert_block)
+###                 ("_applC" ("_position" nat)
+###                   ("_applC" ("_position" codomain_block)
+###                     ("_position" y)))))))
+###         ("_applC" ("_position" is_tangle_diagram)
+###           ("\<^const>Tangle_Algebra.tensor" ("_position" xs)
+###             ("_applC" ("_position" basic)
+###               ("_applC" ("_position" make_vert_block)
+###                 ("_applC" ("_position" nat)
+###                   ("_applC" ("_position" codomain_block)
+###                     ("_position" y)))))))))
+###     ("\<^const>HOL.Trueprop"
+###       ("\<^const>HOL.implies"
+###         ("\<^const>HOL.conj"
+###           ("_applC" ("_position" is_tangle_diagram)
+###             ("\<^const>Groups.times_class.times" ("_position" x)
+###               ("_position" xs)))
+###           ("_applC" ("_position" is_tangle_diagram)
+###             ("_applC" ("_position" basic) ("_position" y))))
+###         ("_applC" ("_position" is_tangle_diagram)
+###           ("\<^const>Preliminaries.concatenate"
+###             ("\<^const>Preliminaries.wall.prod" ("_position" x)
+###               ("_position" xs))
+###             ("_applC" ("_position" basic) ("_position" y))))))))
+### ("\<^const>Pure.imp"
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^const>HOL.not_equal"
+###       ("_applC" ("_position" codomain_block) ("_position" y))
+###       ("\<^const>Groups.zero_class.zero")))
+###   ("\<^const>Pure.imp"
+###     ("\<^const>HOL.Trueprop"
+###       ("\<^const>HOL.implies"
+###         ("\<^const>HOL.conj"
+###           ("_applC" ("_position" is_tangle_diagram) ("_position" xs))
+###           ("_applC" ("_position" is_tangle_diagram)
+###             ("_applC" ("_position" basic)
+###               ("_applC" ("_position" make_vert_block)
+###                 ("_applC" ("_position" nat)
+###                   ("_applC" ("_position" codomain_block)
+###                     ("_position" y)))))))
+###         ("_applC" ("_position" is_tangle_diagram)
+###           ("\<^const>Preliminaries.concatenate" ("_position" xs)
+###             ("_applC" ("_position" basic)
+###               ("_applC" ("_position" make_vert_block)
+###                 ("_applC" ("_position" nat)
+###                   ("_applC" ("_position" codomain_block)
+###                     ("_position" y)))))))))
+###     ("\<^const>HOL.Trueprop"
+###       ("\<^const>HOL.implies"
+###         ("\<^const>HOL.conj"
+###           ("_applC" ("_position" is_tangle_diagram)
+###             ("\<^const>Groups.times_class.times" ("_position" x)
+###               ("_position" xs)))
+###           ("_applC" ("_position" is_tangle_diagram)
+###             ("_applC" ("_position" basic) ("_position" y))))
+###         ("_applC" ("_position" is_tangle_diagram)
+###           ("\<^const>Preliminaries.concatenate"
+###             ("\<^const>Preliminaries.wall.prod" ("_position" x)
+###               ("_position" xs))
+###             ("_applC" ("_position" basic) ("_position" y))))))))
+### ("\<^const>Pure.imp"
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^const>HOL.not_equal"
+###       ("_applC" ("_position" codomain_block) ("_position" y))
+###       ("\<^const>Groups.zero_class.zero")))
+###   ("\<^const>Pure.imp"
+###     ("\<^const>HOL.Trueprop"
+###       ("\<^const>HOL.implies"
+###         ("\<^const>HOL.conj"
+###           ("_applC" ("_position" is_tangle_diagram) ("_position" xs))
+###           ("_applC" ("_position" is_tangle_diagram)
+###             ("_applC" ("_position" basic)
+###               ("_applC" ("_position" make_vert_block)
+###                 ("_applC" ("_position" nat)
+###                   ("_applC" ("_position" codomain_block)
+###                     ("_position" y)))))))
+###         ("_applC" ("_position" is_tangle_diagram)
+###           ("\<^const>Tangle_Algebra.tensor_Tangle" ("_position" xs)
+###             ("_applC" ("_position" basic)
+###               ("_applC" ("_position" make_vert_block)
+###                 ("_applC" ("_position" nat)
+###                   ("_applC" ("_position" codomain_block)
+###                     ("_position" y)))))))))
+###     ("\<^const>HOL.Trueprop"
+###       ("\<^const>HOL.implies"
+###         ("\<^const>HOL.conj"
+###           ("_applC" ("_position" is_tangle_diagram)
+###             ("\<^const>Preliminaries.wall.prod" ("_position" x)
+###               ("_position" xs)))
+###           ("_applC" ("_position" is_tangle_diagram)
+###             ("_applC" ("_position" basic) ("_position" y))))
+###         ("_applC" ("_position" is_tangle_diagram)
+###           ("\<^const>Tangle_Algebra.tensor"
+###             ("\<^const>Preliminaries.wall.prod" ("_position" x)
+###               ("_position" xs))
+###             ("_applC" ("_position" basic) ("_position" y))))))))
+### ("\<^const>Pure.imp"
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^const>HOL.not_equal"
+###       ("_applC" ("_position" codomain_block) ("_position" y))
+###       ("\<^const>Groups.zero_class.zero")))
+###   ("\<^const>Pure.imp"
+###     ("\<^const>HOL.Trueprop"
+###       ("\<^const>HOL.implies"
+###         ("\<^const>HOL.conj"
+###           ("_applC" ("_position" is_tangle_diagram) ("_position" xs))
+###           ("_applC" ("_position" is_tangle_diagram)
+###             ("_applC" ("_position" basic)
+###               ("_applC" ("_position" make_vert_block)
+###                 ("_applC" ("_position" nat)
+###                   ("_applC" ("_position" codomain_block)
+###                     ("_position" y)))))))
+###         ("_applC" ("_position" is_tangle_diagram)
+###           ("\<^const>Tangle_Algebra.tensor" ("_position" xs)
+###             ("_applC" ("_position" basic)
+###               ("_applC" ("_position" make_vert_block)
+###                 ("_applC" ("_position" nat)
+###                   ("_applC" ("_position" codomain_block)
+###                     ("_position" y)))))))))
+###     ("\<^const>HOL.Trueprop"
+###       ("\<^const>HOL.implies"
+###         ("\<^const>HOL.conj"
+###           ("_applC" ("_position" is_tangle_diagram)
+###             ("\<^const>Preliminaries.wall.prod" ("_position" x)
+###               ("_position" xs)))
+###           ("_applC" ("_position" is_tangle_diagram)
+###             ("_applC" ("_position" basic) ("_position" y))))
+###         ("_applC" ("_position" is_tangle_diagram)
+###           ("\<^const>Tangle_Algebra.tensor"
+###             ("\<^const>Preliminaries.wall.prod" ("_position" x)
+###               ("_position" xs))
+###             ("_applC" ("_position" basic) ("_position" y))))))))
+### ("\<^const>Pure.imp"
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^const>HOL.not_equal"
+###       ("_applC" ("_position" codomain_block) ("_position" y))
+###       ("\<^const>Groups.zero_class.zero")))
+###   ("\<^const>Pure.imp"
+###     ("\<^const>HOL.Trueprop"
+###       ("\<^const>HOL.implies"
+###         ("\<^const>HOL.conj"
+###           ("_applC" ("_position" is_tangle_diagram) ("_position" xs))
+###           ("_applC" ("_position" is_tangle_diagram)
+###             ("_applC" ("_position" basic)
+###               ("_applC" ("_position" make_vert_block)
+###                 ("_applC" ("_position" nat)
+###                   ("_applC" ("_position" codomain_block)
+###                     ("_position" y)))))))
+###         ("_applC" ("_position" is_tangle_diagram)
+###           ("\<^const>Preliminaries.concatenate" ("_position" xs)
+###             ("_applC" ("_position" basic)
+###               ("_applC" ("_position" make_vert_block)
+###                 ("_applC" ("_position" nat)
+###                   ("_applC" ("_position" codomain_block)
+###                     ("_position" y)))))))))
+###     ("\<^const>HOL.Trueprop"
+###       ("\<^const>HOL.implies"
+###         ("\<^const>HOL.conj"
+###           ("_applC" ("_position" is_tangle_diagram)
+###             ("\<^const>Preliminaries.wall.prod" ("_position" x)
+###               ("_position" xs)))
+###           ("_applC" ("_position" is_tangle_diagram)
+###             ("_applC" ("_position" basic) ("_position" y))))
+###         ("_applC" ("_position" is_tangle_diagram)
+###           ("\<^const>Tangle_Algebra.tensor"
+###             ("\<^const>Preliminaries.wall.prod" ("_position" x)
+###               ("_position" xs))
+###             ("_applC" ("_position" basic) ("_position" y))))))))
+### ("\<^const>Pure.imp"
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^const>HOL.not_equal"
+###       ("_applC" ("_position" codomain_block) ("_position" y))
+###       ("\<^const>Groups.zero_class.zero")))
+###   ("\<^const>Pure.imp"
+###     ("\<^const>HOL.Trueprop"
+###       ("\<^const>HOL.implies"
+###         ("\<^const>HOL.conj"
+###           ("_applC" ("_position" is_tangle_diagram) ("_position" xs))
+###           ("_applC" ("_position" is_tangle_diagram)
+###             ("_applC" ("_position" basic)
+###               ("_applC" ("_position" make_vert_block)
+###                 ("_applC" ("_position" nat)
+###                   ("_applC" ("_position" codomain_block)
+###                     ("_position" y)))))))
+###         ("_applC" ("_position" is_tangle_diagram)
+###           ("\<^const>Tangle_Algebra.tensor_Tangle" ("_position" xs)
+###             ("_applC" ("_position" basic)
+###               ("_applC" ("_position" make_vert_block)
+###                 ("_applC" ("_position" nat)
+###                   ("_applC" ("_position" codomain_block)
+###                     ("_position" y)))))))))
+###     ("\<^const>HOL.Trueprop"
+###       ("\<^const>HOL.implies"
+###         ("\<^const>HOL.conj"
+###           ("_applC" ("_position" is_tangle_diagram)
+###             ("\<^const>Groups.times_class.times" ("_position" x)
+###               ("_position" xs)))
+###           ("_applC" ("_position" is_tangle_diagram)
+###             ("_applC" ("_position" basic) ("_position" y))))
+###         ("_applC" ("_position" is_tangle_diagram)
+###           ("\<^const>Tangle_Algebra.tensor"
+###             ("\<^const>Preliminaries.wall.prod" ("_position" x)
+###               ("_position" xs))
+###             ("_applC" ("_position" basic) ("_position" y))))))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ambiguous input (line 504 of "$AFP/Knot_Theory/Tangle_Algebra.thy") produces 36 parse trees (10 displayed):
+### ("\<^const>Pure.imp"
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^const>HOL.not_equal"
+###       ("_applC" ("_position" codomain_block) ("_position" x))
+###       ("\<^const>Groups.zero_class.zero")))
+###   ("\<^const>Pure.imp"
+###     ("\<^const>HOL.Trueprop"
+###       ("\<^const>HOL.implies"
+###         ("\<^const>HOL.conj"
+###           ("_applC" ("_position" is_tangle_diagram)
+###             ("_applC" ("_position" basic)
+###               ("_applC" ("_position" make_vert_block)
+###                 ("_applC" ("_position" nat)
+###                   ("_applC" ("_position" codomain_block)
+###                     ("_position" x))))))
+###           ("_applC" ("_position" is_tangle_diagram) ("_position" ys)))
+###         ("_applC" ("_position" is_tangle_diagram)
+###           ("\<^const>Tangle_Algebra.tensor_Tangle"
+###             ("_applC" ("_position" basic)
+###               ("_applC" ("_position" make_vert_block)
+###                 ("_applC" ("_position" nat)
+###                   ("_applC" ("_position" codomain_block) ("_position" x)))))
+###             ("_position" ys)))))
+###     ("\<^const>HOL.Trueprop"
+###       ("\<^const>HOL.implies"
+###         ("\<^const>HOL.conj"
+###           ("_applC" ("_position" is_tangle_diagram)
+###             ("_applC" ("_position" basic) ("_position" x)))
+###           ("_applC" ("_position" is_tangle_diagram)
+###             ("\<^const>Preliminaries.wall.prod" ("_position" y)
+###               ("_position" ys))))
+###         ("_applC" ("_position" is_tangle_diagram)
+###           ("\<^const>Preliminaries.concatenate"
+###             ("_applC" ("_position" basic) ("_position" x))
+###             ("\<^const>Groups.times_class.times" ("_position" y)
+###               ("_position" ys))))))))
+### ("\<^const>Pure.imp"
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^const>HOL.not_equal"
+###       ("_applC" ("_position" codomain_block) ("_position" x))
+###       ("\<^const>Groups.zero_class.zero")))
+###   ("\<^const>Pure.imp"
+###     ("\<^const>HOL.Trueprop"
+###       ("\<^const>HOL.implies"
+###         ("\<^const>HOL.conj"
+###           ("_applC" ("_position" is_tangle_diagram)
+###             ("_applC" ("_position" basic)
+###               ("_applC" ("_position" make_vert_block)
+###                 ("_applC" ("_position" nat)
+###                   ("_applC" ("_position" codomain_block)
+###                     ("_position" x))))))
+###           ("_applC" ("_position" is_tangle_diagram) ("_position" ys)))
+###         ("_applC" ("_position" is_tangle_diagram)
+###           ("\<^const>Tangle_Algebra.tensor"
+###             ("_applC" ("_position" basic)
+###               ("_applC" ("_position" make_vert_block)
+###                 ("_applC" ("_position" nat)
+###                   ("_applC" ("_position" codomain_block) ("_position" x)))))
+###             ("_position" ys)))))
+###     ("\<^const>HOL.Trueprop"
+###       ("\<^const>HOL.implies"
+###         ("\<^const>HOL.conj"
+###           ("_applC" ("_position" is_tangle_diagram)
+###             ("_applC" ("_position" basic) ("_position" x)))
+###           ("_applC" ("_position" is_tangle_diagram)
+###             ("\<^const>Preliminaries.wall.prod" ("_position" y)
+###               ("_position" ys))))
+###         ("_applC" ("_position" is_tangle_diagram)
+###           ("\<^const>Preliminaries.concatenate"
+###             ("_applC" ("_position" basic) ("_position" x))
+###             ("\<^const>Groups.times_class.times" ("_position" y)
+###               ("_position" ys))))))))
+### ("\<^const>Pure.imp"
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^const>HOL.not_equal"
+###       ("_applC" ("_position" codomain_block) ("_position" x))
+###       ("\<^const>Groups.zero_class.zero")))
+###   ("\<^const>Pure.imp"
+###     ("\<^const>HOL.Trueprop"
+###       ("\<^const>HOL.implies"
+###         ("\<^const>HOL.conj"
+###           ("_applC" ("_position" is_tangle_diagram)
+###             ("_applC" ("_position" basic)
+###               ("_applC" ("_position" make_vert_block)
+###                 ("_applC" ("_position" nat)
+###                   ("_applC" ("_position" codomain_block)
+###                     ("_position" x))))))
+###           ("_applC" ("_position" is_tangle_diagram) ("_position" ys)))
+###         ("_applC" ("_position" is_tangle_diagram)
+###           ("\<^const>Preliminaries.concatenate"
+###             ("_applC" ("_position" basic)
+###               ("_applC" ("_position" make_vert_block)
+###                 ("_applC" ("_position" nat)
+###                   ("_applC" ("_position" codomain_block) ("_position" x)))))
+###             ("_position" ys)))))
+###     ("\<^const>HOL.Trueprop"
+###       ("\<^const>HOL.implies"
+###         ("\<^const>HOL.conj"
+###           ("_applC" ("_position" is_tangle_diagram)
+###             ("_applC" ("_position" basic) ("_position" x)))
+###           ("_applC" ("_position" is_tangle_diagram)
+###             ("\<^const>Preliminaries.wall.prod" ("_position" y)
+###               ("_position" ys))))
+###         ("_applC" ("_position" is_tangle_diagram)
+###           ("\<^const>Preliminaries.concatenate"
+###             ("_applC" ("_position" basic) ("_position" x))
+###             ("\<^const>Groups.times_class.times" ("_position" y)
+###               ("_position" ys))))))))
+### ("\<^const>Pure.imp"
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^const>HOL.not_equal"
+###       ("_applC" ("_position" codomain_block) ("_position" x))
+###       ("\<^const>Groups.zero_class.zero")))
+###   ("\<^const>Pure.imp"
+###     ("\<^const>HOL.Trueprop"
+###       ("\<^const>HOL.implies"
+###         ("\<^const>HOL.conj"
+###           ("_applC" ("_position" is_tangle_diagram)
+###             ("_applC" ("_position" basic)
+###               ("_applC" ("_position" make_vert_block)
+###                 ("_applC" ("_position" nat)
+###                   ("_applC" ("_position" codomain_block)
+###                     ("_position" x))))))
+###           ("_applC" ("_position" is_tangle_diagram) ("_position" ys)))
+###         ("_applC" ("_position" is_tangle_diagram)
+###           ("\<^const>Tangle_Algebra.tensor_Tangle"
+###             ("_applC" ("_position" basic)
+###               ("_applC" ("_position" make_vert_block)
+###                 ("_applC" ("_position" nat)
+###                   ("_applC" ("_position" codomain_block) ("_position" x)))))
+###             ("_position" ys)))))
+###     ("\<^const>HOL.Trueprop"
+###       ("\<^const>HOL.implies"
+###         ("\<^const>HOL.conj"
+###           ("_applC" ("_position" is_tangle_diagram)
+###             ("_applC" ("_position" basic) ("_position" x)))
+###           ("_applC" ("_position" is_tangle_diagram)
+###             ("\<^const>Groups.times_class.times" ("_position" y)
+###               ("_position" ys))))
+###         ("_applC" ("_position" is_tangle_diagram)
+###           ("\<^const>Preliminaries.concatenate"
+###             ("_applC" ("_position" basic) ("_position" x))
+###             ("\<^const>Groups.times_class.times" ("_position" y)
+###               ("_position" ys))))))))
+### ("\<^const>Pure.imp"
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^const>HOL.not_equal"
+###       ("_applC" ("_position" codomain_block) ("_position" x))
+###       ("\<^const>Groups.zero_class.zero")))
+###   ("\<^const>Pure.imp"
+###     ("\<^const>HOL.Trueprop"
+###       ("\<^const>HOL.implies"
+###         ("\<^const>HOL.conj"
+###           ("_applC" ("_position" is_tangle_diagram)
+###             ("_applC" ("_position" basic)
+###               ("_applC" ("_position" make_vert_block)
+###                 ("_applC" ("_position" nat)
+###                   ("_applC" ("_position" codomain_block)
+###                     ("_position" x))))))
+###           ("_applC" ("_position" is_tangle_diagram) ("_position" ys)))
+###         ("_applC" ("_position" is_tangle_diagram)
+###           ("\<^const>Tangle_Algebra.tensor"
+###             ("_applC" ("_position" basic)
+###               ("_applC" ("_position" make_vert_block)
+###                 ("_applC" ("_position" nat)
+###                   ("_applC" ("_position" codomain_block) ("_position" x)))))
+###             ("_position" ys)))))
+###     ("\<^const>HOL.Trueprop"
+###       ("\<^const>HOL.implies"
+###         ("\<^const>HOL.conj"
+###           ("_applC" ("_position" is_tangle_diagram)
+###             ("_applC" ("_position" basic) ("_position" x)))
+###           ("_applC" ("_position" is_tangle_diagram)
+###             ("\<^const>Groups.times_class.times" ("_position" y)
+###               ("_position" ys))))
+###         ("_applC" ("_position" is_tangle_diagram)
+###           ("\<^const>Preliminaries.concatenate"
+###             ("_applC" ("_position" basic) ("_position" x))
+###             ("\<^const>Groups.times_class.times" ("_position" y)
+###               ("_position" ys))))))))
+### ("\<^const>Pure.imp"
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^const>HOL.not_equal"
+###       ("_applC" ("_position" codomain_block) ("_position" x))
+###       ("\<^const>Groups.zero_class.zero")))
+###   ("\<^const>Pure.imp"
+###     ("\<^const>HOL.Trueprop"
+###       ("\<^const>HOL.implies"
+###         ("\<^const>HOL.conj"
+###           ("_applC" ("_position" is_tangle_diagram)
+###             ("_applC" ("_position" basic)
+###               ("_applC" ("_position" make_vert_block)
+###                 ("_applC" ("_position" nat)
+###                   ("_applC" ("_position" codomain_block)
+###                     ("_position" x))))))
+###           ("_applC" ("_position" is_tangle_diagram) ("_position" ys)))
+###         ("_applC" ("_position" is_tangle_diagram)
+###           ("\<^const>Preliminaries.concatenate"
+###             ("_applC" ("_position" basic)
+###               ("_applC" ("_position" make_vert_block)
+###                 ("_applC" ("_position" nat)
+###                   ("_applC" ("_position" codomain_block) ("_position" x)))))
+###             ("_position" ys)))))
+###     ("\<^const>HOL.Trueprop"
+###       ("\<^const>HOL.implies"
+###         ("\<^const>HOL.conj"
+###           ("_applC" ("_position" is_tangle_diagram)
+###             ("_applC" ("_position" basic) ("_position" x)))
+###           ("_applC" ("_position" is_tangle_diagram)
+###             ("\<^const>Groups.times_class.times" ("_position" y)
+###               ("_position" ys))))
+###         ("_applC" ("_position" is_tangle_diagram)
+###           ("\<^const>Preliminaries.concatenate"
+###             ("_applC" ("_position" basic) ("_position" x))
+###             ("\<^const>Groups.times_class.times" ("_position" y)
+###               ("_position" ys))))))))
+### ("\<^const>Pure.imp"
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^const>HOL.not_equal"
+###       ("_applC" ("_position" codomain_block) ("_position" x))
+###       ("\<^const>Groups.zero_class.zero")))
+###   ("\<^const>Pure.imp"
+###     ("\<^const>HOL.Trueprop"
+###       ("\<^const>HOL.implies"
+###         ("\<^const>HOL.conj"
+###           ("_applC" ("_position" is_tangle_diagram)
+###             ("_applC" ("_position" basic)
+###               ("_applC" ("_position" make_vert_block)
+###                 ("_applC" ("_position" nat)
+###                   ("_applC" ("_position" codomain_block)
+###                     ("_position" x))))))
+###           ("_applC" ("_position" is_tangle_diagram) ("_position" ys)))
+###         ("_applC" ("_position" is_tangle_diagram)
+###           ("\<^const>Tangle_Algebra.tensor_Tangle"
+###             ("_applC" ("_position" basic)
+###               ("_applC" ("_position" make_vert_block)
+###                 ("_applC" ("_position" nat)
+###                   ("_applC" ("_position" codomain_block) ("_position" x)))))
+###             ("_position" ys)))))
+###     ("\<^const>HOL.Trueprop"
+###       ("\<^const>HOL.implies"
+###         ("\<^const>HOL.conj"
+###           ("_applC" ("_position" is_tangle_diagram)
+###             ("_applC" ("_position" basic) ("_position" x)))
+###           ("_applC" ("_position" is_tangle_diagram)
+###             ("\<^const>Preliminaries.wall.prod" ("_position" y)
+###               ("_position" ys))))
+###         ("_applC" ("_position" is_tangle_diagram)
+###           ("\<^const>Tangle_Algebra.tensor"
+###             ("_applC" ("_position" basic) ("_position" x))
+###             ("\<^const>Groups.times_class.times" ("_position" y)
+###               ("_position" ys))))))))
+### ("\<^const>Pure.imp"
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^const>HOL.not_equal"
+###       ("_applC" ("_position" codomain_block) ("_position" x))
+###       ("\<^const>Groups.zero_class.zero")))
+###   ("\<^const>Pure.imp"
+###     ("\<^const>HOL.Trueprop"
+###       ("\<^const>HOL.implies"
+###         ("\<^const>HOL.conj"
+###           ("_applC" ("_position" is_tangle_diagram)
+###             ("_applC" ("_position" basic)
+###               ("_applC" ("_position" make_vert_block)
+###                 ("_applC" ("_position" nat)
+###                   ("_applC" ("_position" codomain_block)
+###                     ("_position" x))))))
+###           ("_applC" ("_position" is_tangle_diagram) ("_position" ys)))
+###         ("_applC" ("_position" is_tangle_diagram)
+###           ("\<^const>Tangle_Algebra.tensor"
+###             ("_applC" ("_position" basic)
+###               ("_applC" ("_position" make_vert_block)
+###                 ("_applC" ("_position" nat)
+###                   ("_applC" ("_position" codomain_block) ("_position" x)))))
+###             ("_position" ys)))))
+###     ("\<^const>HOL.Trueprop"
+###       ("\<^const>HOL.implies"
+###         ("\<^const>HOL.conj"
+###           ("_applC" ("_position" is_tangle_diagram)
+###             ("_applC" ("_position" basic) ("_position" x)))
+###           ("_applC" ("_position" is_tangle_diagram)
+###             ("\<^const>Preliminaries.wall.prod" ("_position" y)
+###               ("_position" ys))))
+###         ("_applC" ("_position" is_tangle_diagram)
+###           ("\<^const>Tangle_Algebra.tensor"
+###             ("_applC" ("_position" basic) ("_position" x))
+###             ("\<^const>Groups.times_class.times" ("_position" y)
+###               ("_position" ys))))))))
+### ("\<^const>Pure.imp"
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^const>HOL.not_equal"
+###       ("_applC" ("_position" codomain_block) ("_position" x))
+###       ("\<^const>Groups.zero_class.zero")))
+###   ("\<^const>Pure.imp"
+###     ("\<^const>HOL.Trueprop"
+###       ("\<^const>HOL.implies"
+###         ("\<^const>HOL.conj"
+###           ("_applC" ("_position" is_tangle_diagram)
+###             ("_applC" ("_position" basic)
+###               ("_applC" ("_position" make_vert_block)
+###                 ("_applC" ("_position" nat)
+###                   ("_applC" ("_position" codomain_block)
+###                     ("_position" x))))))
+###           ("_applC" ("_position" is_tangle_diagram) ("_position" ys)))
+###         ("_applC" ("_position" is_tangle_diagram)
+###           ("\<^const>Preliminaries.concatenate"
+###             ("_applC" ("_position" basic)
+###               ("_applC" ("_position" make_vert_block)
+###                 ("_applC" ("_position" nat)
+###                   ("_applC" ("_position" codomain_block) ("_position" x)))))
+###             ("_position" ys)))))
+###     ("\<^const>HOL.Trueprop"
+###       ("\<^const>HOL.implies"
+###         ("\<^const>HOL.conj"
+###           ("_applC" ("_position" is_tangle_diagram)
+###             ("_applC" ("_position" basic) ("_position" x)))
+###           ("_applC" ("_position" is_tangle_diagram)
+###             ("\<^const>Preliminaries.wall.prod" ("_position" y)
+###               ("_position" ys))))
+###         ("_applC" ("_position" is_tangle_diagram)
+###           ("\<^const>Tangle_Algebra.tensor"
+###             ("_applC" ("_position" basic) ("_position" x))
+###             ("\<^const>Groups.times_class.times" ("_position" y)
+###               ("_position" ys))))))))
+### ("\<^const>Pure.imp"
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^const>HOL.not_equal"
+###       ("_applC" ("_position" codomain_block) ("_position" x))
+###       ("\<^const>Groups.zero_class.zero")))
+###   ("\<^const>Pure.imp"
+###     ("\<^const>HOL.Trueprop"
+###       ("\<^const>HOL.implies"
+###         ("\<^const>HOL.conj"
+###           ("_applC" ("_position" is_tangle_diagram)
+###             ("_applC" ("_position" basic)
+###               ("_applC" ("_position" make_vert_block)
+###                 ("_applC" ("_position" nat)
+###                   ("_applC" ("_position" codomain_block)
+###                     ("_position" x))))))
+###           ("_applC" ("_position" is_tangle_diagram) ("_position" ys)))
+###         ("_applC" ("_position" is_tangle_diagram)
+###           ("\<^const>Tangle_Algebra.tensor_Tangle"
+###             ("_applC" ("_position" basic)
+###               ("_applC" ("_position" make_vert_block)
+###                 ("_applC" ("_position" nat)
+###                   ("_applC" ("_position" codomain_block) ("_position" x)))))
+###             ("_position" ys)))))
+###     ("\<^const>HOL.Trueprop"
+###       ("\<^const>HOL.implies"
+###         ("\<^const>HOL.conj"
+###           ("_applC" ("_position" is_tangle_diagram)
+###             ("_applC" ("_position" basic) ("_position" x)))
+###           ("_applC" ("_position" is_tangle_diagram)
+###             ("\<^const>Groups.times_class.times" ("_position" y)
+###               ("_position" ys))))
+###         ("_applC" ("_position" is_tangle_diagram)
+###           ("\<^const>Tangle_Algebra.tensor"
+###             ("_applC" ("_position" basic) ("_position" x))
+###             ("\<^const>Groups.times_class.times" ("_position" y)
+###               ("_position" ys))))))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ambiguous input (line 569 of "$AFP/Knot_Theory/Tangle_Algebra.thy") produces 144 parse trees (10 displayed):
+### ("\<^const>Pure.imp"
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^const>HOL.implies"
+###       ("\<^const>HOL.conj"
+###         ("_applC" ("_position" is_tangle_diagram) ("_position" xs))
+###         ("_applC" ("_position" is_tangle_diagram) ("_position" ys)))
+###       ("_applC" ("_position" is_tangle_diagram)
+###         ("\<^const>Tangle_Algebra.tensor_Tangle" ("_position" xs)
+###           ("_position" ys)))))
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^const>HOL.implies"
+###       ("\<^const>HOL.conj"
+###         ("_applC" ("_position" is_tangle_diagram)
+###           ("\<^const>Groups.times_class.times" ("_position" x)
+###             ("_position" xs)))
+###         ("_applC" ("_position" is_tangle_diagram)
+###           ("\<^const>Groups.times_class.times" ("_position" y)
+###             ("_position" ys))))
+###       ("_applC" ("_position" is_tangle_diagram)
+###         ("\<^const>Tangle_Algebra.tensor_Tangle"
+###           ("\<^const>Groups.times_class.times" ("_position" x)
+###             ("_position" xs))
+###           ("\<^const>Groups.times_class.times" ("_position" y)
+###             ("_position" ys)))))))
+### ("\<^const>Pure.imp"
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^const>HOL.implies"
+###       ("\<^const>HOL.conj"
+###         ("_applC" ("_position" is_tangle_diagram) ("_position" xs))
+###         ("_applC" ("_position" is_tangle_diagram) ("_position" ys)))
+###       ("_applC" ("_position" is_tangle_diagram)
+###         ("\<^const>Tangle_Algebra.tensor" ("_position" xs)
+###           ("_position" ys)))))
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^const>HOL.implies"
+###       ("\<^const>HOL.conj"
+###         ("_applC" ("_position" is_tangle_diagram)
+###           ("\<^const>Groups.times_class.times" ("_position" x)
+###             ("_position" xs)))
+###         ("_applC" ("_position" is_tangle_diagram)
+###           ("\<^const>Groups.times_class.times" ("_position" y)
+###             ("_position" ys))))
+###       ("_applC" ("_position" is_tangle_diagram)
+###         ("\<^const>Tangle_Algebra.tensor_Tangle"
+###           ("\<^const>Groups.times_class.times" ("_position" x)
+###             ("_position" xs))
+###           ("\<^const>Groups.times_class.times" ("_position" y)
+###             ("_position" ys)))))))
+### ("\<^const>Pure.imp"
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^const>HOL.implies"
+###       ("\<^const>HOL.conj"
+###         ("_applC" ("_position" is_tangle_diagram) ("_position" xs))
+###         ("_applC" ("_position" is_tangle_diagram) ("_position" ys)))
+###       ("_applC" ("_position" is_tangle_diagram)
+###         ("\<^const>Preliminaries.concatenate" ("_position" xs)
+###           ("_position" ys)))))
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^const>HOL.implies"
+###       ("\<^const>HOL.conj"
+###         ("_applC" ("_position" is_tangle_diagram)
+###           ("\<^const>Groups.times_class.times" ("_position" x)
+###             ("_position" xs)))
+###         ("_applC" ("_position" is_tangle_diagram)
+###           ("\<^const>Groups.times_class.times" ("_position" y)
+###             ("_position" ys))))
+###       ("_applC" ("_position" is_tangle_diagram)
+###         ("\<^const>Tangle_Algebra.tensor_Tangle"
+###           ("\<^const>Groups.times_class.times" ("_position" x)
+###             ("_position" xs))
+###           ("\<^const>Groups.times_class.times" ("_position" y)
+###             ("_position" ys)))))))
+### ("\<^const>Pure.imp"
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^const>HOL.implies"
+###       ("\<^const>HOL.conj"
+###         ("_applC" ("_position" is_tangle_diagram) ("_position" xs))
+###         ("_applC" ("_position" is_tangle_diagram) ("_position" ys)))
+###       ("_applC" ("_position" is_tangle_diagram)
+###         ("\<^const>Tangle_Algebra.tensor_Tangle" ("_position" xs)
+###           ("_position" ys)))))
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^const>HOL.implies"
+###       ("\<^const>HOL.conj"
+###         ("_applC" ("_position" is_tangle_diagram)
+###           ("\<^const>Preliminaries.wall.prod" ("_position" x)
+###             ("_position" xs)))
+###         ("_applC" ("_position" is_tangle_diagram)
+###           ("\<^const>Groups.times_class.times" ("_position" y)
+###             ("_position" ys))))
+###       ("_applC" ("_position" is_tangle_diagram)
+###         ("\<^const>Tangle_Algebra.tensor_Tangle"
+###           ("\<^const>Groups.times_class.times" ("_position" x)
+###             ("_position" xs))
+###           ("\<^const>Groups.times_class.times" ("_position" y)
+###             ("_position" ys)))))))
+### ("\<^const>Pure.imp"
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^const>HOL.implies"
+###       ("\<^const>HOL.conj"
+###         ("_applC" ("_position" is_tangle_diagram) ("_position" xs))
+###         ("_applC" ("_position" is_tangle_diagram) ("_position" ys)))
+###       ("_applC" ("_position" is_tangle_diagram)
+###         ("\<^const>Tangle_Algebra.tensor" ("_position" xs)
+###           ("_position" ys)))))
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^const>HOL.implies"
+###       ("\<^const>HOL.conj"
+###         ("_applC" ("_position" is_tangle_diagram)
+###           ("\<^const>Preliminaries.wall.prod" ("_position" x)
+###             ("_position" xs)))
+###         ("_applC" ("_position" is_tangle_diagram)
+###           ("\<^const>Groups.times_class.times" ("_position" y)
+###             ("_position" ys))))
+###       ("_applC" ("_position" is_tangle_diagram)
+###         ("\<^const>Tangle_Algebra.tensor_Tangle"
+###           ("\<^const>Groups.times_class.times" ("_position" x)
+###             ("_position" xs))
+###           ("\<^const>Groups.times_class.times" ("_position" y)
+###             ("_position" ys)))))))
+### ("\<^const>Pure.imp"
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^const>HOL.implies"
+###       ("\<^const>HOL.conj"
+###         ("_applC" ("_position" is_tangle_diagram) ("_position" xs))
+###         ("_applC" ("_position" is_tangle_diagram) ("_position" ys)))
+###       ("_applC" ("_position" is_tangle_diagram)
+###         ("\<^const>Preliminaries.concatenate" ("_position" xs)
+###           ("_position" ys)))))
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^const>HOL.implies"
+###       ("\<^const>HOL.conj"
+###         ("_applC" ("_position" is_tangle_diagram)
+###           ("\<^const>Preliminaries.wall.prod" ("_position" x)
+###             ("_position" xs)))
+###         ("_applC" ("_position" is_tangle_diagram)
+###           ("\<^const>Groups.times_class.times" ("_position" y)
+###             ("_position" ys))))
+###       ("_applC" ("_position" is_tangle_diagram)
+###         ("\<^const>Tangle_Algebra.tensor_Tangle"
+###           ("\<^const>Groups.times_class.times" ("_position" x)
+###             ("_position" xs))
+###           ("\<^const>Groups.times_class.times" ("_position" y)
+###             ("_position" ys)))))))
+### ("\<^const>Pure.imp"
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^const>HOL.implies"
+###       ("\<^const>HOL.conj"
+###         ("_applC" ("_position" is_tangle_diagram) ("_position" xs))
+###         ("_applC" ("_position" is_tangle_diagram) ("_position" ys)))
+###       ("_applC" ("_position" is_tangle_diagram)
+###         ("\<^const>Tangle_Algebra.tensor_Tangle" ("_position" xs)
+###           ("_position" ys)))))
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^const>HOL.implies"
+###       ("\<^const>HOL.conj"
+###         ("_applC" ("_position" is_tangle_diagram)
+###           ("\<^const>Groups.times_class.times" ("_position" x)
+###             ("_position" xs)))
+###         ("_applC" ("_position" is_tangle_diagram)
+###           ("\<^const>Preliminaries.wall.prod" ("_position" y)
+###             ("_position" ys))))
+###       ("_applC" ("_position" is_tangle_diagram)
+###         ("\<^const>Tangle_Algebra.tensor_Tangle"
+###           ("\<^const>Groups.times_class.times" ("_position" x)
+###             ("_position" xs))
+###           ("\<^const>Groups.times_class.times" ("_position" y)
+###             ("_position" ys)))))))
+### ("\<^const>Pure.imp"
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^const>HOL.implies"
+###       ("\<^const>HOL.conj"
+###         ("_applC" ("_position" is_tangle_diagram) ("_position" xs))
+###         ("_applC" ("_position" is_tangle_diagram) ("_position" ys)))
+###       ("_applC" ("_position" is_tangle_diagram)
+###         ("\<^const>Tangle_Algebra.tensor" ("_position" xs)
+###           ("_position" ys)))))
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^const>HOL.implies"
+###       ("\<^const>HOL.conj"
+###         ("_applC" ("_position" is_tangle_diagram)
+###           ("\<^const>Groups.times_class.times" ("_position" x)
+###             ("_position" xs)))
+###         ("_applC" ("_position" is_tangle_diagram)
+###           ("\<^const>Preliminaries.wall.prod" ("_position" y)
+###             ("_position" ys))))
+###       ("_applC" ("_position" is_tangle_diagram)
+###         ("\<^const>Tangle_Algebra.tensor_Tangle"
+###           ("\<^const>Groups.times_class.times" ("_position" x)
+###             ("_position" xs))
+###           ("\<^const>Groups.times_class.times" ("_position" y)
+###             ("_position" ys)))))))
+### ("\<^const>Pure.imp"
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^const>HOL.implies"
+###       ("\<^const>HOL.conj"
+###         ("_applC" ("_position" is_tangle_diagram) ("_position" xs))
+###         ("_applC" ("_position" is_tangle_diagram) ("_position" ys)))
+###       ("_applC" ("_position" is_tangle_diagram)
+###         ("\<^const>Preliminaries.concatenate" ("_position" xs)
+###           ("_position" ys)))))
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^const>HOL.implies"
+###       ("\<^const>HOL.conj"
+###         ("_applC" ("_position" is_tangle_diagram)
+###           ("\<^const>Groups.times_class.times" ("_position" x)
+###             ("_position" xs)))
+###         ("_applC" ("_position" is_tangle_diagram)
+###           ("\<^const>Preliminaries.wall.prod" ("_position" y)
+###             ("_position" ys))))
+###       ("_applC" ("_position" is_tangle_diagram)
+###         ("\<^const>Tangle_Algebra.tensor_Tangle"
+###           ("\<^const>Groups.times_class.times" ("_position" x)
+###             ("_position" xs))
+###           ("\<^const>Groups.times_class.times" ("_position" y)
+###             ("_position" ys)))))))
+### ("\<^const>Pure.imp"
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^const>HOL.implies"
+###       ("\<^const>HOL.conj"
+###         ("_applC" ("_position" is_tangle_diagram) ("_position" xs))
+###         ("_applC" ("_position" is_tangle_diagram) ("_position" ys)))
+###       ("_applC" ("_position" is_tangle_diagram)
+###         ("\<^const>Tangle_Algebra.tensor_Tangle" ("_position" xs)
+###           ("_position" ys)))))
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^const>HOL.implies"
+###       ("\<^const>HOL.conj"
+###         ("_applC" ("_position" is_tangle_diagram)
+###           ("\<^const>Preliminaries.wall.prod" ("_position" x)
+###             ("_position" xs)))
+###         ("_applC" ("_position" is_tangle_diagram)
+###           ("\<^const>Preliminaries.wall.prod" ("_position" y)
+###             ("_position" ys))))
+###       ("_applC" ("_position" is_tangle_diagram)
+###         ("\<^const>Tangle_Algebra.tensor_Tangle"
+###           ("\<^const>Groups.times_class.times" ("_position" x)
+###             ("_position" xs))
+###           ("\<^const>Groups.times_class.times" ("_position" y)
+###             ("_position" ys)))))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ambiguous input (line 627 of "$AFP/Knot_Theory/Tangle_Algebra.thy") produces 3 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("_applC" ("_position" is_tangle_diagram)
+###     ("\<^const>Tangle_Algebra.tensor_Tangle" ("_position" x)
+###       ("_position" y))))
+### ("\<^const>HOL.Trueprop"
+###   ("_applC" ("_position" is_tangle_diagram)
+###     ("\<^const>Tangle_Algebra.tensor" ("_position" x) ("_position" y))))
+### ("\<^const>HOL.Trueprop"
+###   ("_applC" ("_position" is_tangle_diagram)
+###     ("\<^const>Preliminaries.concatenate" ("_position" x) ("_position" y))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ambiguous input (line 633 of "$AFP/Knot_Theory/Tangle_Algebra.thy") produces 3 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" Tensor_Tangle)
+###       ("_cargs" ("_position" x) ("_position" y)))
+###     ("_applC" ("_position" Abs_Tangle_Diagram)
+###       ("\<^const>Tangle_Algebra.tensor_Tangle"
+###         ("_applC" ("_position" Rep_Tangle_Diagram) ("_position" x))
+###         ("_applC" ("_position" Rep_Tangle_Diagram) ("_position" y))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" Tensor_Tangle)
+###       ("_cargs" ("_position" x) ("_position" y)))
+###     ("_applC" ("_position" Abs_Tangle_Diagram)
+###       ("\<^const>Tangle_Algebra.tensor"
+###         ("_applC" ("_position" Rep_Tangle_Diagram) ("_position" x))
+###         ("_applC" ("_position" Rep_Tangle_Diagram) ("_position" y))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" Tensor_Tangle)
+###       ("_cargs" ("_position" x) ("_position" y)))
+###     ("_applC" ("_position" Abs_Tangle_Diagram)
+###       ("\<^const>Preliminaries.concatenate"
+###         ("_applC" ("_position" Rep_Tangle_Diagram) ("_position" x))
+###         ("_applC" ("_position" Rep_Tangle_Diagram) ("_position" y))))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ambiguous input (line 640 of "$AFP/Knot_Theory/Tangle_Algebra.thy") produces 9 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("\<^const>Preliminaries.concatenate"
+###       ("_applC" ("_position" Abs_Tangle_Diagram) ("_position" x))
+###       ("_applC" ("_position" Abs_Tangle_Diagram) ("_position" y)))
+###     ("_applC" ("_position" Abs_Tangle_Diagram)
+###       ("\<^const>Preliminaries.concatenate" ("_position" x)
+###         ("_position" y)))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("\<^const>Tangle_Algebra.tensor"
+###       ("_applC" ("_position" Abs_Tangle_Diagram) ("_position" x))
+###       ("_applC" ("_position" Abs_Tangle_Diagram) ("_position" y)))
+###     ("_applC" ("_position" Abs_Tangle_Diagram)
+###       ("\<^const>Preliminaries.concatenate" ("_position" x)
+###         ("_position" y)))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("\<^const>Tangle_Algebra.tensor_Tangle"
+###       ("_applC" ("_position" Abs_Tangle_Diagram) ("_position" x))
+###       ("_applC" ("_position" Abs_Tangle_Diagram) ("_position" y)))
+###     ("_applC" ("_position" Abs_Tangle_Diagram)
+###       ("\<^const>Preliminaries.concatenate" ("_position" x)
+###         ("_position" y)))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("\<^const>Preliminaries.concatenate"
+###       ("_applC" ("_position" Abs_Tangle_Diagram) ("_position" x))
+###       ("_applC" ("_position" Abs_Tangle_Diagram) ("_position" y)))
+###     ("_applC" ("_position" Abs_Tangle_Diagram)
+###       ("\<^const>Tangle_Algebra.tensor" ("_position" x) ("_position" y)))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("\<^const>Tangle_Algebra.tensor"
+###       ("_applC" ("_position" Abs_Tangle_Diagram) ("_position" x))
+###       ("_applC" ("_position" Abs_Tangle_Diagram) ("_position" y)))
+###     ("_applC" ("_position" Abs_Tangle_Diagram)
+###       ("\<^const>Tangle_Algebra.tensor" ("_position" x) ("_position" y)))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("\<^const>Tangle_Algebra.tensor_Tangle"
+###       ("_applC" ("_position" Abs_Tangle_Diagram) ("_position" x))
+###       ("_applC" ("_position" Abs_Tangle_Diagram) ("_position" y)))
+###     ("_applC" ("_position" Abs_Tangle_Diagram)
+###       ("\<^const>Tangle_Algebra.tensor" ("_position" x) ("_position" y)))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("\<^const>Preliminaries.concatenate"
+###       ("_applC" ("_position" Abs_Tangle_Diagram) ("_position" x))
+###       ("_applC" ("_position" Abs_Tangle_Diagram) ("_position" y)))
+###     ("_applC" ("_position" Abs_Tangle_Diagram)
+###       ("\<^const>Tangle_Algebra.tensor_Tangle" ("_position" x)
+###         ("_position" y)))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("\<^const>Tangle_Algebra.tensor"
+###       ("_applC" ("_position" Abs_Tangle_Diagram) ("_position" x))
+###       ("_applC" ("_position" Abs_Tangle_Diagram) ("_position" y)))
+###     ("_applC" ("_position" Abs_Tangle_Diagram)
+###       ("\<^const>Tangle_Algebra.tensor_Tangle" ("_position" x)
+###         ("_position" y)))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("\<^const>Tangle_Algebra.tensor_Tangle"
+###       ("_applC" ("_position" Abs_Tangle_Diagram) ("_position" x))
+###       ("_applC" ("_position" Abs_Tangle_Diagram) ("_position" y)))
+###     ("_applC" ("_position" Abs_Tangle_Diagram)
+###       ("\<^const>Tangle_Algebra.tensor_Tangle" ("_position" x)
+###         ("_position" y)))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### theory "Draft.Tangle_Algebra"
+### 0.343s elapsed time, 0.508s cpu time, 0.066s GC time
+Loading theory "Draft.Tangle_AlgebraTemplates"
+val templateLemmas =
+   [("Tangle_Algebra.codomain_make_vert",
+     "codomain_block (make_vert_block ?n) = int ?n",
+     template_equation
+      (template_app
+        (template_hole 2, template_app (template_hole 1, template_var 0)),
+       template_app (template_hole 0, template_var 0))),
+    ("Tangle_Algebra.domain_make_vert",
+     "domain_block (make_vert_block ?n) = int ?n",
+     template_equation
+      (template_app
+        (template_hole 2, template_app (template_hole 1, template_var 0)),
+       template_app (template_hole 0, template_var 0))),
+    ("Tangle_Algebra.Nil_left_tensor", "?xs \<otimes> basic [] = ?xs",
+     template_equation
+      (template_app
+        (template_app (template_hole 2, template_var 0),
+         template_app (template_hole 1, template_hole 0)),
+       template_var 0)),
+    ("Tangle_Algebra.Nil_right_tensor", "basic [] \<otimes> ?xs = ?xs",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 2,
+           template_app (template_hole 1, template_hole 0)),
+         template_var 0),
+       template_var 0)),
+    ("Tangle_Algebra.tensor_codomain_wall_additivity",
+     "codomain_wall (?xs \<otimes> ?ys) =
+      codomain_wall ?xs + codomain_wall ?ys",
+     template_equation
+      (template_app
+        (template_hole 2,
+         template_app
+          (template_app (template_hole 1, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 0, template_app (template_hole 2, template_var 1)),
+         template_app (template_hole 2, template_var 0)))),
+    ("Tangle_Algebra.tensor_domain_wall_additivity",
+     "domain_wall (?xs \<otimes> ?ys) = domain_wall ?xs + domain_wall ?ys",
+     template_equation
+      (template_app
+        (template_hole 2,
+         template_app
+          (template_app (template_hole 1, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 0, template_app (template_hole 2, template_var 1)),
+         template_app (template_hole 2, template_var 0)))),
+    ("Tangle_Algebra.1",
+     "basic ?x \<otimes> basic ?y = basic (?x \<otimes> ?y)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 2, template_app (template_hole 1, template_var 1)),
+         template_app (template_hole 1, template_var 0)),
+       template_app
+        (template_hole 1,
+         template_app
+          (template_app (template_hole 0, template_var 1),
+           template_var 0)))),
+    ("Tangle_Algebra.is_tangle_diagramness",
+     "is_tangle_diagram ?x & is_tangle_diagram ?y -->
+      is_tangle_diagram (?x \<otimes> ?y)",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_hole 3,
+             template_app
+              (template_app
+                (template_hole 2,
+                 template_app (template_hole 1, template_var 1)),
+               template_app (template_hole 1, template_var 0))),
+           template_app
+            (template_hole 1,
+             template_app
+              (template_app (template_hole 0, template_var 1),
+               template_var 0)))
+         )),
+    ("Tangle_Algebra.is_tangle_make_vert_right",
+     "is_tangle_diagram ?xs ==>
+      is_tangle_diagram (?xs \<otimes> basic (make_vert_block ?n))",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 3, template_var 1))],
+       template_predicate
+        (
+           template_app
+            (template_hole 3,
+             template_app
+              (template_app (template_hole 2, template_var 1),
+               template_app
+                (template_hole 1,
+                 template_app (template_hole 0, template_var 0))))
+           ))),
+    ("Tangle_Algebra.is_tangle_make_vert_left",
+     "is_tangle_diagram ?xs ==>
+      is_tangle_diagram (basic (make_vert_block ?n) \<otimes> ?xs)",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 3, template_var 1))],
+       template_predicate
+        (
+           template_app
+            (template_hole 3,
+             template_app
+              (template_app
+                (template_hole 2,
+                 template_app
+                  (template_hole 1,
+                   template_app (template_hole 0, template_var 0))),
+               template_var 1))
+           ))),
+    ("Tangle_Algebra.tensor_preserves_is_tangle",
+     "[| is_tangle_diagram ?x; is_tangle_diagram ?y |]
+      ==> is_tangle_diagram (?x \<otimes> ?y)",
+     template_implication
+      ([template_predicate (template_app (template_hole 1, template_var 1)),
+        template_predicate
+         (template_app (template_hole 1, template_var 0))],
+       template_predicate
+        (
+           template_app
+            (template_hole 1,
+             template_app
+              (template_app (template_hole 0, template_var 1),
+               template_var 0))
+           ))),
+    ("Tangle_Algebra.4",
+     "?x * ?xs \<otimes> ?y * ?ys =
+      (?x \<otimes> ?y) * (?xs \<otimes> ?ys)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 2,
+           template_app
+            (template_app (template_hole 1, template_var 3),
+             template_var 2)),
+         template_app
+          (template_app (template_hole 1, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 1,
+           template_app
+            (template_app (template_hole 0, template_var 3),
+             template_var 1)),
+         template_app
+          (template_app (template_hole 2, template_var 2),
+           template_var 0)))),
+    ("Tangle_Algebra.3",
+     "basic ?x \<otimes> ?y * ?ys =
+      (if codomain_block ?x = 0 then (?x \<otimes> ?y) * ?ys
+       else (?x \<otimes> ?y) *
+            (basic (make_vert_block (nat (codomain_block ?x))) \<otimes>
+             ?ys))",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 9,
+                template_app (template_hole 8, template_var 2)),
+              template_app
+               (template_app (template_hole 7, template_var 1),
+                template_var 0))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_hole 6,
+                 template_app
+                  (template_app
+                    (template_hole 5,
+                     template_app (template_hole 4, template_var 2)),
+                   template_hole 3)),
+               template_app
+                (template_app
+                  (template_hole 7,
+                   template_app
+                    (template_app (template_hole 2, template_var 2),
+                     template_var 1)),
+                 template_var 0)),
+             template_app
+              (template_app
+                (template_hole 7,
+                 template_app
+                  (template_app (template_hole 2, template_var 2),
+                   template_var 1)),
+               template_app
+                (template_app
+                  (template_hole 9,
+                   template_app
+                    (template_hole 8,
+                     template_app
+                      (template_hole 1,
+                       template_app
+                        (template_hole 0,
+                         template_app (template_hole 4, template_var 2))))),
+                 template_var 0)))
+           ))),
+    ("Tangle_Algebra.2",
+     "?x * ?xs \<otimes> basic ?y =
+      (if codomain_block ?y = 0 then (?x \<otimes> ?y) * ?xs
+       else (?x \<otimes> ?y) *
+            (?xs \<otimes>
+             basic (make_vert_block (nat (codomain_block ?y)))))",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 9,
+                template_app
+                 (template_app (template_hole 8, template_var 2),
+                  template_var 1)),
+              template_app (template_hole 7, template_var 0))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_hole 6,
+                 template_app
+                  (template_app
+                    (template_hole 5,
+                     template_app (template_hole 4, template_var 0)),
+                   template_hole 3)),
+               template_app
+                (template_app
+                  (template_hole 8,
+                   template_app
+                    (template_app (template_hole 2, template_var 2),
+                     template_var 0)),
+                 template_var 1)),
+             template_app
+              (template_app
+                (template_hole 8,
+                 template_app
+                  (template_app (template_hole 2, template_var 2),
+                   template_var 0)),
+               template_app
+                (template_app (template_hole 9, template_var 1),
+                 template_app
+                  (template_hole 7,
+                   template_app
+                    (template_hole 1,
+                     template_app
+                      (template_hole 0,
+                       template_app (template_hole 4, template_var 0)))))))
+           ))),
+    ("Tangle_Algebra.simp3",
+     "is_tangle_diagram ?xs & is_tangle_diagram ?ys -->
+      is_tangle_diagram (?xs \<otimes> ?ys) ==>
+      is_tangle_diagram (?x * ?xs) & is_tangle_diagram (?y * ?ys) -->
+      is_tangle_diagram (?x * ?xs \<otimes> ?y * ?ys)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 4,
+                template_app
+                 (template_app
+                   (template_hole 3,
+                    template_app (template_hole 2, template_var 3)),
+                  template_app (template_hole 2, template_var 2))),
+              template_app
+               (template_hole 2,
+                template_app
+                 (template_app (template_hole 1, template_var 3),
+                  template_var 2)))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 4,
+               template_app
+                (template_app
+                  (template_hole 3,
+                   template_app
+                    (template_hole 2,
+                     template_app
+                      (template_app (template_hole 0, template_var 1),
+                       template_var 3))),
+                 template_app
+                  (template_hole 2,
+                   template_app
+                    (template_app (template_hole 0, template_var 0),
+                     template_var 2)))),
+             template_app
+              (template_hole 2,
+               template_app
+                (template_app
+                  (template_hole 1,
+                   template_app
+                    (template_app (template_hole 0, template_var 1),
+                     template_var 3)),
+                 template_app
+                  (template_app (template_hole 0, template_var 0),
+                   template_var 2))))
+           ))),
+    ("Tangle_Algebra.simp2",
+     "[| codomain_block ?x ~= 0;
+         is_tangle_diagram
+          (basic (make_vert_block (nat (codomain_block ?x)))) &
+         is_tangle_diagram ?ys -->
+         is_tangle_diagram
+          (basic (make_vert_block (nat (codomain_block ?x))) \<otimes>
+           ?ys) |]
+      ==> is_tangle_diagram (basic ?x) & is_tangle_diagram (?y * ?ys) -->
+          is_tangle_diagram (basic ?x \<otimes> ?y * ?ys)",
+     template_implication
+      ([template_negation
+         (
+            template_equation
+             (template_app (template_hole 9, template_var 2),
+              template_hole 8)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 7,
+                template_app
+                 (template_app
+                   (template_hole 6,
+                    template_app
+                     (template_hole 5,
+                      template_app
+                       (template_hole 4,
+                        template_app
+                         (template_hole 3,
+                          template_app
+                           (template_hole 2,
+                            template_app
+                             (template_hole 9, template_var 2)))))),
+                  template_app (template_hole 5, template_var 1))),
+              template_app
+               (template_hole 5,
+                template_app
+                 (template_app
+                   (template_hole 1,
+                    template_app
+                     (template_hole 4,
+                      template_app
+                       (template_hole 3,
+                        template_app
+                         (template_hole 2,
+                          template_app
+                           (template_hole 9, template_var 2))))),
+                  template_var 1)))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 7,
+               template_app
+                (template_app
+                  (template_hole 6,
+                   template_app
+                    (template_hole 5,
+                     template_app (template_hole 4, template_var 2))),
+                 template_app
+                  (template_hole 5,
+                   template_app
+                    (template_app (template_hole 0, template_var 0),
+                     template_var 1)))),
+             template_app
+              (template_hole 5,
+               template_app
+                (template_app
+                  (template_hole 1,
+                   template_app (template_hole 4, template_var 2)),
+                 template_app
+                  (template_app (template_hole 0, template_var 0),
+                   template_var 1))))
+           ))),
+    ("Tangle_Algebra.simp1",
+     "[| codomain_block ?y ~= 0;
+         is_tangle_diagram ?xs &
+         is_tangle_diagram
+          (basic (make_vert_block (nat (codomain_block ?y)))) -->
+         is_tangle_diagram
+          (?xs \<otimes>
+           basic (make_vert_block (nat (codomain_block ?y)))) |]
+      ==> is_tangle_diagram (?x * ?xs) & is_tangle_diagram (basic ?y) -->
+          is_tangle_diagram (?x * ?xs \<otimes> basic ?y)",
+     template_implication
+      ([template_negation
+         (
+            template_equation
+             (template_app (template_hole 9, template_var 2),
+              template_hole 8)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 7,
+                template_app
+                 (template_app
+                   (template_hole 6,
+                    template_app (template_hole 5, template_var 1)),
+                  template_app
+                   (template_hole 5,
+                    template_app
+                     (template_hole 4,
+                      template_app
+                       (template_hole 3,
+                        template_app
+                         (template_hole 2,
+                          template_app
+                           (template_hole 9, template_var 2))))))),
+              template_app
+               (template_hole 5,
+                template_app
+                 (template_app (template_hole 1, template_var 1),
+                  template_app
+                   (template_hole 4,
+                    template_app
+                     (template_hole 3,
+                      template_app
+                       (template_hole 2,
+                        template_app (template_hole 9, template_var 2)))))))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 7,
+               template_app
+                (template_app
+                  (template_hole 6,
+                   template_app
+                    (template_hole 5,
+                     template_app
+                      (template_app (template_hole 0, template_var 0),
+                       template_var 1))),
+                 template_app
+                  (template_hole 5,
+                   template_app (template_hole 4, template_var 2)))),
+             template_app
+              (template_hole 5,
+               template_app
+                (template_app
+                  (template_hole 1,
+                   template_app
+                    (template_app (template_hole 0, template_var 0),
+                     template_var 1)),
+                 template_app (template_hole 4, template_var 2))))
+           )))]:
+   (string * thm * template) list
+### theory "Draft.Tangle_AlgebraTemplates"
+### 0.332s elapsed time, 0.434s cpu time, 0.000s GC time
+val it = (): unit

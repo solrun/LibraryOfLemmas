@@ -1,0 +1,583 @@
+Loading theory "Draft.Uniform_Sampling" (required by "Draft.Uniform_SamplingTemplates")
+Loading theory "HOL-Library.BigO" (required by "Draft.Uniform_SamplingTemplates" via "Draft.ExtrEqs")
+Loading theory "Draft.Templates" (required by "Draft.Uniform_SamplingTemplates" via "Draft.ExtrEqs")
+datatype template_term
+=
+     t_empty
+   | template_app of template_term * template_term
+   | template_hole of int
+   | template_var of int
+datatype sign
+= equals | greater_equals | greater_than | less_equals | less_than
+datatype template
+=
+     template_bimplication of template * template
+   | template_dunno
+   | template_equation of template_term * template_term
+   | template_implication of template list * template
+   | template_inequation of sign * template_term * template_term
+   | template_negation of template
+   | template_predicate of template_term
+constructor t_empty: template_term
+constructor template_app: template_term * template_term -> template_term
+constructor template_hole: int -> template_term
+constructor template_var: int -> template_term
+constructor equals: sign
+constructor greater_equals: sign
+constructor greater_than: sign
+constructor less_equals: sign
+constructor less_than: sign
+constructor template_bimplication: template * template -> template
+constructor template_dunno: template
+constructor template_equation: template_term * template_term -> template
+constructor template_implication: template list * template -> template
+constructor template_inequation:
+   sign * template_term * template_term -> template
+constructor template_negation: template -> template
+constructor template_predicate: template_term -> template
+val vfs = fn: term -> (indexname * typ) list * (string * typ) list
+val indexOf = fn: ''a list -> ''a -> int -> int
+val has_eq = fn: term -> bool
+val term2template = fn:
+   (indexname * typ) list -> (string * typ) list -> term -> template_term
+val lemma2predicate = fn: term -> term -> template
+val makeTemplatewithContext = fn: term -> term -> template
+val lemma2template = fn: term -> template
+val thm2template = fn: thm -> template
+val tterm2string = fn: template_term -> string
+val template2string = fn: template -> string
+val t = "height ?t <= size ?t": thm
+val th =
+   Const ("HOL.Trueprop", "bool => prop") $
+     (Const ("Orderings.ord_class.less_eq", "nat => nat => bool") $
+       (Const ("Tree.height_class.height", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree")) $
+       (Const ("Nat.size_class.size", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree"))):
+   term
+### theory "Draft.Templates"
+### 0.068s elapsed time, 0.258s cpu time, 0.000s GC time
+### theory "Draft.Uniform_Sampling"
+### 0.615s elapsed time, 1.367s cpu time, 0.086s GC time
+### theory "HOL-Library.BigO"
+### 0.692s elapsed time, 1.425s cpu time, 0.086s GC time
+Loading theory "Draft.ExtrEqs" (required by "Draft.Uniform_SamplingTemplates")
+val eqpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Var (("_dummy_", 2), "?'a"))
+       ):
+   term Find_Theorems.criterion
+val badeqpattern = Pattern (Const ("Pure.eq", "?'a => ?'a => prop")):
+   term Find_Theorems.criterion
+val undefpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Const ("HOL.undefined", "?'a"))
+       ):
+   term Find_Theorems.criterion
+val thmpattern =
+   Pattern
+    (Const ("HOL.Trueprop", "bool => prop") $ Var (("_dummy_", 1), "bool")):
+   term Find_Theorems.criterion
+val badnames =
+   ["*nitpick*", "*Nitpick*", "*full_exhaustive*", "*_def*", "Enum.finite*",
+    "*Quickcheck*", "ATP*", "*Nunchaku*", "*Code*", "*BNF*", "*SMT*",
+    "*.*.*"]:
+   string list
+val unwanted_names =
+   [(false, Name "*nitpick*"), (false, Name "*Nitpick*"),
+    (false, Name "*full_exhaustive*"), (false, Name "*_def*"),
+    (false, Name "Enum.finite*"), (false, Name "*Quickcheck*"),
+    (false, Name "ATP*"), (false, Name "*Nunchaku*"),
+    (false, Name "*Code*"), (false, Name "*BNF*"), (false, Name "*SMT*"),
+    (false, Name "*.*.*")]:
+   (bool * term Find_Theorems.criterion) list
+val has_vars = fn: term -> bool
+val get_all_eqs = fn: string -> Proof.context -> (string * thm) list
+val get_all_thms = fn: string -> Proof.context -> (string * thm) list
+val get_noneq_thms = fn: string -> Proof.context -> (string * thm) list
+val template_eqs = fn:
+   string -> Proof.context -> (string * thm * template) list
+val template_thms = fn:
+   string -> Proof.context -> (string * thm * template) list
+### theory "Draft.ExtrEqs"
+### 0.484s elapsed time, 0.541s cpu time, 0.085s GC time
+Loading theory "Draft.Uniform_SamplingTemplates"
+val templateLemmas =
+   [("Uniform_Sampling.lossless_sample_uniform_units",
+     "1 < ?p ==> lossless_spmf (sample_uniform_units ?p)",
+     template_implication
+      ([template_inequation (less_than, template_hole 2, template_var 0)],
+       template_predicate
+        (
+           template_app
+            (template_hole 1,
+             template_app (template_hole 0, template_var 0))
+           ))),
+    ("Uniform_Sampling.inj_uni_samp_plus",
+     "inj_on (%b. (?y + b) mod ?q) {..<?q}",
+     template_predicate
+      (
+         template_app
+          (template_app (template_hole 3, t_empty),
+           template_app (template_hole 0, template_var 0))
+         )),
+    ("Uniform_Sampling.set_spmf_sample_uniform_units",
+     "set_spmf (sample_uniform_units ?q) = {..<?q} - {0}",
+     template_equation
+      (template_app
+        (template_hole 6, template_app (template_hole 5, template_var 0)),
+       template_app
+        (template_app
+          (template_hole 4, template_app (template_hole 3, template_var 0)),
+         template_app
+          (template_app (template_hole 2, template_hole 1),
+           template_hole 0)))),
+    ("Uniform_Sampling.inj_on_minus",
+     "inj_on (%b. (?y + (?q - b)) mod ?q) {..<?q}",
+     template_predicate
+      (
+         template_app
+          (template_app (template_hole 4, t_empty),
+           template_app (template_hole 0, template_var 0))
+         )),
+    ("Uniform_Sampling.samp_uni_plus_one_time_pad",
+     "map_spmf (%b. (?y + b) mod ?q) (sample_uniform ?q) =
+      sample_uniform ?q",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 4, template_app (template_hole 3, t_empty)),
+         template_app (template_hole 0, template_var 0)),
+       template_app (template_hole 0, template_var 0))),
+    ("Uniform_Sampling.inj_on_mult",
+     "coprime ?x ?q ==> inj_on (%b. ?x * b mod ?q) {..<?q}",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 4, template_var 1),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 3, t_empty),
+             template_app (template_hole 0, template_var 0))
+           ))),
+    ("Uniform_Sampling.samp_uni_minus_one_time_pad",
+     "map_spmf (%b. (?y + (?q - b)) mod ?q) (sample_uniform ?q) =
+      sample_uniform ?q",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 5, template_app (template_hole 4, t_empty)),
+         template_app (template_hole 0, template_var 0)),
+       template_app (template_hole 0, template_var 0))),
+    ("Uniform_Sampling.xor_uni_samp",
+     "map_spmf ((\<oplus>) ?y) coin_spmf = map_spmf (%b. b) coin_spmf",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 4, template_app (template_hole 3, t_empty)),
+         template_app (template_hole 1, template_hole 0)),
+       template_app
+        (template_app
+          (template_hole 4, template_app (template_hole 3, t_empty)),
+         template_app (template_hole 1, template_hole 0)))),
+    ("Uniform_Sampling.weight_sample_uniform_units",
+     "1 < ?p ==> weight_spmf (sample_uniform_units ?p) = 1",
+     template_implication
+      ([template_inequation (less_than, template_hole 6, template_var 0)],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 4,
+             template_app
+              (template_hole 3,
+               template_app (template_hole 2, template_var 0))),
+           template_app
+            (template_hole 1,
+             template_app
+              (template_hole 3,
+               template_app (template_hole 2, template_var 0)))),
+         template_hole 0))),
+    ("Uniform_Sampling.inj_on_add_mult",
+     "coprime ?x ?q ==> inj_on (%b. (?y + ?x * b) mod ?q) {..<?q}",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 5, template_var 2),
+              template_var 1)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 4, t_empty),
+             template_app (template_hole 0, template_var 1))
+           ))),
+    ("Uniform_Sampling.inj_on_mult'",
+     "coprime ?x ?q ==> inj_on (%b. ?x * b mod ?q) ({..<?q} - {0})",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 8, template_var 1),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 7, t_empty),
+             template_app
+              (template_app
+                (template_hole 4,
+                 template_app (template_hole 3, template_var 0)),
+               template_app
+                (template_app (template_hole 2, template_hole 1),
+                 template_hole 0)))
+           ))),
+    ("Uniform_Sampling.mult_one_time_pad",
+     "coprime ?x ?q ==>
+      map_spmf (%b. ?x * b mod ?q) (sample_uniform ?q) = sample_uniform ?q",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 6, template_var 1),
+              template_var 0)
+            )],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 4, template_app (template_hole 3, t_empty)),
+           template_app (template_hole 0, template_var 0)),
+         template_app (template_hole 0, template_var 0)))),
+    ("Uniform_Sampling.mult_one_time_pad'",
+     "coprime ?x ?q ==>
+      map_spmf (%b. ?x * b mod ?q) (sample_uniform_units ?q) =
+      sample_uniform_units ?q",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 6, template_var 1),
+              template_var 0)
+            )],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 4, template_app (template_hole 3, t_empty)),
+           template_app (template_hole 0, template_var 0)),
+         template_app (template_hole 0, template_var 0)))),
+    ("Uniform_Sampling.add_mult_one_time_pad",
+     "coprime ?x ?q ==>
+      map_spmf (%b. (?y + ?x * b) mod ?q) (sample_uniform ?q) =
+      sample_uniform ?q",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 7, template_var 2),
+              template_var 1)
+            )],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 5, template_app (template_hole 4, t_empty)),
+           template_app (template_hole 0, template_var 1)),
+         template_app (template_hole 0, template_var 1)))),
+    ("Uniform_Sampling.surj_uni_samp_plus",
+     "inj_on (%b. (?y + b) mod ?q) {..<?q} ==>
+      (%b. (?y + b) mod ?q) ` {..<?q} = {..<?q}",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 5, t_empty),
+              template_app (template_hole 2, template_var 0))
+            )],
+       template_equation
+        (template_app
+          (template_app (template_hole 0, t_empty),
+           template_app (template_hole 2, template_var 0)),
+         template_app (template_hole 2, template_var 0)))),
+    ("Uniform_Sampling.one_time_pad",
+     "[| inj_on ?f {..<?q}; ?f ` {..<?q} = {..<?q} |]
+      ==> map_spmf ?f (sample_uniform ?q) = sample_uniform ?q",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 7, template_var 1),
+              template_app (template_hole 6, template_var 0))
+            ),
+        template_equation
+         (template_app
+           (template_app (template_hole 4, template_var 1),
+            template_app (template_hole 6, template_var 0)),
+          template_app (template_hole 6, template_var 0))],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 2,
+             template_app (template_hole 1, template_var 1)),
+           template_app (template_hole 0, template_var 0)),
+         template_app (template_hole 0, template_var 0)))),
+    ("Uniform_Sampling.plus_inj_eq",
+     "[| ?x < ?q; ?x' < ?q; (?y + ?x) mod ?q = (?y + ?x') mod ?q |]
+      ==> ?x = ?x'",
+     template_implication
+      ([template_inequation (less_than, template_var 3, template_var 2),
+        template_inequation (less_than, template_var 1, template_var 2),
+        template_equation
+         (template_app
+           (template_app
+             (template_hole 1,
+              template_app
+               (template_app (template_hole 0, template_var 0),
+                template_var 3)),
+            template_var 2),
+          template_app
+           (template_app
+             (template_hole 1,
+              template_app
+               (template_app (template_hole 0, template_var 0),
+                template_var 1)),
+            template_var 2))],
+       template_equation (template_var 3, template_var 1))),
+    ("Uniform_Sampling.surj_on_minus",
+     "inj_on (%b. (?y + (?q - b)) mod ?q) {..<?q} ==>
+      (%b. (?y + (?q - b)) mod ?q) ` {..<?q} = {..<?q}",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 6, t_empty),
+              template_app (template_hole 2, template_var 0))
+            )],
+       template_equation
+        (template_app
+          (template_app (template_hole 0, t_empty),
+           template_app (template_hole 2, template_var 0)),
+         template_app (template_hole 2, template_var 0)))),
+    ("Uniform_Sampling.surj_on_mult",
+     "[| coprime ?x ?q; inj_on (%b. ?x * b mod ?q) {..<?q} |]
+      ==> (%b. ?x * b mod ?q) ` {..<?q} = {..<?q}",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 6, template_var 1),
+              template_var 0)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 5, t_empty),
+              template_app (template_hole 2, template_var 0))
+            )],
+       template_equation
+        (template_app
+          (template_app (template_hole 0, t_empty),
+           template_app (template_hole 2, template_var 0)),
+         template_app (template_hole 2, template_var 0)))),
+    ("Uniform_Sampling.mult_inj_eq",
+     "[| coprime ?x ?q; ?y < ?q; ?y' < ?q;
+         ?x * ?y mod ?q = ?x * ?y' mod ?q |]
+      ==> ?y = ?y'",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 4, template_var 3),
+              template_var 2)
+            ),
+        template_inequation (less_than, template_var 1, template_var 2),
+        template_inequation (less_than, template_var 0, template_var 2),
+        template_equation
+         (template_app
+           (template_app
+             (template_hole 1,
+              template_app
+               (template_app (template_hole 0, template_var 3),
+                template_var 1)),
+            template_var 2),
+          template_app
+           (template_app
+             (template_hole 1,
+              template_app
+               (template_app (template_hole 0, template_var 3),
+                template_var 0)),
+            template_var 2))],
+       template_equation (template_var 1, template_var 0))),
+    ("Uniform_Sampling.surj_on_add_mult",
+     "[| coprime ?x ?q; inj_on (%b. (?y + ?x * b) mod ?q) {..<?q} |]
+      ==> (%b. (?y + ?x * b) mod ?q) ` {..<?q} = {..<?q}",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 7, template_var 2),
+              template_var 1)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 6, t_empty),
+              template_app (template_hole 2, template_var 1))
+            )],
+       template_equation
+        (template_app
+          (template_app (template_hole 0, t_empty),
+           template_app (template_hole 2, template_var 1)),
+         template_app (template_hole 2, template_var 1)))),
+    ("Uniform_Sampling.one_time_pad'",
+     "[| inj_on ?f ({..<?q} - {0}); ?f ` ({..<?q} - {0}) = {..<?q} - {0} |]
+      ==> map_spmf ?f (sample_uniform_units ?q) = sample_uniform_units ?q",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 11, template_var 1),
+              template_app
+               (template_app
+                 (template_hole 10,
+                  template_app (template_hole 9, template_var 0)),
+                template_app
+                 (template_app (template_hole 8, template_hole 7),
+                  template_hole 6)))
+            ),
+        template_equation
+         (template_app
+           (template_app (template_hole 4, template_var 1),
+            template_app
+             (template_app
+               (template_hole 10,
+                template_app (template_hole 9, template_var 0)),
+              template_app
+               (template_app (template_hole 8, template_hole 7),
+                template_hole 6))),
+          template_app
+           (template_app
+             (template_hole 10,
+              template_app (template_hole 9, template_var 0)),
+            template_app
+             (template_app (template_hole 8, template_hole 7),
+              template_hole 6)))],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 2,
+             template_app (template_hole 1, template_var 1)),
+           template_app (template_hole 0, template_var 0)),
+         template_app (template_hole 0, template_var 0)))),
+    ("Uniform_Sampling.samp_uni_add_mult",
+     "[| coprime ?x ?q; ?x' < ?q; ?y' < ?q;
+         (?y + ?x * ?x') mod ?q = (?y + ?x * ?y') mod ?q |]
+      ==> ?x' = ?y'",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 5, template_var 4),
+              template_var 3)
+            ),
+        template_inequation (less_than, template_var 2, template_var 3),
+        template_inequation (less_than, template_var 1, template_var 3),
+        template_equation
+         (template_app
+           (template_app
+             (template_hole 2,
+              template_app
+               (template_app (template_hole 1, template_var 0),
+                template_app
+                 (template_app (template_hole 0, template_var 4),
+                  template_var 2))),
+            template_var 3),
+          template_app
+           (template_app
+             (template_hole 2,
+              template_app
+               (template_app (template_hole 1, template_var 0),
+                template_app
+                 (template_app (template_hole 0, template_var 4),
+                  template_var 1))),
+            template_var 3))],
+       template_equation (template_var 2, template_var 1))),
+    ("Uniform_Sampling.surj_on_mult'",
+     "[| coprime ?x ?q; inj_on (%b. ?x * b mod ?q) ({..<?q} - {0}) |]
+      ==> (%b. ?x * b mod ?q) ` ({..<?q} - {0}) = {..<?q} - {0}",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 10, template_var 1),
+              template_var 0)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 9, t_empty),
+              template_app
+               (template_app
+                 (template_hole 6,
+                  template_app (template_hole 5, template_var 0)),
+                template_app
+                 (template_app (template_hole 4, template_hole 3),
+                  template_hole 2)))
+            )],
+       template_equation
+        (template_app
+          (template_app (template_hole 0, t_empty),
+           template_app
+            (template_app
+              (template_hole 6,
+               template_app (template_hole 5, template_var 0)),
+             template_app
+              (template_app (template_hole 4, template_hole 3),
+               template_hole 2))),
+         template_app
+          (template_app
+            (template_hole 6,
+             template_app (template_hole 5, template_var 0)),
+           template_app
+            (template_app (template_hole 4, template_hole 3),
+             template_hole 2))))),
+    ("Uniform_Sampling.ped_inv_mapping",
+     "[| ?a < ?q; [?m \<noteq> 0] (mod ?q) |]
+      ==> map_spmf (%d. (d + ?a * ?m) mod ?q) (sample_uniform ?q) =
+          map_spmf (%d. (d + ?q * ?m - ?a * ?m) mod ?q)
+           (sample_uniform ?q)",
+     template_implication
+      ([template_inequation (less_than, template_var 2, template_var 1),
+        template_negation
+         (
+            template_predicate
+             (
+                template_app
+                 (template_app
+                   (template_app (template_hole 9, template_var 0),
+                    template_hole 8),
+                  template_var 1)
+                )
+            )],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 6, template_app (template_hole 5, t_empty)),
+           template_app (template_hole 1, template_var 1)),
+         template_app
+          (template_app
+            (template_hole 6, template_app (template_hole 5, t_empty)),
+           template_app (template_hole 1, template_var 1)))))]:
+   (string * thm * template) list
+### theory "Draft.Uniform_SamplingTemplates"
+### 1.944s elapsed time, 2.331s cpu time, 0.225s GC time
+val it = (): unit

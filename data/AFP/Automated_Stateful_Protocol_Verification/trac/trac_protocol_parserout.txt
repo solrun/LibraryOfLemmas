@@ -1,0 +1,1316 @@
+Loading theory "Draft.ml_yacc_lib" (required by "Draft.trac_protocol_parserTemplates" via "Draft.trac_protocol_parser" via "Draft.trac_term")
+Loading theory "Draft.Templates" (required by "Draft.trac_protocol_parserTemplates" via "Draft.ExtrEqs")
+signature STREAM =
+  sig
+    val cons: 'a * 'a stream -> 'a stream
+    val get: 'a stream -> 'a * 'a stream
+    type 'a stream
+    val streamify: (unit -> 'a) -> 'a stream
+  end
+signature LR_TABLE =
+  sig
+    exception Goto of state * nonterm
+    val action: table -> state * term -> action
+    datatype action = ACCEPT | ERROR | REDUCE of int | SHIFT of state
+    val describeActions: table -> state -> (term, action) pairlist * action
+    val describeGoto: table -> state -> (nonterm, state) pairlist
+    val goto: table -> state * nonterm -> state
+    val initialState: table -> state
+    val mkLrTable:
+       {actions: ((term, action) pairlist * action) array,
+        gotos: (nonterm, state) pairlist array,
+        initialState: state, numRules: int, numStates: int}
+         -> table
+    datatype nonterm = NT of int
+    val numRules: table -> int
+    val numStates: table -> int
+    datatype ('a, 'b) pairlist = EMPTY | PAIR of 'a * 'b * ('a, 'b) pairlist
+    datatype state = STATE of int
+    type table
+    datatype term = T of int
+  end
+signature TOKEN =
+  sig
+    structure LrTable: LR_TABLE
+    val sameToken: ('a, 'b) token * ('a, 'b) token -> bool
+    datatype ('a, 'b) token = TOKEN of LrTable.term * ('a * 'b * 'b)
+  end
+signature LR_PARSER =
+  sig
+    structure LrTable: LR_TABLE
+    exception ParseError
+    structure Stream: STREAM
+    structure Token: TOKEN
+    val parse:
+       {arg: 'a,
+        ec:
+        {error: string * 'b * 'b -> unit,
+         errtermvalue: LrTable.term -> 'c,
+         is_keyword: LrTable.term -> bool,
+         noShift: LrTable.term -> bool,
+         preferred_change: (LrTable.term list * LrTable.term list) list,
+         showTerminal: LrTable.term -> string, terms: LrTable.term list}
+        ,
+        lexer: ('c, 'b) Token.token Stream.stream,
+        lookahead: int,
+        saction:
+        int * 'b * (LrTable.state * ('c * 'b * 'b)) list * 'a ->
+          LrTable.nonterm * ('c * 'b * 'b) *
+          (LrTable.state * ('c * 'b * 'b)) list
+        ,
+        table: LrTable.table, void: 'c}
+         -> 'c * ('c, 'b) Token.token Stream.stream
+  end
+signature LEXER =
+  sig
+    structure UserDeclarations:
+      sig type pos type svalue type ('a, 'b) token end
+    val makeLexer:
+       (int -> string) ->
+         unit ->
+           (UserDeclarations.svalue, UserDeclarations.pos)
+           UserDeclarations.token
+  end
+signature ARG_LEXER =
+  sig
+    structure UserDeclarations:
+      sig type arg type pos type svalue type ('a, 'b) token end
+    val makeLexer:
+       (int -> string) ->
+         UserDeclarations.arg ->
+           unit ->
+             (UserDeclarations.svalue, UserDeclarations.pos)
+             UserDeclarations.token
+  end
+signature PARSER_DATA =
+  sig
+    structure Actions:
+      sig
+        val actions:
+           int * pos * (LrTable.state * (svalue * pos * pos)) list * arg ->
+             LrTable.nonterm * (svalue * pos * pos) *
+             (LrTable.state * (svalue * pos * pos)) list
+        val extract: svalue -> result
+        val void: svalue
+      end
+    structure EC:
+      sig
+        val errtermvalue: LrTable.term -> svalue
+        val is_keyword: LrTable.term -> bool
+        val noShift: LrTable.term -> bool
+        val preferred_change: (LrTable.term list * LrTable.term list) list
+        val showTerminal: LrTable.term -> string
+        val terms: LrTable.term list
+      end
+    structure LrTable: LR_TABLE
+    structure Token: TOKEN
+    type arg
+    type pos
+    type result
+    type svalue
+    val table: LrTable.table
+  end
+signature PARSER =
+  sig
+    exception ParseError
+    structure Stream: STREAM
+    structure Token: TOKEN
+    type arg
+    val makeLexer:
+       (int -> string) -> (svalue, pos) Token.token Stream.stream
+    val parse:
+       int * (svalue, pos) Token.token Stream.stream *
+       (string * pos * pos -> unit) * arg
+         -> result * (svalue, pos) Token.token Stream.stream
+    type pos
+    type result
+    val sameToken:
+       (svalue, pos) Token.token * (svalue, pos) Token.token -> bool
+    type svalue
+  end
+signature ARG_PARSER =
+  sig
+    exception ParseError
+    structure Stream: STREAM
+    structure Token: TOKEN
+    type arg
+    type lexarg
+    val makeLexer:
+       (int -> string) -> lexarg -> (svalue, pos) Token.token Stream.stream
+    val parse:
+       int * (svalue, pos) Token.token Stream.stream *
+       (string * pos * pos -> unit) * arg
+         -> result * (svalue, pos) Token.token Stream.stream
+    type pos
+    type result
+    val sameToken:
+       (svalue, pos) Token.token * (svalue, pos) Token.token -> bool
+    type svalue
+  end
+functor Join (
+  sig
+    structure Lex: LEXER
+    structure LrParser: LR_PARSER
+    structure ParserData: PARSER_DATA
+  end
+  ): 
+  PARSER
+functor JoinWithArg (
+  sig
+    structure Lex: ARG_LEXER
+    structure LrParser: LR_PARSER
+    structure ParserData: PARSER_DATA
+  end
+  ): 
+  ARG_PARSER
+structure LrTable: LR_TABLE
+### Opaque signature matching (:>) fails to work with ML pretty printing --
+### prefer non-opaque matching (:) possibly with abstype (line 30 of "$AFP/Automated_Stateful_Protocol_Verification/trac/ml-yacc-lib/stream.sml")
+structure Stream: STREAM
+datatype template_term
+=
+     t_empty
+   | template_app of template_term * template_term
+   | template_hole of int
+   | template_var of int
+datatype sign
+= equals | greater_equals | greater_than | less_equals | less_than
+datatype template
+=
+     template_bimplication of template * template
+   | template_dunno
+   | template_equation of template_term * template_term
+   | template_implication of template list * template
+   | template_inequation of sign * template_term * template_term
+   | template_negation of template
+   | template_predicate of template_term
+constructor t_empty: template_term
+constructor template_app: template_term * template_term -> template_term
+constructor template_hole: int -> template_term
+constructor template_var: int -> template_term
+constructor equals: sign
+constructor greater_equals: sign
+constructor greater_than: sign
+constructor less_equals: sign
+constructor less_than: sign
+constructor template_bimplication: template * template -> template
+constructor template_dunno: template
+constructor template_equation: template_term * template_term -> template
+constructor template_implication: template list * template -> template
+constructor template_inequation:
+   sign * template_term * template_term -> template
+constructor template_negation: template -> template
+constructor template_predicate: template_term -> template
+val vfs = fn: term -> (indexname * typ) list * (string * typ) list
+val indexOf = fn: ''a list -> ''a -> int -> int
+val has_eq = fn: term -> bool
+val term2template = fn:
+   (indexname * typ) list -> (string * typ) list -> term -> template_term
+val lemma2predicate = fn: term -> term -> template
+val makeTemplatewithContext = fn: term -> term -> template
+val lemma2template = fn: term -> template
+val thm2template = fn: thm -> template
+val tterm2string = fn: template_term -> string
+val template2string = fn: template -> string
+val t = "height ?t <= size ?t": thm
+val th =
+   Const ("HOL.Trueprop", "bool => prop") $
+     (Const ("Orderings.ord_class.less_eq", "nat => nat => bool") $
+       (Const ("Tree.height_class.height", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree")) $
+       (Const ("Nat.size_class.size", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree"))):
+   term
+### theory "Draft.Templates"
+### 0.073s elapsed time, 0.174s cpu time, 0.000s GC time
+Loading theory "Draft.ExtrEqs" (required by "Draft.trac_protocol_parserTemplates")
+### Opaque signature matching (:>) fails to work with ML pretty printing --
+### prefer non-opaque matching (:) possibly with abstype (line 121 of "$AFP/Automated_Stateful_Protocol_Verification/trac/ml-yacc-lib/parser2.sml")
+### Opaque signature matching (:>) fails to work with ML pretty printing --
+### prefer non-opaque matching (:) possibly with abstype (line 144 of "$AFP/Automated_Stateful_Protocol_Verification/trac/ml-yacc-lib/parser2.sml")
+### ML warning (line 207 of "$AFP/Automated_Stateful_Protocol_Verification/trac/ml-yacc-lib/parser2.sml"):
+### Value identifier (action) has not been referenced.
+### ML warning (line 193 of "$AFP/Automated_Stateful_Protocol_Verification/trac/ml-yacc-lib/parser2.sml"):
+### Value identifier (next) has not been referenced.
+### ML warning (line 310 of "$AFP/Automated_Stateful_Protocol_Verification/trac/ml-yacc-lib/parser2.sml"):
+### Value identifier (stack) has not been referenced.
+### ML warning (line 310 of "$AFP/Automated_Stateful_Protocol_Verification/trac/ml-yacc-lib/parser2.sml"):
+### Value identifier (value) has not been referenced.
+### ML warning (line 310 of "$AFP/Automated_Stateful_Protocol_Verification/trac/ml-yacc-lib/parser2.sml"):
+### Value identifier (lexv) has not been referenced.
+### ML warning (line 363 of "$AFP/Automated_Stateful_Protocol_Verification/trac/ml-yacc-lib/parser2.sml"):
+### Value identifier (printChangeList) has not been referenced.
+### ML warning (line 398 of "$AFP/Automated_Stateful_Protocol_Verification/trac/ml-yacc-lib/parser2.sml"):
+### Value identifier (term) has not been referenced.
+### ML warning (line 403 of "$AFP/Automated_Stateful_Protocol_Verification/trac/ml-yacc-lib/parser2.sml"):
+### Value identifier (right) has not been referenced.
+### ML warning (line 421 of "$AFP/Automated_Stateful_Protocol_Verification/trac/ml-yacc-lib/parser2.sml"):
+### Value identifier (lexPair) has not been referenced.
+### ML warning (line 442 of "$AFP/Automated_Stateful_Protocol_Verification/trac/ml-yacc-lib/parser2.sml"):
+### Value identifier (r) has not been referenced.
+### ML warning (line 445 of "$AFP/Automated_Stateful_Protocol_Verification/trac/ml-yacc-lib/parser2.sml"):
+### Value identifier (l') has not been referenced.
+### ML warning (line 515 of "$AFP/Automated_Stateful_Protocol_Verification/trac/ml-yacc-lib/parser2.sml"):
+### Value identifier (h) has not been referenced.
+signature FIFO =
+  sig
+    exception Empty
+    val empty: 'a queue
+    val get: 'a queue -> 'a * 'a queue
+    val put: 'a * 'a queue -> 'a queue
+    type 'a queue
+  end
+structure LrParser: LR_PARSER
+### theory "Draft.ml_yacc_lib"
+### 0.161s elapsed time, 0.350s cpu time, 0.030s GC time
+Loading theory "Draft.trac_term" (required by "Draft.trac_protocol_parserTemplates" via "Draft.trac_protocol_parser")
+structure Trac_Utils:
+  sig
+    val list_find: ('a -> bool) -> 'a list -> ('a * int) option
+    val list_intersect: ''a list -> ''a list -> bool
+    val list_minus: ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
+    val list_partitions: ''a list -> (''a * ''a) list -> ''a list list list
+    val list_product: 'a list list -> 'a list list
+    val list_rm_pair: ('a -> ''b) -> 'a list -> ''b -> 'a list
+    val list_subseqs: 'a list -> 'a list list
+    val list_toString: ('a -> string) -> 'a list -> string
+    val list_to_str: string list -> string
+    val list_triangle_product: ('a -> 'a -> 'b) -> 'a list -> 'b list
+    val list_upto: int -> int list
+    val map_prod: ('a -> 'b) -> 'a * 'a -> 'b * 'b
+    val mk_unique: ''a list -> ''a list
+  end
+structure Trac_Term:
+  sig
+    datatype Msg
+    = Attack | Const of string | Fun of string * Msg list | Var of string
+    type TypeDecl = string * string
+    exception TypeError
+    datatype VarType = EnumType of string | Untyped | ValueType
+    datatype cMsg
+    =
+         cAbs of (string * string list) list
+       | cAttack
+       | cConst of string
+       | cEnum of string
+       | cFun of string * cMsg list
+       | cOccursFact of cMsg
+       | cPrivFunSec
+       | cSet of string * cMsg list
+       | cVar of string * VarType
+    val certifyMsg: (string * string) list -> string list -> Msg -> cMsg
+    val fv_Msg: Msg -> string list
+    val fv_cMsg: cMsg -> (string * VarType) list
+    val list_find: ('a -> bool) -> 'a list -> ('a * int) option
+    val list_intersect: ''a list -> ''a list -> bool
+    val list_minus: ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
+    val list_partitions: ''a list -> (''a * ''a) list -> ''a list list list
+    val list_product: 'a list list -> 'a list list
+    val list_rm_pair: ('a -> ''b) -> 'a list -> ''b -> 'a list
+    val list_subseqs: 'a list -> 'a list list
+    val list_toString: ('a -> string) -> 'a list -> string
+    val list_to_str: string list -> string
+    val list_triangle_product: ('a -> 'a -> 'b) -> 'a list -> 'b list
+    val list_upto: int -> int list
+    val map_prod: ('a -> 'b) -> 'a * 'a -> 'b * 'b
+    val mk_Value_cVar: string -> cMsg
+    val mk_unique: ''a list -> ''a list
+    val subst_apply: (string * cMsg) list -> cMsg -> cMsg
+    val subst_apply': (string * VarType -> cMsg) -> cMsg -> cMsg
+    val type_of: (''a * string) list -> ''a list -> ''a -> VarType
+  end
+val eqpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Var (("_dummy_", 2), "?'a"))
+       ):
+   term Find_Theorems.criterion
+val badeqpattern = Pattern (Const ("Pure.eq", "?'a => ?'a => prop")):
+   term Find_Theorems.criterion
+val undefpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Const ("HOL.undefined", "?'a"))
+       ):
+   term Find_Theorems.criterion
+val thmpattern =
+   Pattern
+    (Const ("HOL.Trueprop", "bool => prop") $ Var (("_dummy_", 1), "bool")):
+   term Find_Theorems.criterion
+val badnames =
+   ["*nitpick*", "*Nitpick*", "*full_exhaustive*", "*_def*", "Enum.finite*",
+    "*Quickcheck*", "ATP*", "*Nunchaku*", "*Code*", "*BNF*", "*SMT*",
+    "*.*.*"]:
+   string list
+val unwanted_names =
+   [(false, Name "*nitpick*"), (false, Name "*Nitpick*"),
+    (false, Name "*full_exhaustive*"), (false, Name "*_def*"),
+    (false, Name "Enum.finite*"), (false, Name "*Quickcheck*"),
+    (false, Name "ATP*"), (false, Name "*Nunchaku*"),
+    (false, Name "*Code*"), (false, Name "*BNF*"), (false, Name "*SMT*"),
+    (false, Name "*.*.*")]:
+   (bool * term Find_Theorems.criterion) list
+val has_vars = fn: term -> bool
+val get_all_eqs = fn: string -> Proof.context -> (string * thm) list
+val get_all_thms = fn: string -> Proof.context -> (string * thm) list
+val get_noneq_thms = fn: string -> Proof.context -> (string * thm) list
+val template_eqs = fn:
+   string -> Proof.context -> (string * thm * template) list
+val template_thms = fn:
+   string -> Proof.context -> (string * thm * template) list
+### theory "Draft.ExtrEqs"
+### 0.572s elapsed time, 1.158s cpu time, 0.085s GC time
+structure TracProtocol:
+  sig
+    exception TypeError
+    datatype action
+    =
+         ATTACK
+       | DELETE of Trac_Term.Msg * (string * Trac_Term.Msg list)
+       | IN of Trac_Term.Msg * (string * Trac_Term.Msg list)
+       | INSERT of Trac_Term.Msg * (string * Trac_Term.Msg list)
+       | NEW of string
+       | NOTIN of Trac_Term.Msg * (string * Trac_Term.Msg list)
+       | NOTINANY of Trac_Term.Msg * string
+       | RECEIVE of Trac_Term.Msg
+       | SEND of Trac_Term.Msg
+    type anaT = ruleT list
+    datatype cAction
+    =
+         cAssertAttack
+       | cDelete of Trac_Term.cMsg * Trac_Term.cMsg
+       | cInSet of Trac_Term.cMsg * Trac_Term.cMsg
+       | cInequality of Trac_Term.cMsg * Trac_Term.cMsg
+       | cInsert of Trac_Term.cMsg * Trac_Term.cMsg
+       | cNew of string
+       | cNotInAny of Trac_Term.cMsg * string
+       | cNotInSet of Trac_Term.cMsg * Trac_Term.cMsg
+       | cReceive of Trac_Term.cMsg
+       | cSend of Trac_Term.cMsg
+    type cTransaction =
+       {attack_actions: (prot_label * cAction) list,
+        checkall_actions: (prot_label * cAction) list,
+        checksingle_actions: (prot_label * cAction) list,
+        fresh_actions: (prot_label * cAction) list,
+        receive_actions: (prot_label * cAction) list,
+        send_actions: (prot_label * cAction) list,
+        transaction: transaction_name,
+        update_actions: (prot_label * cAction) list}
+    val certifyAction:
+       (string * string) list -> string list -> 'a * action -> 'a * cAction
+    val certifyTransaction: transaction -> cTransaction
+    val empty: protocol
+    val extract_Consts: type_spec -> string list
+    type funT = string * string
+    val fun_empty: fun_spec
+    type fun_spec = {private: funT list, public: funT list}
+    val is_ATTACK: action -> bool
+    val is_Attack: cAction -> bool
+    val is_Consts: type_spec_elem -> bool
+    val is_DELETE: action -> bool
+    val is_Delete: cAction -> bool
+    val is_Fresh: cAction -> bool
+    val is_IN: action -> bool
+    val is_INSERT: action -> bool
+    val is_InSet: cAction -> bool
+    val is_Inequality: cAction -> bool
+    val is_Insert: cAction -> bool
+    val is_NEW: action -> bool
+    val is_NOTIN: action -> bool
+    val is_NOTINANY: action -> bool
+    val is_NotInAny: cAction -> bool
+    val is_NotInSet: cAction -> bool
+    val is_RECEIVE: action -> bool
+    val is_Receive: cAction -> bool
+    val is_SEND: action -> bool
+    val is_Send: cAction -> bool
+    val list_find: ('a -> bool) -> 'a list -> ('a * int) option
+    val list_intersect: ''a list -> ''a list -> bool
+    val list_minus: ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
+    val list_partitions: ''a list -> (''a * ''a) list -> ''a list list list
+    val list_product: 'a list list -> 'a list list
+    val list_rm_pair: ('a -> ''b) -> 'a list -> ''b -> 'a list
+    val list_subseqs: 'a list -> 'a list list
+    val list_toString: ('a -> string) -> 'a list -> string
+    val list_to_str: string list -> string
+    val list_triangle_product: ('a -> 'a -> 'b) -> 'a list -> 'b list
+    val list_upto: int -> int list
+    val map_prod: ('a -> 'b) -> 'a * 'a -> 'b * 'b
+    val maybe_the_DELETE:
+       action -> (Trac_Term.Msg * (string * Trac_Term.Msg list)) option
+    val maybe_the_Delete:
+       cAction -> (Trac_Term.cMsg * Trac_Term.cMsg) option
+    val maybe_the_Fresh: cAction -> string option
+    val maybe_the_IN:
+       action -> (Trac_Term.Msg * (string * Trac_Term.Msg list)) option
+    val maybe_the_INSERT:
+       action -> (Trac_Term.Msg * (string * Trac_Term.Msg list)) option
+    val maybe_the_InSet: cAction -> (Trac_Term.cMsg * Trac_Term.cMsg) option
+    val maybe_the_Inequality:
+       cAction -> (Trac_Term.cMsg * Trac_Term.cMsg) option
+    val maybe_the_Insert:
+       cAction -> (Trac_Term.cMsg * Trac_Term.cMsg) option
+    val maybe_the_NEW: action -> string option
+    val maybe_the_NOTIN:
+       action -> (Trac_Term.Msg * (string * Trac_Term.Msg list)) option
+    val maybe_the_NOTINANY: action -> (Trac_Term.Msg * string) option
+    val maybe_the_NotInAny: cAction -> (Trac_Term.cMsg * string) option
+    val maybe_the_NotInSet:
+       cAction -> (Trac_Term.cMsg * Trac_Term.cMsg) option
+    val maybe_the_RECEIVE: action -> Trac_Term.Msg option
+    val maybe_the_Receive: cAction -> Trac_Term.cMsg option
+    val maybe_the_SEND: action -> Trac_Term.Msg option
+    val maybe_the_Send: cAction -> Trac_Term.cMsg option
+    val mkTransaction:
+       transaction_name -> (prot_label * action) list -> transaction
+    val mk_unique: ''a list -> ''a list
+    datatype prot_label = LabelN | LabelS
+    type protocol =
+       {analysis_spec: anaT,
+        fixed_point:
+        (Trac_Term.cMsg list * (string * string list) list list *
+         ((string * string list) list * (string * string list) list) list
+        )
+        option
+        ,
+        function_spec: fun_spec option,
+        name: string,
+        set_spec: set_spec list,
+        transaction_spec: (string option * transaction list) list,
+        type_spec: type_spec}
+    type ruleT = (string * string list) * Trac_Term.Msg list * string list
+    type set_spec = string * string
+    val subst_apply_action:
+       (string * Trac_Term.cMsg) list ->
+         prot_label * cAction -> prot_label * cAction
+    val subst_apply_actions:
+       (string * Trac_Term.cMsg) list ->
+         (prot_label * cAction) list -> (prot_label * cAction) list
+    val the_Consts: type_spec_elem -> string list
+    val the_DELETE: action -> Trac_Term.Msg * (string * Trac_Term.Msg list)
+    val the_Delete: cAction -> Trac_Term.cMsg * Trac_Term.cMsg
+    val the_Fresh: cAction -> string
+    val the_IN: action -> Trac_Term.Msg * (string * Trac_Term.Msg list)
+    val the_INSERT: action -> Trac_Term.Msg * (string * Trac_Term.Msg list)
+    val the_InSet: cAction -> Trac_Term.cMsg * Trac_Term.cMsg
+    val the_Inequality: cAction -> Trac_Term.cMsg * Trac_Term.cMsg
+    val the_Insert: cAction -> Trac_Term.cMsg * Trac_Term.cMsg
+    val the_NEW: action -> string
+    val the_NOTIN: action -> Trac_Term.Msg * (string * Trac_Term.Msg list)
+    val the_NOTINANY: action -> Trac_Term.Msg * string
+    val the_NotInAny: cAction -> Trac_Term.cMsg * string
+    val the_NotInSet: cAction -> Trac_Term.cMsg * Trac_Term.cMsg
+    val the_RECEIVE: action -> Trac_Term.Msg
+    val the_Receive: cAction -> Trac_Term.cMsg
+    val the_SEND: action -> Trac_Term.Msg
+    val the_Send: cAction -> Trac_Term.cMsg
+    type transaction =
+       {actions: (prot_label * action) list, transaction: transaction_name}
+    type transaction_name =
+       string * (string * string) list * (string * string) list
+    type type_spec = (string * type_spec_elem) list
+    datatype type_spec_elem = Consts of string list | Union of string list
+    val update_analysis:
+       protocol ->
+         ((string * string list) * Trac_Term.Msg list * string list) list ->
+           protocol
+    val update_fixed_point:
+       protocol ->
+         (Trac_Term.cMsg list * (string * string list) list list *
+          ((string * string list) list * (string * string list) list) list
+         )
+         option
+           -> protocol
+    val update_fun_private: fun_spec -> funT list -> fun_spec
+    val update_fun_public: fun_spec -> funT list -> fun_spec
+    val update_functions: protocol -> fun_spec option -> protocol
+    val update_name: protocol -> string -> protocol
+    val update_sets: protocol -> (string * string) list -> protocol
+    val update_transactions:
+       string option -> protocol -> transaction list -> protocol
+    val update_type_spec:
+       protocol -> (string * type_spec_elem) list -> protocol
+  end
+### theory "Draft.trac_term"
+### 0.492s elapsed time, 0.990s cpu time, 0.055s GC time
+Loading theory "Draft.trac_protocol_parser" (required by "Draft.trac_protocol_parserTemplates")
+signature TracTransaction_TOKENS =
+  sig
+    val ABSTRACTION: string * 'a * 'a -> (svalue, 'a) token
+    val ACTIONS: string * 'a * 'a -> (svalue, 'a) token
+    val ANALYSIS: string * 'a * 'a -> (svalue, 'a) token
+    val ARROW: string * 'a * 'a -> (svalue, 'a) token
+    val ATTACK: string * 'a * 'a -> (svalue, 'a) token
+    val AUTHCH: string * 'a * 'a -> (svalue, 'a) token
+    val AUTHENTICATES: string * 'a * 'a -> (svalue, 'a) token
+    val CLOSEB: string * 'a * 'a -> (svalue, 'a) token
+    val CLOSEP: string * 'a * 'a -> (svalue, 'a) token
+    val CLOSESCRYPT: string * 'a * 'a -> (svalue, 'a) token
+    val CLOSESQB: string * 'a * 'a -> (svalue, 'a) token
+    val COLON: string * 'a * 'a -> (svalue, 'a) token
+    val COMMA: string * 'a * 'a -> (svalue, 'a) token
+    val CONFCH: string * 'a * 'a -> (svalue, 'a) token
+    val DELETE: string * 'a * 'a -> (svalue, 'a) token
+    val DOT: string * 'a * 'a -> (svalue, 'a) token
+    val EOF: 'a * 'a -> (svalue, 'a) token
+    val EXCLAM: string * 'a * 'a -> (svalue, 'a) token
+    val FAUTHCH: string * 'a * 'a -> (svalue, 'a) token
+    val FSECCH: string * 'a * 'a -> (svalue, 'a) token
+    val FUNCTIONS: string * 'a * 'a -> (svalue, 'a) token
+    val GOALS: string * 'a * 'a -> (svalue, 'a) token
+    val IN: string * 'a * 'a -> (svalue, 'a) token
+    val INSECCH: string * 'a * 'a -> (svalue, 'a) token
+    val INSERT: string * 'a * 'a -> (svalue, 'a) token
+    val INTEGER_LITERAL: string * 'a * 'a -> (svalue, 'a) token
+    val KNOWLEDGE: string * 'a * 'a -> (svalue, 'a) token
+    val LOWER_STRING_LITERAL: string * 'a * 'a -> (svalue, 'a) token
+    val NEW: string * 'a * 'a -> (svalue, 'a) token
+    val NOTIN: string * 'a * 'a -> (svalue, 'a) token
+    val OF: string * 'a * 'a -> (svalue, 'a) token
+    val ON: string * 'a * 'a -> (svalue, 'a) token
+    val OPENB: string * 'a * 'a -> (svalue, 'a) token
+    val OPENP: string * 'a * 'a -> (svalue, 'a) token
+    val OPENSCRYPT: string * 'a * 'a -> (svalue, 'a) token
+    val OPENSQB: string * 'a * 'a -> (svalue, 'a) token
+    val PERCENT: string * 'a * 'a -> (svalue, 'a) token
+    val PRIVATE: string * 'a * 'a -> (svalue, 'a) token
+    val PROTOCOL: string * 'a * 'a -> (svalue, 'a) token
+    val PUBLIC: string * 'a * 'a -> (svalue, 'a) token
+    val QUESTION: string * 'a * 'a -> (svalue, 'a) token
+    val RECEIVE: string * 'a * 'a -> (svalue, 'a) token
+    val SECCH: string * 'a * 'a -> (svalue, 'a) token
+    val SEMICOLON: string * 'a * 'a -> (svalue, 'a) token
+    val SEND: string * 'a * 'a -> (svalue, 'a) token
+    val SETS: string * 'a * 'a -> (svalue, 'a) token
+    val STAR: string * 'a * 'a -> (svalue, 'a) token
+    val STRING_LITERAL: string * 'a * 'a -> (svalue, 'a) token
+    val Sets: string * 'a * 'a -> (svalue, 'a) token
+    val TBETWEEN: string * 'a * 'a -> (svalue, 'a) token
+    val TRANSACTIONS: string * 'a * 'a -> (svalue, 'a) token
+    val TSECRET: string * 'a * 'a -> (svalue, 'a) token
+    val TYPES: string * 'a * 'a -> (svalue, 'a) token
+    val UNDERSCORE: string * 'a * 'a -> (svalue, 'a) token
+    val UNEQUAL: string * 'a * 'a -> (svalue, 'a) token
+    val UNION: string * 'a * 'a -> (svalue, 'a) token
+    val UPPER_STRING_LITERAL: string * 'a * 'a -> (svalue, 'a) token
+    val WEAKLY: string * 'a * 'a -> (svalue, 'a) token
+    val WHERE: string * 'a * 'a -> (svalue, 'a) token
+    val equal: string * 'a * 'a -> (svalue, 'a) token
+    val slash: string * 'a * 'a -> (svalue, 'a) token
+    type svalue
+    type ('a, 'b) token
+  end
+signature TracTransaction_LRVALS =
+  sig
+    structure ParserData: PARSER_DATA
+    structure Tokens: TracTransaction_TOKENS
+  end
+### ML warning (line 1777 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.lex.sml"):
+### Value identifier (i) has not been referenced.
+### ML warning (line 2016 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.lex.sml"):
+### Value identifier (YYBEGIN) has not been referenced.
+### ML warning (line 2020 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.lex.sml"):
+### Value identifier (continue) has not been referenced.
+### ML warning (line 2024 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.lex.sml"):
+### Value identifier (l) has not been referenced.
+### ML warning (line 2024 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.lex.sml"):
+### Value identifier (acts) has not been referenced.
+### ML warning (line 2022 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.lex.sml"):
+### Value identifier (i) has not been referenced.
+functor TracTransactionLexFun (
+  sig structure Tokens: TracTransaction_TOKENS end): 
+  sig
+    structure Internal:
+      sig
+        exception LexerError
+        structure StartStates:
+          sig
+            val INITIAL: yystartstate
+            datatype yystartstate = STARTSTATE of int
+          end
+        type result = UserDeclarations.lexresult
+        type statedata = {fin: yyfinstate list, trans: string}
+        val tab: {fin: yyfinstate list, trans: string} vector
+        datatype yyfinstate = N of int
+      end
+    exception LexError
+    structure UserDeclarations:
+      sig
+        structure Tokens: TracTransaction_TOKENS
+        exception TypeError
+        datatype action
+        =
+             ATTACK
+           | DELETE of Trac_Term.Msg * (string * Trac_Term.Msg list)
+           | IN of Trac_Term.Msg * (string * Trac_Term.Msg list)
+           | INSERT of Trac_Term.Msg * (string * Trac_Term.Msg list)
+           | NEW of string
+           | NOTIN of Trac_Term.Msg * (string * Trac_Term.Msg list)
+           | NOTINANY of Trac_Term.Msg * string
+           | RECEIVE of Trac_Term.Msg
+           | SEND of Trac_Term.Msg
+        type anaT = ruleT list
+        datatype cAction
+        =
+             cAssertAttack
+           | cDelete of Trac_Term.cMsg * Trac_Term.cMsg
+           | cInSet of Trac_Term.cMsg * Trac_Term.cMsg
+           | cInequality of Trac_Term.cMsg * Trac_Term.cMsg
+           | cInsert of Trac_Term.cMsg * Trac_Term.cMsg
+           | cNew of string
+           | cNotInAny of Trac_Term.cMsg * string
+           | cNotInSet of Trac_Term.cMsg * Trac_Term.cMsg
+           | cReceive of Trac_Term.cMsg
+           | cSend of Trac_Term.cMsg
+        type cTransaction =
+           {attack_actions: (prot_label * cAction) list,
+            checkall_actions: (prot_label * cAction) list,
+            checksingle_actions: (prot_label * cAction) list,
+            fresh_actions: (prot_label * cAction) list,
+            receive_actions: (prot_label * cAction) list,
+            send_actions: (prot_label * cAction) list,
+            transaction: transaction_name,
+            update_actions: (prot_label * cAction) list}
+        val certifyAction:
+           (string * string) list ->
+             string list -> 'a * action -> 'a * cAction
+        val certifyTransaction: transaction -> cTransaction
+        val empty: protocol
+        val eof: unit -> (svalue, int * int * int) token
+        val error: string * (int * int * int) * 'a -> unit
+        val extract_Consts: type_spec -> string list
+        type funT = string * string
+        val fun_empty: fun_spec
+        type fun_spec = {private: funT list, public: funT list}
+        val inputPos: int -> (int * int * int) * (int * int * int)
+        val inputPos_half: int -> int * int * int
+        val is_ATTACK: action -> bool
+        val is_Attack: cAction -> bool
+        val is_Consts: type_spec_elem -> bool
+        val is_DELETE: action -> bool
+        val is_Delete: cAction -> bool
+        val is_Fresh: cAction -> bool
+        val is_IN: action -> bool
+        val is_INSERT: action -> bool
+        val is_InSet: cAction -> bool
+        val is_Inequality: cAction -> bool
+        val is_Insert: cAction -> bool
+        val is_NEW: action -> bool
+        val is_NOTIN: action -> bool
+        val is_NOTINANY: action -> bool
+        val is_NotInAny: cAction -> bool
+        val is_NotInSet: cAction -> bool
+        val is_RECEIVE: action -> bool
+        val is_Receive: cAction -> bool
+        val is_SEND: action -> bool
+        val is_Send: cAction -> bool
+        type lexresult = (svalue, pos) token
+        val list_find: ('a -> bool) -> 'a list -> ('a * int) option
+        val list_intersect: ''a list -> ''a list -> bool
+        val list_minus: ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
+        val list_partitions:
+           ''a list -> (''a * ''a) list -> ''a list list list
+        val list_product: 'a list list -> 'a list list
+        val list_rm_pair: ('a -> ''b) -> 'a list -> ''b -> 'a list
+        val list_subseqs: 'a list -> 'a list list
+        val list_toString: ('a -> string) -> 'a list -> string
+        val list_to_str: string list -> string
+        val list_triangle_product: ('a -> 'a -> 'b) -> 'a list -> 'b list
+        val list_upto: int -> int list
+        val map_prod: ('a -> 'b) -> 'a * 'a -> 'b * 'b
+        val maybe_the_DELETE:
+           action -> (Trac_Term.Msg * (string * Trac_Term.Msg list)) option
+        val maybe_the_Delete:
+           cAction -> (Trac_Term.cMsg * Trac_Term.cMsg) option
+        val maybe_the_Fresh: cAction -> string option
+        val maybe_the_IN:
+           action -> (Trac_Term.Msg * (string * Trac_Term.Msg list)) option
+        val maybe_the_INSERT:
+           action -> (Trac_Term.Msg * (string * Trac_Term.Msg list)) option
+        val maybe_the_InSet:
+           cAction -> (Trac_Term.cMsg * Trac_Term.cMsg) option
+        val maybe_the_Inequality:
+           cAction -> (Trac_Term.cMsg * Trac_Term.cMsg) option
+        val maybe_the_Insert:
+           cAction -> (Trac_Term.cMsg * Trac_Term.cMsg) option
+        val maybe_the_NEW: action -> string option
+        val maybe_the_NOTIN:
+           action -> (Trac_Term.Msg * (string * Trac_Term.Msg list)) option
+        val maybe_the_NOTINANY: action -> (Trac_Term.Msg * string) option
+        val maybe_the_NotInAny: cAction -> (Trac_Term.cMsg * string) option
+        val maybe_the_NotInSet:
+           cAction -> (Trac_Term.cMsg * Trac_Term.cMsg) option
+        val maybe_the_RECEIVE: action -> Trac_Term.Msg option
+        val maybe_the_Receive: cAction -> Trac_Term.cMsg option
+        val maybe_the_SEND: action -> Trac_Term.Msg option
+        val maybe_the_Send: cAction -> Trac_Term.cMsg option
+        val mkTransaction:
+           transaction_name -> (prot_label * action) list -> transaction
+        val mk_unique: ''a list -> ''a list
+        val pos: (int * int * int) ref
+        type pos = int * int * int
+        datatype prot_label = LabelN | LabelS
+        type protocol =
+           {analysis_spec: anaT,
+            fixed_point:
+            (Trac_Term.cMsg list * (string * string list) list list *
+             ((string * string list) list * (string * string list) list)
+             list
+            )
+            option
+            ,
+            function_spec: fun_spec option,
+            name: string,
+            set_spec: set_spec list,
+            transaction_spec: (string option * transaction list) list,
+            type_spec: type_spec}
+        type ruleT =
+           (string * string list) * Trac_Term.Msg list * string list
+        type set_spec = string * string
+        val subst_apply_action:
+           (string * Trac_Term.cMsg) list ->
+             prot_label * cAction -> prot_label * cAction
+        val subst_apply_actions:
+           (string * Trac_Term.cMsg) list ->
+             (prot_label * cAction) list -> (prot_label * cAction) list
+        type svalue
+        val the_Consts: type_spec_elem -> string list
+        val the_DELETE:
+           action -> Trac_Term.Msg * (string * Trac_Term.Msg list)
+        val the_Delete: cAction -> Trac_Term.cMsg * Trac_Term.cMsg
+        val the_Fresh: cAction -> string
+        val the_IN: action -> Trac_Term.Msg * (string * Trac_Term.Msg list)
+        val the_INSERT:
+           action -> Trac_Term.Msg * (string * Trac_Term.Msg list)
+        val the_InSet: cAction -> Trac_Term.cMsg * Trac_Term.cMsg
+        val the_Inequality: cAction -> Trac_Term.cMsg * Trac_Term.cMsg
+        val the_Insert: cAction -> Trac_Term.cMsg * Trac_Term.cMsg
+        val the_NEW: action -> string
+        val the_NOTIN:
+           action -> Trac_Term.Msg * (string * Trac_Term.Msg list)
+        val the_NOTINANY: action -> Trac_Term.Msg * string
+        val the_NotInAny: cAction -> Trac_Term.cMsg * string
+        val the_NotInSet: cAction -> Trac_Term.cMsg * Trac_Term.cMsg
+        val the_RECEIVE: action -> Trac_Term.Msg
+        val the_Receive: cAction -> Trac_Term.cMsg
+        val the_SEND: action -> Trac_Term.Msg
+        val the_Send: cAction -> Trac_Term.cMsg
+        type ('a, 'b) token
+        type transaction =
+           {actions: (prot_label * action) list,
+            transaction: transaction_name}
+        type transaction_name =
+           string * (string * string) list * (string * string) list
+        type type_spec = (string * type_spec_elem) list
+        datatype type_spec_elem
+        = Consts of string list | Union of string list
+        val update_analysis:
+           protocol ->
+             ((string * string list) * Trac_Term.Msg list * string list)
+             list
+               -> protocol
+        val update_fixed_point:
+           protocol ->
+             (Trac_Term.cMsg list * (string * string list) list list *
+              ((string * string list) list * (string * string list) list)
+              list
+             )
+             option
+               -> protocol
+        val update_fun_private: fun_spec -> funT list -> fun_spec
+        val update_fun_public: fun_spec -> funT list -> fun_spec
+        val update_functions: protocol -> fun_spec option -> protocol
+        val update_name: protocol -> string -> protocol
+        val update_sets: protocol -> (string * string) list -> protocol
+        val update_transactions:
+           string option -> protocol -> transaction list -> protocol
+        val update_type_spec:
+           protocol -> (string * type_spec_elem) list -> protocol
+      end
+    val makeLexer:
+       (int -> string) ->
+         unit -> (Tokens.svalue, int * int * int) Tokens.token
+  end
+### ML warning (line 1717 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### (OF) has infix status but was not preceded by op.
+### ML warning (line 1577 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (INTEGER_LITERAL1) has not been referenced.
+### ML warning (line 1567 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (ident1) has not been referenced.
+### ML warning (line 1568 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (COMMA1) has not been referenced.
+### ML warning (line 1569 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (idents1) has not been referenced.
+### ML warning (line 1559 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (ident1) has not been referenced.
+### ML warning (line 1552 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (lident1) has not been referenced.
+### ML warning (line 1545 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (uident1) has not been referenced.
+### ML warning (line 1535 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (lident1) has not been referenced.
+### ML warning (line 1536 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (COMMA1) has not been referenced.
+### ML warning (line 1537 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (lidents1) has not been referenced.
+### ML warning (line 1526 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (lident1) has not been referenced.
+### ML warning (line 1517 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (LOWER_STRING_LITERAL1) has not been referenced.
+### ML warning (line 1506 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (uident1) has not been referenced.
+### ML warning (line 1507 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (COMMA1) has not been referenced.
+### ML warning (line 1508 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (uidents1) has not been referenced.
+### ML warning (line 1497 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (uident1) has not been referenced.
+### ML warning (line 1488 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (UPPER_STRING_LITERAL1) has not been referenced.
+### ML warning (line 1478 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (LOWER_STRING_LITERAL1) has not been referenced.
+### ML warning (line 1468 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (UPPER_STRING_LITERAL1) has not been referenced.
+### ML warning (line 1458 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (msg1) has not been referenced.
+### ML warning (line 1459 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (COMMA1) has not been referenced.
+### ML warning (line 1460 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (msgs1) has not been referenced.
+### ML warning (line 1449 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (msg1) has not been referenced.
+### ML warning (line 1438 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (lident1) has not been referenced.
+### ML warning (line 1440 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (OPENP1) has not been referenced.
+### ML warning (line 1441 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (msgs1) has not been referenced.
+### ML warning (line 1442 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (CLOSEP1) has not been referenced.
+### ML warning (line 1429 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (lident1) has not been referenced.
+### ML warning (line 1421 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (uident1) has not been referenced.
+### ML warning (line 1410 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (lident1) has not been referenced.
+### ML warning (line 1411 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (OPENP1) has not been referenced.
+### ML warning (line 1412 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (msgs1) has not been referenced.
+### ML warning (line 1413 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (CLOSEP1) has not been referenced.
+### ML warning (line 1400 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (lident1) has not been referenced.
+### ML warning (line 1390 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (STAR1) has not been referenced.
+### ML warning (line 1391 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (DELETE1) has not been referenced.
+### ML warning (line 1391 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (DELETE) has not been referenced.
+### ML warning (line 1392 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (msg1) has not been referenced.
+### ML warning (line 1393 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (setexp1) has not been referenced.
+### ML warning (line 1379 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (STAR1) has not been referenced.
+### ML warning (line 1380 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (INSERT1) has not been referenced.
+### ML warning (line 1380 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (INSERT) has not been referenced.
+### ML warning (line 1381 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (msg1) has not been referenced.
+### ML warning (line 1382 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (setexp1) has not been referenced.
+### ML warning (line 1365 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (STAR1) has not been referenced.
+### ML warning (line 1366 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (msg1) has not been referenced.
+### ML warning (line 1367 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (NOTIN1) has not been referenced.
+### ML warning (line 1368 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (lident1) has not been referenced.
+### ML warning (line 1369 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (OPENP1) has not been referenced.
+### ML warning (line 1370 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (UNDERSCORE1) has not been referenced.
+### ML warning (line 1371 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (CLOSEP1) has not been referenced.
+### ML warning (line 1352 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (STAR1) has not been referenced.
+### ML warning (line 1353 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (msg1) has not been referenced.
+### ML warning (line 1354 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (NOTIN1) has not been referenced.
+### ML warning (line 1354 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (NOTIN) has not been referenced.
+### ML warning (line 1355 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (setexp1) has not been referenced.
+### ML warning (line 1341 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (STAR1) has not been referenced.
+### ML warning (line 1342 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (msg1) has not been referenced.
+### ML warning (line 1343 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (IN1) has not been referenced.
+### ML warning (line 1343 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (IN) has not been referenced.
+### ML warning (line 1344 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (setexp1) has not been referenced.
+### ML warning (line 1331 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (STAR1) has not been referenced.
+### ML warning (line 1332 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (SEND1) has not been referenced.
+### ML warning (line 1332 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (SEND) has not been referenced.
+### ML warning (line 1333 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (msg1) has not been referenced.
+### ML warning (line 1321 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (STAR1) has not been referenced.
+### ML warning (line 1322 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (RECEIVE1) has not been referenced.
+### ML warning (line 1322 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (RECEIVE) has not been referenced.
+### ML warning (line 1323 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (msg1) has not been referenced.
+### ML warning (line 1312 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (ATTACK1) has not been referenced.
+### ML warning (line 1312 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (ATTACK) has not been referenced.
+### ML warning (line 1304 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (NEW1) has not been referenced.
+### ML warning (line 1304 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (NEW) has not been referenced.
+### ML warning (line 1305 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (uident1) has not been referenced.
+### ML warning (line 1294 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (DELETE1) has not been referenced.
+### ML warning (line 1294 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (DELETE) has not been referenced.
+### ML warning (line 1295 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (msg1) has not been referenced.
+### ML warning (line 1296 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (setexp1) has not been referenced.
+### ML warning (line 1283 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (INSERT1) has not been referenced.
+### ML warning (line 1283 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (INSERT) has not been referenced.
+### ML warning (line 1284 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (msg1) has not been referenced.
+### ML warning (line 1285 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (setexp1) has not been referenced.
+### ML warning (line 1270 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (msg1) has not been referenced.
+### ML warning (line 1271 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (NOTIN1) has not been referenced.
+### ML warning (line 1272 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (lident1) has not been referenced.
+### ML warning (line 1273 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (OPENP1) has not been referenced.
+### ML warning (line 1274 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (UNDERSCORE1) has not been referenced.
+### ML warning (line 1275 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (CLOSEP1) has not been referenced.
+### ML warning (line 1258 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (msg1) has not been referenced.
+### ML warning (line 1259 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (NOTIN1) has not been referenced.
+### ML warning (line 1259 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (NOTIN) has not been referenced.
+### ML warning (line 1260 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (setexp1) has not been referenced.
+### ML warning (line 1248 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (msg1) has not been referenced.
+### ML warning (line 1249 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (IN1) has not been referenced.
+### ML warning (line 1249 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (IN) has not been referenced.
+### ML warning (line 1250 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (setexp1) has not been referenced.
+### ML warning (line 1239 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (SEND1) has not been referenced.
+### ML warning (line 1239 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (SEND) has not been referenced.
+### ML warning (line 1240 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (msg1) has not been referenced.
+### ML warning (line 1230 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (RECEIVE1) has not been referenced.
+### ML warning (line 1230 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (RECEIVE) has not been referenced.
+### ML warning (line 1232 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (msg1) has not been referenced.
+### ML warning (line 1220 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (action1) has not been referenced.
+### ML warning (line 1222 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (actions1) has not been referenced.
+### ML warning (line 1212 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (action1) has not been referenced.
+### ML warning (line 1203 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (LOWER_STRING_LITERAL1) has not been referenced.
+### ML warning (line 1193 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (UPPER_STRING_LITERAL1) has not been referenced.
+### ML warning (line 1183 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (ident1) has not been referenced.
+### ML warning (line 1184 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (COLON1) has not been referenced.
+### ML warning (line 1185 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (typ1) has not been referenced.
+### ML warning (line 1172 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (parameter1) has not been referenced.
+### ML warning (line 1173 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (COMMA1) has not been referenced.
+### ML warning (line 1174 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (parameters1) has not been referenced.
+### ML warning (line 1161 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (parameter1) has not been referenced.
+### ML warning (line 1152 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (ident1) has not been referenced.
+### ML warning (line 1153 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (OPENP1) has not been referenced.
+### ML warning (line 1154 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (CLOSEP1) has not been referenced.
+### ML warning (line 1141 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (ident1) has not been referenced.
+### ML warning (line 1142 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (OPENP1) has not been referenced.
+### ML warning (line 1143 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (parameters1) has not been referenced.
+### ML warning (line 1144 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (CLOSEP1) has not been referenced.
+### ML warning (line 1127 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (ident1) has not been referenced.
+### ML warning (line 1128 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (OPENP1) has not been referenced.
+### ML warning (line 1129 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (parameters1) has not been referenced.
+### ML warning (line 1130 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (CLOSEP1) has not been referenced.
+### ML warning (line 1131 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (WHERE1) has not been referenced.
+### ML warning (line 1132 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (ineqs1) has not been referenced.
+### ML warning (line 1115 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (ineq1) has not been referenced.
+### ML warning (line 1116 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (COMMA1) has not been referenced.
+### ML warning (line 1117 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (ineqs1) has not been referenced.
+### ML warning (line 1107 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (ineq1) has not been referenced.
+### ML warning (line 1098 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (UPPER_STRING_LITERAL1) has not been referenced.
+### ML warning (line 1099 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (ineq_aux1) has not been referenced.
+### ML warning (line 1086 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (UNEQUAL1) has not been referenced.
+### ML warning (line 1087 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (UPPER_STRING_LITERAL1) has not been referenced.
+### ML warning (line 1072 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (transaction1) has not been referenced.
+### ML warning (line 1073 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (actions1) has not been referenced.
+### ML warning (line 1074 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (DOT1) has not been referenced.
+### ML warning (line 1075 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (transaction_spec1) has not been referenced.
+### ML warning (line 1059 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (transaction1) has not been referenced.
+### ML warning (line 1060 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (actions1) has not been referenced.
+### ML warning (line 1061 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (DOT1) has not been referenced.
+### ML warning (line 1046 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (TRANSACTIONS1) has not been referenced.
+### ML warning (line 1047 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (OF1) has not been referenced.
+### ML warning (line 1048 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (LOWER_STRING_LITERAL1) has not been referenced.
+### ML warning (line 1036 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (TRANSACTIONS1) has not been referenced.
+### ML warning (line 1024 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (UPPER_STRING_LITERAL1) has not been referenced.
+### ML warning (line 1026 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (COMMA1) has not been referenced.
+### ML warning (line 1027 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (result1) has not been referenced.
+### ML warning (line 1013 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (UPPER_STRING_LITERAL1) has not been referenced.
+### ML warning (line 1005 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (msgs1) has not been referenced.
+### ML warning (line 995 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (UPPER_STRING_LITERAL1) has not been referenced.
+### ML warning (line 996 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (COMMA1) has not been referenced.
+### ML warning (line 997 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (head_params1) has not been referenced.
+### ML warning (line 983 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (UPPER_STRING_LITERAL1) has not been referenced.
+### ML warning (line 970 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (LOWER_STRING_LITERAL1) has not been referenced.
+### ML warning (line 972 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (OPENP1) has not been referenced.
+### ML warning (line 973 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (head_params1) has not been referenced.
+### ML warning (line 974 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (CLOSEP1) has not been referenced.
+### ML warning (line 956 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (head1) has not been referenced.
+### ML warning (line 957 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (QUESTION1) has not been referenced.
+### ML warning (line 958 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (keys1) has not been referenced.
+### ML warning (line 959 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (ARROW1) has not been referenced.
+### ML warning (line 960 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (result1) has not been referenced.
+### ML warning (line 945 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (head1) has not been referenced.
+### ML warning (line 946 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (ARROW1) has not been referenced.
+### ML warning (line 947 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (result1) has not been referenced.
+### ML warning (line 935 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (rule1) has not been referenced.
+### ML warning (line 936 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (analysis_spec1) has not been referenced.
+### ML warning (line 927 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (rule1) has not been referenced.
+### ML warning (line 918 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (ident1) has not been referenced.
+### ML warning (line 919 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (slash1) has not been referenced.
+### ML warning (line 920 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (arity1) has not been referenced.
+### ML warning (line 908 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (fun_spec1) has not been referenced.
+### ML warning (line 909 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (fun_specs1) has not been referenced.
+### ML warning (line 899 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (fun_spec1) has not been referenced.
+### ML warning (line 890 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (PRIVATE1) has not been referenced.
+### ML warning (line 891 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (fun_specs1) has not been referenced.
+### ML warning (line 879 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (PUBLIC1) has not been referenced.
+### ML warning (line 881 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (fun_specs1) has not been referenced.
+### ML warning (line 863 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (priv_fun_spec1) has not been referenced.
+### ML warning (line 864 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (priv_or_pub_fun_spec1) has not been referenced.
+### ML warning (line 850 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (pub_fun_spec1) has not been referenced.
+### ML warning (line 851 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (priv_or_pub_fun_spec1) has not been referenced.
+### ML warning (line 839 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (ident1) has not been referenced.
+### ML warning (line 840 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (slash1) has not been referenced.
+### ML warning (line 841 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (arity1) has not been referenced.
+### ML warning (line 829 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (set_spec1) has not been referenced.
+### ML warning (line 830 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (set_specs1) has not been referenced.
+### ML warning (line 820 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (set_spec1) has not been referenced.
+### ML warning (line 810 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (ident1) has not been referenced.
+### ML warning (line 811 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (equal1) has not been referenced.
+### ML warning (line 812 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (type_union1) has not been referenced.
+### ML warning (line 798 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (ident1) has not been referenced.
+### ML warning (line 799 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (equal1) has not been referenced.
+### ML warning (line 800 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (OPENB1) has not been referenced.
+### ML warning (line 801 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (lidents1) has not been referenced.
+### ML warning (line 802 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (CLOSEB1) has not been referenced.
+### ML warning (line 787 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (type_spec1) has not been referenced.
+### ML warning (line 788 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (type_specs1) has not been referenced.
+### ML warning (line 777 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (type_spec1) has not been referenced.
+### ML warning (line 767 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (ident1) has not been referenced.
+### ML warning (line 768 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (UNION1) has not been referenced.
+### ML warning (line 769 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (type_union1) has not been referenced.
+### ML warning (line 759 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (ident1) has not been referenced.
+### ML warning (line 742 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (transaction_spec_head1) has not been referenced.
+### ML warning (line 743 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (COLON1) has not been referenced.
+### ML warning (line 744 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (transaction_spec1) has not been referenced.
+### ML warning (line 745 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (protocol_spec1) has not been referenced.
+### ML warning (line 726 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (ANALYSIS1) has not been referenced.
+### ML warning (line 728 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (COLON1) has not been referenced.
+### ML warning (line 729 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (analysis_spec1) has not been referenced.
+### ML warning (line 730 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (protocol_spec1) has not been referenced.
+### ML warning (line 710 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (FUNCTIONS1) has not been referenced.
+### ML warning (line 711 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (COLON1) has not been referenced.
+### ML warning (line 712 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (priv_or_pub_fun_spec1) has not been referenced.
+### ML warning (line 714 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (protocol_spec1) has not been referenced.
+### ML warning (line 696 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (SETS1) has not been referenced.
+### ML warning (line 697 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (COLON1) has not been referenced.
+### ML warning (line 698 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (set_specs1) has not been referenced.
+### ML warning (line 699 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (protocol_spec1) has not been referenced.
+### ML warning (line 683 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (TYPES1) has not been referenced.
+### ML warning (line 684 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (COLON1) has not been referenced.
+### ML warning (line 685 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (type_specs1) has not been referenced.
+### ML warning (line 686 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (protocol_spec1) has not been referenced.
+### ML warning (line 670 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (PROTOCOL1) has not been referenced.
+### ML warning (line 671 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (COLON1) has not been referenced.
+### ML warning (line 672 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (name1) has not been referenced.
+### ML warning (line 673 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (protocol_spec1) has not been referenced.
+### ML warning (line 660 of "$AFP/Automated_Stateful_Protocol_Verification/trac/trac_parser/trac_protocol.grm.sml"):
+### Value identifier (trac_protocol1) has not been referenced.
+functor TracTransactionLrValsFun (sig structure Token: TOKEN end): 
+  sig
+    structure ParserData: PARSER_DATA
+    structure Tokens: TracTransaction_TOKENS
+  end
+structure TracProtocolParser:
+  sig
+    val parse_file: string -> TracProtocol.protocol
+    val parse_str: string -> TracProtocol.protocol
+  end
+### theory "Draft.trac_protocol_parser"
+### 0.397s elapsed time, 0.429s cpu time, 0.051s GC time
+Loading theory "Draft.trac_protocol_parserTemplates"
+val templateLemmas = []: (string * thm * template) list
+### theory "Draft.trac_protocol_parserTemplates"
+### 0.332s elapsed time, 0.454s cpu time, 0.047s GC time
+val it = (): unit

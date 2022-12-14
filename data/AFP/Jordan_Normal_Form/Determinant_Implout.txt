@@ -1,0 +1,1735 @@
+Loading theory "Draft.Missing_Misc" (required by "Draft.Determinant_ImplTemplates" via "Draft.Determinant_Impl" via "Draft.Determinant")
+Loading theory "Draft.Templates" (required by "Draft.Determinant_ImplTemplates" via "Draft.ExtrEqs")
+Loading theory "Draft.Conjugate" (required by "Draft.Determinant_ImplTemplates" via "Draft.Determinant_Impl" via "Draft.Determinant" via "Draft.Column_Operations" via "Draft.Gauss_Jordan_Elimination" via "Draft.Matrix")
+datatype template_term
+=
+     t_empty
+   | template_app of template_term * template_term
+   | template_hole of int
+   | template_var of int
+datatype sign
+= equals | greater_equals | greater_than | less_equals | less_than
+datatype template
+=
+     template_bimplication of template * template
+   | template_dunno
+   | template_equation of template_term * template_term
+   | template_implication of template list * template
+   | template_inequation of sign * template_term * template_term
+   | template_negation of template
+   | template_predicate of template_term
+constructor t_empty: template_term
+constructor template_app: template_term * template_term -> template_term
+constructor template_hole: int -> template_term
+constructor template_var: int -> template_term
+constructor equals: sign
+constructor greater_equals: sign
+constructor greater_than: sign
+constructor less_equals: sign
+constructor less_than: sign
+constructor template_bimplication: template * template -> template
+constructor template_dunno: template
+constructor template_equation: template_term * template_term -> template
+constructor template_implication: template list * template -> template
+constructor template_inequation:
+   sign * template_term * template_term -> template
+constructor template_negation: template -> template
+constructor template_predicate: template_term -> template
+val vfs = fn: term -> (indexname * typ) list * (string * typ) list
+val indexOf = fn: ''a list -> ''a -> int -> int
+val has_eq = fn: term -> bool
+val term2template = fn:
+   (indexname * typ) list -> (string * typ) list -> term -> template_term
+val lemma2predicate = fn: term -> term -> template
+val makeTemplatewithContext = fn: term -> term -> template
+val lemma2template = fn: term -> template
+val thm2template = fn: thm -> template
+val tterm2string = fn: template_term -> string
+val template2string = fn: template -> string
+val t = "height ?t <= size ?t": thm
+val th =
+   Const ("HOL.Trueprop", "bool => prop") $
+     (Const ("Orderings.ord_class.less_eq", "nat => nat => bool") $
+       (Const ("Tree.height_class.height", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree")) $
+       (Const ("Nat.size_class.size", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree"))):
+   term
+### theory "Draft.Templates"
+### 0.069s elapsed time, 0.237s cpu time, 0.000s GC time
+Loading theory "Draft.ExtrEqs" (required by "Draft.Determinant_ImplTemplates")
+class conjugate = type +
+  fixes conjugate :: "'a => 'a"
+  assumes "conjugate_id": "!!a. conjugate (conjugate a) = a"
+    and
+    "conjugate_cancel_iff": "!!a b. (conjugate a = conjugate b) = (a = b)"
+### theory "Draft.Missing_Misc"
+### 0.156s elapsed time, 0.461s cpu time, 0.046s GC time
+Loading theory "Draft.Missing_Ring" (required by "Draft.Determinant_ImplTemplates" via "Draft.Determinant_Impl" via "Draft.Determinant" via "Draft.Column_Operations" via "Draft.Gauss_Jordan_Elimination" via "Draft.Matrix")
+class conjugatable_ring = conjugate + ring +
+  assumes
+    "conjugate_dist_mul":
+      "!!a b. conjugate (a * b) = conjugate a * conjugate b"
+    and
+    "conjugate_dist_add":
+      "!!a b. conjugate (a + b) = conjugate a + conjugate b"
+    and "conjugate_neg": "!!a. conjugate (- a) = - conjugate a"
+    and "conjugate_zero": "conjugate (0::'a) = (0::'a)"
+val eqpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Var (("_dummy_", 2), "?'a"))
+       ):
+   term Find_Theorems.criterion
+val badeqpattern = Pattern (Const ("Pure.eq", "?'a => ?'a => prop")):
+   term Find_Theorems.criterion
+val undefpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Const ("HOL.undefined", "?'a"))
+       ):
+   term Find_Theorems.criterion
+val thmpattern =
+   Pattern
+    (Const ("HOL.Trueprop", "bool => prop") $ Var (("_dummy_", 1), "bool")):
+   term Find_Theorems.criterion
+val badnames =
+   ["*nitpick*", "*Nitpick*", "*full_exhaustive*", "*_def*", "Enum.finite*",
+    "*Quickcheck*", "ATP*", "*Nunchaku*", "*Code*", "*BNF*", "*SMT*",
+    "*.*.*"]:
+   string list
+val unwanted_names =
+   [(false, Name "*nitpick*"), (false, Name "*Nitpick*"),
+    (false, Name "*full_exhaustive*"), (false, Name "*_def*"),
+    (false, Name "Enum.finite*"), (false, Name "*Quickcheck*"),
+    (false, Name "ATP*"), (false, Name "*Nunchaku*"),
+    (false, Name "*Code*"), (false, Name "*BNF*"), (false, Name "*SMT*"),
+    (false, Name "*.*.*")]:
+   (bool * term Find_Theorems.criterion) list
+val has_vars = fn: term -> bool
+val get_all_eqs = fn: string -> Proof.context -> (string * thm) list
+val get_all_thms = fn: string -> Proof.context -> (string * thm) list
+val get_noneq_thms = fn: string -> Proof.context -> (string * thm) list
+val template_eqs = fn:
+   string -> Proof.context -> (string * thm * template) list
+val template_thms = fn:
+   string -> Proof.context -> (string * thm * template) list
+### theory "Draft.ExtrEqs"
+### 0.622s elapsed time, 1.759s cpu time, 0.176s GC time
+class ordered_semiring_strict = comm_monoid_add +
+  ordered_cancel_ab_semigroup_add + semiring +
+  assumes
+    "mult_strict_left_mono":
+      "!!a b c. [| a < b; (0::'a) < c |] ==> c * a < c * b"
+  assumes
+    "mult_strict_right_mono":
+      "!!a b c. [| a < b; (0::'a) < c |] ==> a * c < b * c"
+class conjugatable_ordered_ring = conjugatable_ring +
+  ordered_comm_monoid_add +
+  assumes "conjugate_square_positive": "!!a. (0::'a) <= a * conjugate a"
+class ordered_idom = ordered_semiring_strict + idom +
+  assumes "zero_less_one": "(0::'a) < (1::'a)"
+instantiation
+  complex :: conjugatable_ordered_field
+  conjugate_complex == conjugate :: complex => complex
+instantiation
+  real :: conjugatable_ordered_field
+  conjugate_real == conjugate :: real => real
+instantiation
+  rat :: conjugatable_ordered_field
+  conjugate_rat == conjugate :: rat => rat
+instantiation
+  int :: conjugatable_ordered_ring
+  conjugate_int == conjugate :: int => int
+### theory "Draft.Conjugate"
+### 2.836s elapsed time, 6.292s cpu time, 0.811s GC time
+locale Group.comm_monoid
+  fixes G :: "('a, 'b) monoid_scheme"  (structure)
+  assumes "Group.comm_monoid G"
+locale csemiring
+  fixes R :: "('a, 'b) ring_scheme"  (structure)
+  assumes "csemiring R"
+locale cring
+  fixes R :: "('a, 'b) ring_scheme"  (structure)
+  assumes "cring R"
+locale Group.comm_monoid
+  fixes G :: "('a, 'b) monoid_scheme"  (structure)
+  assumes "Group.comm_monoid G"
+locale cring
+  fixes R :: "('a, 'b) ring_scheme"  (structure)
+  assumes "cring R"
+### theory "Draft.Missing_Ring"
+### 3.184s elapsed time, 6.330s cpu time, 0.795s GC time
+Loading theory "Draft.Matrix" (required by "Draft.Determinant_ImplTemplates" via "Draft.Determinant_Impl" via "Draft.Determinant" via "Draft.Column_Operations" via "Draft.Gauss_Jordan_Elimination")
+instantiation
+  vec :: (plus) plus
+  plus_vec == plus :: 'a vec => 'a vec => 'a vec
+instantiation
+  vec :: (minus) minus
+  minus_vec == minus :: 'a vec => 'a vec => 'a vec
+Found termination order: "(%p. size (snd p)) <*mlex*> {}"
+Found termination order: "(%p. size (snd p)) <*mlex*> {}"
+instantiation
+  vec :: (uminus) uminus
+  uminus_vec == uminus :: 'a vec => 'a vec
+instantiation
+  vec :: (ord) ord
+  less_eq_vec == less_eq :: 'a vec => 'a vec => bool
+  less_vec == less :: 'a vec => 'a vec => bool
+instantiation
+  vec :: (preorder) preorder
+instantiation
+  vec :: (order) order
+Found termination order: "{}"
+instantiation
+  mat :: (ord) ord
+  less_eq_mat == less_eq :: 'a mat => 'a mat => bool
+  less_mat == less :: 'a mat => 'a mat => bool
+instantiation
+  mat :: (preorder) preorder
+instantiation
+  mat :: (order) order
+instantiation
+  mat :: (plus) plus
+  plus_mat == plus :: 'a mat => 'a mat => 'a mat
+instantiation
+  mat :: (uminus) uminus
+  uminus_mat == uminus :: 'a mat => 'a mat
+instantiation
+  mat :: (minus) minus
+  minus_mat == minus :: 'a mat => 'a mat => 'a mat
+instantiation
+  mat :: (semiring_0) times
+  times_mat == times :: 'a mat => 'a mat => 'a mat
+Found termination order: "(%p. size (snd p)) <*mlex*> {}"
+Found termination order: "length <*mlex*> {}"
+locale semiring_hom
+  fixes hom :: "'a => 'b"
+  assumes "semiring_hom hom"
+instantiation
+  vec :: (conjugate) conjugate
+  conjugate_vec == conjugate :: 'a vec => 'a vec
+### theory "Draft.Matrix"
+### 2.822s elapsed time, 3.308s cpu time, 0.779s GC time
+Loading theory "Draft.Gauss_Jordan_Elimination" (required by "Draft.Determinant_ImplTemplates" via "Draft.Determinant_Impl" via "Draft.Determinant" via "Draft.Column_Operations")
+Found termination order:
+  "(%p. size_list (%p. size (snd p)) (snd (snd p))) <*mlex*> {}"
+### theory "Draft.Gauss_Jordan_Elimination"
+### 1.063s elapsed time, 1.605s cpu time, 0.817s GC time
+Loading theory "Draft.Column_Operations" (required by "Draft.Determinant_ImplTemplates" via "Draft.Determinant_Impl" via "Draft.Determinant")
+Found termination order: "(%p. size (snd p)) <*mlex*> {}"
+Found termination order: "(%p. size (snd p)) <*mlex*> {}"
+### theory "Draft.Column_Operations"
+### 0.368s elapsed time, 0.417s cpu time, 0.080s GC time
+Loading theory "Draft.Determinant" (required by "Draft.Determinant_ImplTemplates" via "Draft.Determinant_Impl")
+### theory "Draft.Determinant"
+### 1.058s elapsed time, 1.221s cpu time, 0.252s GC time
+Loading theory "Draft.Determinant_Impl" (required by "Draft.Determinant_ImplTemplates")
+Found termination order: "{}"
+Found termination order: "(%p. size (fst (snd p))) <*mlex*> {}"
+Found termination order: "{}"
+Found termination order: "(%p. size (fst (snd p))) <*mlex*> {}"
+Found termination order: "(%p. size_list size (snd (snd p))) <*mlex*> {}"
+### theory "Draft.Determinant_Impl"
+### 1.092s elapsed time, 1.200s cpu time, 0.172s GC time
+Loading theory "Draft.Determinant_ImplTemplates"
+val templateLemmas =
+   [("Determinant_Impl.select_min",
+     "det_selection_fun (select_min ?measure)",
+     template_predicate
+      (
+         template_app
+          (template_hole 1, template_app (template_hole 0, template_var 0))
+         )),
+    ("Determinant_Impl.det_code_fst_sel_fun",
+     "det ?A = det_code fst_sel_fun trivial_mute_fun ?A",
+     template_equation
+      (template_app (template_hole 3, template_var 0),
+       template_app
+        (template_app
+          (template_app (template_hole 2, template_hole 1),
+           template_hole 0),
+         template_var 0))),
+    ("Determinant_Impl.triangular_to_triangular",
+     "upper_triangular ?A = triangular_to (dim_row ?A) ?A",
+     template_equation
+      (template_app (template_hole 2, template_var 0),
+       template_app
+        (template_app
+          (template_hole 1, template_app (template_hole 0, template_var 0)),
+         template_var 0))),
+    ("Determinant_Impl.find_non0_all0",
+     "??.Determinant_Impl.find_non0 ?sel_fun ?l ?A = None ==>
+      triangular_column ?l ?A",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app
+             (template_app (template_hole 2, template_var 2),
+              template_var 1),
+            template_var 0),
+          template_hole 1)],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 0, template_var 1), template_var 0)
+           ))),
+    ("Determinant_Impl.triangle_trans",
+     "[| triangular_to ?k ?A; ?k' < ?k |] ==> triangular_to ?k' ?A",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 1, template_var 2),
+              template_var 1)
+            ),
+        template_inequation (less_than, template_var 0, template_var 2)],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 1, template_var 0), template_var 1)
+           ))),
+    ("Determinant_Impl.triangle_growth",
+     "[| triangular_to ?k ?A; triangular_column ?k ?A |]
+      ==> triangular_to (Suc ?k) ?A",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 2, template_var 1),
+              template_var 0)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 1, template_var 1),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 2,
+               template_app (template_hole 0, template_var 1)),
+             template_var 0)
+           ))),
+    ("Determinant_Impl.triangulize_preserves_dimensions",
+     "triangulize ?sel_fun ?mf ?A = (?r', ?A') ==>
+      dim_col ?A' = dim_col ?A",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app
+             (template_app (template_hole 3, template_var 4),
+              template_var 3),
+            template_var 2),
+          template_app
+           (template_app (template_hole 2, template_var 1),
+            template_var 0))],
+       template_equation
+        (template_app (template_hole 0, template_var 0),
+         template_app (template_hole 0, template_var 2)))),
+    ("Determinant_Impl.triangulize_preserves_dimensions",
+     "triangulize ?sel_fun ?mf ?A = (?r', ?A') ==>
+      dim_row ?A' = dim_row ?A",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app
+             (template_app (template_hole 3, template_var 4),
+              template_var 3),
+            template_var 2),
+          template_app
+           (template_app (template_hole 2, template_var 1),
+            template_var 0))],
+       template_equation
+        (template_app (template_hole 0, template_var 0),
+         template_app (template_hole 0, template_var 2)))),
+    ("Determinant_Impl.det_code",
+     "[| det_selection_fun ?sel_fun; mute_fun ?mf |]
+      ==> det_code ?sel_fun ?mf ?A = det ?A",
+     template_implication
+      ([template_predicate (template_app (template_hole 4, template_var 2)),
+        template_predicate
+         (template_app (template_hole 3, template_var 1))],
+       template_equation
+        (template_app
+          (template_app
+            (template_app (template_hole 1, template_var 2),
+             template_var 1),
+           template_var 0),
+         template_app (template_hole 0, template_var 0)))),
+    ("Determinant_Impl.find_non0",
+     "[| det_selection_fun ?sel_fun;
+         ??.Determinant_Impl.find_non0 ?sel_fun ?l ?A = Some ?m |]
+      ==> ?l < ?m",
+     template_implication
+      ([template_predicate (template_app (template_hole 4, template_var 3)),
+        template_equation
+         (template_app
+           (template_app
+             (template_app (template_hole 2, template_var 3),
+              template_var 2),
+            template_var 1),
+          template_app (template_hole 1, template_var 0))],
+       template_inequation (less_than, template_var 2, template_var 0))),
+    ("Determinant_Impl.det_selection_funD",
+     "[| det_selection_fun ?f; ?xs ~= [] |] ==> ?f ?xs : fst ` set ?xs",
+     template_implication
+      ([template_predicate (template_app (template_hole 7, template_var 1)),
+        template_negation
+         (template_equation (template_var 0, template_hole 4))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 3,
+               template_app (template_var 1, template_var 0)),
+             template_app
+              (template_app (template_hole 2, template_hole 1),
+               template_app (template_hole 0, template_var 0)))
+           ))),
+    ("Determinant_Impl.find_non0",
+     "[| det_selection_fun ?sel_fun;
+         ??.Determinant_Impl.find_non0 ?sel_fun ?l ?A = Some ?m |]
+      ==> ?m < dim_row ?A",
+     template_implication
+      ([template_predicate (template_app (template_hole 5, template_var 3)),
+        template_equation
+         (template_app
+           (template_app
+             (template_app (template_hole 3, template_var 3),
+              template_var 2),
+            template_var 1),
+          template_app (template_hole 2, template_var 0))],
+       template_inequation
+        (less_than, template_var 0,
+         template_app (template_hole 0, template_var 1)))),
+    ("Determinant_Impl.mute_preserves_dimensions",
+     "??.Determinant_Impl.mute ?mf ?q ?k ?l (?r, ?A) = (?r', ?A') ==>
+      dim_col ?A' = dim_col ?A",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 3, template_var 7),
+                  template_var 6),
+                template_var 5),
+              template_var 4),
+            template_app
+             (template_app (template_hole 2, template_var 3),
+              template_var 2)),
+          template_app
+           (template_app (template_hole 2, template_var 1),
+            template_var 0))],
+       template_equation
+        (template_app (template_hole 0, template_var 0),
+         template_app (template_hole 0, template_var 2)))),
+    ("Determinant_Impl.mute_preserves_dimensions",
+     "??.Determinant_Impl.mute ?mf ?q ?k ?l (?r, ?A) = (?r', ?A') ==>
+      dim_row ?A' = dim_row ?A",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 3, template_var 7),
+                  template_var 6),
+                template_var 5),
+              template_var 4),
+            template_app
+             (template_app (template_hole 2, template_var 3),
+              template_var 2)),
+          template_app
+           (template_app (template_hole 2, template_var 1),
+            template_var 0))],
+       template_equation
+        (template_app (template_hole 0, template_var 0),
+         template_app (template_hole 0, template_var 2)))),
+    ("Determinant_Impl.sub1_preserves_dimensions",
+     "??.Determinant_Impl.sub1 ?mf ?q ?k ?l (?r, ?A) = (?r', ?A') ==>
+      dim_col ?A' = dim_col ?A",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 3, template_var 7),
+                  template_var 6),
+                template_var 5),
+              template_var 4),
+            template_app
+             (template_app (template_hole 2, template_var 3),
+              template_var 2)),
+          template_app
+           (template_app (template_hole 2, template_var 1),
+            template_var 0))],
+       template_equation
+        (template_app (template_hole 0, template_var 0),
+         template_app (template_hole 0, template_var 2)))),
+    ("Determinant_Impl.sub1_preserves_dimensions",
+     "??.Determinant_Impl.sub1 ?mf ?q ?k ?l (?r, ?A) = (?r', ?A') ==>
+      dim_row ?A' = dim_row ?A",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 3, template_var 7),
+                  template_var 6),
+                template_var 5),
+              template_var 4),
+            template_app
+             (template_app (template_hole 2, template_var 3),
+              template_var 2)),
+          template_app
+           (template_app (template_hole 2, template_var 1),
+            template_var 0))],
+       template_equation
+        (template_app (template_hole 0, template_var 0),
+         template_app (template_hole 0, template_var 2)))),
+    ("Determinant_Impl.sub3_preserves_dimensions",
+     "??.Determinant_Impl.sub3 ?sel_fun ?mf ?d ?l (?r, ?A) = (?r', ?A') ==>
+      dim_col ?A' = dim_col ?A",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 3, template_var 7),
+                  template_var 6),
+                template_var 5),
+              template_var 4),
+            template_app
+             (template_app (template_hole 2, template_var 3),
+              template_var 2)),
+          template_app
+           (template_app (template_hole 2, template_var 1),
+            template_var 0))],
+       template_equation
+        (template_app (template_hole 0, template_var 0),
+         template_app (template_hole 0, template_var 2)))),
+    ("Determinant_Impl.sub3_preserves_dimensions",
+     "??.Determinant_Impl.sub3 ?sel_fun ?mf ?d ?l (?r, ?A) = (?r', ?A') ==>
+      dim_row ?A' = dim_row ?A",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 3, template_var 7),
+                  template_var 6),
+                template_var 5),
+              template_var 4),
+            template_app
+             (template_app (template_hole 2, template_var 3),
+              template_var 2)),
+          template_app
+           (template_app (template_hole 2, template_var 1),
+            template_var 0))],
+       template_equation
+        (template_app (template_hole 0, template_var 0),
+         template_app (template_hole 0, template_var 2)))),
+    ("Determinant_Impl.find_non0",
+     "[| det_selection_fun ?sel_fun;
+         ??.Determinant_Impl.find_non0 ?sel_fun ?l ?A = Some ?m |]
+      ==> ?A $$ (?m, ?l) ~= (0::?'a)",
+     template_implication
+      ([template_predicate (template_app (template_hole 8, template_var 3)),
+        template_equation
+         (template_app
+           (template_app
+             (template_app (template_hole 6, template_var 3),
+              template_var 2),
+            template_var 1),
+          template_app (template_hole 5, template_var 0))],
+       template_negation
+        (
+           template_equation
+            (template_app
+              (template_app (template_hole 2, template_var 1),
+               template_app
+                (template_app (template_hole 1, template_var 0),
+                 template_var 2)),
+             template_hole 0)
+           ))),
+    ("Determinant_Impl.triangulize_closed",
+     "[| triangulize ?sel_fun ?mf ?A = (?r', ?A'); ?A : carrier_mat ?m ?n |]
+      ==> ?A' : carrier_mat ?m ?n",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app
+             (template_app (template_hole 3, template_var 6),
+              template_var 5),
+            template_var 4),
+          template_app
+           (template_app (template_hole 2, template_var 3),
+            template_var 2)),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 1, template_var 4),
+              template_app
+               (template_app (template_hole 0, template_var 1),
+                template_var 0))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 1, template_var 2),
+             template_app
+              (template_app (template_hole 0, template_var 1),
+               template_var 0))
+           ))),
+    ("Determinant_Impl.triangular_columnD",
+     "[| triangular_column ?j ?A; ?j < ?i; ?i < dim_row ?A |]
+      ==> ?A $$ (?i, ?j) = (0::?'a)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 6, template_var 2),
+              template_var 1)
+            ),
+        template_inequation (less_than, template_var 2, template_var 0),
+        template_inequation
+         (less_than, template_var 0,
+          template_app (template_hole 4, template_var 1))],
+       template_equation
+        (template_app
+          (template_app (template_hole 2, template_var 1),
+           template_app
+            (template_app (template_hole 1, template_var 0),
+             template_var 2)),
+         template_hole 0))),
+    ("Determinant_Impl.sub2_preserves_dimensions",
+     "??.Determinant_Impl.sub2 ?sel_fun ?mf ?d ?l (?r, ?A) = (?r', ?A') ==>
+      dim_row ?A' = dim_row ?A & dim_col ?A' = dim_col ?A",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 5, template_var 7),
+                  template_var 6),
+                template_var 5),
+              template_var 4),
+            template_app
+             (template_app (template_hole 4, template_var 3),
+              template_var 2)),
+          template_app
+           (template_app (template_hole 4, template_var 1),
+            template_var 0))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 3,
+               template_app
+                (template_app
+                  (template_hole 2,
+                   template_app (template_hole 1, template_var 0)),
+                 template_app (template_hole 1, template_var 2))),
+             template_app
+              (template_app
+                (template_hole 2,
+                 template_app (template_hole 0, template_var 0)),
+               template_app (template_hole 0, template_var 2)))
+           ))),
+    ("Determinant_Impl.triangular_columnI",
+     "(!!i. [| ?j < i; i < dim_row ?A |] ==> ?A $$ (i, ?j) = (0::?'a)) ==>
+      triangular_column ?j ?A",
+     template_implication
+      ([template_predicate (template_app (template_hole 8, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 0, template_var 1), template_var 0)
+           ))),
+    ("Determinant_Impl.sub1_closed",
+     "[| ??.Determinant_Impl.sub1 ?mf ?q ?k ?l (?r, ?A) = (?r', ?A');
+         ?A : carrier_mat ?m ?n |]
+      ==> ?A' : carrier_mat ?m ?n",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 3, template_var 9),
+                  template_var 8),
+                template_var 7),
+              template_var 6),
+            template_app
+             (template_app (template_hole 2, template_var 5),
+              template_var 4)),
+          template_app
+           (template_app (template_hole 2, template_var 3),
+            template_var 2)),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 1, template_var 4),
+              template_app
+               (template_app (template_hole 0, template_var 1),
+                template_var 0))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 1, template_var 2),
+             template_app
+              (template_app (template_hole 0, template_var 1),
+               template_var 0))
+           ))),
+    ("Determinant_Impl.sub2_closed",
+     "[| ??.Determinant_Impl.sub2 ?sel_fun ?mf ?d ?l (?r, ?A) = (?r', ?A');
+         ?A : carrier_mat ?m ?n |]
+      ==> ?A' : carrier_mat ?m ?n",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 3, template_var 9),
+                  template_var 8),
+                template_var 7),
+              template_var 6),
+            template_app
+             (template_app (template_hole 2, template_var 5),
+              template_var 4)),
+          template_app
+           (template_app (template_hole 2, template_var 3),
+            template_var 2)),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 1, template_var 4),
+              template_app
+               (template_app (template_hole 0, template_var 1),
+                template_var 0))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 1, template_var 2),
+             template_app
+              (template_app (template_hole 0, template_var 1),
+               template_var 0))
+           ))),
+    ("Determinant_Impl.sub3_closed",
+     "[| ??.Determinant_Impl.sub3 ?sel_fun ?mf ?k ?l (?r, ?A) = (?r', ?A');
+         ?A : carrier_mat ?m ?n |]
+      ==> ?A' : carrier_mat ?m ?n",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 3, template_var 9),
+                  template_var 8),
+                template_var 7),
+              template_var 6),
+            template_app
+             (template_app (template_hole 2, template_var 5),
+              template_var 4)),
+          template_app
+           (template_app (template_hole 2, template_var 3),
+            template_var 2)),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 1, template_var 4),
+              template_app
+               (template_app (template_hole 0, template_var 1),
+                template_var 0))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 1, template_var 2),
+             template_app
+              (template_app (template_hole 0, template_var 1),
+               template_var 0))
+           ))),
+    ("Determinant_Impl.triangulized",
+     "[| mute_fun ?mf; det_selection_fun ?sel_fun; ?A : carrier_mat ?n ?n;
+         triangulize ?sel_fun ?mf ?A = (?r', ?A') |]
+      ==> upper_triangular ?A'",
+     template_implication
+      ([template_predicate (template_app (template_hole 7, template_var 5)),
+        template_predicate (template_app (template_hole 6, template_var 4)),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 5, template_var 3),
+              template_app
+               (template_app (template_hole 4, template_var 2),
+                template_var 2))
+            ),
+        template_equation
+         (template_app
+           (template_app
+             (template_app (template_hole 2, template_var 4),
+              template_var 5),
+            template_var 3),
+          template_app
+           (template_app (template_hole 1, template_var 1),
+            template_var 0))],
+       template_predicate
+        (template_app (template_hole 0, template_var 0)))),
+    ("Determinant_Impl.triangular_toD",
+     "[| triangular_to ?k ?A; ?j < ?k; ?j < ?i; ?i < dim_row ?A |]
+      ==> ?A $$ (?i, ?j) = (0::?'a)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 6, template_var 3),
+              template_var 2)
+            ),
+        template_inequation (less_than, template_var 1, template_var 3),
+        template_inequation (less_than, template_var 1, template_var 0),
+        template_inequation
+         (less_than, template_var 0,
+          template_app (template_hole 4, template_var 2))],
+       template_equation
+        (template_app
+          (template_app (template_hole 2, template_var 2),
+           template_app
+            (template_app (template_hole 1, template_var 0),
+             template_var 1)),
+         template_hole 0))),
+    ("Determinant_Impl.triangulize_divisor",
+     "[| mute_fun ?mf; det_selection_fun ?sel_fun; ?A : carrier_mat ?d ?d;
+         triangulize ?sel_fun ?mf ?A = (?r', ?A') |]
+      ==> ?r' ~= (0::?'a)",
+     template_implication
+      ([template_predicate (template_app (template_hole 9, template_var 5)),
+        template_predicate (template_app (template_hole 8, template_var 4)),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 7, template_var 3),
+              template_app
+               (template_app (template_hole 6, template_var 2),
+                template_var 2))
+            ),
+        template_equation
+         (template_app
+           (template_app
+             (template_app (template_hole 4, template_var 4),
+              template_var 5),
+            template_var 3),
+          template_app
+           (template_app (template_hole 3, template_var 1),
+            template_var 0))],
+       template_negation
+        (template_equation (template_var 1, template_hole 0)))),
+    ("Determinant_Impl.triangular_toI",
+     "(!!i j.
+          [| j < ?k; j < i; i < dim_row ?A |]
+          ==> ?A $$ (i, j) = (0::?'a)) ==>
+      triangular_to ?k ?A",
+     template_implication
+      ([template_predicate (template_app (template_hole 8, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 0, template_var 1), template_var 0)
+           ))),
+    ("Determinant_Impl.triangulize_det",
+     "[| mute_fun ?mf; det_selection_fun ?sel_fun; ?A : carrier_mat ?d ?d;
+         triangulize ?sel_fun ?mf ?A = (?r', ?A') |]
+      ==> det ?A * ?r' = det ?A'",
+     template_implication
+      ([template_predicate (template_app (template_hole 9, template_var 5)),
+        template_predicate (template_app (template_hole 8, template_var 4)),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 7, template_var 3),
+              template_app
+               (template_app (template_hole 6, template_var 2),
+                template_var 2))
+            ),
+        template_equation
+         (template_app
+           (template_app
+             (template_app (template_hole 4, template_var 4),
+              template_var 5),
+            template_var 3),
+          template_app
+           (template_app (template_hole 3, template_var 1),
+            template_var 0))],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 1,
+             template_app (template_hole 0, template_var 3)),
+           template_var 1),
+         template_app (template_hole 0, template_var 0)))),
+    ("Determinant_Impl.sub3_makes_triangle",
+     "[| mute_fun ?mf; det_selection_fun ?sel_fun;
+         ??.Determinant_Impl.sub3 ?sel_fun ?mf (dim_row ?A) ?l (?r, ?A) =
+         (?r', ?A');
+         ?l <= dim_row ?A; ?l <= dim_col ?A |]
+      ==> triangular_to ?l ?A'",
+     template_implication
+      ([template_predicate (template_app (template_hole 8, template_var 6)),
+        template_predicate (template_app (template_hole 7, template_var 5)),
+        template_equation
+         (template_app
+           (template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 5, template_var 5),
+                  template_var 6),
+                template_app (template_hole 4, template_var 4)),
+              template_var 3),
+            template_app
+             (template_app (template_hole 3, template_var 2),
+              template_var 4)),
+          template_app
+           (template_app (template_hole 3, template_var 1),
+            template_var 0)),
+        template_inequation
+         (less_equals, template_var 3,
+          template_app (template_hole 4, template_var 4)),
+        template_inequation
+         (less_equals, template_var 3,
+          template_app (template_hole 1, template_var 4))],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 0, template_var 3), template_var 0)
+           ))),
+    ("Determinant_Impl.sub1_preserves_diagnal",
+     "[| ??.Determinant_Impl.sub1 ?mf ?q ?k ?l (?r, ?A) = (?r', ?A');
+         ?l < dim_col ?A; ?k + ?l < dim_row ?A |]
+      ==> ?A' $$ (?l, ?l) = ?A $$ (?l, ?l)",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 8, template_var 7),
+                  template_var 6),
+                template_var 5),
+              template_var 4),
+            template_app
+             (template_app (template_hole 7, template_var 3),
+              template_var 2)),
+          template_app
+           (template_app (template_hole 7, template_var 1),
+            template_var 0)),
+        template_inequation
+         (less_than, template_var 4,
+          template_app (template_hole 5, template_var 2)),
+        template_inequation
+         (less_than,
+          template_app
+           (template_app (template_hole 4, template_var 5), template_var 4),
+          template_app (template_hole 3, template_var 2))],
+       template_equation
+        (template_app
+          (template_app (template_hole 1, template_var 0),
+           template_app
+            (template_app (template_hole 0, template_var 4),
+             template_var 4)),
+         template_app
+          (template_app (template_hole 1, template_var 2),
+           template_app
+            (template_app (template_hole 0, template_var 4),
+             template_var 4))))),
+    ("Determinant_Impl.sub1_preserves_triangle",
+     "[| ??.Determinant_Impl.sub1 ?mf ?q ?k ?l (?r, ?A) = (?r', ?A');
+         triangular_to ?l ?A; ?l < dim_row ?A; ?l < dim_col ?A;
+         ?l + ?k < dim_row ?A |]
+      ==> triangular_to ?l ?A'",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 6, template_var 7),
+                  template_var 6),
+                template_var 5),
+              template_var 4),
+            template_app
+             (template_app (template_hole 5, template_var 3),
+              template_var 2)),
+          template_app
+           (template_app (template_hole 5, template_var 1),
+            template_var 0)),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 4, template_var 4),
+              template_var 2)
+            ),
+        template_inequation
+         (less_than, template_var 4,
+          template_app (template_hole 2, template_var 2)),
+        template_inequation
+         (less_than, template_var 4,
+          template_app (template_hole 1, template_var 2)),
+        template_inequation
+         (less_than,
+          template_app
+           (template_app (template_hole 0, template_var 4), template_var 5),
+          template_app (template_hole 2, template_var 2))],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 4, template_var 4), template_var 0)
+           ))),
+    ("Determinant_Impl.sub2_preserves_triangle",
+     "[| det_selection_fun ?sel_fun;
+         ??.Determinant_Impl.sub2 ?sel_fun ?mf ?d ?l (?r, ?A) = (?r', ?A');
+         triangular_to ?l ?A; ?l < dim_col ?A; ?l < ?d; ?d <= dim_row ?A |]
+      ==> triangular_to ?l ?A'",
+     template_implication
+      ([template_predicate (template_app (template_hole 8, template_var 7)),
+        template_equation
+         (template_app
+           (template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 6, template_var 7),
+                  template_var 6),
+                template_var 5),
+              template_var 4),
+            template_app
+             (template_app (template_hole 5, template_var 3),
+              template_var 2)),
+          template_app
+           (template_app (template_hole 5, template_var 1),
+            template_var 0)),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 4, template_var 4),
+              template_var 2)
+            ),
+        template_inequation
+         (less_than, template_var 4,
+          template_app (template_hole 2, template_var 2)),
+        template_inequation (less_than, template_var 4, template_var 5),
+        template_inequation
+         (less_equals, template_var 5,
+          template_app (template_hole 0, template_var 2))],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 4, template_var 4), template_var 0)
+           ))),
+    ("Determinant_Impl.sub2_grows_triangle",
+     "[| det_selection_fun ?sel_fun; mute_fun ?mf;
+         ??.Determinant_Impl.sub2 ?sel_fun ?mf (dim_row ?A) ?l (?r, ?A) =
+         (?r', ?A');
+         triangular_to ?l ?A; ?l < dim_col ?A; ?l < dim_row ?A |]
+      ==> triangular_to (Suc ?l) ?A'",
+     template_implication
+      ([template_predicate (template_app (template_hole 9, template_var 6)),
+        template_predicate (template_app (template_hole 8, template_var 5)),
+        template_equation
+         (template_app
+           (template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 6, template_var 6),
+                  template_var 5),
+                template_app (template_hole 5, template_var 4)),
+              template_var 3),
+            template_app
+             (template_app (template_hole 4, template_var 2),
+              template_var 4)),
+          template_app
+           (template_app (template_hole 4, template_var 1),
+            template_var 0)),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 3, template_var 3),
+              template_var 4)
+            ),
+        template_inequation
+         (less_than, template_var 3,
+          template_app (template_hole 1, template_var 4)),
+        template_inequation
+         (less_than, template_var 3,
+          template_app (template_hole 5, template_var 4))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 3,
+               template_app (template_hole 0, template_var 3)),
+             template_var 0)
+           ))),
+    ("Determinant_Impl.mute_preserves_triangle",
+     "[| ??.Determinant_Impl.mute ?mf ?q ?k ?l (?r, ?A) = (?r', ?A');
+         triangular_to ?l ?A; ?l < ?k; ?k < dim_row ?A; ?l < dim_row ?A;
+         ?l < dim_col ?A |]
+      ==> triangular_to ?l ?A'",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 5, template_var 7),
+                  template_var 6),
+                template_var 5),
+              template_var 4),
+            template_app
+             (template_app (template_hole 4, template_var 3),
+              template_var 2)),
+          template_app
+           (template_app (template_hole 4, template_var 1),
+            template_var 0)),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 3, template_var 4),
+              template_var 2)
+            ),
+        template_inequation (less_than, template_var 4, template_var 5),
+        template_inequation
+         (less_than, template_var 5,
+          template_app (template_hole 1, template_var 2)),
+        template_inequation
+         (less_than, template_var 4,
+          template_app (template_hole 1, template_var 2)),
+        template_inequation
+         (less_than, template_var 4,
+          template_app (template_hole 0, template_var 2))],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 3, template_var 4), template_var 0)
+           ))),
+    ("Determinant_Impl.sub2_det",
+     "[| mute_fun ?mf; det_selection_fun ?sel_fun; ?A : carrier_mat ?d ?d;
+         ??.Determinant_Impl.sub2 ?sel_fun ?mf ?d ?l (?r, ?A) = (?r', ?A');
+         ?r ~= (0::?'a); ?l < ?d |]
+      ==> ?r * det ?A' = ?r' * det ?A",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 12, template_var 7)),
+        template_predicate
+         (template_app (template_hole 11, template_var 6)),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 10, template_var 5),
+              template_app
+               (template_app (template_hole 9, template_var 4),
+                template_var 4))
+            ),
+        template_equation
+         (template_app
+           (template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 7, template_var 6),
+                  template_var 7),
+                template_var 4),
+              template_var 3),
+            template_app
+             (template_app (template_hole 6, template_var 2),
+              template_var 5)),
+          template_app
+           (template_app (template_hole 6, template_var 1),
+            template_var 0)),
+        template_negation
+         (template_equation (template_var 2, template_hole 3)),
+        template_inequation (less_than, template_var 3, template_var 4)],
+       template_equation
+        (template_app
+          (template_app (template_hole 1, template_var 2),
+           template_app (template_hole 0, template_var 0)),
+         template_app
+          (template_app (template_hole 1, template_var 1),
+           template_app (template_hole 0, template_var 5))))),
+    ("Determinant_Impl.sub3_det",
+     "[| mute_fun ?mf; det_selection_fun ?sel_fun; ?A : carrier_mat ?d ?d;
+         ??.Determinant_Impl.sub3 ?sel_fun ?mf ?d ?l (?r, ?A) =
+         (?r'', ?A'');
+         ?r ~= (0::?'a); ?l <= ?d |]
+      ==> ?r * det ?A'' = ?r'' * det ?A",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 12, template_var 7)),
+        template_predicate
+         (template_app (template_hole 11, template_var 6)),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 10, template_var 5),
+              template_app
+               (template_app (template_hole 9, template_var 4),
+                template_var 4))
+            ),
+        template_equation
+         (template_app
+           (template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 7, template_var 6),
+                  template_var 7),
+                template_var 4),
+              template_var 3),
+            template_app
+             (template_app (template_hole 6, template_var 2),
+              template_var 5)),
+          template_app
+           (template_app (template_hole 6, template_var 1),
+            template_var 0)),
+        template_negation
+         (template_equation (template_var 2, template_hole 3)),
+        template_inequation (less_equals, template_var 3, template_var 4)],
+       template_equation
+        (template_app
+          (template_app (template_hole 1, template_var 2),
+           template_app (template_hole 0, template_var 0)),
+         template_app
+          (template_app (template_hole 1, template_var 1),
+           template_app (template_hole 0, template_var 5))))),
+    ("Determinant_Impl.sub2_divisor",
+     "[| mute_fun ?mf; det_selection_fun ?sel_fun;
+         ??.Determinant_Impl.sub2 ?sel_fun ?mf ?k ?l (?r, ?A) = (?r', ?A');
+         ?l < ?k; ?k <= dim_row ?A; ?l < dim_col ?A; ?r ~= (0::?'a) |]
+      ==> ?r' ~= (0::?'a)",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 11, template_var 7)),
+        template_predicate
+         (template_app (template_hole 10, template_var 6)),
+        template_equation
+         (template_app
+           (template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 8, template_var 6),
+                  template_var 7),
+                template_var 5),
+              template_var 4),
+            template_app
+             (template_app (template_hole 7, template_var 3),
+              template_var 2)),
+          template_app
+           (template_app (template_hole 7, template_var 1),
+            template_var 0)),
+        template_inequation (less_than, template_var 4, template_var 5),
+        template_inequation
+         (less_equals, template_var 5,
+          template_app (template_hole 4, template_var 2)),
+        template_inequation
+         (less_than, template_var 4,
+          template_app (template_hole 3, template_var 2)),
+        template_negation
+         (template_equation (template_var 3, template_hole 0))],
+       template_negation
+        (template_equation (template_var 1, template_hole 0)))),
+    ("Determinant_Impl.sub3_divisor",
+     "[| mute_fun ?mf; det_selection_fun ?sel_fun;
+         ??.Determinant_Impl.sub3 ?sel_fun ?mf ?d ?l (?r, ?A) =
+         (?r'', ?A'');
+         ?l <= ?d; ?d <= dim_row ?A; ?l <= dim_col ?A; ?r ~= (0::?'a) |]
+      ==> ?r'' ~= (0::?'a)",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 10, template_var 7)),
+        template_predicate (template_app (template_hole 9, template_var 6)),
+        template_equation
+         (template_app
+           (template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 7, template_var 6),
+                  template_var 7),
+                template_var 5),
+              template_var 4),
+            template_app
+             (template_app (template_hole 6, template_var 3),
+              template_var 2)),
+          template_app
+           (template_app (template_hole 6, template_var 1),
+            template_var 0)),
+        template_inequation (less_equals, template_var 4, template_var 5),
+        template_inequation
+         (less_equals, template_var 5,
+          template_app (template_hole 4, template_var 2)),
+        template_inequation
+         (less_equals, template_var 4,
+          template_app (template_hole 3, template_var 2)),
+        template_negation
+         (template_equation (template_var 3, template_hole 0))],
+       template_negation
+        (template_equation (template_var 1, template_hole 0)))),
+    ("Determinant_Impl.sub1_triangulizes_column",
+     "[| mute_fun ?mf;
+         ??.Determinant_Impl.sub1 ?mf (?A $$ (?l, ?l)) (dim_row ?A - Suc ?l)
+          ?l (?r, ?A) =
+         (?r', ?A');
+         triangular_to ?l ?A; 0 < dim_row ?A; ?l < dim_row ?A;
+         ?l < dim_col ?A |]
+      ==> triangular_column ?l ?A'",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 13, template_var 5)),
+        template_equation
+         (template_app
+           (template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 11, template_var 5),
+                  template_app
+                   (template_app (template_hole 10, template_var 4),
+                    template_app
+                     (template_app (template_hole 9, template_var 3),
+                      template_var 3))),
+                template_app
+                 (template_app
+                   (template_hole 8,
+                    template_app (template_hole 7, template_var 4)),
+                  template_app (template_hole 6, template_var 3))),
+              template_var 3),
+            template_app
+             (template_app (template_hole 5, template_var 2),
+              template_var 4)),
+          template_app
+           (template_app (template_hole 5, template_var 1),
+            template_var 0)),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 4, template_var 3),
+              template_var 4)
+            ),
+        template_inequation
+         (less_than, template_hole 2,
+          template_app (template_hole 7, template_var 4)),
+        template_inequation
+         (less_than, template_var 3,
+          template_app (template_hole 7, template_var 4)),
+        template_inequation
+         (less_than, template_var 3,
+          template_app (template_hole 1, template_var 4))],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 0, template_var 3), template_var 0)
+           ))),
+    ("Determinant_Impl.sub1_divisor",
+     "[| mute_fun ?mf; det_selection_fun ?sel_fun;
+         ??.Determinant_Impl.sub1 ?mf ?q ?k ?l (?r, ?A) = (?r', ?A');
+         ?r ~= (0::?'a); ?q ~= (0::?'a); ?k + ?l < dim_row ?A;
+         ?l < dim_col ?A |]
+      ==> ?r' ~= (0::?'a)",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 11, template_var 8)),
+        template_predicate
+         (template_app (template_hole 10, template_var 7)),
+        template_equation
+         (template_app
+           (template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 8, template_var 8),
+                  template_var 6),
+                template_var 5),
+              template_var 4),
+            template_app
+             (template_app (template_hole 7, template_var 3),
+              template_var 2)),
+          template_app
+           (template_app (template_hole 7, template_var 1),
+            template_var 0)),
+        template_negation
+         (template_equation (template_var 3, template_hole 4)),
+        template_negation
+         (template_equation (template_var 6, template_hole 4)),
+        template_inequation
+         (less_than,
+          template_app
+           (template_app (template_hole 2, template_var 5), template_var 4),
+          template_app (template_hole 1, template_var 2)),
+        template_inequation
+         (less_than, template_var 4,
+          template_app (template_hole 0, template_var 2))],
+       template_negation
+        (template_equation (template_var 1, template_hole 4)))),
+    ("Determinant_Impl.mute_makes_0",
+     "[| mute_fun ?mf;
+         ??.Determinant_Impl.mute ?mf (?A $$ (?l, ?l)) ?k ?l (?r, ?A) =
+         (?r', ?A');
+         ?l < dim_row ?A; ?l < dim_col ?A; ?k < dim_row ?A; ?k ~= ?l |]
+      ==> ?A' $$ (?k, ?l) = (0::?'a)",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 12, template_var 6)),
+        template_equation
+         (template_app
+           (template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 10, template_var 6),
+                  template_app
+                   (template_app (template_hole 9, template_var 5),
+                    template_app
+                     (template_app (template_hole 8, template_var 4),
+                      template_var 4))),
+                template_var 3),
+              template_var 4),
+            template_app
+             (template_app (template_hole 7, template_var 2),
+              template_var 5)),
+          template_app
+           (template_app (template_hole 7, template_var 1),
+            template_var 0)),
+        template_inequation
+         (less_than, template_var 4,
+          template_app (template_hole 5, template_var 5)),
+        template_inequation
+         (less_than, template_var 4,
+          template_app (template_hole 4, template_var 5)),
+        template_inequation
+         (less_than, template_var 3,
+          template_app (template_hole 5, template_var 5)),
+        template_negation
+         (template_equation (template_var 3, template_var 4))],
+       template_equation
+        (template_app
+          (template_app (template_hole 9, template_var 0),
+           template_app
+            (template_app (template_hole 8, template_var 3),
+             template_var 4)),
+         template_hole 0))),
+    ("Determinant_Impl.sub1_grows_triangle",
+     "[| mute_fun ?mf;
+         ??.Determinant_Impl.sub1 ?mf (?A $$ (?l, ?l)) (dim_row ?A - Suc ?l)
+          ?l (?r, ?A) =
+         (?r', ?A');
+         0 < dim_row ?A; triangular_to ?l ?A; ?l < dim_row ?A;
+         ?l < dim_col ?A |]
+      ==> triangular_to (Suc ?l) ?A'",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 12, template_var 5)),
+        template_equation
+         (template_app
+           (template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 10, template_var 5),
+                  template_app
+                   (template_app (template_hole 9, template_var 4),
+                    template_app
+                     (template_app (template_hole 8, template_var 3),
+                      template_var 3))),
+                template_app
+                 (template_app
+                   (template_hole 7,
+                    template_app (template_hole 6, template_var 4)),
+                  template_app (template_hole 5, template_var 3))),
+              template_var 3),
+            template_app
+             (template_app (template_hole 4, template_var 2),
+              template_var 4)),
+          template_app
+           (template_app (template_hole 4, template_var 1),
+            template_var 0)),
+        template_inequation
+         (less_than, template_hole 2,
+          template_app (template_hole 6, template_var 4)),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 1, template_var 3),
+              template_var 4)
+            ),
+        template_inequation
+         (less_than, template_var 3,
+          template_app (template_hole 6, template_var 4)),
+        template_inequation
+         (less_than, template_var 3,
+          template_app (template_hole 0, template_var 4))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 1,
+               template_app (template_hole 5, template_var 3)),
+             template_var 0)
+           ))),
+    ("Determinant_Impl.mute_det",
+     "[| mute_fun ?mf; det_selection_fun ?sel_fun; ?A : carrier_mat ?n ?n;
+         ??.Determinant_Impl.mute ?mf ?q ?k ?l (?r, ?A) = (?r', ?A');
+         ?k < ?n; ?l < ?n; ?k ~= ?l |]
+      ==> ?r * det ?A' = ?r' * det ?A",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 12, template_var 9)),
+        template_predicate
+         (template_app (template_hole 11, template_var 8)),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 10, template_var 7),
+              template_app
+               (template_app (template_hole 9, template_var 6),
+                template_var 6))
+            ),
+        template_equation
+         (template_app
+           (template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 7, template_var 9),
+                  template_var 5),
+                template_var 4),
+              template_var 3),
+            template_app
+             (template_app (template_hole 6, template_var 2),
+              template_var 7)),
+          template_app
+           (template_app (template_hole 6, template_var 1),
+            template_var 0)),
+        template_inequation (less_than, template_var 4, template_var 6),
+        template_inequation (less_than, template_var 3, template_var 6),
+        template_negation
+         (template_equation (template_var 4, template_var 3))],
+       template_equation
+        (template_app
+          (template_app (template_hole 1, template_var 2),
+           template_app (template_hole 0, template_var 0)),
+         template_app
+          (template_app (template_hole 1, template_var 1),
+           template_app (template_hole 0, template_var 7))))),
+    ("Determinant_Impl.mute_preserves",
+     "[| ??.Determinant_Impl.mute ?mf ?q ?k ?l (?r, ?A) = (?r', ?A');
+         ?i < dim_row ?A; ?j < dim_col ?A; ?l < dim_row ?A; ?k < dim_row ?A;
+         ?i ~= ?k |]
+      ==> ?A' $$ (?i, ?j) = ?A $$ (?i, ?j)",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 9, template_var 9),
+                  template_var 8),
+                template_var 7),
+              template_var 6),
+            template_app
+             (template_app (template_hole 8, template_var 5),
+              template_var 4)),
+          template_app
+           (template_app (template_hole 8, template_var 3),
+            template_var 2)),
+        template_inequation
+         (less_than, template_var 1,
+          template_app (template_hole 6, template_var 4)),
+        template_inequation
+         (less_than, template_var 0,
+          template_app (template_hole 5, template_var 4)),
+        template_inequation
+         (less_than, template_var 6,
+          template_app (template_hole 6, template_var 4)),
+        template_inequation
+         (less_than, template_var 7,
+          template_app (template_hole 6, template_var 4)),
+        template_negation
+         (template_equation (template_var 1, template_var 7))],
+       template_equation
+        (template_app
+          (template_app (template_hole 1, template_var 2),
+           template_app
+            (template_app (template_hole 0, template_var 1),
+             template_var 0)),
+         template_app
+          (template_app (template_hole 1, template_var 4),
+           template_app
+            (template_app (template_hole 0, template_var 1),
+             template_var 0))))),
+    ("Determinant_Impl.sub1_det",
+     "[| mute_fun ?mf; det_selection_fun ?sel_fun; ?A : carrier_mat ?n ?n;
+         ??.Determinant_Impl.sub1 ?mf ?q ?k ?l (?r, ?A) = (?r'', ?A'');
+         ?r ~= (0::?'a); ?q ~= (0::?'a); ?l + ?k < ?n |]
+      ==> ?r * det ?A'' = ?r'' * det ?A",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 13, template_var 9)),
+        template_predicate
+         (template_app (template_hole 12, template_var 8)),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 11, template_var 7),
+              template_app
+               (template_app (template_hole 10, template_var 6),
+                template_var 6))
+            ),
+        template_equation
+         (template_app
+           (template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 8, template_var 9),
+                  template_var 5),
+                template_var 4),
+              template_var 3),
+            template_app
+             (template_app (template_hole 7, template_var 2),
+              template_var 7)),
+          template_app
+           (template_app (template_hole 7, template_var 1),
+            template_var 0)),
+        template_negation
+         (template_equation (template_var 2, template_hole 4)),
+        template_negation
+         (template_equation (template_var 5, template_hole 4)),
+        template_inequation
+         (less_than,
+          template_app
+           (template_app (template_hole 2, template_var 3), template_var 4),
+          template_var 6)],
+       template_equation
+        (template_app
+          (template_app (template_hole 1, template_var 2),
+           template_app (template_hole 0, template_var 0)),
+         template_app
+          (template_app (template_hole 1, template_var 1),
+           template_app (template_hole 0, template_var 7))))),
+    ("Determinant_Impl.sub1_makes_0s",
+     "[| mute_fun ?mf;
+         ??.Determinant_Impl.sub1 ?mf (?A $$ (?l, ?l)) ?k ?l (?r, ?A) =
+         (?r', ?A');
+         ?l < dim_row ?A; ?l < dim_col ?A; ?l < ?i; ?i <= ?k + ?l;
+         ?k + ?l < dim_row ?A |]
+      ==> ?A' $$ (?i, ?l) = (0::?'a)",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 12, template_var 7)),
+        template_equation
+         (template_app
+           (template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 10, template_var 7),
+                  template_app
+                   (template_app (template_hole 9, template_var 6),
+                    template_app
+                     (template_app (template_hole 8, template_var 5),
+                      template_var 5))),
+                template_var 4),
+              template_var 5),
+            template_app
+             (template_app (template_hole 7, template_var 3),
+              template_var 6)),
+          template_app
+           (template_app (template_hole 7, template_var 2),
+            template_var 1)),
+        template_inequation
+         (less_than, template_var 5,
+          template_app (template_hole 5, template_var 6)),
+        template_inequation
+         (less_than, template_var 5,
+          template_app (template_hole 4, template_var 6)),
+        template_inequation (less_than, template_var 5, template_var 0),
+        template_inequation
+         (less_equals, template_var 0,
+          template_app
+           (template_app (template_hole 2, template_var 4),
+            template_var 5)),
+        template_inequation
+         (less_than,
+          template_app
+           (template_app (template_hole 2, template_var 4), template_var 5),
+          template_app (template_hole 5, template_var 6))],
+       template_equation
+        (template_app
+          (template_app (template_hole 9, template_var 1),
+           template_app
+            (template_app (template_hole 8, template_var 0),
+             template_var 5)),
+         template_hole 0))),
+    ("Determinant_Impl.mute_preserves_0",
+     "[| ??.Determinant_Impl.mute ?mf ?q ?k ?l (?r, ?A) = (?r', ?A');
+         ?i < dim_row ?A; ?j < dim_col ?A; ?l < dim_row ?A; ?k < dim_row ?A;
+         ?A $$ (?i, ?j) = (0::?'a); ?A $$ (?l, ?j) = (0::?'a) |]
+      ==> ?A' $$ (?i, ?j) = (0::?'a)",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 8, template_var 9),
+                  template_var 8),
+                template_var 7),
+              template_var 6),
+            template_app
+             (template_app (template_hole 7, template_var 5),
+              template_var 4)),
+          template_app
+           (template_app (template_hole 7, template_var 3),
+            template_var 2)),
+        template_inequation
+         (less_than, template_var 1,
+          template_app (template_hole 5, template_var 4)),
+        template_inequation
+         (less_than, template_var 0,
+          template_app (template_hole 4, template_var 4)),
+        template_inequation
+         (less_than, template_var 6,
+          template_app (template_hole 5, template_var 4)),
+        template_inequation
+         (less_than, template_var 7,
+          template_app (template_hole 5, template_var 4)),
+        template_equation
+         (template_app
+           (template_app (template_hole 2, template_var 4),
+            template_app
+             (template_app (template_hole 1, template_var 1),
+              template_var 0)),
+          template_hole 0),
+        template_equation
+         (template_app
+           (template_app (template_hole 2, template_var 4),
+            template_app
+             (template_app (template_hole 1, template_var 6),
+              template_var 0)),
+          template_hole 0)],
+       template_equation
+        (template_app
+          (template_app (template_hole 2, template_var 2),
+           template_app
+            (template_app (template_hole 1, template_var 1),
+             template_var 0)),
+         template_hole 0)))]:
+   (string * thm * template) list
+### theory "Draft.Determinant_ImplTemplates"
+### 0.634s elapsed time, 0.807s cpu time, 0.090s GC time
+val it = (): unit

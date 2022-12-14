@@ -1,0 +1,1400 @@
+Loading theory "Draft.Interface" (required by "Draft.Resumption_BasedTemplates" via "Draft.Resumption_Based" via "Draft.Language_Semantics")
+Loading theory "HOL-Library.Function_Algebras" (required by "Draft.Resumption_BasedTemplates" via "Draft.ExtrEqs" via "HOL-Library.BigO")
+Loading theory "Draft.Templates" (required by "Draft.Resumption_BasedTemplates" via "Draft.ExtrEqs")
+instantiation
+  fun :: (type, plus) plus
+  plus_fun == plus :: ('a => 'b) => ('a => 'b) => 'a => 'b
+instantiation
+  fun :: (type, zero) zero
+  zero_fun == zero_class.zero :: 'a => 'b
+instantiation
+  fun :: (type, times) times
+  times_fun == times :: ('a => 'b) => ('a => 'b) => 'a => 'b
+instantiation
+  fun :: (type, one) one
+  one_fun == one_class.one :: 'a => 'b
+datatype template_term
+=
+     t_empty
+   | template_app of template_term * template_term
+   | template_hole of int
+   | template_var of int
+datatype sign
+= equals | greater_equals | greater_than | less_equals | less_than
+datatype template
+=
+     template_bimplication of template * template
+   | template_dunno
+   | template_equation of template_term * template_term
+   | template_implication of template list * template
+   | template_inequation of sign * template_term * template_term
+   | template_negation of template
+   | template_predicate of template_term
+constructor t_empty: template_term
+constructor template_app: template_term * template_term -> template_term
+constructor template_hole: int -> template_term
+constructor template_var: int -> template_term
+constructor equals: sign
+constructor greater_equals: sign
+constructor greater_than: sign
+constructor less_equals: sign
+constructor less_than: sign
+constructor template_bimplication: template * template -> template
+constructor template_dunno: template
+constructor template_equation: template_term * template_term -> template
+constructor template_implication: template list * template -> template
+constructor template_inequation:
+   sign * template_term * template_term -> template
+constructor template_negation: template -> template
+constructor template_predicate: template_term -> template
+val vfs = fn: term -> (indexname * typ) list * (string * typ) list
+val indexOf = fn: ''a list -> ''a -> int -> int
+val has_eq = fn: term -> bool
+val term2template = fn:
+   (indexname * typ) list -> (string * typ) list -> term -> template_term
+val lemma2predicate = fn: term -> term -> template
+val makeTemplatewithContext = fn: term -> term -> template
+val lemma2template = fn: term -> template
+val thm2template = fn: thm -> template
+val tterm2string = fn: template_term -> string
+val template2string = fn: template -> string
+val t = "height ?t <= size ?t": thm
+val th =
+   Const ("HOL.Trueprop", "bool => prop") $
+     (Const ("Orderings.ord_class.less_eq", "nat => nat => bool") $
+       (Const ("Tree.height_class.height", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree")) $
+       (Const ("Nat.size_class.size", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree"))):
+   term
+### theory "Draft.Templates"
+### 0.110s elapsed time, 0.359s cpu time, 0.046s GC time
+### theory "HOL-Library.Function_Algebras"
+### 0.137s elapsed time, 0.411s cpu time, 0.046s GC time
+Loading theory "HOL-Library.BigO" (required by "Draft.Resumption_BasedTemplates" via "Draft.ExtrEqs")
+### theory "HOL-Library.BigO"
+### 0.594s elapsed time, 1.227s cpu time, 0.082s GC time
+Loading theory "Draft.ExtrEqs" (required by "Draft.Resumption_BasedTemplates")
+### theory "Draft.Interface"
+### 1.125s elapsed time, 2.462s cpu time, 0.200s GC time
+Loading theory "Draft.Language_Semantics" (required by "Draft.Resumption_BasedTemplates" via "Draft.Resumption_Based")
+val eqpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Var (("_dummy_", 2), "?'a"))
+       ):
+   term Find_Theorems.criterion
+val badeqpattern = Pattern (Const ("Pure.eq", "?'a => ?'a => prop")):
+   term Find_Theorems.criterion
+val undefpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Const ("HOL.undefined", "?'a"))
+       ):
+   term Find_Theorems.criterion
+val thmpattern =
+   Pattern
+    (Const ("HOL.Trueprop", "bool => prop") $ Var (("_dummy_", 1), "bool")):
+   term Find_Theorems.criterion
+val badnames =
+   ["*nitpick*", "*Nitpick*", "*full_exhaustive*", "*_def*", "Enum.finite*",
+    "*Quickcheck*", "ATP*", "*Nunchaku*", "*Code*", "*BNF*", "*SMT*",
+    "*.*.*"]:
+   string list
+val unwanted_names =
+   [(false, Name "*nitpick*"), (false, Name "*Nitpick*"),
+    (false, Name "*full_exhaustive*"), (false, Name "*_def*"),
+    (false, Name "Enum.finite*"), (false, Name "*Quickcheck*"),
+    (false, Name "ATP*"), (false, Name "*Nunchaku*"),
+    (false, Name "*Code*"), (false, Name "*BNF*"), (false, Name "*SMT*"),
+    (false, Name "*.*.*")]:
+   (bool * term Find_Theorems.criterion) list
+val has_vars = fn: term -> bool
+val get_all_eqs = fn: string -> Proof.context -> (string * thm) list
+val get_all_thms = fn: string -> Proof.context -> (string * thm) list
+val get_noneq_thms = fn: string -> Proof.context -> (string * thm) list
+val template_eqs = fn:
+   string -> Proof.context -> (string * thm * template) list
+val template_thms = fn:
+   string -> Proof.context -> (string * thm * template) list
+### theory "Draft.ExtrEqs"
+### 0.519s elapsed time, 1.112s cpu time, 0.185s GC time
+Found termination order: "size <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+locale PL
+  fixes aval :: "'atom => 'state => 'state"
+    and tval :: "'test => 'state => bool"
+    and cval :: "'choice => 'state => real"
+  assumes "PL cval"
+Found termination order: "size <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+Found termination order: "(%p. size (fst p)) <*mlex*> {}"
+### theory "Draft.Language_Semantics"
+### 3.002s elapsed time, 3.853s cpu time, 0.854s GC time
+Loading theory "Draft.Resumption_Based" (required by "Draft.Resumption_BasedTemplates")
+Proofs for inductive predicate(s) "genp"
+  Proving monotonicity ...
+locale PL_Indis
+  fixes aval :: "'atom => 'state => 'state"
+    and tval :: "'test => 'state => bool"
+    and cval :: "'choice => 'state => real"
+    and indis :: "('state * 'state) set"
+  assumes "PL_Indis cval indis"
+locale PL_Indis
+  fixes aval :: "'atom => 'state => 'state"
+    and tval :: "'test => 'state => bool"
+    and cval :: "'choice => 'state => real"
+    and indis :: "('state * 'state) set"
+  assumes "PL_Indis cval indis"
+Proofs for coinductive predicate(s) "discr"
+  Proving monotonicity ...
+Proofs for coinductive predicate(s) "siso"
+  Proving monotonicity ...
+Proofs for coinductive predicate(s) "discrCf"
+  Proving monotonicity ...
+### theory "Draft.Resumption_Based"
+### 1.411s elapsed time, 1.947s cpu time, 0.768s GC time
+Loading theory "Draft.Resumption_BasedTemplates"
+val templateLemmas =
+   [("Resumption_Based.finer_partGen", "finer ?P (partGen ?P)",
+     template_predicate
+      (
+         template_app
+          (template_app (template_hole 1, template_var 0),
+           template_app (template_hole 0, template_var 0))
+         )),
+    ("Resumption_Based.gen_empty2", "gen {} ?I = ?I",
+     template_equation
+      (template_app
+        (template_app (template_hole 1, template_hole 0), template_var 0),
+       template_var 0)),
+    ("Resumption_Based.gen_empty", "gen ?P {} = {}",
+     template_equation
+      (template_app
+        (template_app (template_hole 1, template_var 0), template_hole 0),
+       template_hole 0)),
+    ("Resumption_Based.incl_gen", "?I <= gen ?P ?I",
+     template_inequation
+      (less_equals, template_var 1,
+       template_app
+        (template_app (template_hole 0, template_var 0), template_var 1))),
+    ("Resumption_Based.part_partGen", "part (\<Union> ?P) (partGen ?P)",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_hole 2,
+             template_app (template_hole 1, template_var 0)),
+           template_app (template_hole 0, template_var 0))
+         )),
+    ("Resumption_Based.Union_partGen",
+     "\<Union> (partGen ?P) = \<Union> ?P",
+     template_equation
+      (template_app
+        (template_hole 1, template_app (template_hole 0, template_var 0)),
+       template_app (template_hole 1, template_var 0))),
+    ("Resumption_Based.inj_on_inv_into2",
+     "inj_on (inv_into ?P ?F) (?F ` ?P)",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_hole 2,
+             template_app
+              (template_app (template_hole 1, template_var 1),
+               template_var 0)),
+           template_app
+            (template_app (template_hole 0, template_var 0),
+             template_var 1))
+         )),
+    ("Resumption_Based.partJoin_commute", "partJoin ?P ?Q = partJoin ?Q ?P",
+     template_equation
+      (template_app
+        (template_app (template_hole 0, template_var 1), template_var 0),
+       template_app
+        (template_app (template_hole 0, template_var 0), template_var 1))),
+    ("Resumption_Based.part_emp_R", "part ?I {} = (?I = {})",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 3, template_var 0),
+              template_hole 2)
+            )],
+       template_equation (template_var 0, template_hole 0))),
+    ("Resumption_Based.Union_partJoin_L",
+     "\<Union> ?P <= \<Union> (partJoin ?P ?Q)",
+     template_inequation
+      (less_equals, template_app (template_hole 1, template_var 1),
+       template_app
+        (template_hole 1,
+         template_app
+          (template_app (template_hole 0, template_var 1),
+           template_var 0)))),
+    ("Resumption_Based.Union_partJoin_R",
+     "\<Union> ?Q <= \<Union> (partJoin ?P ?Q)",
+     template_inequation
+      (less_equals, template_app (template_hole 1, template_var 1),
+       template_app
+        (template_hole 1,
+         template_app
+          (template_app (template_hole 0, template_var 0),
+           template_var 1)))),
+    ("Resumption_Based.finite_partGen", "finite ?P ==> finite (partGen ?P)",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 1, template_var 0))],
+       template_predicate
+        (
+           template_app
+            (template_hole 1,
+             template_app (template_hole 0, template_var 0))
+           ))),
+    ("Resumption_Based.gen_incl_Un", "gen ?P ?I <= ?I Un \<Union> ?P",
+     template_inequation
+      (less_equals,
+       template_app
+        (template_app (template_hole 2, template_var 1), template_var 0),
+       template_app
+        (template_app (template_hole 1, template_var 0),
+         template_app (template_hole 0, template_var 1)))),
+    ("Resumption_Based.trancl_imp_trans", "?r^+ <= ?r ==> trans ?r",
+     template_implication
+      ([template_inequation
+         (less_equals, template_app (template_hole 1, template_var 0),
+          template_var 0)],
+       template_predicate
+        (template_app (template_hole 0, template_var 0)))),
+    ("Resumption_Based.gen_idem", "gen ?P (gen ?P ?I) = gen ?P ?I",
+     template_equation
+      (template_app
+        (template_app (template_hole 0, template_var 1),
+         template_app
+          (template_app (template_hole 0, template_var 1), template_var 0)),
+       template_app
+        (template_app (template_hole 0, template_var 1), template_var 0))),
+    ("Resumption_Based.part_emp", "part ?J (insert {} ?P) = part ?J ?P",
+     template_equation
+      (template_app
+        (template_app (template_hole 2, template_var 1),
+         template_app
+          (template_app (template_hole 1, template_hole 0),
+           template_var 0)),
+       template_app
+        (template_app (template_hole 2, template_var 1), template_var 0))),
+    ("Resumption_Based.O_subset_trans", "?r O ?r <= ?r ==> trans ?r",
+     template_implication
+      ([template_inequation
+         (less_equals,
+          template_app
+           (template_app (template_hole 1, template_var 0), template_var 0),
+          template_var 0)],
+       template_predicate
+        (template_app (template_hole 0, template_var 0)))),
+    ("Resumption_Based.int_emp", "(0::?'a) < ?i ==> {..<?i} ~= {}",
+     template_implication
+      ([template_inequation (less_than, template_hole 4, template_var 0)],
+       template_negation
+        (
+           template_equation
+            (template_app (template_hole 1, template_var 0),
+             template_hole 0)
+           ))),
+    ("Resumption_Based.finer_emp", "finer {} ?Q ==> ?Q <= {{}}",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 4, template_hole 3),
+              template_var 0)
+            )],
+       template_inequation
+        (less_equals, template_var 0,
+         template_app
+          (template_app (template_hole 1, template_hole 0),
+           template_hole 3)))),
+    ("Resumption_Based.part_emp_L", "part {} ?P ==> ?P <= {{}}",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 4, template_hole 3),
+              template_var 0)
+            )],
+       template_inequation
+        (less_equals, template_var 0,
+         template_app
+          (template_app (template_hole 1, template_hole 3),
+           template_hole 0)))),
+    ("Resumption_Based.emp_gen", "gen ?P ?I = {} ==> ?I = {}",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app (template_hole 1, template_var 1), template_var 0),
+          template_hole 0)],
+       template_equation (template_var 0, template_hole 0))),
+    ("Resumption_Based.gen_incl", "?I : ?P ==> gen ?P ?I <= \<Union> ?P",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 3, template_var 1),
+              template_var 0)
+            )],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_app (template_hole 1, template_var 0), template_var 1),
+         template_app (template_hole 0, template_var 0)))),
+    ("Resumption_Based.emp_partGen", "{} ~: ?P ==> {} ~: partGen ?P",
+     template_implication
+      ([template_negation
+         (
+            template_predicate
+             (
+                template_app
+                 (template_app (template_hole 2, template_hole 1),
+                  template_var 0)
+                )
+            )],
+       template_negation
+        (
+           template_predicate
+            (
+               template_app
+                (template_app (template_hole 2, template_hole 1),
+                 template_app (template_hole 0, template_var 0))
+               )
+           ))),
+    ("Resumption_Based.finite_part",
+     "[| finite ?I; part ?I ?P |] ==> finite ?P",
+     template_implication
+      ([template_predicate (template_app (template_hole 2, template_var 1)),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 1, template_var 1),
+              template_var 0)
+            )],
+       template_predicate
+        (template_app (template_hole 0, template_var 0)))),
+    ("Resumption_Based.trancl_trans",
+     "trans ?R ==> (?P^+ <= ?R) = (?P <= ?R)",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 3, template_var 1))],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 1,
+             template_app (template_hole 0, template_var 0)),
+           template_var 1),
+         template_app
+          (template_app (template_hole 1, template_var 0),
+           template_var 1)))),
+    ("Resumption_Based.gen_mono", "?I <= ?J ==> gen ?P ?I <= gen ?P ?J",
+     template_implication
+      ([template_inequation (less_equals, template_var 2, template_var 1)],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_app (template_hole 0, template_var 0), template_var 2),
+         template_app
+          (template_app (template_hole 0, template_var 0),
+           template_var 1)))),
+    ("Resumption_Based.partGen_ex", "?I : ?P ==> EX J:partGen ?P. ?I <= J",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 3, template_var 1),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 2,
+               template_app (template_hole 1, template_var 0)),
+             t_empty)
+           ))),
+    ("Resumption_Based.finite_partJoin",
+     "[| finite ?P; finite ?Q |] ==> finite (partJoin ?P ?Q)",
+     template_implication
+      ([template_predicate (template_app (template_hole 1, template_var 1)),
+        template_predicate
+         (template_app (template_hole 1, template_var 0))],
+       template_predicate
+        (
+           template_app
+            (template_hole 1,
+             template_app
+              (template_app (template_hole 0, template_var 1),
+               template_var 0))
+           ))),
+    ("Resumption_Based.inj_on_inv_into",
+     "inj_on ?F ?P ==> inv_into ?P ?F ` ?F ` ?P = ?P",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 4, template_var 1),
+              template_var 0)
+            )],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 2,
+             template_app
+              (template_app (template_hole 1, template_var 0),
+               template_var 1)),
+           template_app
+            (template_app (template_hole 0, template_var 1),
+             template_var 0)),
+         template_var 0))),
+    ("Resumption_Based.finer_lift",
+     "finer ?P ?Q ==> finer (?F ` ?P) (lift ?P ?F ` ?Q)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 3, template_var 2),
+              template_var 1)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 2,
+               template_app
+                (template_app (template_hole 1, template_var 0),
+                 template_var 2)),
+             template_app
+              (template_app
+                (template_hole 1,
+                 template_app
+                  (template_app (template_hole 0, template_var 2),
+                   template_var 0)),
+               template_var 1))
+           ))),
+    ("Resumption_Based.finer_partJoin_L",
+     "[| part ?I ?P; part ?I ?Q |] ==> finer ?P (partJoin ?P ?Q)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 2, template_var 2),
+              template_var 1)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 2, template_var 2),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 1, template_var 1),
+             template_app
+              (template_app (template_hole 0, template_var 1),
+               template_var 0))
+           ))),
+    ("Resumption_Based.finer_partJoin_R",
+     "[| part ?I ?P; part ?I ?Q |] ==> finer ?Q (partJoin ?P ?Q)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 2, template_var 2),
+              template_var 1)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 2, template_var 2),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 1, template_var 0),
+             template_app
+              (template_app (template_hole 0, template_var 1),
+               template_var 0))
+           ))),
+    ("Resumption_Based.part_partJoin",
+     "[| part ?I ?P; part ?I ?Q |] ==> part ?I (partJoin ?P ?Q)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 1, template_var 2),
+              template_var 1)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 1, template_var 2),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 1, template_var 2),
+             template_app
+              (template_app (template_hole 0, template_var 1),
+               template_var 0))
+           ))),
+    ("Resumption_Based.genp_gen_eq",
+     "genp (%x. x : ?P) (%x. x : ?I) = (%x. x : gen ?P ?I)",
+     template_equation
+      (template_app (template_app (template_hole 3, t_empty), t_empty),
+       t_empty)),
+    ("Resumption_Based.partCompat_Un",
+     "partCompat (?P Un ?Q) ?theta ?f =
+      (partCompat ?P ?theta ?f & partCompat ?Q ?theta ?f)",
+     template_equation
+      (template_app
+        (template_app
+          (template_app
+            (template_hole 2,
+             template_app
+              (template_app (template_hole 1, template_var 3),
+               template_var 2)),
+           template_var 1),
+         template_var 0),
+       template_app
+        (template_app
+          (template_hole 0,
+           template_app
+            (template_app
+              (template_app (template_hole 2, template_var 3),
+               template_var 1),
+             template_var 0)),
+         template_app
+          (template_app
+            (template_app (template_hole 2, template_var 2),
+             template_var 1),
+           template_var 0)))),
+    ("Resumption_Based.ex_partGen",
+     "[| ?J : partGen ?P; ?j : ?J |] ==> EX I:?P. ?j : I",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 3, template_var 2),
+              template_app (template_hole 2, template_var 1))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 1, template_var 0),
+              template_var 2)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 0, template_var 1), t_empty)
+           ))),
+    ("Resumption_Based.gen_nchotomy",
+     "?J : ?P ==> ?J <= gen ?P ?I | gen ?P ?I Int ?J = {}",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 6, template_var 2),
+              template_var 1)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 5,
+               template_app
+                (template_app (template_hole 4, template_var 2),
+                 template_app
+                  (template_app (template_hole 3, template_var 1),
+                   template_var 0))),
+             template_app
+              (template_app
+                (template_hole 2,
+                 template_app
+                  (template_app
+                    (template_hole 1,
+                     template_app
+                      (template_app (template_hole 3, template_var 1),
+                       template_var 0)),
+                   template_var 2)),
+               template_hole 0))
+           ))),
+    ("Resumption_Based.sym_gfp",
+     "[| mono ?Retr; !!theta. sym theta ==> sym (?Retr theta) |]
+      ==> sym (gfp ?Retr)",
+     template_implication
+      ([template_predicate (template_app (template_hole 3, template_var 0)),
+        template_predicate (template_app (template_hole 2, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_hole 1,
+             template_app (template_hole 0, template_var 0))
+           ))),
+    ("Resumption_Based.trans_gfp",
+     "[| mono ?Retr; !!theta. trans theta ==> trans (?Retr theta) |]
+      ==> trans (gfp ?Retr)",
+     template_implication
+      ([template_predicate (template_app (template_hole 3, template_var 0)),
+        template_predicate (template_app (template_hole 2, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_hole 1,
+             template_app (template_hole 0, template_var 0))
+           ))),
+    ("Resumption_Based.emp_partJoin",
+     "[| {} ~: ?P; {} ~: ?Q |] ==> {} ~: partJoin ?P ?Q",
+     template_implication
+      ([template_negation
+         (
+            template_predicate
+             (
+                template_app
+                 (template_app (template_hole 2, template_hole 1),
+                  template_var 1)
+                )
+            ),
+        template_negation
+         (
+            template_predicate
+             (
+                template_app
+                 (template_app (template_hole 2, template_hole 1),
+                  template_var 0)
+                )
+            )],
+       template_negation
+        (
+           template_predicate
+            (
+               template_app
+                (template_app (template_hole 2, template_hole 1),
+                 template_app
+                  (template_app (template_hole 0, template_var 1),
+                   template_var 0))
+               )
+           ))),
+    ("Resumption_Based.partCompat_partGen",
+     "[| sym ?theta; trans ?theta; partCompat ?P ?theta ?f |]
+      ==> partCompat (partGen ?P) ?theta ?f",
+     template_implication
+      ([template_predicate (template_app (template_hole 3, template_var 2)),
+        template_predicate (template_app (template_hole 2, template_var 2)),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 1, template_var 1),
+                template_var 2),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_hole 1,
+                 template_app (template_hole 0, template_var 1)),
+               template_var 2),
+             template_var 0)
+           ))),
+    ("Resumption_Based.subset_gen",
+     "[| ?J : ?P; gen ?P ?I Int ?J ~= {} |] ==> ?J <= gen ?P ?I",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 6, template_var 2),
+              template_var 1)
+            ),
+        template_negation
+         (
+            template_equation
+             (template_app
+               (template_app
+                 (template_hole 3,
+                  template_app
+                   (template_app (template_hole 2, template_var 1),
+                    template_var 0)),
+                template_var 2),
+              template_hole 1)
+            )],
+       template_inequation
+        (less_equals, template_var 2,
+         template_app
+          (template_app (template_hole 2, template_var 1),
+           template_var 0)))),
+    ("Resumption_Based.gen_Union",
+     "?I : ?P ==> gen ?P ?I = \<Union> {J: ?P. J <= gen ?P ?I}",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 6, template_var 1),
+              template_var 0)
+            )],
+       template_equation
+        (template_app
+          (template_app (template_hole 4, template_var 0), template_var 1),
+         template_app
+          (template_hole 3, template_app (template_hole 2, t_empty))))),
+    ("Resumption_Based.part_sum",
+     "part {..<?n} ?P ==> sum ?f {..<?n} = sum (sum ?f) ?P",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 4,
+                template_app (template_hole 3, template_var 2)),
+              template_var 1)
+            )],
+       template_equation
+        (template_app
+          (template_app (template_hole 1, t_empty),
+           template_app (template_hole 3, template_var 2)),
+         template_app
+          (template_app (template_hole 0, t_empty), template_var 1)))),
+    ("Resumption_Based.refl_gfp",
+     "[| mono ?Retr; !!theta. refl theta ==> refl (?Retr theta) |]
+      ==> refl (gfp ?Retr)",
+     template_implication
+      ([template_predicate (template_app (template_hole 4, template_var 0)),
+        template_predicate (template_app (template_hole 3, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 2, template_hole 1),
+             template_app (template_hole 0, template_var 0))
+           ))),
+    ("Resumption_Based.Int_partGen",
+     "[| {?I, ?J} <= partGen ?P; ?I Int ?J ~= {} |] ==> ?I = ?J",
+     template_implication
+      ([template_inequation
+         (less_equals,
+          template_app
+           (template_app (template_hole 6, template_var 2),
+            template_app
+             (template_app (template_hole 6, template_var 1),
+              template_hole 5)),
+          template_app (template_hole 4, template_var 0)),
+        template_negation
+         (
+            template_equation
+             (template_app
+               (template_app (template_hole 1, template_var 2),
+                template_var 1),
+              template_hole 0)
+            )],
+       template_equation (template_var 2, template_var 1))),
+    ("Resumption_Based.gen_subset_gen",
+     "[| ?J : ?P; gen ?P ?I Int ?J ~= {} |] ==> gen ?P ?J <= gen ?P ?I",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 6, template_var 2),
+              template_var 1)
+            ),
+        template_negation
+         (
+            template_equation
+             (template_app
+               (template_app
+                 (template_hole 3,
+                  template_app
+                   (template_app (template_hole 2, template_var 1),
+                    template_var 0)),
+                template_var 2),
+              template_hole 1)
+            )],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_app (template_hole 2, template_var 1), template_var 2),
+         template_app
+          (template_app (template_hole 2, template_var 1),
+           template_var 0)))),
+    ("Resumption_Based.finite_gen",
+     "[| finite ?P; !!J. J : ?P ==> finite J; finite ?I |]
+      ==> finite (gen ?P ?I)",
+     template_implication
+      ([template_predicate (template_app (template_hole 4, template_var 1)),
+        template_predicate (template_app (template_hole 3, t_empty)),
+        template_predicate
+         (template_app (template_hole 1, template_var 0))],
+       template_predicate
+        (
+           template_app
+            (template_hole 1,
+             template_app
+              (template_app (template_hole 0, template_var 1),
+               template_var 0))
+           ))),
+    ("Resumption_Based.part_Un",
+     "[| part ?I1.0 ?P1.0; part ?I2.0 ?P2.0; ?I1.0 Int ?I2.0 = {} |]
+      ==> part (?I1.0 Un ?I2.0) (?P1.0 Un ?P2.0)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 5, template_var 3),
+              template_var 2)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 5, template_var 1),
+              template_var 0)
+            ),
+        template_equation
+         (template_app
+           (template_app (template_hole 3, template_var 3), template_var 1),
+          template_hole 2)],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 5,
+               template_app
+                (template_app (template_hole 1, template_var 3),
+                 template_var 1)),
+             template_app
+              (template_app (template_hole 0, template_var 2),
+               template_var 0))
+           ))),
+    ("Resumption_Based.partCompat_gen",
+     "[| sym ?theta; trans ?theta; partCompat ?P ?theta ?f; ?I : ?P |]
+      ==> Resumption_Based.compat (gen ?P ?I) ?theta ?f",
+     template_implication
+      ([template_predicate (template_app (template_hole 5, template_var 3)),
+        template_predicate (template_app (template_hole 4, template_var 3)),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 3, template_var 2),
+                template_var 3),
+              template_var 1)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 2, template_var 0),
+              template_var 2)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_hole 1,
+                 template_app
+                  (template_app (template_hole 0, template_var 2),
+                   template_var 0)),
+               template_var 3),
+             template_var 1)
+           ))),
+    ("Resumption_Based.subset_gen2",
+     "[| {?I, ?J} <= ?P; gen ?P ?I Int gen ?P ?J ~= {} |]
+      ==> ?I <= gen ?P ?J",
+     template_implication
+      ([template_inequation
+         (less_equals,
+          template_app
+           (template_app (template_hole 7, template_var 2),
+            template_app
+             (template_app (template_hole 7, template_var 1),
+              template_hole 6)),
+          template_var 0),
+        template_negation
+         (
+            template_equation
+             (template_app
+               (template_app
+                 (template_hole 3,
+                  template_app
+                   (template_app (template_hole 2, template_var 0),
+                    template_var 2)),
+                template_app
+                 (template_app (template_hole 2, template_var 0),
+                  template_var 1)),
+              template_hole 1)
+            )],
+       template_inequation
+        (less_equals, template_var 2,
+         template_app
+          (template_app (template_hole 2, template_var 0),
+           template_var 1)))),
+    ("Resumption_Based.partCompat_partJoin",
+     "[| sym ?theta; trans ?theta; partCompat ?P ?theta ?f;
+         partCompat ?Q ?theta ?f |]
+      ==> partCompat (partJoin ?P ?Q) ?theta ?f",
+     template_implication
+      ([template_predicate (template_app (template_hole 3, template_var 3)),
+        template_predicate (template_app (template_hole 2, template_var 3)),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 1, template_var 2),
+                template_var 3),
+              template_var 1)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 1, template_var 0),
+                template_var 3),
+              template_var 1)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_hole 1,
+                 template_app
+                  (template_app (template_hole 0, template_var 2),
+                   template_var 0)),
+               template_var 3),
+             template_var 1)
+           ))),
+    ("Resumption_Based.part_Un_singl",
+     "[| part ?K ?P; !!I. I : ?P ==> ?I0.0 Int I = {} |]
+      ==> part (?I0.0 Un ?K) ({?I0.0} Un ?P)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 9, template_var 2),
+              template_var 1)
+            ),
+        template_predicate (template_app (template_hole 8, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 9,
+               template_app
+                (template_app (template_hole 3, template_var 0),
+                 template_var 2)),
+             template_app
+              (template_app
+                (template_hole 2,
+                 template_app
+                  (template_app (template_hole 1, template_var 0),
+                   template_hole 0)),
+               template_var 1))
+           ))),
+    ("Resumption_Based.gen_eq_gen",
+     "[| {?I, ?J} <= ?P; gen ?P ?I Int gen ?P ?J ~= {} |]
+      ==> gen ?P ?I = gen ?P ?J",
+     template_implication
+      ([template_inequation
+         (less_equals,
+          template_app
+           (template_app (template_hole 6, template_var 2),
+            template_app
+             (template_app (template_hole 6, template_var 1),
+              template_hole 5)),
+          template_var 0),
+        template_negation
+         (
+            template_equation
+             (template_app
+               (template_app
+                 (template_hole 2,
+                  template_app
+                   (template_app (template_hole 1, template_var 0),
+                    template_var 2)),
+                template_app
+                 (template_app (template_hole 1, template_var 0),
+                  template_var 1)),
+              template_hole 0)
+            )],
+       template_equation
+        (template_app
+          (template_app (template_hole 1, template_var 0), template_var 2),
+         template_app
+          (template_app (template_hole 1, template_var 0),
+           template_var 1)))),
+    ("Resumption_Based.gen_subset_gen2",
+     "[| {?I, ?J} <= ?P; gen ?P ?I Int gen ?P ?J ~= {} |]
+      ==> gen ?P ?I <= gen ?P ?J",
+     template_implication
+      ([template_inequation
+         (less_equals,
+          template_app
+           (template_app (template_hole 7, template_var 2),
+            template_app
+             (template_app (template_hole 7, template_var 1),
+              template_hole 6)),
+          template_var 0),
+        template_negation
+         (
+            template_equation
+             (template_app
+               (template_app
+                 (template_hole 3,
+                  template_app
+                   (template_app (template_hole 2, template_var 0),
+                    template_var 2)),
+                template_app
+                 (template_app (template_hole 2, template_var 0),
+                  template_var 1)),
+              template_hole 1)
+            )],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_app (template_hole 2, template_var 0), template_var 2),
+         template_app
+          (template_app (template_hole 2, template_var 0),
+           template_var 1)))),
+    ("Resumption_Based.sym_trans_gfp",
+     "[| mono ?Retr;
+         !!theta.
+            sym theta & trans theta ==>
+            sym (?Retr theta) & trans (?Retr theta) |]
+      ==> sym (gfp ?Retr) & trans (gfp ?Retr)",
+     template_implication
+      ([template_predicate (template_app (template_hole 5, template_var 0)),
+        template_predicate (template_app (template_hole 4, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 3,
+               template_app
+                (template_hole 2,
+                 template_app (template_hole 0, template_var 0))),
+             template_app
+              (template_hole 1,
+               template_app (template_hole 0, template_var 0)))
+           ))),
+    ("Resumption_Based.finer_ex",
+     "[| part ?I0.0 ?P; part ?I0.0 ?Q; finer ?P ?Q; ?I : ?P |]
+      ==> EX II. II : ?Q & ?I <= II",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 5, template_var 3),
+              template_var 2)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 5, template_var 3),
+              template_var 1)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 4, template_var 2),
+              template_var 1)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 3, template_var 0),
+              template_var 2)
+            )],
+       template_predicate (template_app (template_hole 2, t_empty)))),
+    ("Resumption_Based.part_Un_singl2",
+     "[| ?K01.0 = ?I0.0 Un ?K1.0; part ?K1.0 ?P;
+         !!I. I : ?P ==> ?I0.0 Int I = {} |]
+      ==> part ?K01.0 ({?I0.0} Un ?P)",
+     template_implication
+      ([template_equation
+         (template_var 3,
+          template_app
+           (template_app (template_hole 8, template_var 2),
+            template_var 1)),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 7, template_var 1),
+              template_var 0)
+            ),
+        template_predicate (template_app (template_hole 6, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 7, template_var 3),
+             template_app
+              (template_app
+                (template_hole 2,
+                 template_app
+                  (template_app (template_hole 1, template_var 2),
+                   template_hole 0)),
+               template_var 0))
+           ))),
+    ("Resumption_Based.finer_nchotomy",
+     "[| part ?I0.0 ?P; part ?I0.0 ?Q; finer ?P ?Q; ?I : ?P; ?II : ?Q |]
+      ==> ?I <= ?II | ?I Int ?II = {}",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 7, template_var 4),
+              template_var 3)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 7, template_var 4),
+              template_var 2)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 6, template_var 3),
+              template_var 2)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 5, template_var 1),
+              template_var 3)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 5, template_var 0),
+              template_var 2)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 4,
+               template_app
+                (template_app (template_hole 3, template_var 1),
+                 template_var 0)),
+             template_app
+              (template_app
+                (template_hole 2,
+                 template_app
+                  (template_app (template_hole 1, template_var 1),
+                   template_var 0)),
+               template_hole 0))
+           ))),
+    ("Resumption_Based.inj_on_lift",
+     "[| part ?I0.0 ?P; part ?I0.0 ?Q; finer ?P ?Q; inj_on ?F ?P;
+         part ?J0.0 (?F ` ?P); {} ~: ?F ` ?P |]
+      ==> inj_on (lift ?P ?F) ?Q",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 8, template_var 4),
+              template_var 3)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 8, template_var 4),
+              template_var 2)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 7, template_var 3),
+              template_var 2)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 6, template_var 1),
+              template_var 3)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 5, template_var 0),
+              template_app
+               (template_app (template_hole 4, template_var 1),
+                template_var 3))
+            ),
+        template_negation
+         (
+            template_predicate
+             (
+                template_app
+                 (template_app (template_hole 2, template_hole 1),
+                  template_app
+                   (template_app (template_hole 4, template_var 1),
+                    template_var 3))
+                )
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 6,
+               template_app
+                (template_app (template_hole 0, template_var 3),
+                 template_var 1)),
+             template_var 2)
+           ))),
+    ("Resumption_Based.partCompat_gen_aux",
+     "[| sym ?theta; trans ?theta; partCompat ?P ?theta ?f; ?I : ?P;
+         ?i : ?I; ?j : gen ?P ?I; ?i ~= ?j |]
+      ==> (?f ?i, ?f ?j) : ?theta",
+     template_implication
+      ([template_predicate (template_app (template_hole 9, template_var 5)),
+        template_predicate (template_app (template_hole 8, template_var 5)),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 7, template_var 4),
+                template_var 5),
+              template_var 3)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 6, template_var 2),
+              template_var 4)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 5, template_var 1),
+              template_var 2)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 5, template_var 0),
+              template_app
+               (template_app (template_hole 4, template_var 4),
+                template_var 2))
+            ),
+        template_negation
+         (template_equation (template_var 1, template_var 0))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 1,
+               template_app
+                (template_app
+                  (template_hole 0,
+                   template_app (template_var 3, template_var 1)),
+                 template_app (template_var 3, template_var 0))),
+             template_var 5)
+           ))),
+    ("Resumption_Based.part_lift",
+     "[| part ?I0.0 ?P; part ?I0.0 ?Q; finer ?P ?Q; inj_on ?F ?P;
+         part ?J0.0 (?F ` ?P); {} ~: ?P; {} ~: ?F ` ?P |]
+      ==> part ?J0.0 (lift ?P ?F ` ?Q)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 10, template_var 4),
+              template_var 3)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 10, template_var 4),
+              template_var 2)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 9, template_var 3),
+              template_var 2)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 8, template_var 1),
+              template_var 3)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 7, template_var 0),
+              template_app
+               (template_app (template_hole 6, template_var 1),
+                template_var 3))
+            ),
+        template_negation
+         (
+            template_predicate
+             (
+                template_app
+                 (template_app (template_hole 4, template_hole 3),
+                  template_var 3)
+                )
+            ),
+        template_negation
+         (
+            template_predicate
+             (
+                template_app
+                 (template_app (template_hole 2, template_hole 1),
+                  template_app
+                   (template_app (template_hole 6, template_var 1),
+                    template_var 3))
+                )
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 7, template_var 0),
+             template_app
+              (template_app
+                (template_hole 6,
+                 template_app
+                  (template_app (template_hole 0, template_var 3),
+                   template_var 1)),
+               template_var 2))
+           ))),
+    ("Resumption_Based.part_UN",
+     "[| !!n. n : ?N ==> part (?I n) (?P n);
+         !!n1 n2. {n1, n2} <= ?N & n1 ~= n2 ==> ?I n1 Int ?I n2 = {} |]
+      ==> part (\<Union> (?I ` ?N)) (\<Union> (?P ` ?N))",
+     template_implication
+      ([template_predicate (template_app (template_hole 16, t_empty)),
+        template_predicate (template_app (template_hole 16, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 13,
+               template_app
+                (template_hole 3,
+                 template_app
+                  (template_app (template_hole 2, t_empty),
+                   template_var 2))),
+             template_app
+              (template_hole 1,
+               template_app
+                (template_app (template_hole 0, t_empty), template_var 2)))
+           )))]:
+   (string * thm * template) list
+### theory "Draft.Resumption_BasedTemplates"
+### 1.251s elapsed time, 1.592s cpu time, 0.254s GC time
+val it = (): unit

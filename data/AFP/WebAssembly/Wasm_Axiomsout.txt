@@ -1,0 +1,577 @@
+Loading theory "Draft.Wasm_Type_Abs" (required by "Draft.Wasm_AxiomsTemplates" via "Draft.Wasm_Axioms" via "Draft.Wasm" via "Draft.Wasm_Base_Defs")
+Loading theory "Draft.Wasm_Ast" (required by "Draft.Wasm_AxiomsTemplates" via "Draft.Wasm_Axioms" via "Draft.Wasm" via "Draft.Wasm_Base_Defs")
+Loading theory "Draft.Templates" (required by "Draft.Wasm_AxiomsTemplates" via "Draft.ExtrEqs")
+datatype template_term
+=
+     t_empty
+   | template_app of template_term * template_term
+   | template_hole of int
+   | template_var of int
+datatype sign
+= equals | greater_equals | greater_than | less_equals | less_than
+datatype template
+=
+     template_bimplication of template * template
+   | template_dunno
+   | template_equation of template_term * template_term
+   | template_implication of template list * template
+   | template_inequation of sign * template_term * template_term
+   | template_negation of template
+   | template_predicate of template_term
+constructor t_empty: template_term
+constructor template_app: template_term * template_term -> template_term
+constructor template_hole: int -> template_term
+constructor template_var: int -> template_term
+constructor equals: sign
+constructor greater_equals: sign
+constructor greater_than: sign
+constructor less_equals: sign
+constructor less_than: sign
+constructor template_bimplication: template * template -> template
+constructor template_dunno: template
+constructor template_equation: template_term * template_term -> template
+constructor template_implication: template list * template -> template
+constructor template_inequation:
+   sign * template_term * template_term -> template
+constructor template_negation: template -> template
+constructor template_predicate: template_term -> template
+val vfs = fn: term -> (indexname * typ) list * (string * typ) list
+val indexOf = fn: ''a list -> ''a -> int -> int
+val has_eq = fn: term -> bool
+val term2template = fn:
+   (indexname * typ) list -> (string * typ) list -> term -> template_term
+val lemma2predicate = fn: term -> term -> template
+val makeTemplatewithContext = fn: term -> term -> template
+val lemma2template = fn: term -> template
+val thm2template = fn: thm -> template
+val tterm2string = fn: template_term -> string
+val template2string = fn: template -> string
+val t = "height ?t <= size ?t": thm
+val th =
+   Const ("HOL.Trueprop", "bool => prop") $
+     (Const ("Orderings.ord_class.less_eq", "nat => nat => bool") $
+       (Const ("Tree.height_class.height", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree")) $
+       (Const ("Nat.size_class.size", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree"))):
+   term
+### theory "Draft.Templates"
+### 0.072s elapsed time, 0.249s cpu time, 0.000s GC time
+Loading theory "Draft.ExtrEqs" (required by "Draft.Wasm_AxiomsTemplates")
+class wasm_int = wasm_base +
+  fixes int_clz :: "'a => 'a"
+    and int_ctz :: "'a => 'a"
+    and int_popcnt :: "'a => 'a"
+    and int_add :: "'a => 'a => 'a"
+    and int_sub :: "'a => 'a => 'a"
+    and int_mul :: "'a => 'a => 'a"
+    and int_div_u :: "'a => 'a => 'a option"
+    and int_div_s :: "'a => 'a => 'a option"
+    and int_rem_u :: "'a => 'a => 'a option"
+    and int_rem_s :: "'a => 'a => 'a option"
+    and int_and :: "'a => 'a => 'a"
+    and int_or :: "'a => 'a => 'a"
+    and int_xor :: "'a => 'a => 'a"
+    and int_shl :: "'a => 'a => 'a"
+    and int_shr_u :: "'a => 'a => 'a"
+    and int_shr_s :: "'a => 'a => 'a"
+    and int_rotl :: "'a => 'a => 'a"
+    and int_rotr :: "'a => 'a => 'a"
+    and int_eqz :: "'a => bool"
+    and int_eq :: "'a => 'a => bool"
+    and int_lt_u :: "'a => 'a => bool"
+    and int_lt_s :: "'a => 'a => bool"
+    and int_gt_u :: "'a => 'a => bool"
+    and int_gt_s :: "'a => 'a => bool"
+    and int_le_u :: "'a => 'a => bool"
+    and int_le_s :: "'a => 'a => bool"
+    and int_ge_u :: "'a => 'a => bool"
+    and int_ge_s :: "'a => 'a => bool"
+    and int_of_nat :: "nat => 'a"
+    and nat_of_int :: "'a => nat"
+class wasm_float = wasm_base +
+  fixes float_neg :: "'a => 'a"
+    and float_abs :: "'a => 'a"
+    and float_ceil :: "'a => 'a"
+    and float_floor :: "'a => 'a"
+    and float_trunc :: "'a => 'a"
+    and float_nearest :: "'a => 'a"
+    and float_sqrt :: "'a => 'a"
+    and float_add :: "'a => 'a => 'a"
+    and float_sub :: "'a => 'a => 'a"
+    and float_mul :: "'a => 'a => 'a"
+    and float_div :: "'a => 'a => 'a"
+    and float_min :: "'a => 'a => 'a"
+    and float_max :: "'a => 'a => 'a"
+    and float_copysign :: "'a => 'a => 'a"
+    and float_eq :: "'a => 'a => bool"
+    and float_lt :: "'a => 'a => bool"
+    and float_gt :: "'a => 'a => bool"
+    and float_le :: "'a => 'a => bool"
+    and float_ge :: "'a => 'a => bool"
+### theory "Draft.Wasm_Type_Abs"
+### 0.176s elapsed time, 0.551s cpu time, 0.031s GC time
+val eqpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Var (("_dummy_", 2), "?'a"))
+       ):
+   term Find_Theorems.criterion
+val badeqpattern = Pattern (Const ("Pure.eq", "?'a => ?'a => prop")):
+   term Find_Theorems.criterion
+val undefpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Const ("HOL.undefined", "?'a"))
+       ):
+   term Find_Theorems.criterion
+val thmpattern =
+   Pattern
+    (Const ("HOL.Trueprop", "bool => prop") $ Var (("_dummy_", 1), "bool")):
+   term Find_Theorems.criterion
+val badnames =
+   ["*nitpick*", "*Nitpick*", "*full_exhaustive*", "*_def*", "Enum.finite*",
+    "*Quickcheck*", "ATP*", "*Nunchaku*", "*Code*", "*BNF*", "*SMT*",
+    "*.*.*"]:
+   string list
+val unwanted_names =
+   [(false, Name "*nitpick*"), (false, Name "*Nitpick*"),
+    (false, Name "*full_exhaustive*"), (false, Name "*_def*"),
+    (false, Name "Enum.finite*"), (false, Name "*Quickcheck*"),
+    (false, Name "ATP*"), (false, Name "*Nunchaku*"),
+    (false, Name "*Code*"), (false, Name "*BNF*"), (false, Name "*SMT*"),
+    (false, Name "*.*.*")]:
+   (bool * term Find_Theorems.criterion) list
+val has_vars = fn: term -> bool
+val get_all_eqs = fn: string -> Proof.context -> (string * thm) list
+val get_all_thms = fn: string -> Proof.context -> (string * thm) list
+val get_noneq_thms = fn: string -> Proof.context -> (string * thm) list
+val template_eqs = fn:
+   string -> Proof.context -> (string * thm * template) list
+val template_thms = fn:
+   string -> Proof.context -> (string * thm * template) list
+### theory "Draft.ExtrEqs"
+### 0.543s elapsed time, 1.211s cpu time, 0.096s GC time
+### theory "Draft.Wasm_Ast"
+### 8.719s elapsed time, 10.800s cpu time, 1.903s GC time
+Loading theory "Draft.Wasm_Base_Defs" (required by "Draft.Wasm_AxiomsTemplates" via "Draft.Wasm_Axioms" via "Draft.Wasm")
+instantiation
+  i32 :: wasm_int
+  int_clz_i32 == int_clz :: i32 => i32
+  int_ctz_i32 == int_ctz :: i32 => i32
+  int_popcnt_i32 == int_popcnt :: i32 => i32
+  int_add_i32 == int_add :: i32 => i32 => i32
+  int_sub_i32 == int_sub :: i32 => i32 => i32
+  int_mul_i32 == int_mul :: i32 => i32 => i32
+  int_div_u_i32 == int_div_u :: i32 => i32 => i32 option
+  int_div_s_i32 == int_div_s :: i32 => i32 => i32 option
+  int_rem_u_i32 == int_rem_u :: i32 => i32 => i32 option
+  int_rem_s_i32 == int_rem_s :: i32 => i32 => i32 option
+  int_and_i32 == int_and :: i32 => i32 => i32
+  int_or_i32 == int_or :: i32 => i32 => i32
+  int_xor_i32 == int_xor :: i32 => i32 => i32
+  int_shl_i32 == int_shl :: i32 => i32 => i32
+  int_shr_u_i32 == int_shr_u :: i32 => i32 => i32
+  int_shr_s_i32 == int_shr_s :: i32 => i32 => i32
+  int_rotl_i32 == int_rotl :: i32 => i32 => i32
+  int_rotr_i32 == int_rotr :: i32 => i32 => i32
+  int_eqz_i32 == int_eqz :: i32 => bool
+  int_eq_i32 == int_eq :: i32 => i32 => bool
+  int_lt_u_i32 == int_lt_u :: i32 => i32 => bool
+  int_lt_s_i32 == int_lt_s :: i32 => i32 => bool
+  int_gt_u_i32 == int_gt_u :: i32 => i32 => bool
+  int_gt_s_i32 == int_gt_s :: i32 => i32 => bool
+  int_le_u_i32 == int_le_u :: i32 => i32 => bool
+  int_le_s_i32 == int_le_s :: i32 => i32 => bool
+  int_ge_u_i32 == int_ge_u :: i32 => i32 => bool
+  int_ge_s_i32 == int_ge_s :: i32 => i32 => bool
+  int_of_nat_i32 == int_of_nat :: nat => i32
+  nat_of_int_i32 == nat_of_int :: i32 => nat
+  zero_i32 == zero_class.zero :: i32
+instantiation
+  i64 :: wasm_int
+  int_clz_i64 == int_clz :: i64 => i64
+  int_ctz_i64 == int_ctz :: i64 => i64
+  int_popcnt_i64 == int_popcnt :: i64 => i64
+  int_add_i64 == int_add :: i64 => i64 => i64
+  int_sub_i64 == int_sub :: i64 => i64 => i64
+  int_mul_i64 == int_mul :: i64 => i64 => i64
+  int_div_u_i64 == int_div_u :: i64 => i64 => i64 option
+  int_div_s_i64 == int_div_s :: i64 => i64 => i64 option
+  int_rem_u_i64 == int_rem_u :: i64 => i64 => i64 option
+  int_rem_s_i64 == int_rem_s :: i64 => i64 => i64 option
+  int_and_i64 == int_and :: i64 => i64 => i64
+  int_or_i64 == int_or :: i64 => i64 => i64
+  int_xor_i64 == int_xor :: i64 => i64 => i64
+  int_shl_i64 == int_shl :: i64 => i64 => i64
+  int_shr_u_i64 == int_shr_u :: i64 => i64 => i64
+  int_shr_s_i64 == int_shr_s :: i64 => i64 => i64
+  int_rotl_i64 == int_rotl :: i64 => i64 => i64
+  int_rotr_i64 == int_rotr :: i64 => i64 => i64
+  int_eqz_i64 == int_eqz :: i64 => bool
+  int_eq_i64 == int_eq :: i64 => i64 => bool
+  int_lt_u_i64 == int_lt_u :: i64 => i64 => bool
+  int_lt_s_i64 == int_lt_s :: i64 => i64 => bool
+  int_gt_u_i64 == int_gt_u :: i64 => i64 => bool
+  int_gt_s_i64 == int_gt_s :: i64 => i64 => bool
+  int_le_u_i64 == int_le_u :: i64 => i64 => bool
+  int_le_s_i64 == int_le_s :: i64 => i64 => bool
+  int_ge_u_i64 == int_ge_u :: i64 => i64 => bool
+  int_ge_s_i64 == int_ge_s :: i64 => i64 => bool
+  int_of_nat_i64 == int_of_nat :: nat => i64
+  nat_of_int_i64 == nat_of_int :: i64 => nat
+  zero_i64 == zero_class.zero :: i64
+instantiation
+  f32 :: wasm_float
+  float_neg_f32 == float_neg :: f32 => f32
+  float_abs_f32 == float_abs :: f32 => f32
+  float_ceil_f32 == float_ceil :: f32 => f32
+  float_floor_f32 == float_floor :: f32 => f32
+  float_trunc_f32 == float_trunc :: f32 => f32
+  float_nearest_f32 == float_nearest :: f32 => f32
+  float_sqrt_f32 == float_sqrt :: f32 => f32
+  float_add_f32 == float_add :: f32 => f32 => f32
+  float_sub_f32 == float_sub :: f32 => f32 => f32
+  float_mul_f32 == float_mul :: f32 => f32 => f32
+  float_div_f32 == float_div :: f32 => f32 => f32
+  float_min_f32 == float_min :: f32 => f32 => f32
+  float_max_f32 == float_max :: f32 => f32 => f32
+  float_copysign_f32 == float_copysign :: f32 => f32 => f32
+  float_eq_f32 == float_eq :: f32 => f32 => bool
+  float_lt_f32 == float_lt :: f32 => f32 => bool
+  float_gt_f32 == float_gt :: f32 => f32 => bool
+  float_le_f32 == float_le :: f32 => f32 => bool
+  float_ge_f32 == float_ge :: f32 => f32 => bool
+  zero_f32 == zero_class.zero :: f32
+instantiation
+  f64 :: wasm_float
+  float_neg_f64 == float_neg :: f64 => f64
+  float_abs_f64 == float_abs :: f64 => f64
+  float_ceil_f64 == float_ceil :: f64 => f64
+  float_floor_f64 == float_floor :: f64 => f64
+  float_trunc_f64 == float_trunc :: f64 => f64
+  float_nearest_f64 == float_nearest :: f64 => f64
+  float_sqrt_f64 == float_sqrt :: f64 => f64
+  float_add_f64 == float_add :: f64 => f64 => f64
+  float_sub_f64 == float_sub :: f64 => f64 => f64
+  float_mul_f64 == float_mul :: f64 => f64 => f64
+  float_div_f64 == float_div :: f64 => f64 => f64
+  float_min_f64 == float_min :: f64 => f64 => f64
+  float_max_f64 == float_max :: f64 => f64 => f64
+  float_copysign_f64 == float_copysign :: f64 => f64 => f64
+  float_eq_f64 == float_eq :: f64 => f64 => bool
+  float_lt_f64 == float_lt :: f64 => f64 => bool
+  float_gt_f64 == float_gt :: f64 => f64 => bool
+  float_le_f64 == float_le :: f64 => f64 => bool
+  float_ge_f64 == float_ge :: f64 => f64 => bool
+  zero_f64 == zero_class.zero :: f64
+Proofs for inductive predicate(s) "store_extension"
+  Proving monotonicity ...
+Proofs for inductive predicate(s) "Lfilled"
+  Proving monotonicity ...
+Proofs for inductive predicate(s) "Lfilled_exact"
+  Proving monotonicity ...
+### theory "Draft.Wasm_Base_Defs"
+### 0.672s elapsed time, 0.727s cpu time, 0.040s GC time
+Loading theory "Draft.Wasm" (required by "Draft.Wasm_AxiomsTemplates" via "Draft.Wasm_Axioms")
+Proofs for inductive predicate(s) "b_e_typing"
+  Proving monotonicity ...
+Proofs for inductive predicate(s) "cl_typing"
+  Proving monotonicity ...
+Proofs for inductive predicate(s) "e_typing", "s_typing"
+  Proving monotonicity ...
+Proofs for inductive predicate(s) "inst_typing"
+  Proving monotonicity ...
+Proofs for inductive predicate(s) "store_typing"
+  Proving monotonicity ...
+Proofs for inductive predicate(s) "config_typing"
+  Proving monotonicity ...
+Proofs for inductive predicate(s) "reduce_simple"
+  Proving monotonicity ...
+Proofs for inductive predicate(s) "reduce"
+  Proving monotonicity ...
+### theory "Draft.Wasm"
+### 0.751s elapsed time, 0.867s cpu time, 0.074s GC time
+Loading theory "Draft.Wasm_Axioms" (required by "Draft.Wasm_AxiomsTemplates")
+### theory "Draft.Wasm_Axioms"
+### 0.051s elapsed time, 0.078s cpu time, 0.037s GC time
+Loading theory "Draft.Wasm_AxiomsTemplates"
+val templateLemmas =
+   [("Wasm_Axioms.wasm_deserialise_type",
+     "typeof (wasm_deserialise ?bs ?t) = ?t",
+     template_equation
+      (template_app
+        (template_hole 1,
+         template_app
+          (template_app (template_hole 0, template_var 1), template_var 0)),
+       template_var 0)),
+    ("Wasm_Axioms.load_size",
+     "(load ?m ?n ?off ?l = None) = (mem_size ?m < ?off + ?n + ?l)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 5,
+           template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 4, template_var 3),
+                 template_var 2),
+               template_var 1),
+             template_var 0)),
+         template_hole 3),
+       template_app
+        (template_app
+          (template_hole 2, template_app (template_hole 1, template_var 3)),
+         template_app
+          (template_app
+            (template_hole 0,
+             template_app
+              (template_app (template_hole 0, template_var 1),
+               template_var 2)),
+           template_var 0)))),
+    ("Wasm_Axioms.store_size",
+     "store ?m ?n ?off ?v ?l = Some ?m' ==> mem_size ?m = mem_size ?m'",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 3, template_var 5),
+                  template_var 4),
+                template_var 3),
+              template_var 2),
+            template_var 1),
+          template_app (template_hole 2, template_var 0))],
+       template_equation
+        (template_app (template_hole 0, template_var 5),
+         template_app (template_hole 0, template_var 0)))),
+    ("Wasm_Axioms.store_packed_size",
+     "store_packed ?m ?n ?off ?v ?l = Some ?m' ==>
+      mem_size ?m = mem_size ?m'",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 3, template_var 5),
+                  template_var 4),
+                template_var 3),
+              template_var 2),
+            template_var 1),
+          template_app (template_hole 2, template_var 0))],
+       template_equation
+        (template_app (template_hole 0, template_var 5),
+         template_app (template_hole 0, template_var 0)))),
+    ("Wasm_Axioms.store_size1",
+     "(store ?m ?n ?off ?v ?l = None) = (mem_size ?m < ?off + ?n + ?l)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 5,
+           template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_app (template_hole 4, template_var 4),
+                   template_var 3),
+                 template_var 2),
+               template_var 1),
+             template_var 0)),
+         template_hole 3),
+       template_app
+        (template_app
+          (template_hole 2, template_app (template_hole 1, template_var 4)),
+         template_app
+          (template_app
+            (template_hole 0,
+             template_app
+              (template_app (template_hole 0, template_var 2),
+               template_var 3)),
+           template_var 0)))),
+    ("Wasm_Axioms.store_packed_size1",
+     "(store_packed ?m ?n ?off ?v ?l = None) =
+      (mem_size ?m < ?off + ?n + ?l)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 5,
+           template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_app (template_hole 4, template_var 4),
+                   template_var 3),
+                 template_var 2),
+               template_var 1),
+             template_var 0)),
+         template_hole 3),
+       template_app
+        (template_app
+          (template_hole 2, template_app (template_hole 1, template_var 4)),
+         template_app
+          (template_app
+            (template_hole 0,
+             template_app
+              (template_app (template_hole 0, template_var 2),
+               template_var 3)),
+           template_var 0)))),
+    ("Wasm_Axioms.load_packed_size",
+     "(load_packed ?sx ?m ?n ?off ?lp ?l = None) =
+      (mem_size ?m < ?off + ?n + ?lp)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 5,
+           template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_app
+                    (template_app (template_hole 4, template_var 5),
+                     template_var 4),
+                   template_var 3),
+                 template_var 2),
+               template_var 1),
+             template_var 0)),
+         template_hole 3),
+       template_app
+        (template_app
+          (template_hole 2, template_app (template_hole 1, template_var 4)),
+         template_app
+          (template_app
+            (template_hole 0,
+             template_app
+              (template_app (template_hole 0, template_var 2),
+               template_var 3)),
+           template_var 1)))),
+    ("Wasm_Axioms.host_apply_preserve_store",
+     "[| list_all2 types_agree ?t1s ?vs;
+         host_apply ?s (?t1s _> ?t2s) ?f ?vs ?hs = Some (?s', ?vs') |]
+      ==> store_extension ?s ?s'",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 7, template_hole 6),
+                template_var 7),
+              template_var 6)
+            ),
+        template_equation
+         (template_app
+           (template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 4, template_var 5),
+                  template_app
+                   (template_app (template_hole 3, template_var 7),
+                    template_var 4)),
+                template_var 3),
+              template_var 6),
+            template_var 2),
+          template_app
+           (template_hole 2,
+            template_app
+             (template_app (template_hole 1, template_var 1),
+              template_var 0)))],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 0, template_var 5), template_var 1)
+           ))),
+    ("Wasm_Axioms.host_apply_respect_type",
+     "[| list_all2 types_agree ?t1s ?vs;
+         host_apply ?s (?t1s _> ?t2s) ?f ?vs ?hs = Some (?s', ?vs') |]
+      ==> list_all2 types_agree ?t2s ?vs'",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 6, template_hole 5),
+                template_var 7),
+              template_var 6)
+            ),
+        template_equation
+         (template_app
+           (template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 3, template_var 5),
+                  template_app
+                   (template_app (template_hole 2, template_var 7),
+                    template_var 4)),
+                template_var 3),
+              template_var 6),
+            template_var 2),
+          template_app
+           (template_hole 1,
+            template_app
+             (template_app (template_hole 0, template_var 1),
+              template_var 0)))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app (template_hole 6, template_hole 5),
+               template_var 4),
+             template_var 0)
+           ))),
+    ("Wasm_Axioms.mem_grow_size",
+     "mem_grow ?m ?n = ?m' ==> mem_size ?m + 64000 * ?n = mem_size ?m'",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app (template_hole 8, template_var 2), template_var 1),
+          template_var 0)],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 6,
+             template_app (template_hole 5, template_var 2)),
+           template_app
+            (template_app
+              (template_hole 4,
+               template_app
+                (template_hole 3,
+                 template_app
+                  (template_hole 2,
+                   template_app
+                    (template_hole 2,
+                     template_app
+                      (template_hole 2,
+                       template_app
+                        (template_hole 2,
+                         template_app
+                          (template_hole 2,
+                           template_app
+                            (template_hole 2,
+                             template_app
+                              (template_hole 2,
+                               template_app
+                                (template_hole 2,
+                                 template_app
+                                  (template_hole 2,
+                                   template_app
+                                    (template_hole 1,
+                                     template_app
+(template_hole 2,
+ template_app
+  (template_hole 1,
+   template_app
+    (template_hole 1,
+     template_app
+      (template_hole 1,
+       template_app (template_hole 1, template_hole 0))))))))))))))))),
+             template_var 1)),
+         template_app (template_hole 5, template_var 0))))]:
+   (string * thm * template) list
+### theory "Draft.Wasm_AxiomsTemplates"
+### 0.826s elapsed time, 0.994s cpu time, 0.058s GC time
+val it = (): unit

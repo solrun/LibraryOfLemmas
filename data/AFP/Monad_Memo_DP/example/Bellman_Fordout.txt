@@ -1,0 +1,2724 @@
+Loading theory "Draft.Ground_Function" (required by "Draft.Bellman_FordTemplates" via "Draft.Bellman_Ford")
+Loading theory "Draft.Solve_Cong" (required by "Draft.Bellman_FordTemplates" via "Draft.Bellman_Ford" via "Draft.Heap_Main")
+Loading theory "Draft.Indexing" (required by "Draft.Bellman_FordTemplates" via "Draft.Bellman_Ford" via "Draft.Heap_Main" via "Draft.Memory_Heap")
+Loading theory "Draft.Pure_Monad" (required by "Draft.Bellman_FordTemplates" via "Draft.Bellman_Ford" via "Draft.Heap_Main" via "Draft.Memory_Heap" via "Draft.State_Heap" via "Draft.DP_CRelVS")
+### ML warning (file "$AFP/Monad_Memo_DP/util/Ground_Function.ML"):
+### Pattern is not exhaustive.
+### ML warning (line 28 of "$AFP/Monad_Memo_DP/util/Ground_Function.ML"):
+### Pattern is not exhaustive.
+signature GROUND_FUNCTION =
+  sig
+    val mk_fun: bool -> thm list -> binding -> local_theory -> local_theory
+  end
+structure Ground_Function: GROUND_FUNCTION
+### theory "Draft.Pure_Monad"
+### 0.042s elapsed time, 0.195s cpu time, 0.000s GC time
+Loading theory "Draft.State_Heap_Misc" (required by "Draft.Bellman_FordTemplates" via "Draft.Bellman_Ford" via "Draft.Heap_Main" via "Draft.Memory_Heap" via "Draft.State_Heap")
+val ground_function_cmd = fn:
+   (''a option * binding) * (Facts.ref * Token.src list) list ->
+     Proof.context -> local_theory
+val ground_function_parser = fn:
+   Token.T list ->
+     ((string option * binding) * (Facts.ref * Token.src list) list) *
+     Token.T list
+### theory "Draft.Ground_Function"
+### 0.060s elapsed time, 0.259s cpu time, 0.000s GC time
+Loading theory "Draft.State_Monad_Ext" (required by "Draft.Bellman_FordTemplates" via "Draft.Bellman_Ford" via "Draft.Heap_Main" via "Draft.Memory_Heap" via "Draft.State_Heap" via "Draft.DP_CRelVS")
+bundle state_monad_syntax
+### theory "Draft.State_Heap_Misc"
+### 0.070s elapsed time, 0.263s cpu time, 0.022s GC time
+Loading theory "HOL-Library.Function_Algebras" (required by "Draft.Bellman_FordTemplates" via "Draft.ExtrEqs" via "HOL-Library.BigO")
+### theory "Draft.State_Monad_Ext"
+### 0.069s elapsed time, 0.259s cpu time, 0.022s GC time
+Loading theory "Draft.DP_CRelVS" (required by "Draft.Bellman_FordTemplates" via "Draft.Bellman_Ford" via "Draft.Heap_Main" via "Draft.Memory_Heap" via "Draft.State_Heap")
+instantiation
+  fun :: (type, plus) plus
+  plus_fun == plus :: ('a => 'b) => ('a => 'b) => 'a => 'b
+locale prod_order_def
+  fixes less_eq0 :: "'a => 'a => bool"
+    and less0 :: "'a => 'a => bool"
+    and less_eq1 :: "'b => 'b => bool"
+    and less1 :: "'b => 'b => bool"
+instantiation
+  fun :: (type, zero) zero
+  zero_fun == zero_class.zero :: 'a => 'b
+instantiation
+  fun :: (type, times) times
+  times_fun == times :: ('a => 'b) => ('a => 'b) => 'a => 'b
+instantiation
+  fun :: (type, one) one
+  one_fun == one_class.one :: 'a => 'b
+Found termination order: "{}"
+### theory "HOL-Library.Function_Algebras"
+### 0.086s elapsed time, 0.347s cpu time, 0.000s GC time
+Loading theory "HOL-Library.Stream" (required by "Draft.Bellman_FordTemplates" via "Draft.ExtrEqs")
+### theory "Draft.Solve_Cong"
+### 0.225s elapsed time, 0.908s cpu time, 0.022s GC time
+Loading theory "HOL-Library.Set_Algebras" (required by "Draft.Bellman_FordTemplates" via "Draft.ExtrEqs" via "HOL-Library.BigO")
+instantiation
+  set :: (plus) plus
+  plus_set == plus :: 'a set => 'a set => 'a set
+instantiation
+  set :: (times) times
+  times_set == times :: 'a set => 'a set => 'a set
+Found termination order: "{}"
+instantiation
+  set :: (zero) zero
+  zero_set == zero_class.zero :: 'a set
+instantiation
+  set :: (one) one
+  one_set == one_class.one :: 'a set
+locale state_mem_defs
+  fixes lookup :: "'param => ('mem, 'result option) state"
+    and update :: "'param => 'result => ('mem, unit) state"
+locale mem_correct
+  fixes lookup :: "'a => ('b, 'c option) state"
+    and update :: "'a => 'c => ('b, unit) state"
+    and P :: "'b => bool"
+  assumes "mem_correct lookup update P"
+locale dp_consistency
+  fixes lookup :: "'param => ('mem, 'result option) state"
+    and update :: "'param => 'result => ('mem, unit) state"
+    and P :: "'mem => bool"
+    and dp :: "'param => 'result"
+  assumes "dp_consistency lookup update P"
+### theory "HOL-Library.Set_Algebras"
+### 0.213s elapsed time, 0.832s cpu time, 0.081s GC time
+Loading theory "Draft.Templates" (required by "Draft.Bellman_FordTemplates" via "Draft.ExtrEqs")
+locale prod_order
+  fixes less_eq0 :: "'a => 'a => bool"
+    and less0 :: "'a => 'a => bool"
+    and less_eq1 :: "'b => 'b => bool"
+    and less1 :: "'b => 'b => bool"
+  assumes "prod_order less_eq0 less0 less_eq1 less1"
+datatype template_term
+=
+     t_empty
+   | template_app of template_term * template_term
+   | template_hole of int
+   | template_var of int
+datatype sign
+= equals | greater_equals | greater_than | less_equals | less_than
+datatype template
+=
+     template_bimplication of template * template
+   | template_dunno
+   | template_equation of template_term * template_term
+   | template_implication of template list * template
+   | template_inequation of sign * template_term * template_term
+   | template_negation of template
+   | template_predicate of template_term
+constructor t_empty: template_term
+constructor template_app: template_term * template_term -> template_term
+constructor template_hole: int -> template_term
+constructor template_var: int -> template_term
+constructor equals: sign
+constructor greater_equals: sign
+constructor greater_than: sign
+constructor less_equals: sign
+constructor less_than: sign
+constructor template_bimplication: template * template -> template
+constructor template_dunno: template
+constructor template_equation: template_term * template_term -> template
+constructor template_implication: template list * template -> template
+constructor template_inequation:
+   sign * template_term * template_term -> template
+constructor template_negation: template -> template
+constructor template_predicate: template_term -> template
+val vfs = fn: term -> (indexname * typ) list * (string * typ) list
+val indexOf = fn: ''a list -> ''a -> int -> int
+val has_eq = fn: term -> bool
+val term2template = fn:
+   (indexname * typ) list -> (string * typ) list -> term -> template_term
+val lemma2predicate = fn: term -> term -> template
+val makeTemplatewithContext = fn: term -> term -> template
+val lemma2template = fn: term -> template
+val thm2template = fn: thm -> template
+val tterm2string = fn: template_term -> string
+val template2string = fn: template -> string
+val t = "height ?t <= size ?t": thm
+val th =
+   Const ("HOL.Trueprop", "bool => prop") $
+     (Const ("Orderings.ord_class.less_eq", "nat => nat => bool") $
+       (Const ("Tree.height_class.height", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree")) $
+       (Const ("Nat.size_class.size", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree"))):
+   term
+### theory "Draft.Templates"
+### 0.081s elapsed time, 0.317s cpu time, 0.065s GC time
+Loading theory "Draft.Heap_Monad_Ext" (required by "Draft.Bellman_FordTemplates" via "Draft.Bellman_Ford" via "Draft.Heap_Main" via "Draft.Memory_Heap" via "Draft.State_Heap")
+bundle heap_monad_syntax
+### theory "Draft.DP_CRelVS"
+### 0.432s elapsed time, 1.696s cpu time, 0.147s GC time
+Loading theory "Draft.Memory" (required by "Draft.Bellman_FordTemplates" via "Draft.Bellman_Ford" via "Draft.Heap_Main" via "Draft.Memory_Heap" via "Draft.Pair_Memory")
+### theory "Draft.Heap_Monad_Ext"
+### 0.047s elapsed time, 0.190s cpu time, 0.000s GC time
+Loading theory "Draft.State_Heap" (required by "Draft.Bellman_FordTemplates" via "Draft.Bellman_Ford" via "Draft.Heap_Main" via "Draft.Memory_Heap")
+consts
+  shift :: "'a list => 'a stream => 'a stream"
+Proofs for coinductive predicate(s) "streamsp"
+  Proving monotonicity ...
+locale option_order
+  fixes less_eq0 :: "'a => 'a => bool"
+    and less0 :: "'a => 'a => bool"
+  assumes "option_order less_eq0 less0"
+consts
+  snth :: "'a stream => nat => 'a"
+locale mem_correct_empty
+  fixes lookup :: "'a => ('b, 'c option) state"
+    and update :: "'a => 'c => ('b, unit) state"
+    and P :: "'b => bool"
+    and empty :: "'b"
+  assumes "mem_correct_empty lookup update P empty"
+consts
+  stake :: "nat => 'a stream => 'a list"
+consts
+  sdrop :: "nat => 'a stream => 'a stream"
+Found termination order: "{}"
+locale dp_consistency_empty
+  fixes lookup :: "'a => ('b, 'c option) state"
+    and update :: "'a => 'c => ('b, unit) state"
+    and P :: "'b => bool"
+    and dp :: "'a => 'c"
+    and empty :: "'b"
+  assumes "dp_consistency_empty lookup update P empty"
+locale dp_consistency_default
+  fixes dp :: "'param => 'result"
+consts
+  sfilter :: "('a => bool) => 'a stream => 'a stream"
+Found termination order: "{}"
+consts
+  cycle :: "'a list => 'a stream"
+locale dp_consistency_mapping
+  fixes dp :: "'param => 'result"
+consts
+  siterate :: "('a => 'a) => 'a => 'a stream"
+locale state_mem_defs
+  fixes lookup :: "'param => ('mem, 'result option) state"
+    and update :: "'param => 'result => ('mem, unit) state"
+consts
+  flat :: "'a list stream => 'a stream"
+locale mem_correct
+  fixes lookup :: "'a => ('b, 'c option) state"
+    and update :: "'a => 'c => ('b, unit) state"
+    and P :: "'b => bool"
+  assumes "mem_correct lookup update P"
+locale mem_correct_empty
+  fixes lookup :: "'a => ('b, 'c option) state"
+    and update :: "'a => 'c => ('b, unit) state"
+    and P :: "'b => bool"
+    and empty :: "'b"
+  assumes "mem_correct_empty lookup update P empty"
+locale dp_consistency_mapping_tracing
+  fixes dp :: "'param => 'result"
+consts
+  sinterleave :: "'a stream => 'a stream => 'a stream"
+locale heap_mem_defs
+  fixes P :: "heap => bool"
+    and lookup :: "'k => 'v option Heap"
+    and update :: "'k => 'v => unit Heap"
+### Ambiguous input (line 63 of "$AFP/Monad_Memo_DP/heap_monad/State_Heap.thy") produces 2 parse trees:
+### ("\<^const>Pure.eq"
+###   ("_applC" ("_position" rel_state)
+###     ("_cargs" ("_position" R) ("_cargs" ("_position" f) ("_position" g))))
+###   ("\<^const>HOL.All_binder" ("_position" heap)
+###     ("\<^const>HOL.implies" ("_applC" ("_position" P) ("_position" heap))
+###       ("_case_syntax"
+###         ("_applC" ("_position" State_Monad.run_state)
+###           ("_cargs" ("_position" f) ("_position" heap)))
+###         ("_case1"
+###           ("_tuple" ("_position" v1) ("_tuple_arg" ("_position" heap1)))
+###           ("_case_syntax"
+###             ("_applC" ("_position" execute)
+###               ("_cargs" ("_position" g) ("_position" heap)))
+###             ("_case2"
+###               ("_case1"
+###                 ("_applC" ("_position" Some)
+###                   ("_tuple" ("_position" v2)
+###                     ("_tuple_arg" ("_position" heap2))))
+###                 ("\<^const>HOL.conj"
+###                   ("_applC" ("_position" R)
+###                     ("_cargs" ("_position" v1) ("_position" v2)))
+###                   ("\<^const>HOL.conj"
+###                     ("\<^const>HOL.eq" ("_position" heap1)
+###                       ("_position" heap2))
+###                     ("_applC" ("_position" P) ("_position" heap2)))))
+###               ("_case1" ("_position" None) ("_position" False)))))))))
+### ("\<^const>Pure.eq"
+###   ("_applC" ("_position" rel_state)
+###     ("_cargs" ("_position" R) ("_cargs" ("_position" f) ("_position" g))))
+###   ("\<^const>HOL.All_binder" ("_position" heap)
+###     ("\<^const>HOL.implies" ("_applC" ("_position" P) ("_position" heap))
+###       ("_case_syntax"
+###         ("_applC" ("_position" State_Monad.run_state)
+###           ("_cargs" ("_position" f) ("_position" heap)))
+###         ("_case2"
+###           ("_case1"
+###             ("_tuple" ("_position" v1) ("_tuple_arg" ("_position" heap1)))
+###             ("_case_syntax"
+###               ("_applC" ("_position" execute)
+###                 ("_cargs" ("_position" g) ("_position" heap)))
+###               ("_case1"
+###                 ("_applC" ("_position" Some)
+###                   ("_tuple" ("_position" v2)
+###                     ("_tuple_arg" ("_position" heap2))))
+###                 ("\<^const>HOL.conj"
+###                   ("_applC" ("_position" R)
+###                     ("_cargs" ("_position" v1) ("_position" v2)))
+###                   ("\<^const>HOL.conj"
+###                     ("\<^const>HOL.eq" ("_position" heap1)
+###                       ("_position" heap2))
+###                     ("_applC" ("_position" P) ("_position" heap2)))))))
+###           ("_case1" ("_position" None) ("_position" False)))))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+consts
+  szip :: "'a stream => 'b stream => ('a * 'b) stream"
+consts
+  smap2 :: "('a => 'b => 'c) => 'a stream => 'b stream => 'c stream"
+### theory "HOL-Library.Stream"
+### 1.100s elapsed time, 4.135s cpu time, 0.819s GC time
+Loading theory "HOL-Library.BigO" (required by "Draft.Bellman_FordTemplates" via "Draft.ExtrEqs")
+### theory "Draft.Memory"
+### 0.761s elapsed time, 2.805s cpu time, 0.673s GC time
+Loading theory "Draft.Bottom_Up_Computation" (required by "Draft.Bellman_FordTemplates" via "Draft.Bellman_Ford" via "Draft.Heap_Main" via "Draft.Bottom_Up_Computation_Heap")
+locale heap_inv
+  fixes P :: "heap => bool"
+    and update :: "'k => 'v => unit Heap"
+    and lookup :: "'k => 'v option Heap"
+  assumes "heap_inv P update lookup"
+locale heap_correct
+  fixes P :: "heap => bool"
+    and update :: "'a => 'b => unit Heap"
+    and lookup :: "'a => 'b option Heap"
+  assumes "heap_correct P update lookup"
+locale heap_mem_defs
+  fixes P :: "heap => bool"
+    and lookup :: "'k => 'v option Heap"
+    and update :: "'k => 'v => unit Heap"
+### theory "Draft.State_Heap"
+### 0.852s elapsed time, 3.156s cpu time, 0.712s GC time
+Loading theory "Draft.Pair_Memory" (required by "Draft.Bellman_FordTemplates" via "Draft.Bellman_Ford" via "Draft.Heap_Main" via "Draft.Memory_Heap")
+Found termination order: "(%p. length (snd p)) <*mlex*> {}"
+locale iterator_defs
+  fixes cnt :: "'a => bool"
+    and nxt :: "'a => 'a"
+locale iterator
+  fixes cnt :: "'a => bool"
+    and nxt :: "'a => 'a"
+    and sizef :: "'a => nat"
+  assumes "iterator cnt nxt sizef"
+locale pair_mem_defs
+  fixes lookup1 :: "'a => ('mem, 'v option) state"
+    and lookup2 :: "'a => ('mem, 'v option) state"
+    and update1 :: "'a => 'v => ('mem, unit) state"
+    and update2 :: "'a => 'v => ('mem, unit) state"
+    and move12 :: "'k1 => ('mem, unit) state"
+    and get_k1 :: "('mem, 'k1) state"
+    and get_k2 :: "('mem, 'k1) state"
+    and P :: "'mem => bool"
+    and key1 :: "'k => 'k1"
+    and key2 :: "'k => 'a"
+locale dp_consistency
+  fixes lookup :: "'param => ('mem, 'result option) state"
+    and update :: "'param => 'result => ('mem, unit) state"
+    and P :: "'mem => bool"
+    and dp :: "'param => 'result"
+  assumes "dp_consistency lookup update P"
+locale dp_consistency_iterator
+  fixes P :: "'b => bool"
+    and dp :: "'a => 'c"
+    and lookup :: "'a => ('b, 'c option) state"
+    and update :: "'a => 'c => ('b, unit) state"
+    and cnt :: "'a => bool"
+    and nxt :: "'a => 'a"
+    and sizef :: "'a => nat"
+  assumes "dp_consistency_iterator P lookup update cnt nxt sizef"
+locale index_locale_def
+  fixes less_eq :: "'a => 'a => bool"
+    and less :: "'a => 'a => bool"
+    and idx :: "'a bound => 'a => nat"
+    and size :: "'a bound => nat"
+locale dp_consistency_iterator_empty
+  fixes P :: "'a => bool"
+    and dp :: "'b => 'c"
+    and lookup :: "'b => ('a, 'c option) state"
+    and update :: "'b => 'c => ('a, unit) state"
+    and cnt :: "'b => bool"
+    and nxt :: "'b => 'b"
+    and sizef :: "'b => nat"
+    and empty :: "'a"
+  assumes
+    "dp_consistency_iterator_empty P lookup update cnt nxt sizef empty"
+### theory "Draft.Bottom_Up_Computation"
+### 0.339s elapsed time, 1.332s cpu time, 0.111s GC time
+Loading theory "Draft.DP_CRelVH" (required by "Draft.Bellman_FordTemplates" via "Draft.Bellman_Ford" via "Draft.Heap_Main" via "Draft.Memory_Heap")
+locale index_locale
+  fixes less_eq :: "'a => 'a => bool"
+    and less :: "'a => 'a => bool"
+    and idx :: "'a bound => 'a => nat"
+    and size :: "'a bound => nat"
+  assumes "index_locale less_eq less idx size"
+locale pair_mem
+  fixes lookup1 :: "'a => ('b, 'c option) state"
+    and lookup2 :: "'a => ('b, 'c option) state"
+    and update1 :: "'a => 'c => ('b, unit) state"
+    and update2 :: "'a => 'c => ('b, unit) state"
+    and move12 :: "'d => ('b, unit) state"
+    and get_k1 :: "('b, 'd) state"
+    and get_k2 :: "('b, 'd) state"
+    and P :: "'b => bool"
+    and key1 :: "'e => 'd"
+    and key2 :: "'e => 'a"
+  assumes "pair_mem lookup1 lookup2 update1 update2 move12 get_k1 get_k2 P"
+locale prod_index_def
+  fixes less_eq0 :: "'a => 'a => bool"
+    and less0 :: "'a => 'a => bool"
+    and idx0 :: "'a bound => 'a => nat"
+    and size0 :: "'a bound => nat"
+    and less_eq1 :: "'b => 'b => bool"
+    and less1 :: "'b => 'b => bool"
+    and idx1 :: "'b bound => 'b => nat"
+    and size1 :: "'b bound => nat"
+locale dp_heap
+  fixes P :: "heap => bool"
+    and Q :: "heap => bool"
+    and dp :: "'k => 'v"
+    and lookup :: "'k => 'v option Heap"
+    and lookup_st :: "'k => (heap, 'v option) state"
+    and update :: "'k => 'v => unit Heap"
+    and update_st :: "'k => 'v => (heap, unit) state"
+  assumes "dp_heap P Q lookup lookup_st update update_st"
+Found termination order: "{}"
+Found termination order: "{}"
+locale dp_consistency_heap
+  fixes P :: "heap => bool"
+    and update :: "'a => 'b => unit Heap"
+    and lookup :: "'a => 'b option Heap"
+    and dp :: "'a => 'b"
+  assumes "dp_consistency_heap P update lookup"
+locale heap_correct_empty
+  fixes P :: "heap => bool"
+    and update :: "'a => 'b => unit Heap"
+    and lookup :: "'a => 'b option Heap"
+    and empty :: "heap"
+  assumes "heap_correct_empty P update lookup empty"
+locale dp_consistency_heap_empty
+  fixes P :: "heap => bool"
+    and update :: "'a => 'b => unit Heap"
+    and lookup :: "'a => 'b option Heap"
+    and dp :: "'a => 'b"
+    and empty :: "heap"
+  assumes "dp_consistency_heap_empty P update lookup empty"
+locale prod_index
+  fixes less_eq0 :: "'a => 'a => bool"
+    and less0 :: "'a => 'a => bool"
+    and idx0 :: "'a bound => 'a => nat"
+    and size0 :: "'a bound => nat"
+    and less_eq1 :: "'b => 'b => bool"
+    and less1 :: "'b => 'b => bool"
+    and idx1 :: "'b bound => 'b => nat"
+    and size1 :: "'b bound => nat"
+  assumes "prod_index less_eq0 less0 idx0 size0 less_eq1 less1 idx1 size1"
+### theory "Draft.DP_CRelVH"
+### 0.465s elapsed time, 1.823s cpu time, 0.235s GC time
+Loading theory "Draft.Bottom_Up_Computation_Heap" (required by "Draft.Bellman_FordTemplates" via "Draft.Bellman_Ford" via "Draft.Heap_Main")
+### theory "HOL-Library.BigO"
+### 0.863s elapsed time, 3.379s cpu time, 0.346s GC time
+Loading theory "Draft.Transform_Cmd" (required by "Draft.Bellman_FordTemplates" via "Draft.Bellman_Ford" via "Draft.Heap_Main")
+### ML warning (line 17 of "$AFP/Monad_Memo_DP/transform/Transform_Misc.ML"):
+### Value identifier (import_function_info) has not been referenced.
+### ML warning (line 27 of "$AFP/Monad_Memo_DP/transform/Transform_Misc.ML"):
+### Pattern is not exhaustive.
+### ML warning (line 30 of "$AFP/Monad_Memo_DP/transform/Transform_Misc.ML"):
+### Value identifier (head_of) has not been referenced.
+### ML warning (line 31 of "$AFP/Monad_Memo_DP/transform/Transform_Misc.ML"):
+### Value identifier (bind_of) has not been referenced.
+signature TRANSFORM_MISC =
+  sig
+    val add_function:
+       binding -> term list -> local_theory -> Function.info * local_theory
+    val behead: term -> term -> term * term list
+    val get_const_pat: Proof.context -> string -> term
+    val locale_term: Proof.context -> string -> string -> term
+    val locale_thms: Proof.context -> string -> string -> thm list
+    val rel_of: Function.info -> Proof.context -> thm
+    val term_name: term -> string
+    val the_element: int list -> int
+    val totality_of: Function.info -> thm
+    val uncurry: term -> term
+  end
+structure Transform_Misc: TRANSFORM_MISC
+### ML warning (line 18 of "$AFP/Monad_Memo_DP/transform/Transform_Const.ML"):
+### Value identifier (pureapp) has not been referenced.
+### ML warning (line 32 of "$AFP/Monad_Memo_DP/transform/Transform_Const.ML"):
+### Value identifier (memT) has not been referenced.
+### ML warning (line 45 of "$AFP/Monad_Memo_DP/transform/Transform_Const.ML"):
+### Value identifier (checkmem') has not been referenced.
+### ML warning (line 48 of "$AFP/Monad_Memo_DP/transform/Transform_Const.ML"):
+### Value identifier (checkmemC) has not been referenced.
+### ML warning (line 80 of "$AFP/Monad_Memo_DP/transform/Transform_Const.ML"):
+### Value identifier (checkmem') has not been referenced.
+### ML warning (line 83 of "$AFP/Monad_Memo_DP/transform/Transform_Const.ML"):
+### Value identifier (checkmemC) has not been referenced.
+signature TRANSFORM_CONST =
+  sig
+    type MONAD_CONSTS =
+       {app: term * term -> term,
+        checkmemVN: string,
+        if_termN: string,
+        mk_stateT: typ -> typ,
+        monad_name: string,
+        return: term -> term, rewrite_app_beta_conv: conv}
+    val get_monad_const: string -> MONAD_CONSTS
+  end
+structure Transform_Const: TRANSFORM_CONST
+### ML warning (line 104 of "$AFP/Monad_Memo_DP/transform/Transform_Data.ML"):
+### Value identifier (put_monadified_terms_generic) has not been referenced.
+signature TRANSFORM_DATA =
+  sig
+    val add_tmp_cmd_info:
+       binding * term * string option -> local_theory -> local_theory
+    type cmd_info =
+       {dp_info: dp_info option,
+        head: term, locale: string option, scope: binding}
+    val commit_dp_info: string -> dp_info -> local_theory -> local_theory
+    type dp_info =
+       {new_def': thm list,
+        new_defT: thm,
+        new_head': term,
+        new_headT: term, old_defs: thm list, old_head: term}
+    val get_dp_info: string -> Proof.context -> term -> dp_info option
+    val get_last_cmd_info: Proof.context -> cmd_info
+    val get_or_last_cmd_info:
+       Proof.context -> (string * term) option -> cmd_info
+  end
+structure Transform_Data: TRANSFORM_DATA
+### ML warning (line 28 of "$AFP/Monad_Memo_DP/transform/Transform_Tactic.ML"):
+### Value identifier (msg) has not been referenced.
+signature TRANSFORM_TACTIC =
+  sig
+    val dp_unfold_defs_tac:
+       Proof.context -> Transform_Data.cmd_info -> int -> tactic
+    val my_print_tac: string -> tactic
+    val prepare_case_tac:
+       Proof.context -> Transform_Data.cmd_info -> int -> tactic
+    val prepare_combinator_tac:
+       Proof.context -> Transform_Data.cmd_info -> int -> tactic
+    val prepare_consistentDP_tac:
+       Proof.context -> Transform_Data.cmd_info -> int -> tactic
+    val solve_consistentDP_tac:
+       Proof.context -> Transform_Data.cmd_info -> int -> tactic
+    val solve_relator_tac: Proof.context -> int -> tactic
+    val step_tac: Proof.context -> Transform_Data.cmd_info -> int -> tactic
+    val totality_replay_tac:
+       Function.info -> Function.info -> Proof.context -> tactic
+    val totality_resolve_tac: thm -> thm -> thm -> Proof.context -> tactic
+    val transfer_raw_tac: Proof.context -> int -> tactic
+  end
+structure Transform_Tactic: TRANSFORM_TACTIC
+locale option_index
+  fixes less_eq0 :: "'a => 'a => bool"
+    and less0 :: "'a => 'a => bool"
+    and idx0 :: "'a bound => 'a => nat"
+    and size0 :: "'a bound => nat"
+  assumes "option_index less_eq0 less0 idx0 size0"
+### ML warning (line 22 of "$AFP/Monad_Memo_DP/transform/Transform_Term.ML"):
+### Value identifier (eta_conv_n) has not been referenced.
+### ML warning (line 33 of "$AFP/Monad_Memo_DP/transform/Transform_Term.ML"):
+### Value identifier (app_unmark_conv) has not been referenced.
+### ML warning (line 36 of "$AFP/Monad_Memo_DP/transform/Transform_Term.ML"):
+### Value identifier (eta_expand) has not been referenced.
+### ML warning (line 282 of "$AFP/Monad_Memo_DP/transform/Transform_Term.ML"):
+### Value identifier (monadify) has not been referenced.
+signature TRANSFORM_TERM =
+  sig
+    val lift_equation:
+       Transform_Const.MONAD_CONSTS ->
+         Proof.context ->
+           term * term ->
+             term option -> (Proof.context -> conv) * term * int
+    val repeat_sweep_conv: (Proof.context -> conv) -> Proof.context -> conv
+    val rewrite_pureapp_beta_conv: conv
+    val wrap_head: Transform_Const.MONAD_CONSTS -> term -> int -> term
+  end
+structure Transform_Term: TRANSFORM_TERM
+Found termination order: "{}"
+### ML warning (line 140 of "$AFP/Monad_Memo_DP/transform/Transform.ML"):
+### Value identifier (prep_term) has not been referenced.
+### ML warning (line 154 of "$AFP/Monad_Memo_DP/transform/Transform.ML"):
+### Value identifier (dp_monadify_cmd) has not been referenced.
+### ML warning (line 217 of "$AFP/Monad_Memo_DP/transform/Transform.ML"):
+### Pattern is not exhaustive.
+signature TRANSFORM_DP =
+  sig
+    val dp_correct_cmd: local_theory -> Proof.state
+    val dp_fun_part1_cmd:
+       (binding * string) *
+       ((bool * (xstring * Position.T)) * (string * string) list) option
+         -> local_theory -> local_theory
+    val dp_fun_part2_cmd:
+       string * (Facts.ref * Token.src list) list ->
+         local_theory -> local_theory
+  end
+structure Transform_DP: TRANSFORM_DP
+locale mem_correct_empty
+  fixes lookup :: "'a => ('b, 'c option) state"
+    and update :: "'a => 'c => ('b, unit) state"
+    and P :: "'b => bool"
+    and empty :: "'b"
+  assumes "mem_correct_empty lookup update P empty"
+### ML warning (line 11 of "$AFP/Monad_Memo_DP/transform/Transform_Parser.ML"):
+### Value identifier (dp_fun_parser) has not been referenced.
+### ML warning (line 19 of "$AFP/Monad_Memo_DP/transform/Transform_Parser.ML"):
+### Value identifier (memoizes_parser) has not been referenced.
+### ML warning (line 22 of "$AFP/Monad_Memo_DP/transform/Transform_Parser.ML"):
+### Value identifier (monadifies_parser) has not been referenced.
+### ML warning (line 29 of "$AFP/Monad_Memo_DP/transform/Transform_Parser.ML"):
+### Value identifier (dp_monadify_cmd_parser) has not been referenced.
+signature TRANSFORM_PARSER =
+  sig
+    val dp_fun_part1_parser:
+       ((binding * string) *
+        ((bool * (string * Position.T)) * (string * string) list) option
+       )
+       parser
+    val dp_fun_part2_parser:
+       (string * (Facts.ref * Token.src list) list) parser
+  end
+structure Transform_Parser: TRANSFORM_PARSER
+locale nat_index_def
+### theory "Draft.Transform_Cmd"
+### 0.624s elapsed time, 2.262s cpu time, 0.803s GC time
+Loading theory "Draft.State_Main" (required by "Draft.Bellman_FordTemplates" via "Draft.Bellman_Ford" via "Draft.Example_Misc")
+Found termination order: "{}"
+locale dp_consistency_iterator_heap
+  fixes lookup :: "'a => 'c option Heap"
+    and update :: "'a => 'c => unit Heap"
+    and P :: "heap => bool"
+    and dp :: "'a => 'c"
+    and cnt :: "'a => bool"
+    and nxt :: "'a => 'a"
+    and sizef :: "'a => nat"
+  assumes "dp_consistency_iterator_heap lookup update P cnt nxt sizef"
+Found termination order: "{}"
+### theory "Draft.Bottom_Up_Computation_Heap"
+### 0.720s elapsed time, 2.646s cpu time, 0.803s GC time
+Loading theory "Draft.ExtrEqs" (required by "Draft.Bellman_FordTemplates")
+### theory "Draft.Pair_Memory"
+### 1.425s elapsed time, 5.414s cpu time, 1.110s GC time
+"0::'a"
+  :: "'a"
+"0::'a"
+  :: "'a"
+"0::'a"
+  :: "'a"
+"0::'a"
+  :: "'a"
+"0::'a"
+  :: "'a"
+"0::'a"
+  :: "'a"
+"0::'a"
+  :: "'a"
+"0::'a"
+  :: "'a"
+"0::'a"
+  :: "'a"
+"0::'a"
+  :: "'a"
+"0::'a"
+  :: "'a"
+"0::'a"
+  :: "'a"
+"iter_heap"
+  :: "('a => 'b Heap) => 'a => unit Heap"
+"crel_vs"
+  :: "('b => 'd => bool) => 'b => 'd Heap => bool"
+locale nat_index
+  assumes "nat_index"
+locale int_index_def
+Found termination order: "{}"
+[| ?b = ?c; ?c ==> ?x = ?u; ~ ?c ==> ?y = ?v |]
+==> (if ?b then ?x else ?y) = (if ?c then ?u else ?v)
+Found termination order: "{}"
+Found termination order: "{}"
+termination by default prover
+consts
+  comp\<^sub>T' ::
+    "('c => ('e, 'b) state)
+     => ('a => ('e, 'c) state) => ('d, 'a => ('e, 'b) state) state"
+  comp\<^sub>T ::
+    "('g,
+      ('c => ('e, 'b) state)
+      => ('f,
+          ('a => ('e, 'c) state)
+          => ('d, 'a => ('e, 'b) state) state) state) state"
+locale int_index
+  assumes "int_index"
+class index = type +
+  fixes less_eq :: "'a => 'a => bool"
+    and less :: "'a => 'a => bool"
+    and idx :: "'a bound => 'a => nat"
+    and size :: "'a bound => nat"
+  assumes
+    "is_locale":
+      "index_locale index_class.less_eq index_class.less idx
+        index_class.size"
+locale bounded_index
+  fixes bound :: "'k bound"
+Found termination order: "(%p. length (snd p)) <*mlex*> {}"
+termination by default prover
+consts
+  map\<^sub>T' :: "('b => ('c, 'a) state) => 'b list => ('c, 'a list) state"
+  map\<^sub>T ::
+    "('e,
+      ('b => ('c, 'a) state)
+      => ('d, 'b list => ('c, 'a list) state) state) state"
+instantiation
+  nat :: index
+  less_eq_nat == index_class.less_eq :: nat => nat => bool
+  less_nat == index_class.less :: nat => nat => bool
+  idx_nat == idx :: nat bound => nat => nat
+  size_nat == index_class.size :: nat bound => nat
+index_locale (<=) (<) local.idx local.size
+instantiation
+  int :: index
+  less_eq_int == index_class.less_eq :: int => int => bool
+  less_int == index_class.less :: int => int => bool
+  idx_int == idx :: int bound => int => nat
+  size_int == index_class.size :: int bound => nat
+index_locale (<=) (<) local.idx local.size
+instantiation
+  prod :: (index, index) index
+  less_eq_prod == index_class.less_eq :: 'a * 'b => 'a * 'b => bool
+  less_prod == index_class.less :: 'a * 'b => 'a * 'b => bool
+  idx_prod == idx :: ('a * 'b) bound => 'a * 'b => nat
+  size_prod == index_class.size :: ('a * 'b) bound => nat
+Found termination order: "(%p. length (snd p)) <*mlex*> {}"
+termination by default prover
+consts
+  fold\<^sub>T' ::
+    "('b => ('c, 'a => ('d, 'a) state) state)
+     => 'b list => ('c, 'a => ('d, 'a) state) state"
+  fold\<^sub>T ::
+    "('f,
+      ('b => ('c, 'a => ('d, 'a) state) state)
+      => ('e, 'b list => ('c, 'a => ('d, 'a) state) state) state) state"
+[| ?xs = ?ys; !!x. x : set ?ys ==> ?f x = ?g x |]
+==> map ?f ?xs = map ?g ?ys
+[| ?a = ?b; ?xs = ?ys; !!x. x : set ?xs ==> ?f x = ?g x |]
+==> fold ?f ?xs ?a = fold ?g ?ys ?b
+locale dp_consistency
+  fixes lookup :: "'param => ('mem, 'result option) state"
+    and update :: "'param => 'result => ('mem, unit) state"
+    and P :: "'mem => bool"
+    and dp :: "'param => 'result"
+  assumes "dp_consistency lookup update P"
+val eqpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Var (("_dummy_", 2), "?'a"))
+       ):
+   term Find_Theorems.criterion
+val badeqpattern = Pattern (Const ("Pure.eq", "?'a => ?'a => prop")):
+   term Find_Theorems.criterion
+val undefpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Const ("HOL.undefined", "?'a"))
+       ):
+   term Find_Theorems.criterion
+val thmpattern =
+   Pattern
+    (Const ("HOL.Trueprop", "bool => prop") $ Var (("_dummy_", 1), "bool")):
+   term Find_Theorems.criterion
+val badnames =
+   ["*nitpick*", "*Nitpick*", "*full_exhaustive*", "*_def*", "Enum.finite*",
+    "*Quickcheck*", "ATP*", "*Nunchaku*", "*Code*", "*BNF*", "*SMT*",
+    "*.*.*"]:
+   string list
+val unwanted_names =
+   [(false, Name "*nitpick*"), (false, Name "*Nitpick*"),
+    (false, Name "*full_exhaustive*"), (false, Name "*_def*"),
+    (false, Name "Enum.finite*"), (false, Name "*Quickcheck*"),
+    (false, Name "ATP*"), (false, Name "*Nunchaku*"),
+    (false, Name "*Code*"), (false, Name "*BNF*"), (false, Name "*SMT*"),
+    (false, Name "*.*.*")]:
+   (bool * term Find_Theorems.criterion) list
+val has_vars = fn: term -> bool
+val get_all_eqs = fn: string -> Proof.context -> (string * thm) list
+val get_all_thms = fn: string -> Proof.context -> (string * thm) list
+val get_noneq_thms = fn: string -> Proof.context -> (string * thm) list
+val template_eqs = fn:
+   string -> Proof.context -> (string * thm * template) list
+val template_thms = fn:
+   string -> Proof.context -> (string * thm * template) list
+### theory "Draft.ExtrEqs"
+### 0.640s elapsed time, 1.953s cpu time, 0.162s GC time
+[| ?b = ?c; ?c ==> ?x = ?u; ~ ?c ==> ?y = ?v |]
+==> (if ?b then ?x else ?y) = (if ?c then ?u else ?v)
+[| option = option'; option' = None ==> f1 = g1;
+   !!x2. option' = Some x2 ==> f2 x2 = g2 x2 |]
+==> (case option of None => f1 | Some x2 => f2 x2) =
+    (case option' of None => g1 | Some x2 => g2 x2)
+[| prod = prod'; !!x1 x2. prod' = (x1, x2) ==> f x1 x2 = g x1 x2 |]
+==> (case prod of (x1, x2) => f x1 x2) = (case prod' of (x1, x2) => g x1 x2)
+[| nat = nat'; nat' = 0 ==> f1 = g1;
+   !!x2. nat' = Suc x2 ==> f2 x2 = g2 x2 |]
+==> (case nat of 0 => f1 | Suc x2 => f2 x2) =
+    (case nat' of 0 => g1 | Suc x2 => g2 x2)
+### theory "Draft.State_Main"
+### 0.851s elapsed time, 2.502s cpu time, 0.230s GC time
+Loading theory "Draft.Example_Misc" (required by "Draft.Bellman_FordTemplates" via "Draft.Bellman_Ford")
+index_locale local.less_eq local.less local.idx local.size
+### Type
+### (int * int) bound => nat
+### of constant "Indexing.bounded_index.size"
+### is too specific compared to declared type
+### ?'k::{} bound => nat, in theorem:
+### bounded_index.size (Bound (?l1.0, ?l2.0) (?u1.0, ?u2.0)) ==
+### nat (?u1.0 - ?l1.0) * nat (?u2.0 - ?l2.0)
+### theory "Draft.Indexing"
+### 3.812s elapsed time, 13.470s cpu time, 2.220s GC time
+Loading theory "Draft.Memory_Heap" (required by "Draft.Bellman_FordTemplates" via "Draft.Bellman_Ford" via "Draft.Heap_Main")
+### Missing patterns in function definition:
+### min_list [] = undefined
+Found termination order: "length <*mlex*> {}"
+bundle app_syntax
+### theory "Draft.Example_Misc"
+### 0.353s elapsed time, 0.752s cpu time, 0.057s GC time
+### theory "Draft.Memory_Heap"
+### 1.197s elapsed time, 1.488s cpu time, 0.139s GC time
+Loading theory "Draft.Heap_Main" (required by "Draft.Bellman_FordTemplates" via "Draft.Bellman_Ford")
+[| ?b = ?c; ?c ==> ?x = ?u; ~ ?c ==> ?y = ?v |]
+==> (if ?b then ?x else ?y) = (if ?c then ?u else ?v)
+Found termination order: "{}"
+termination by default prover
+consts
+  comp\<^sub>T' ::
+    "('c => 'b Heap) => ('a => 'c Heap) => ('a => 'b Heap) Heap"
+  comp\<^sub>T ::
+    "(('c => 'b Heap)
+      => (('a => 'c Heap) => ('a => 'b Heap) Heap) Heap) Heap"
+comp\<^sub>T' ?f ?g =
+return
+ (%x. Heap_Monad_Ext.fun_app_lifted (return ?f)
+       (Heap_Monad_Ext.fun_app_lifted (return ?g) (return x)))
+Found termination order: "(%p. length (snd p)) <*mlex*> {}"
+termination by default prover
+consts
+  map\<^sub>T' :: "('b => 'a Heap) => 'b list => 'a list Heap"
+  map\<^sub>T :: "(('b => 'a Heap) => ('b list => 'a list Heap) Heap) Heap"
+Found termination order: "(%p. length (snd p)) <*mlex*> {}"
+termination by default prover
+consts
+  fold\<^sub>T' ::
+    "('b => ('a => 'a Heap) Heap) => 'b list => ('a => 'a Heap) Heap"
+  fold\<^sub>T ::
+    "(('b => ('a => 'a Heap) Heap)
+      => ('b list => ('a => 'a Heap) Heap) Heap) Heap"
+[| ?xs = ?ys; !!x. x : set ?ys ==> ?f x = ?g x |]
+==> map ?f ?xs = map ?g ?ys
+[| ?a = ?b; ?xs = ?ys; !!x. x : set ?xs ==> ?f x = ?g x |]
+==> fold ?f ?xs ?a = fold ?g ?ys ?b
+locale dp_consistency_heap
+  fixes P :: "heap => bool"
+    and update :: "'a => 'b => unit Heap"
+    and lookup :: "'a => 'b option Heap"
+    and dp :: "'a => 'b"
+  assumes "dp_consistency_heap P update lookup"
+[| ?b = ?c; ?c ==> ?x = ?u; ~ ?c ==> ?y = ?v |]
+==> (if ?b then ?x else ?y) = (if ?c then ?u else ?v)
+[| option = option'; option' = None ==> f1 = g1;
+   !!x2. option' = Some x2 ==> f2 x2 = g2 x2 |]
+==> (case option of None => f1 | Some x2 => f2 x2) =
+    (case option' of None => g1 | Some x2 => g2 x2)
+[| prod = prod'; !!x1 x2. prod' = (x1, x2) ==> f x1 x2 = g x1 x2 |]
+==> (case prod of (x1, x2) => f x1 x2) = (case prod' of (x1, x2) => g x1 x2)
+locale heap_correct_init_defs
+  fixes P :: "'m => heap => bool"
+    and lookup :: "'m => 'k => 'v option Heap"
+    and update :: "'m => 'k => 'v => unit Heap"
+locale heap_correct_init_inv
+  fixes P :: "'a => heap => bool"
+    and lookup :: "'a => 'b => 'c option Heap"
+    and update :: "'a => 'b => 'c => unit Heap"
+  assumes "heap_correct_init_inv P lookup update"
+locale heap_correct_init
+  fixes P :: "'a => heap => bool"
+    and lookup :: "'a => 'b => 'c option Heap"
+    and update :: "'a => 'b => 'c => unit Heap"
+  assumes "heap_correct_init P lookup update"
+locale dp_consistency_heap_init
+  fixes P :: "'m => heap => bool"
+    and update :: "'m => 'k => 'v => unit Heap"
+    and lookup :: "'m => 'k => 'v option Heap"
+    and dp :: "'k => 'v"
+    and init :: "'m Heap"
+  assumes "dp_consistency_heap_init P update lookup init"
+locale dp_consistency_heap_init'
+  fixes P :: "'m => heap => bool"
+    and update :: "'m => 'k => 'v => unit Heap"
+    and lookup :: "'m => 'k => 'v option Heap"
+    and dp :: "'k => 'v"
+    and init :: "'m Heap"
+  assumes "dp_consistency_heap_init' P update lookup init"
+locale dp_consistency_new
+  fixes dp :: "'k => 'v"
+    and P :: "'m => heap => bool"
+    and lookup :: "'m => 'k => 'v option Heap"
+    and update :: "'m => 'k => 'v => unit Heap"
+    and init :: "'m Heap"
+  assumes "dp_consistency_new P lookup update init"
+locale dp_consistency_new'
+  fixes dp :: "'k => 'v"
+    and P :: "'m => heap => bool"
+    and lookup :: "'m => 'k => 'v option Heap"
+    and update :: "'m => 'k => 'v => unit Heap"
+    and init :: "'m Heap"
+    and mem :: "'m"
+  assumes "dp_consistency_new' P lookup update init mem"
+locale dp_consistency_heap_array_new'
+  fixes size :: "nat"
+    and to_index :: "'k => nat"
+    and mem :: "'v option array"
+    and dp :: "'k => 'v"
+  assumes "dp_consistency_heap_array_new' size to_index mem"
+consistentDP (?dp\<^sub>T (result_of (mem_empty size) Heap.empty)) ==>
+dp ?x = result_of (mem_empty size >>= (%mem. ?dp\<^sub>T mem ?x)) Heap.empty
+locale dp_consistency_heap_array_new
+  fixes size :: "nat"
+    and to_index :: "'k => nat"
+    and dp :: "'k => 'v"
+  assumes "dp_consistency_heap_array_new size to_index"
+consistentDP (?dp\<^sub>T (result_of (mem_empty size) Heap.empty)) ==>
+dp ?x = result_of (mem_empty size >>= (%mem. ?dp\<^sub>T mem ?x)) Heap.empty
+locale dp_consistency_heap_array
+  fixes size :: "nat"
+    and to_index :: "'k => nat"
+    and dp :: "'k => 'v"
+  assumes "dp_consistency_heap_array size to_index"
+locale dp_consistency_heap_array_pair'
+  fixes size :: "nat"
+    and key1 :: "'k => 'k1"
+    and key2 :: "'k => 'k2"
+    and to_index :: "'k2 => nat"
+    and dp :: "'k => 'v"
+    and k1 :: "'k1"
+    and k2 :: "'k1"
+    and
+    mem :: "'k1 ref * 'k1 ref * 'v option array ref * 'v option array ref"
+  assumes
+    "dp_consistency_heap_array_pair' size key1 key2 to_index k1 k2 mem"
+locale dp_consistency_heap_array_pair_iterator
+  fixes size :: "nat"
+    and key1 :: "'k => 'a"
+    and key2 :: "'k => 'b"
+    and to_index :: "'b => nat"
+    and k1 :: "'a"
+    and k2 :: "'a"
+    and mem :: "'a ref * 'a ref * 'v option array ref * 'v option array ref"
+    and nxt :: "'k => 'k"
+    and sizef :: "'k => nat"
+    and dp :: "'k => 'v"
+    and cnt :: "'k => bool"
+  assumes
+    "dp_consistency_heap_array_pair_iterator size key1 key2 to_index k1 k2
+      mem nxt sizef cnt"
+locale dp_consistency_heap_array_pair
+  fixes size :: "nat"
+    and key1 :: "'k => 'k1"
+    and key2 :: "'k => 'k2"
+    and to_index :: "'k2 => nat"
+    and dp :: "'k => 'v"
+    and k1 :: "'k1"
+    and k2 :: "'k1"
+  assumes "dp_consistency_heap_array_pair size key1 key2 to_index k1 k2"
+### theory "Draft.Heap_Main"
+### 2.654s elapsed time, 2.756s cpu time, 0.138s GC time
+Loading theory "Draft.Tracing" (required by "Draft.Bellman_FordTemplates" via "Draft.Bellman_Ford")
+### theory "Draft.Tracing"
+### 0.312s elapsed time, 0.319s cpu time, 0.000s GC time
+Loading theory "Draft.Bellman_Ford" (required by "Draft.Bellman_FordTemplates")
+"''3''"
+  :: "char list"
+locale dp_consistency_iterator
+  fixes P :: "'b => bool"
+    and dp :: "'a => 'c"
+    and lookup :: "'a => ('b, 'c option) state"
+    and update :: "'a => 'c => ('b, unit) state"
+    and cnt :: "'a => bool"
+    and nxt :: "'a => 'a"
+    and sizef :: "'a => nat"
+  assumes "dp_consistency_iterator P lookup update cnt nxt sizef"
+instantiation
+  extended :: (conditionally_complete_lattice) complete_lattice
+  Inf_extended == Inf :: 'a extended set => 'a extended
+  Sup_extended == Sup :: 'a extended set => 'a extended
+### Missing patterns in function definition:
+### weight [] = undefined
+Found termination order: "size_list size_class.size <*mlex*> {}"
+Found termination order: "(%p. size_class.size (fst p)) <*mlex*> {}"
+termination by replaying
+consts
+  bf\<^sub>m' ::
+    "nat => nat => ((nat * nat, int extended) mapping, int extended) state"
+  bf\<^sub>m ::
+    "('b,
+      nat
+      => ('a,
+          nat
+          => ((nat * nat, int extended) mapping,
+              int extended) state) state) state"
+theorem
+  bf\<^sub>m.crel:
+    dp_consistency.consistentDP
+     (%k. State_Monad.get >>= (%m. State_Monad.return (Mapping.lookup m k)))
+     (%_. True) (%(x, y). local.bf x y) (%(x, y). local.bf\<^sub>m' x y)
+theorem
+  bf\<^sub>m.memoized_correct:
+    local.bf ?a ?b = fst (run_state (local.bf\<^sub>m' ?a ?b) Mapping.empty)
+local.bf\<^sub>m' 0 ?v =
+state_mem_defs.checkmem (%k. State_Monad.get >>= (%m. #Mapping.lookup m k#))
+ (%k v. State_Monad.get >>= (%m. State_Monad.set (Mapping.update k v m)))
+ (0, ?v) #if t = ?v then 0 else \<infinity>#
+local.bf\<^sub>m' (Suc ?i) ?v =
+state_mem_defs.checkmem (%k. State_Monad.get >>= (%m. #Mapping.lookup m k#))
+ (%k v. State_Monad.get >>= (%m. State_Monad.set (Mapping.update k v m)))
+ (Suc ?i, ?v)
+ (#%a. #Example_Misc.min_list a## .
+  (#%a. #%b. #a # b### . (local.bf\<^sub>m' ?i ?v) .
+   (State_Main.map\<^sub>T .
+    #%w. #%a. #W ?v w + a## . (local.bf\<^sub>m' ?i w)# .
+    #[0..<Suc n]#)))
+local.bf\<^sub>m == #%uu_. #local.bf\<^sub>m' uu_##
+termination by replaying
+consts
+  bf\<^sub>h' :: "nat => nat => int extended Heap"
+  bf\<^sub>h :: "(nat => (nat => int extended Heap) Heap) Heap"
+theorem
+  bf\<^sub>h.crel: bf\<^sub>h.consistentDP (%(x, y). local.bf\<^sub>h' x y)
+theorem
+  bf\<^sub>h.memoized_correct:
+    local.bf ?a ?b =
+    result_of (local.bf\<^sub>h' ?a ?b)
+     (heap_of (init_state (n + 1) 1 0) Heap.empty)
+Found termination order:
+  "(%p. size_class.size (fst (snd (snd (snd (snd p)))))) <*mlex*> {}"
+Warning: Value identifier (t) has not been referenced.
+At (line 12 of "generated code")
+Warning: Value identifier (less) has not been referenced.
+At (line 50 of "generated code")
+Warning: Value identifier (t) has not been referenced.
+At (line 77 of "generated code")
+Warning: Value identifier (x1) has not been referenced.
+At (line 112 of "generated code")
+Warning: Value identifier (x2) has not been referenced.
+At (line 118 of "generated code")
+Warning: Value identifier (sep) has not been referenced.
+At (line 182 of "generated code")
+Warning: Value identifier (sep) has not been referenced.
+At (line 181 of "generated code")
+Warning: Value identifier (s) has not been referenced.
+At (line 181 of "generated code")
+Warning: Value identifier (xs) has not been referenced.
+At (line 186 of "generated code")
+Warning: Value identifier (x) has not been referenced.
+At (line 186 of "generated code")
+Warning: Value identifier (p) has not been referenced.
+At (line 193 of "generated code")
+Warning: Value identifier (shows_list) has not been referenced.
+At (line 208 of "generated code")
+Warning: Value identifier (t) has not been referenced.
+At (line 213 of "generated code")
+Warning: Value identifier (t) has not been referenced.
+At (line 223 of "generated code")
+Warning: Value identifier (A_) has not been referenced.
+At (line 225 of "generated code")
+Warning: Value identifier (t) has not been referenced.
+At (line 236 of "generated code")
+Warning: Value identifier (A_) has not been referenced.
+At (line 238 of "generated code")
+Warning: Value identifier (v) has not been referenced.
+At (line 255 of "generated code")
+Warning: Value identifier (A_) has not been referenced.
+At (line 255 of "generated code")
+Warning: Value identifier (A_) has not been referenced.
+At (line 254 of "generated code")
+Warning: Value identifier (v) has not been referenced.
+At (line 253 of "generated code")
+Warning: Value identifier (A_) has not been referenced.
+At (line 253 of "generated code")
+Warning: Value identifier (A_) has not been referenced.
+At (line 252 of "generated code")
+Warning: Value identifier (v) has not been referenced.
+At (line 251 of "generated code")
+Warning: Value identifier (A_) has not been referenced.
+At (line 251 of "generated code")
+Warning: Value identifier (uu) has not been referenced.
+At (line 250 of "generated code")
+Warning: Value identifier (A_) has not been referenced.
+At (line 250 of "generated code")
+Warning: Value identifier (A_) has not been referenced.
+At (line 288 of "generated code")
+Warning: Value identifier (A_) has not been referenced.
+At (line 292 of "generated code")
+Warning: Value identifier (A_) has not been referenced.
+At (line 295 of "generated code")
+Warning: Value identifier (A_) has not been referenced.
+At (line 297 of "generated code")
+Warning: Value identifier (uu) has not been referenced.
+At (line 302 of "generated code")
+Warning: Value identifier (f) has not been referenced.
+At (line 307 of "generated code")
+Warning: Value identifier (A_) has not been referenced.
+At (line 350 of "generated code")
+Warning: Value identifier (A_) has not been referenced.
+At (line 349 of "generated code")
+Warning: Value identifier (A_) has not been referenced.
+At (line 348 of "generated code")
+Warning: Value identifier (x) has not been referenced.
+At (line 347 of "generated code")
+Warning: Value identifier (A_) has not been referenced.
+At (line 347 of "generated code")
+Warning: Value identifier (y) has not been referenced.
+At (line 346 of "generated code")
+Warning: Value identifier (A_) has not been referenced.
+At (line 346 of "generated code")
+Warning: Value identifier (A_) has not been referenced.
+At (line 345 of "generated code")
+Warning: Value identifier (x) has not been referenced.
+At (line 344 of "generated code")
+Warning: Value identifier (A_) has not been referenced.
+At (line 344 of "generated code")
+Warning: Value identifier (x) has not been referenced.
+At (line 343 of "generated code")
+Warning: Value identifier (A_) has not been referenced.
+At (line 343 of "generated code")
+Warning: Value identifier (p) has not been referenced.
+At (line 370 of "generated code")
+Warning: Value identifier (A_) has not been referenced.
+At (line 384 of "generated code")
+Warning: Value identifier (C2_) has not been referenced.
+At (line 396 of "generated code")
+Warning: Value identifier (A_) has not been referenced.
+At (line 437 of "generated code")
+Warning: Value identifier (C2_) has not been referenced.
+At (line 444 of "generated code")
+Warning: Value identifier (f) has not been referenced.
+At (line 463 of "generated code")
+Warning: Matches are not exhaustive.
+fun min_list A_ (... :: ...) = (case xs of [...] => x | ... => ...)
+At (line 477 of "generated code")
+structure Test:
+  sig
+    type 'a extended
+    type inta
+    type nat
+    type num
+    val test_bf: unit -> inta extended
+  end
+Miss (0, 0)
+Miss (0, 1)
+Miss (0, 2)
+Miss (0, 3)
+Miss (1, 0)
+Hit (0, 0)
+Hit (0, 0)
+Hit (0, 1)
+Hit (0, 2)
+Hit (0, 3)
+Miss (1, 1)
+Hit (0, 1)
+Hit (0, 0)
+Hit (0, 1)
+Hit (0, 2)
+Hit (0, 3)
+Miss (1, 2)
+Hit (0, 2)
+Hit (0, 0)
+Hit (0, 1)
+Hit (0, 2)
+Hit (0, 3)
+Miss (1, 3)
+Hit (0, 3)
+Hit (0, 0)
+Hit (0, 1)
+Hit (0, 2)
+Hit (0, 3)
+Miss (2, 0)
+Hit (1, 0)
+Hit (1, 0)
+Hit (1, 1)
+Hit (1, 2)
+Hit (1, 3)
+Miss (2, 1)
+Hit (1, 1)
+Hit (1, 0)
+Hit (1, 1)
+Hit (1, 2)
+Hit (1, 3)
+Miss (2, 2)
+Hit (1, 2)
+Hit (1, 0)
+Hit (1, 1)
+Hit (1, 2)
+Hit (1, 3)
+Miss (2, 3)
+Hit (1, 3)
+Hit (1, 0)
+Hit (1, 1)
+Hit (1, 2)
+Hit (1, 3)
+Miss (3, 0)
+Hit (2, 0)
+Hit (2, 0)
+Hit (2, 1)
+Hit (2, 2)
+Hit (2, 3)
+Miss (3, 1)
+Hit (2, 1)
+Hit (2, 0)
+Hit (2, 1)
+Hit (2, 2)
+Hit (2, 3)
+Miss (3, 2)
+Hit (2, 2)
+Hit (2, 0)
+Hit (2, 1)
+Hit (2, 2)
+Hit (2, 3)
+Miss (3, 3)
+Hit (2, 3)
+Hit (2, 0)
+Hit (2, 1)
+Hit (2, 2)
+Hit (2, 3)
+Hit (3, 0)
+val it = Fin (Int_of_integer 4): Test.inta Test.extended
+### Code generator: dropping subsumed code equation
+### bf ?n ?W ?t ?a ?b ==
+### fst (run_state (bf\<^sub>m' ?n ?W ?t ?a ?b) Mapping.empty)
+### theory "Draft.Bellman_Ford"
+### 3.234s elapsed time, 3.645s cpu time, 0.265s GC time
+Loading theory "Draft.Bellman_FordTemplates"
+val templateLemmas =
+   [("Bellman_Ford.OPT_sink_le_0", "OPT ?n ?W ?t ?i ?t <= 0",
+     template_inequation
+      (less_equals,
+       template_app
+        (template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 1, template_var 3),
+               template_var 2),
+             template_var 1),
+           template_var 0),
+         template_var 1),
+       template_hole 0)),
+    ("Bellman_Ford.is_path_eq",
+     "is_path ?W ?t ?xs = ??.Bellman_Ford.is_path2 ?W (?xs @ [?t])",
+     template_equation
+      (template_app
+        (template_app
+          (template_app (template_hole 4, template_var 2), template_var 1),
+         template_var 0),
+       template_app
+        (template_app (template_hole 3, template_var 2),
+         template_app
+          (template_app (template_hole 2, template_var 0),
+           template_app
+            (template_app (template_hole 1, template_var 1),
+             template_hole 0))))),
+    ("Bellman_Ford.OPT_0",
+     "OPT ?n ?W ?t 0 ?v = (if ?t = ?v then 0 else \<infinity>)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app (template_hole 5, template_var 3),
+                    template_var 2),
+                  template_var 1),
+                template_hole 4),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_hole 3,
+                 template_app
+                  (template_app (template_hole 2, template_var 1),
+                   template_var 0)),
+               template_hole 1),
+             template_hole 0)
+           ))),
+    ("Bellman_Ford.bf_simps",
+     "bf ?n ?W ?t 0 ?v = (if ?t = ?v then 0 else \<infinity>)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app (template_hole 5, template_var 3),
+                    template_var 2),
+                  template_var 1),
+                template_hole 4),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_hole 3,
+                 template_app
+                  (template_app (template_hole 2, template_var 1),
+                   template_var 0)),
+               template_hole 1),
+             template_hole 0)
+           ))),
+    ("Bellman_Ford.get_return",
+     "run_state (State_Monad.get >>= (%m. State_Monad.return (?f m))) ?m =
+      (?f ?m, ?m)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 4,
+           template_app
+            (template_app (template_hole 3, template_hole 2), t_empty)),
+         template_var 0),
+       template_app
+        (template_app
+          (template_hole 0, template_app (template_var 1, template_var 0)),
+         template_var 0))),
+    ("Bellman_Ford.sum_list_not_infI",
+     "ALL x:set ?xs. x < \<infinity> ==> sum_list ?xs < \<infinity>",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 4,
+                template_app (template_hole 3, template_var 0)),
+              t_empty)
+            )],
+       template_inequation
+        (less_than, template_app (template_hole 0, template_var 0),
+         template_hole 1))),
+    ("Bellman_Ford.sum_list_not_minfI",
+     "ALL x:set ?xs. -\<infinity> < x ==> -\<infinity> < sum_list ?xs",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 4,
+                template_app (template_hole 3, template_var 0)),
+              t_empty)
+            )],
+       template_inequation
+        (less_than, template_hole 1,
+         template_app (template_hole 0, template_var 0)))),
+    ("Bellman_Ford.finite_lists_length_le1",
+     "finite {xs. length xs <= ?i & set xs <= {0..?n}}",
+     template_predicate
+      (
+         template_app
+          (template_hole 8, template_app (template_hole 7, t_empty))
+         )),
+    ("Bellman_Ford.is_path_remove_cycle2",
+     "is_path ?W ?t (?as @ ?t # ?cs) ==> is_path ?W ?t ?as",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 2, template_var 3),
+                template_var 2),
+              template_app
+               (template_app (template_hole 1, template_var 1),
+                template_app
+                 (template_app (template_hole 0, template_var 2),
+                  template_var 0)))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app (template_hole 2, template_var 3),
+               template_var 2),
+             template_var 1)
+           ))),
+    ("Bellman_Ford.Inf_int_in",
+     "[| ?S ~= {}; bdd_below ?S |] ==> Inf ?S : ?S",
+     template_implication
+      ([template_negation
+         (template_equation (template_var 0, template_hole 3)),
+        template_predicate
+         (template_app (template_hole 2, template_var 0))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 1,
+               template_app (template_hole 0, template_var 0)),
+             template_var 0)
+           ))),
+    ("Bellman_Ford.Sup_int_in",
+     "[| ?X ~= {}; bdd_above ?X |] ==> Sup ?X : ?X",
+     template_implication
+      ([template_negation
+         (template_equation (template_var 0, template_hole 3)),
+        template_predicate
+         (template_app (template_hole 2, template_var 0))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 1,
+               template_app (template_hole 0, template_var 0)),
+             template_var 0)
+           ))),
+    ("Bellman_Ford.add_gt_minfI",
+     "[| -\<infinity> < ?a; -\<infinity> < ?b |]
+      ==> -\<infinity> < ?a + ?b",
+     template_implication
+      ([template_inequation (less_than, template_hole 1, template_var 1),
+        template_inequation (less_than, template_hole 1, template_var 0)],
+       template_inequation
+        (less_than, template_hole 1,
+         template_app
+          (template_app (template_hole 0, template_var 1),
+           template_var 0)))),
+    ("Bellman_Ford.add_lt_infI",
+     "[| ?a < \<infinity>; ?b < \<infinity> |] ==> ?a + ?b < \<infinity>",
+     template_implication
+      ([template_inequation (less_than, template_var 1, template_hole 1),
+        template_inequation (less_than, template_var 0, template_hole 1)],
+       template_inequation
+        (less_than,
+         template_app
+          (template_app (template_hole 0, template_var 1), template_var 0),
+         template_hole 1))),
+    ("Bellman_Ford.finite_lists_length_le2",
+     "finite {xs. length xs + 1 <= ?i & set xs <= {0..?n}}",
+     template_predicate
+      (
+         template_app
+          (template_hole 10, template_app (template_hole 9, t_empty))
+         )),
+    ("Bellman_Ford.is_path_appendD",
+     "is_path ?W ?t (?as @ ?a # ?bs) ==> is_path ?W ?t (?a # ?bs)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 2, template_var 4),
+                template_var 3),
+              template_app
+               (template_app (template_hole 1, template_var 2),
+                template_app
+                 (template_app (template_hole 0, template_var 1),
+                  template_var 0)))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app (template_hole 2, template_var 4),
+               template_var 3),
+             template_app
+              (template_app (template_hole 0, template_var 1),
+               template_var 0))
+           ))),
+    ("Bellman_Ford.bf_impl_correct",
+     "bf ?n ?w ?t ?i ?j = result_of (bf_impl ?n ?w ?t ?i ?j) Heap.empty",
+     template_equation
+      (template_app
+        (template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 5, template_var 4),
+               template_var 3),
+             template_var 2),
+           template_var 1),
+         template_var 0),
+       template_app
+        (template_hole 4,
+         template_app
+          (template_hole 3,
+           template_app
+            (template_app
+              (template_hole 2,
+               template_app
+                (template_app
+                  (template_app
+                    (template_app
+                      (template_app (template_hole 1, template_var 4),
+                       template_var 3),
+                     template_var 2),
+                   template_var 1),
+                 template_var 0)),
+             template_hole 0))))),
+    ("Bellman_Ford.shortest_le_OPT",
+     "?v <= ?n ==> shortest ?n ?W ?t ?v <= OPT ?n ?W ?t ?i ?v",
+     template_implication
+      ([template_inequation (less_equals, template_var 4, template_var 3)],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 1, template_var 3),
+               template_var 2),
+             template_var 1),
+           template_var 4),
+         template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 0, template_var 3),
+                 template_var 2),
+               template_var 1),
+             template_var 0),
+           template_var 4)))),
+    ("Bellman_Ford.bf_correct",
+     "?t <= ?n ==> OPT ?n ?W ?t ?i ?j = bf ?n ?W ?t ?i ?j",
+     template_implication
+      ([template_inequation (less_equals, template_var 4, template_var 3)],
+       template_equation
+        (template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 1, template_var 3),
+                 template_var 2),
+               template_var 4),
+             template_var 1),
+           template_var 0),
+         template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 0, template_var 3),
+                 template_var 2),
+               template_var 4),
+             template_var 1),
+           template_var 0)))),
+    ("Bellman_Ford.le_add_same_cancel1",
+     "[| ?a < \<infinity>; -\<infinity> < ?a |]
+      ==> (?a <= ?a + ?b) = (0 <= ?b)",
+     template_implication
+      ([template_inequation (less_than, template_var 1, template_hole 5),
+        template_inequation (less_than, template_hole 4, template_var 1)],
+       template_equation
+        (template_app
+          (template_app (template_hole 2, template_var 1),
+           template_app
+            (template_app (template_hole 1, template_var 1),
+             template_var 0)),
+         template_app
+          (template_app (template_hole 2, template_hole 0),
+           template_var 0)))),
+    ("Bellman_Ford.finite_setcompr_eq_image",
+     "finite {?f x |x. ?P x} = finite (?f ` {x. ?P x})",
+     template_equation
+      (template_app
+        (template_hole 6, template_app (template_hole 5, t_empty)),
+       template_app
+        (template_hole 6,
+         template_app
+          (template_app (template_hole 1, template_var 1),
+           template_app (template_hole 0, t_empty))))),
+    ("Bellman_Ford.is_path2_remove_cycle",
+     "??.Bellman_Ford.is_path2 ?W (?as @ ?a # ?bs @ ?a # ?cs) ==>
+      ??.Bellman_Ford.is_path2 ?W (?as @ ?a # ?cs)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 2, template_var 4),
+              template_app
+               (template_app (template_hole 1, template_var 3),
+                template_app
+                 (template_app (template_hole 0, template_var 2),
+                  template_app
+                   (template_app (template_hole 1, template_var 1),
+                    template_app
+                     (template_app (template_hole 0, template_var 2),
+                      template_var 0)))))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 2, template_var 4),
+             template_app
+              (template_app (template_hole 1, template_var 3),
+               template_app
+                (template_app (template_hole 0, template_var 2),
+                 template_var 0)))
+           ))),
+    ("Bellman_Ford.weight_append",
+     "weight ?W (?xs @ ?a # ?ys) =
+      weight ?W (?xs @ [?a]) + weight ?W (?a # ?ys)",
+     template_equation
+      (template_app
+        (template_app (template_hole 4, template_var 3),
+         template_app
+          (template_app (template_hole 3, template_var 2),
+           template_app
+            (template_app (template_hole 2, template_var 1),
+             template_var 0))),
+       template_app
+        (template_app
+          (template_hole 1,
+           template_app
+            (template_app (template_hole 4, template_var 3),
+             template_app
+              (template_app (template_hole 3, template_var 2),
+               template_app
+                (template_app (template_hole 2, template_var 1),
+                 template_hole 0)))),
+         template_app
+          (template_app (template_hole 4, template_var 3),
+           template_app
+            (template_app (template_hole 2, template_var 1),
+             template_var 0))))),
+    ("Bellman_Ford.is_path_remove_cycle",
+     "is_path ?W ?t (?as @ ?a # ?bs @ ?a # ?cs) ==>
+      is_path ?W ?t (?as @ ?a # ?cs)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 2, template_var 5),
+                template_var 4),
+              template_app
+               (template_app (template_hole 1, template_var 3),
+                template_app
+                 (template_app (template_hole 0, template_var 2),
+                  template_app
+                   (template_app (template_hole 1, template_var 1),
+                    template_app
+                     (template_app (template_hole 0, template_var 2),
+                      template_var 0)))))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app (template_hole 2, template_var 5),
+               template_var 4),
+             template_app
+              (template_app (template_hole 1, template_var 3),
+               template_app
+                (template_app (template_hole 0, template_var 2),
+                 template_var 0)))
+           ))),
+    ("Bellman_Ford.Sup_int",
+     "[| ?X ~= {}; bdd_above ?X |]
+      ==> Sup ?X : ?X & (ALL y:?X. y <= Sup ?X)",
+     template_implication
+      ([template_negation
+         (template_equation (template_var 0, template_hole 6)),
+        template_predicate
+         (template_app (template_hole 5, template_var 0))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 4,
+               template_app
+                (template_app
+                  (template_hole 3,
+                   template_app (template_hole 2, template_var 0)),
+                 template_var 0)),
+             template_app
+              (template_app (template_hole 1, template_var 0), t_empty))
+           ))),
+    ("Bellman_Ford.nat_le_cases",
+     "[| ?i <= ?n; ?i < ?n ==> ?thesis; ?i = ?n ==> ?thesis |] ==> ?thesis",
+     template_implication
+      ([template_inequation (less_equals, template_var 2, template_var 1),
+        template_implication
+         ([template_inequation (less_than, template_var 2, template_var 1)],
+          template_predicate (template_var 0)),
+        template_implication
+         ([template_equation (template_var 2, template_var 1)],
+          template_predicate (template_var 0))],
+       template_predicate (template_var 0))),
+    ("Bellman_Ford.bf_memoized",
+     "(case ?x of (a, b) => bf ?n ?W ?t a b) =
+      fst (run_state (case ?x of (a, b) => bf\<^sub>m' ?n ?W ?t a b)
+            Mapping.empty)",
+     template_equation
+      (template_app
+        (template_app (template_hole 6, t_empty), template_var 0),
+       template_app
+        (template_hole 4,
+         template_app
+          (template_app
+            (template_hole 3,
+             template_app
+              (template_app (template_hole 2, t_empty), template_var 0)),
+           template_hole 0)))),
+    ("Bellman_Ford.bottom_up_alt",
+     "bf ?n ?W ?t ?i ?j =
+      fst (run_state
+            (iter_bf ?n ?W ?t (0, 0) >>= (%_. bf\<^sub>m' ?n ?W ?t ?i ?j))
+            Mapping.empty)",
+     template_equation
+      (template_app
+        (template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 8, template_var 4),
+               template_var 3),
+             template_var 2),
+           template_var 1),
+         template_var 0),
+       template_app
+        (template_hole 7,
+         template_app
+          (template_app
+            (template_hole 6,
+             template_app
+              (template_app
+                (template_hole 5,
+                 template_app
+                  (template_app
+                    (template_app
+                      (template_app (template_hole 4, template_var 4),
+                       template_var 3),
+                     template_var 2),
+                   template_app
+                    (template_app (template_hole 3, template_hole 2),
+                     template_hole 2))),
+               t_empty)),
+           template_hole 0)))),
+    ("Bellman_Ford.reaches_non_inf_path",
+     "[| reaches ?n ?W ?t ?i; ?i <= ?n; ?t <= ?n |]
+      ==> OPT ?n ?W ?t ?n ?i < \<infinity>",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 4, template_var 3),
+                  template_var 2),
+                template_var 1),
+              template_var 0)
+            ),
+        template_inequation (less_equals, template_var 0, template_var 3),
+        template_inequation (less_equals, template_var 1, template_var 3)],
+       template_inequation
+        (less_than,
+         template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 1, template_var 3),
+                 template_var 2),
+               template_var 1),
+             template_var 3),
+           template_var 0),
+         template_hole 0))),
+    ("Bellman_Ford.bf_bottom_up",
+     "(case ?x of (x, y) => bf ?n ?W ?t x y) =
+      fst (run_state
+            (iter_bf ?n ?W ?t ?y >>=
+             (%_. case ?x of (a, b) => bf\<^sub>m' ?n ?W ?t a b))
+            Mapping.empty)",
+     template_equation
+      (template_app
+        (template_app (template_hole 8, t_empty), template_var 1),
+       template_app
+        (template_hole 6,
+         template_app
+          (template_app
+            (template_hole 5,
+             template_app
+              (template_app
+                (template_hole 4,
+                 template_app
+                  (template_app
+                    (template_app
+                      (template_app (template_hole 3, template_var 4),
+                       template_var 3),
+                     template_var 2),
+                   template_var 0)),
+               t_empty)),
+           template_hole 0)))),
+    ("Bellman_Ford.bf_simps",
+     "bf ?n ?W ?t (Suc ?i) ?v =
+      fold min (map (%w. ?W ?v w + bf ?n ?W ?t ?i w) [0..<Suc ?n])
+       (bf ?n ?W ?t ?i ?v)",
+     template_equation
+      (template_app
+        (template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 7, template_var 4),
+               template_var 3),
+             template_var 2),
+           template_app (template_hole 6, template_var 1)),
+         template_var 0),
+       template_app
+        (template_app
+          (template_app (template_hole 5, template_hole 4),
+           template_app
+            (template_app (template_hole 3, t_empty),
+             template_app
+              (template_app (template_hole 1, template_hole 0),
+               template_app (template_hole 6, template_var 4)))),
+         template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 7, template_var 4),
+                 template_var 3),
+               template_var 2),
+             template_var 1),
+           template_var 0)))),
+    ("Bellman_Ford.has_negative_cycleI",
+     "[| set (?a # ?xs @ ?ys) <= {0..?n}; weight ?W (?a # ?xs @ [?a]) < 0;
+         is_path ?W ?t (?a # ?ys) |]
+      ==> has_negative_cycle ?n ?W ?t",
+     template_implication
+      ([template_inequation
+         (less_equals,
+          template_app
+           (template_hole 10,
+            template_app
+             (template_app (template_hole 9, template_var 5),
+              template_app
+               (template_app (template_hole 8, template_var 4),
+                template_var 3))),
+          template_app
+           (template_app (template_hole 7, template_hole 6),
+            template_var 2)),
+        template_inequation
+         (less_than,
+          template_app
+           (template_app (template_hole 4, template_var 1),
+            template_app
+             (template_app (template_hole 9, template_var 5),
+              template_app
+               (template_app (template_hole 8, template_var 4),
+                template_app
+                 (template_app (template_hole 9, template_var 5),
+                  template_hole 3)))),
+          template_hole 2),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 1, template_var 1),
+                template_var 0),
+              template_app
+               (template_app (template_hole 9, template_var 5),
+                template_var 3))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app (template_hole 0, template_var 2),
+               template_var 1),
+             template_var 0)
+           ))),
+    ("Bellman_Ford.OPT_not_minfI",
+     "[| ALL i<=?n. ALL j<=?n. -\<infinity> < ?W i j; ?t <= ?n; ?i <= ?n |]
+      ==> -\<infinity> < OPT ?n ?W ?t ?n ?i",
+     template_implication
+      ([template_predicate (template_app (template_hole 5, t_empty)),
+        template_inequation (less_equals, template_var 1, template_var 3),
+        template_inequation (less_equals, template_var 0, template_var 3)],
+       template_inequation
+        (less_than, template_hole 1,
+         template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 0, template_var 3),
+                 template_var 2),
+               template_var 1),
+             template_var 3),
+           template_var 0)))),
+    ("Bellman_Ford.OPT_Suc",
+     "?t <= ?n ==>
+      OPT ?n ?W ?t (Suc ?i) ?v =
+      min (OPT ?n ?W ?t ?i ?v)
+       (Min {OPT ?n ?W ?t ?i w + ?W ?v w |w. w <= ?n})",
+     template_implication
+      ([template_inequation (less_equals, template_var 4, template_var 3)],
+       template_equation
+        (template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 7, template_var 3),
+                 template_var 2),
+               template_var 4),
+             template_app (template_hole 6, template_var 1)),
+           template_var 0),
+         template_app
+          (template_app
+            (template_hole 5,
+             template_app
+              (template_app
+                (template_app
+                  (template_app
+                    (template_app (template_hole 7, template_var 3),
+                     template_var 2),
+                   template_var 4),
+                 template_var 1),
+               template_var 0)),
+           template_app
+            (template_hole 4, template_app (template_hole 3, t_empty)))))),
+    ("Bellman_Ford.list_pidgeonhole",
+     "[| set ?xs <= ?S; card ?S < length ?xs; finite ?S;
+         !!as a bs cs. ?xs = as @ a # bs @ a # cs ==> ?thesis |]
+      ==> ?thesis",
+     template_implication
+      ([template_inequation
+         (less_equals, template_app (template_hole 9, template_var 2),
+          template_var 1),
+        template_inequation
+         (less_than, template_app (template_hole 7, template_var 1),
+          template_app (template_hole 6, template_var 2)),
+        template_predicate (template_app (template_hole 5, template_var 1)),
+        template_predicate (template_app (template_hole 4, t_empty))],
+       template_predicate (template_var 0))),
+    ("Bellman_Ford.weight_not_minfI",
+     "[| ALL i<=?n. ALL j<=?n. -\<infinity> < ?W i j; ?t <= ?n;
+         set ?xs <= {0..?n}; ?xs ~= [] |]
+      ==> -\<infinity> < weight ?W ?xs",
+     template_implication
+      ([template_predicate (template_app (template_hole 12, t_empty)),
+        template_inequation (less_equals, template_var 1, template_var 3),
+        template_inequation
+         (less_equals, template_app (template_hole 6, template_var 0),
+          template_app
+           (template_app (template_hole 5, template_hole 4),
+            template_var 3)),
+        template_negation
+         (template_equation (template_var 0, template_hole 1))],
+       template_inequation
+        (less_than, template_hole 8,
+         template_app
+          (template_app (template_hole 0, template_var 2),
+           template_var 0)))),
+    ("Bellman_Ford.iter_bf_unfold",
+     "iter_bf ?n ?W ?t =
+      (%(i, j).
+          if i <= ?n & j <= ?n
+          then bf\<^sub>m' ?n ?W ?t i j >>=
+               (%_. iter_bf ?n ?W ?t
+                     (if j < ?n then (i, j + 1) else (i + 1, 0)))
+          else State_Monad.return ())",
+     template_equation
+      (template_app
+        (template_app
+          (template_app (template_hole 14, template_var 2), template_var 1),
+         template_var 0),
+       template_app (template_hole 13, t_empty))),
+    ("Bellman_Ford.iter_bf_heap_unfold",
+     "iter_bf_heap ?n ?w ?t ?mem =
+      (%(i, j).
+          if i <= ?n & j <= ?n
+          then bf\<^sub>h'_impl ?n ?w ?t ?mem i j >>=
+               (%_. iter_bf_heap ?n ?w ?t ?mem
+                     (if j < ?n then (i, j + 1) else (i + 1, 0)))
+          else return ())",
+     template_equation
+      (template_app
+        (template_app
+          (template_app
+            (template_app (template_hole 14, template_var 3),
+             template_var 2),
+           template_var 1),
+         template_var 0),
+       template_app (template_hole 13, t_empty))),
+    ("Bellman_Ford.OPT_mono",
+     "[| ALL i<=?n. ALL j<=?n. -\<infinity> < ?W i j; ?t <= ?n; ?v <= ?n;
+         ?n <= ?m |]
+      ==> OPT ?n ?W ?t ?m ?v <= OPT ?n ?W ?t ?n ?v",
+     template_implication
+      ([template_predicate (template_app (template_hole 6, t_empty)),
+        template_inequation (less_equals, template_var 2, template_var 4),
+        template_inequation (less_equals, template_var 1, template_var 4),
+        template_inequation (less_equals, template_var 4, template_var 0)],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 0, template_var 4),
+                 template_var 3),
+               template_var 2),
+             template_var 0),
+           template_var 1),
+         template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 0, template_var 4),
+                 template_var 3),
+               template_var 2),
+             template_var 4),
+           template_var 1)))),
+    ("Bellman_Ford.shorter_than_OPT_n_has_negative_cycle",
+     "[| ALL i<=?n. ALL j<=?n. -\<infinity> < ?W i j; ?t <= ?n;
+         shortest ?n ?W ?t ?v < OPT ?n ?W ?t ?n ?v; ?v <= ?n |]
+      ==> has_negative_cycle ?n ?W ?t",
+     template_implication
+      ([template_predicate (template_app (template_hole 7, t_empty)),
+        template_inequation (less_equals, template_var 1, template_var 3),
+        template_inequation
+         (less_than,
+          template_app
+           (template_app
+             (template_app
+               (template_app (template_hole 2, template_var 3),
+                template_var 2),
+              template_var 1),
+            template_var 0),
+          template_app
+           (template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 1, template_var 3),
+                  template_var 2),
+                template_var 1),
+              template_var 3),
+            template_var 0)),
+        template_inequation (less_equals, template_var 0, template_var 3)],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app (template_hole 0, template_var 3),
+               template_var 2),
+             template_var 1)
+           ))),
+    ("Bellman_Ford.bellman_ford_correct",
+     "[| ALL i<=?n. ALL j<=?n. -\<infinity> < ?W i j; ?t <= ?n |]
+      ==> fst (run_state (bellman_ford ?n ?W ?t) Mapping.empty) =
+          (if has_negative_cycle ?n ?W ?t then None
+           else Some (map (shortest ?n ?W ?t) [0..<?n + 1]))",
+     template_implication
+      ([template_predicate (template_app (template_hole 19, t_empty)),
+        template_inequation (less_equals, template_var 0, template_var 2)],
+       template_equation
+        (template_app
+          (template_hole 13,
+           template_app
+            (template_app
+              (template_hole 12,
+               template_app
+                (template_app
+                  (template_app (template_hole 11, template_var 2),
+                   template_var 1),
+                 template_var 0)),
+             template_hole 10)),
+         template_app
+          (template_app
+            (template_app
+              (template_hole 9,
+               template_app
+                (template_app
+                  (template_app (template_hole 8, template_var 2),
+                   template_var 1),
+                 template_var 0)),
+             template_hole 7),
+           template_app
+            (template_hole 6,
+             template_app
+              (template_app
+                (template_hole 5,
+                 template_app
+                  (template_app
+                    (template_app (template_hole 4, template_var 2),
+                     template_var 1),
+                   template_var 0)),
+               template_app
+                (template_app (template_hole 3, template_hole 2),
+                 template_app
+                  (template_app (template_hole 1, template_var 2),
+                   template_hole 0)))))))),
+    ("Bellman_Ford.bellman_ford_shortest_paths",
+     "[| ALL i<=?n. ALL j<=?n. -\<infinity> < ?W i j; ?t <= ?n;
+         ~ has_negative_cycle ?n ?W ?t |]
+      ==> ALL v<=?n. bf ?n ?W ?t ?n v = shortest ?n ?W ?t v",
+     template_implication
+      ([template_predicate (template_app (template_hole 9, t_empty)),
+        template_inequation (less_equals, template_var 0, template_var 2),
+        template_negation
+         (
+            template_predicate
+             (
+                template_app
+                 (template_app
+                   (template_app (template_hole 3, template_var 2),
+                    template_var 1),
+                  template_var 0)
+                )
+            )],
+       template_predicate (template_app (template_hole 9, t_empty)))),
+    ("Bellman_Ford.fold_sum_aux'",
+     "ALL u:set (?a # ?xs).
+         ALL v:set (?xs @ [?b]). ?f u <= ?f v + ?W u v ==>
+      sum_list (map ?f (?a # ?xs))
+      <= sum_list (map ?f (?xs @ [?b])) + weight ?W (?a # ?xs @ [?b])",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 9,
+                template_app
+                 (template_hole 8,
+                  template_app
+                   (template_app (template_hole 7, template_var 4),
+                    template_var 3))),
+              t_empty)
+            )],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_hole 2,
+           template_app
+            (template_app (template_hole 1, template_var 1),
+             template_app
+              (template_app (template_hole 7, template_var 4),
+               template_var 3))),
+         template_app
+          (template_app
+            (template_hole 3,
+             template_app
+              (template_hole 2,
+               template_app
+                (template_app (template_hole 1, template_var 1),
+                 template_app
+                  (template_app (template_hole 6, template_var 3),
+                   template_app
+                    (template_app (template_hole 7, template_var 2),
+                     template_hole 5))))),
+           template_app
+            (template_app (template_hole 0, template_var 0),
+             template_app
+              (template_app (template_hole 7, template_var 4),
+               template_app
+                (template_app (template_hole 6, template_var 3),
+                 template_app
+                  (template_app (template_hole 7, template_var 2),
+                   template_hole 5)))))))),
+    ("Bellman_Ford.bellman_ford_detects_cycle",
+     "[| ALL i<=?n. ALL j<=?n. -\<infinity> < ?W i j; ?t <= ?n |]
+      ==> has_negative_cycle ?n ?W ?t =
+          (EX v<=?n. OPT ?n ?W ?t (?n + 1) v < OPT ?n ?W ?t ?n v)",
+     template_implication
+      ([template_predicate (template_app (template_hole 11, t_empty)),
+        template_inequation (less_equals, template_var 0, template_var 2)],
+       template_equation
+        (template_app
+          (template_app
+            (template_app (template_hole 5, template_var 2),
+             template_var 1),
+           template_var 0),
+         template_app (template_hole 4, t_empty)))),
+    ("Bellman_Ford.detects_cycle_has_negative_cycle",
+     "[| ALL i<=?n. ALL j<=?n. -\<infinity> < ?W i j; ?t <= ?n;
+         OPT ?n ?W ?t (?n + 1) ?v < OPT ?n ?W ?t ?n ?v; ?v <= ?n |]
+      ==> has_negative_cycle ?n ?W ?t",
+     template_implication
+      ([template_predicate (template_app (template_hole 8, t_empty)),
+        template_inequation (less_equals, template_var 1, template_var 3),
+        template_inequation
+         (less_than,
+          template_app
+           (template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 3, template_var 3),
+                  template_var 2),
+                template_var 1),
+              template_app
+               (template_app (template_hole 2, template_var 3),
+                template_hole 1)),
+            template_var 0),
+          template_app
+           (template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 3, template_var 3),
+                  template_var 2),
+                template_var 1),
+              template_var 3),
+            template_var 0)),
+        template_inequation (less_equals, template_var 0, template_var 3)],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app (template_hole 0, template_var 3),
+               template_var 2),
+             template_var 1)
+           ))),
+    ("Bellman_Ford.detects_cycle",
+     "[| ALL i<=?n. ALL j<=?n. -\<infinity> < ?W i j; ?t <= ?n;
+         has_negative_cycle ?n ?W ?t |]
+      ==> EX i<=?n. OPT ?n ?W ?t (?n + 1) i < OPT ?n ?W ?t ?n i",
+     template_implication
+      ([template_predicate (template_app (template_hole 10, t_empty)),
+        template_inequation (less_equals, template_var 0, template_var 2),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 5, template_var 2),
+                template_var 1),
+              template_var 0)
+            )],
+       template_predicate (template_app (template_hole 4, t_empty)))),
+    ("Bellman_Ford.bf_detects_cycle",
+     "[| ALL i<=?n. ALL j<=?n. -\<infinity> < ?W i j; ?t <= ?n;
+         has_negative_cycle ?n ?W ?t |]
+      ==> EX i<=?n. bf ?n ?W ?t (?n + 1) i < bf ?n ?W ?t ?n i",
+     template_implication
+      ([template_predicate (template_app (template_hole 10, t_empty)),
+        template_inequation (less_equals, template_var 0, template_var 2),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 5, template_var 2),
+                template_var 1),
+              template_var 0)
+            )],
+       template_predicate (template_app (template_hole 4, t_empty)))),
+    ("Bellman_Ford.fold_sum_aux",
+     "ALL u:set (?a # ?xs). ALL v:set (?a # ?xs). ?f u <= ?f v + ?W u v ==>
+      sum_list (map ?f (?a # ?xs @ [?a]))
+      <= sum_list (map ?f (?a # ?xs @ [?a])) + weight ?W (?a # ?xs @ [?a])",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 9,
+                template_app
+                 (template_hole 8,
+                  template_app
+                   (template_app (template_hole 7, template_var 3),
+                    template_var 2))),
+              t_empty)
+            )],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_hole 4,
+           template_app
+            (template_app (template_hole 3, template_var 1),
+             template_app
+              (template_app (template_hole 7, template_var 3),
+               template_app
+                (template_app (template_hole 2, template_var 2),
+                 template_app
+                  (template_app (template_hole 7, template_var 3),
+                   template_hole 1))))),
+         template_app
+          (template_app
+            (template_hole 5,
+             template_app
+              (template_hole 4,
+               template_app
+                (template_app (template_hole 3, template_var 1),
+                 template_app
+                  (template_app (template_hole 7, template_var 3),
+                   template_app
+                    (template_app (template_hole 2, template_var 2),
+                     template_app
+                      (template_app (template_hole 7, template_var 3),
+                       template_hole 1)))))),
+           template_app
+            (template_app (template_hole 0, template_var 0),
+             template_app
+              (template_app (template_hole 7, template_var 3),
+               template_app
+                (template_app (template_hole 2, template_var 2),
+                 template_app
+                  (template_app (template_hole 7, template_var 3),
+                   template_hole 1)))))))),
+    ("Bellman_Ford.bf_fix",
+     "[| ALL i<=?n. ALL j<=?n. -\<infinity> < ?W i j; ?t <= ?n;
+         ~ has_negative_cycle ?n ?W ?t; ?n <= ?m |]
+      ==> ALL v<=?n. bf ?n ?W ?t ?m v = bf ?n ?W ?t ?n v",
+     template_implication
+      ([template_predicate (template_app (template_hole 8, t_empty)),
+        template_inequation (less_equals, template_var 1, template_var 3),
+        template_negation
+         (
+            template_predicate
+             (
+                template_app
+                 (template_app
+                   (template_app (template_hole 2, template_var 3),
+                    template_var 2),
+                  template_var 1)
+                )
+            ),
+        template_inequation (less_equals, template_var 3, template_var 0)],
+       template_predicate (template_app (template_hole 8, t_empty)))),
+    ("Bellman_Ford.is_path_shorten",
+     "[| is_path ?W ?t (?i # ?xs); ?i <= ?n; set ?xs <= {0..?n}; ?t <= ?n;
+         ?t ~= ?i;
+         !!xs. [| is_path ?W ?t (?i # xs); ?i <= ?n; set xs <= {0..?n};
+                  length xs < ?n |]
+               ==> ?thesis |]
+      ==> ?thesis",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 11, template_var 5),
+                template_var 4),
+              template_app
+               (template_app (template_hole 10, template_var 3),
+                template_var 2))
+            ),
+        template_inequation (less_equals, template_var 3, template_var 1),
+        template_inequation
+         (less_equals, template_app (template_hole 7, template_var 2),
+          template_app
+           (template_app (template_hole 6, template_hole 5),
+            template_var 1)),
+        template_inequation (less_equals, template_var 4, template_var 1),
+        template_negation
+         (template_equation (template_var 4, template_var 3)),
+        template_predicate (template_app (template_hole 2, t_empty))],
+       template_predicate (template_var 0))),
+    ("Bellman_Ford.bellman_ford_correct'",
+     "[| ALL i<=?n. ALL j<=?n. -\<infinity> < ?W i j; ?t <= ?n |]
+      ==> dp_consistency.crel_vs
+           (%k. State_Monad.get >>=
+                (%m. State_Monad.return (Mapping.lookup m k)))
+           (%_. True) (%(a, b). bf ?n ?W ?t a b) (=)
+           (if has_negative_cycle ?n ?W ?t then None
+            else Some (map (shortest ?n ?W ?t) [0..<?n + 1]))
+           (bellman_ford ?n ?W ?t)",
+     template_implication
+      ([template_predicate (template_app (template_hole 24, t_empty)),
+        template_inequation (less_equals, template_var 0, template_var 2)],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_app
+                    (template_app (template_hole 19, t_empty), t_empty),
+                   template_app (template_hole 13, t_empty)),
+                 template_hole 11),
+               template_app
+                (template_app
+                  (template_app
+                    (template_hole 10,
+                     template_app
+                      (template_app
+                        (template_app (template_hole 9, template_var 2),
+                         template_var 1),
+                       template_var 0)),
+                   template_hole 8),
+                 template_app
+                  (template_hole 7,
+                   template_app
+                    (template_app
+                      (template_hole 6,
+                       template_app
+                        (template_app
+                          (template_app (template_hole 5, template_var 2),
+                           template_var 1),
+                         template_var 0)),
+                     template_app
+                      (template_app (template_hole 4, template_hole 3),
+                       template_app
+                        (template_app (template_hole 2, template_var 2),
+                         template_hole 1)))))),
+             template_app
+              (template_app
+                (template_app (template_hole 0, template_var 2),
+                 template_var 1),
+               template_var 0))
+           ))),
+    ("Bellman_Ford.OPT_cases",
+     "[| !!xs. [| OPT ?n ?W ?t ?i ?v = weight ?W (?v # xs @ [?t]);
+                  length xs + 1 <= ?i; set xs <= {0..?n} |]
+               ==> ?thesis;
+         [| ?v = ?t; OPT ?n ?W ?t ?i ?v = 0 |] ==> ?thesis;
+         [| ?v ~= ?t; OPT ?n ?W ?t ?i ?v = \<infinity> |] ==> ?thesis |]
+      ==> ?thesis",
+     template_implication
+      ([template_predicate (template_app (template_hole 19, t_empty)),
+        template_implication
+         ([template_equation (template_var 1, template_var 3)],
+          template_implication
+           ([template_equation
+              (template_app
+                (template_app
+                  (template_app
+                    (template_app
+                      (template_app (template_hole 16, template_var 5),
+                       template_var 4),
+                     template_var 3),
+                   template_var 2),
+                 template_var 1),
+               template_hole 2)],
+            template_predicate (template_var 0))),
+        template_implication
+         ([template_negation
+            (template_equation (template_var 1, template_var 3))],
+          template_implication
+           ([template_equation
+              (template_app
+                (template_app
+                  (template_app
+                    (template_app
+                      (template_app (template_hole 16, template_var 5),
+                       template_var 4),
+                     template_var 3),
+                   template_var 2),
+                 template_var 1),
+               template_hole 0)],
+            template_predicate (template_var 0)))],
+       template_predicate (template_var 0))),
+    ("Bellman_Ford.OPT_cases2",
+     "[| !!xs. [| ?v ~= ?t; OPT ?n ?W ?t ?i ?v ~= \<infinity>;
+                  OPT ?n ?W ?t ?i ?v = weight ?W (?v # xs @ [?t]);
+                  length xs + 1 <= ?i; set xs <= {0..?n} |]
+               ==> ?thesis;
+         [| ?v ~= ?t; OPT ?n ?W ?t ?i ?v = \<infinity> |] ==> ?thesis;
+         [| ?v = ?t; OPT ?n ?W ?t ?i ?v <= 0 |] ==> ?thesis |]
+      ==> ?thesis",
+     template_implication
+      ([template_predicate (template_app (template_hole 20, t_empty)),
+        template_implication
+         ([template_negation
+            (template_equation (template_var 5, template_var 4))],
+          template_implication
+           ([template_equation
+              (template_app
+                (template_app
+                  (template_app
+                    (template_app
+                      (template_app (template_hole 15, template_var 3),
+                       template_var 2),
+                     template_var 4),
+                   template_var 1),
+                 template_var 5),
+               template_hole 14)],
+            template_predicate (template_var 0))),
+        template_implication
+         ([template_equation (template_var 5, template_var 4)],
+          template_implication
+           ([template_inequation
+              (less_equals,
+               template_app
+                (template_app
+                  (template_app
+                    (template_app
+                      (template_app (template_hole 15, template_var 3),
+                       template_var 2),
+                     template_var 4),
+                   template_var 1),
+                 template_var 5),
+               template_hole 0)],
+            template_predicate (template_var 0)))],
+       template_predicate (template_var 0))),
+    ("Bellman_Ford.memoized_empty",
+     "?mem = result_of (init_state (?n + 1) 1 0) Heap.empty ==>
+      (case ?x of (a, b) => bf ?n ?W ?t a b) =
+      result_of
+       (init_state (?n + 1) 1 0 >>=
+        (%mem. iterator_defs.iter_heap
+                (%a. case a of (x, y) => x <= ?n & y <= ?n)
+                (%a. case a of
+                     (x, y) => if y < ?n then (x, y + 1) else (x + 1, 0))
+                (%a. case a of (a, b) => bf\<^sub>h' ?n ?W ?t ?mem a b)
+                (?y mem) >>=
+               (%_. case ?x of (a, b) => bf\<^sub>h' ?n ?W ?t ?mem a b)))
+       Heap.empty",
+     template_implication
+      ([template_equation
+         (template_var 5,
+          template_app
+           (template_hole 25,
+            template_app
+             (template_hole 24,
+              template_app
+               (template_app
+                 (template_hole 23,
+                  template_app
+                   (template_app
+                     (template_app
+                       (template_hole 22,
+                        template_app
+                         (template_app (template_hole 21, template_var 4),
+                          template_hole 20)),
+                      template_hole 20),
+                    template_hole 19)),
+                template_hole 18))))],
+       template_equation
+        (template_app
+          (template_app (template_hole 16, t_empty), template_var 1),
+         template_app
+          (template_hole 14,
+           template_app
+            (template_hole 13,
+             template_app
+              (template_app
+                (template_hole 12,
+                 template_app
+                  (template_app
+                    (template_hole 11,
+                     template_app
+                      (template_app
+                        (template_app
+                          (template_hole 22,
+                           template_app
+                            (template_app
+                              (template_hole 21, template_var 4),
+                             template_hole 20)),
+                         template_hole 20),
+                       template_hole 19)),
+                   t_empty)),
+               template_hole 18)))))),
+    ("Bellman_Ford.simple_paths",
+     "[| ALL i<=?n. ALL j<=?n. -\<infinity> < ?W i j; ?t <= ?n;
+         ~ has_negative_cycle ?n ?W ?t;
+         weight ?W (?v # ?xs @ [?t]) < \<infinity>; set ?xs <= {0..?n};
+         ?v <= ?n;
+         !!ys. [| weight ?W (?v # ys @ [?t]) <= weight ?W (?v # ?xs @ [?t]);
+                  set ys <= {0..?n}; length ys < ?n |]
+               ==> ?thesis;
+         ?v = ?t ==> ?thesis |]
+      ==> ?thesis",
+     template_implication
+      ([template_predicate (template_app (template_hole 20, t_empty)),
+        template_inequation (less_equals, template_var 3, template_var 5),
+        template_negation
+         (
+            template_predicate
+             (
+                template_app
+                 (template_app
+                   (template_app (template_hole 14, template_var 5),
+                    template_var 4),
+                  template_var 3)
+                )
+            ),
+        template_inequation
+         (less_than,
+          template_app
+           (template_app (template_hole 13, template_var 4),
+            template_app
+             (template_app (template_hole 12, template_var 2),
+              template_app
+               (template_app (template_hole 11, template_var 1),
+                template_app
+                 (template_app (template_hole 12, template_var 3),
+                  template_hole 10)))),
+          template_hole 9),
+        template_inequation
+         (less_equals, template_app (template_hole 7, template_var 1),
+          template_app
+           (template_app (template_hole 6, template_hole 5),
+            template_var 5)),
+        template_inequation (less_equals, template_var 2, template_var 5),
+        template_predicate (template_app (template_hole 4, t_empty)),
+        template_implication
+         ([template_equation (template_var 2, template_var 3)],
+          template_predicate (template_var 0))],
+       template_predicate (template_var 0))),
+    ("Bellman_Ford.iter_heap_unfold",
+     "?mem = result_of (init_state (?n + 1) 1 0) Heap.empty ==>
+      iterator_defs.iter_heap (%(x, y). x <= ?n & y <= ?n)
+       (%(x, y). if y < ?n then (x, y + 1) else (x + 1, 0)) ?f ?x =
+      (if case ?x of (x, y) => x <= ?n & y <= ?n
+       then ?f ?x >>=
+            (%_. iterator_defs.iter_heap (%(x, y). x <= ?n & y <= ?n)
+                  (%(x, y). if y < ?n then (x, y + 1) else (x + 1, 0)) ?f
+                  (case ?x of
+                   (x, y) => if y < ?n then (x, y + 1) else (x + 1, 0)))
+       else return ())",
+     template_implication
+      ([template_equation
+         (template_var 3,
+          template_app
+           (template_hole 20,
+            template_app
+             (template_hole 19,
+              template_app
+               (template_app
+                 (template_hole 18,
+                  template_app
+                   (template_app
+                     (template_app
+                       (template_hole 17,
+                        template_app
+                         (template_app (template_hole 16, template_var 2),
+                          template_hole 15)),
+                      template_hole 15),
+                    template_hole 14)),
+                template_hole 13))))],
+       template_equation
+        (template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_hole 11,
+                 template_app (template_hole 10, t_empty)),
+               template_app (template_hole 7, t_empty)),
+             template_var 1),
+           template_var 0),
+         template_app
+          (template_app
+            (template_app
+              (template_hole 3,
+               template_app
+                (template_app (template_hole 10, t_empty), template_var 0)),
+             template_app
+              (template_app
+                (template_hole 2,
+                 template_app (template_var 1, template_var 0)),
+               t_empty)),
+           template_app (template_hole 1, template_hole 0))))),
+    ("Bellman_Ford.shortest_cases",
+     "[| ALL i<=?n. ALL j<=?n. -\<infinity> < ?W i j; ?t <= ?n; ?v <= ?n;
+         !!xs. [| shortest ?n ?W ?t ?v = weight ?W (?v # xs @ [?t]);
+                  set xs <= {0..?n} |]
+               ==> ?thesis;
+         [| ?v = ?t; shortest ?n ?W ?t ?v = 0 |] ==> ?thesis;
+         [| ?v ~= ?t; shortest ?n ?W ?t ?v = \<infinity> |] ==> ?thesis;
+         [| shortest ?n ?W ?t ?v = -\<infinity>;
+            ALL x.
+               EX xs.
+                  set xs <= {0..?n} & weight ?W (?v # xs @ [?t]) < Fin x |]
+         ==> ?thesis |]
+      ==> ?thesis",
+     template_implication
+      ([template_predicate (template_app (template_hole 23, t_empty)),
+        template_inequation (less_equals, template_var 2, template_var 4),
+        template_inequation (less_equals, template_var 1, template_var 4),
+        template_predicate (template_app (template_hole 18, t_empty)),
+        template_implication
+         ([template_equation (template_var 1, template_var 2)],
+          template_implication
+           ([template_equation
+              (template_app
+                (template_app
+                  (template_app
+                    (template_app (template_hole 16, template_var 4),
+                     template_var 3),
+                   template_var 2),
+                 template_var 1),
+               template_hole 6)],
+            template_predicate (template_var 0))),
+        template_implication
+         ([template_negation
+            (template_equation (template_var 1, template_var 2))],
+          template_implication
+           ([template_equation
+              (template_app
+                (template_app
+                  (template_app
+                    (template_app (template_hole 16, template_var 4),
+                     template_var 3),
+                   template_var 2),
+                 template_var 1),
+               template_hole 4)],
+            template_predicate (template_var 0))),
+        template_implication
+         ([template_equation
+            (template_app
+              (template_app
+                (template_app
+                  (template_app (template_hole 16, template_var 4),
+                   template_var 3),
+                 template_var 2),
+               template_var 1),
+             template_hole 19)],
+          template_implication
+           ([template_predicate (template_app (template_hole 3, t_empty))],
+            template_predicate (template_var 0)))],
+       template_predicate (template_var 0))),
+    ("Bellman_Ford.path_eq_cycleE",
+     "[| ?v # ?ys @ [?t] = ?as @ ?a # ?bs @ ?a # ?cs;
+         [| ?as = []; ?cs = []; ?v = ?a; ?a = ?t; ?ys = ?bs |] ==> ?thesis;
+         !!cs'.
+            [| ?as = []; ?v = ?a; ?ys = ?bs @ ?a # cs'; ?cs = cs' @ [?t] |]
+            ==> ?thesis;
+         !!as'.
+            [| ?as = ?v # as'; ?cs = []; ?a = ?t; ?ys = as' @ ?a # ?bs |]
+            ==> ?thesis;
+         !!as' cs'.
+            [| ?as = ?v # as'; ?cs = cs' @ [?t];
+               ?ys = as' @ ?a # ?bs @ ?a # cs' |]
+            ==> ?thesis |]
+      ==> ?thesis",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app (template_hole 4, template_var 7),
+            template_app
+             (template_app (template_hole 3, template_var 6),
+              template_app
+               (template_app (template_hole 4, template_var 5),
+                template_hole 2))),
+          template_app
+           (template_app (template_hole 3, template_var 4),
+            template_app
+             (template_app (template_hole 4, template_var 3),
+              template_app
+               (template_app (template_hole 3, template_var 2),
+                template_app
+                 (template_app (template_hole 4, template_var 3),
+                  template_var 1))))),
+        template_implication
+         ([template_equation (template_var 4, template_hole 2)],
+          template_implication
+           ([template_equation (template_var 1, template_hole 2)],
+            template_implication
+             ([template_equation (template_var 7, template_var 3)],
+              template_implication
+               ([template_equation (template_var 3, template_var 5)],
+                template_implication
+                 ([template_equation (template_var 6, template_var 2)],
+                  template_predicate (template_var 0)))))),
+        template_predicate (template_app (template_hole 0, t_empty)),
+        template_predicate (template_app (template_hole 0, t_empty)),
+        template_predicate (template_app (template_hole 0, t_empty))],
+       template_predicate (template_var 0)))]:
+   (string * thm * template) list
+### theory "Draft.Bellman_FordTemplates"
+### 0.584s elapsed time, 0.757s cpu time, 0.066s GC time
+val it = (): unit

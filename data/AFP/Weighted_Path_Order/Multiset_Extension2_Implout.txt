@@ -1,0 +1,574 @@
+Loading theory "Draft.List_Order" (required by "Draft.Multiset_Extension2_ImplTemplates" via "Draft.Multiset_Extension2_Impl")
+Loading theory "Draft.Relations" (required by "Draft.Multiset_Extension2_ImplTemplates" via "Draft.Multiset_Extension2_Impl" via "Draft.Multiset_Extension2" via "Draft.Multiset_Extension_Pair")
+Loading theory "Draft.Templates" (required by "Draft.Multiset_Extension2_ImplTemplates" via "Draft.ExtrEqs")
+locale list_order_extension
+  fixes
+    s_list :: "('a * 'a) set => ('a * 'a) set => ('a list * 'a list) set"
+    and
+    ns_list :: "('a * 'a) set => ('a * 'a) set => ('a list * 'a list) set"
+  assumes "list_order_extension s_list ns_list"
+locale list_order_extension_impl
+  fixes
+    s_list :: "('a * 'a) set => ('a * 'a) set => ('a list * 'a list) set"
+    and
+    ns_list :: "('a * 'a) set => ('a * 'a) set => ('a list * 'a list) set"
+    and
+    list_ext ::
+      "('a => 'a => bool * bool) => 'a list => 'a list => bool * bool"
+  assumes "list_order_extension_impl s_list ns_list list_ext"
+### theory "Draft.List_Order"
+### 0.088s elapsed time, 0.296s cpu time, 0.000s GC time
+datatype template_term
+=
+     t_empty
+   | template_app of template_term * template_term
+   | template_hole of int
+   | template_var of int
+datatype sign
+= equals | greater_equals | greater_than | less_equals | less_than
+datatype template
+=
+     template_bimplication of template * template
+   | template_dunno
+   | template_equation of template_term * template_term
+   | template_implication of template list * template
+   | template_inequation of sign * template_term * template_term
+   | template_negation of template
+   | template_predicate of template_term
+constructor t_empty: template_term
+constructor template_app: template_term * template_term -> template_term
+constructor template_hole: int -> template_term
+constructor template_var: int -> template_term
+constructor equals: sign
+constructor greater_equals: sign
+constructor greater_than: sign
+constructor less_equals: sign
+constructor less_than: sign
+constructor template_bimplication: template * template -> template
+constructor template_dunno: template
+constructor template_equation: template_term * template_term -> template
+constructor template_implication: template list * template -> template
+constructor template_inequation:
+   sign * template_term * template_term -> template
+constructor template_negation: template -> template
+constructor template_predicate: template_term -> template
+val vfs = fn: term -> (indexname * typ) list * (string * typ) list
+val indexOf = fn: ''a list -> ''a -> int -> int
+val has_eq = fn: term -> bool
+val term2template = fn:
+   (indexname * typ) list -> (string * typ) list -> term -> template_term
+val lemma2predicate = fn: term -> term -> template
+val makeTemplatewithContext = fn: term -> term -> template
+val lemma2template = fn: term -> template
+val thm2template = fn: thm -> template
+val tterm2string = fn: template_term -> string
+val template2string = fn: template -> string
+val t = "height ?t <= size ?t": thm
+val th =
+   Const ("HOL.Trueprop", "bool => prop") $
+     (Const ("Orderings.ord_class.less_eq", "nat => nat => bool") $
+       (Const ("Tree.height_class.height", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree")) $
+       (Const ("Nat.size_class.size", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree"))):
+   term
+### theory "Draft.Templates"
+### 0.089s elapsed time, 0.297s cpu time, 0.000s GC time
+Loading theory "Draft.ExtrEqs" (required by "Draft.Multiset_Extension2_ImplTemplates")
+### theory "Draft.Relations"
+### 0.333s elapsed time, 0.791s cpu time, 0.032s GC time
+Loading theory "Draft.Multiset_Extension_Pair" (required by "Draft.Multiset_Extension2_ImplTemplates" via "Draft.Multiset_Extension2_Impl" via "Draft.Multiset_Extension2")
+Proofs for inductive predicate(s) "multpwp"
+  Proving monotonicity ...
+val eqpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Var (("_dummy_", 2), "?'a"))
+       ):
+   term Find_Theorems.criterion
+val badeqpattern = Pattern (Const ("Pure.eq", "?'a => ?'a => prop")):
+   term Find_Theorems.criterion
+val undefpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Const ("HOL.undefined", "?'a"))
+       ):
+   term Find_Theorems.criterion
+val thmpattern =
+   Pattern
+    (Const ("HOL.Trueprop", "bool => prop") $ Var (("_dummy_", 1), "bool")):
+   term Find_Theorems.criterion
+val badnames =
+   ["*nitpick*", "*Nitpick*", "*full_exhaustive*", "*_def*", "Enum.finite*",
+    "*Quickcheck*", "ATP*", "*Nunchaku*", "*Code*", "*BNF*", "*SMT*",
+    "*.*.*"]:
+   string list
+val unwanted_names =
+   [(false, Name "*nitpick*"), (false, Name "*Nitpick*"),
+    (false, Name "*full_exhaustive*"), (false, Name "*_def*"),
+    (false, Name "Enum.finite*"), (false, Name "*Quickcheck*"),
+    (false, Name "ATP*"), (false, Name "*Nunchaku*"),
+    (false, Name "*Code*"), (false, Name "*BNF*"), (false, Name "*SMT*"),
+    (false, Name "*.*.*")]:
+   (bool * term Find_Theorems.criterion) list
+val has_vars = fn: term -> bool
+val get_all_eqs = fn: string -> Proof.context -> (string * thm) list
+val get_all_thms = fn: string -> Proof.context -> (string * thm) list
+val get_noneq_thms = fn: string -> Proof.context -> (string * thm) list
+val template_eqs = fn:
+   string -> Proof.context -> (string * thm * template) list
+val template_thms = fn:
+   string -> Proof.context -> (string * thm * template) list
+### theory "Draft.ExtrEqs"
+### 0.533s elapsed time, 1.107s cpu time, 0.115s GC time
+[| (?X, ?Y) : mult2_alt_ns ?ns ?s;
+   !!X1 X2 Y1 Y2.
+      [| ?X = X1 + X2; ?Y = Y1 + Y2; (X1, Y1) : multpw ?ns;
+         ALL x. x :# X2 --> (EX y. y :# Y2 & (x, y) : ?s) |]
+      ==> ?thesis |]
+==> ?thesis
+### theory "Draft.Multiset_Extension_Pair"
+### 0.425s elapsed time, 0.796s cpu time, 0.161s GC time
+Loading theory "Draft.Multiset_Extension2" (required by "Draft.Multiset_Extension2_ImplTemplates" via "Draft.Multiset_Extension2_Impl")
+Loading theory "Draft.Multiset_Extension_Pair_Impl" (required by "Draft.Multiset_Extension2_ImplTemplates" via "Draft.Multiset_Extension2_Impl")
+### theory "Draft.Multiset_Extension2"
+### 0.477s elapsed time, 1.023s cpu time, 0.124s GC time
+Found termination order:
+  "case_sum (%p. length (fst p)) (%p. length (fst (snd p))) <*mlex*>
+   case_sum (%p. size (snd p)) (%p. length (fst (snd (snd p)))) <*mlex*>
+   case_sum (%x. 0) (%x. Suc 0) <*mlex*> {}"
+Found termination order:
+  "case_sum (%p. length (fst p)) (%p. length (fst (snd p))) <*mlex*>
+   case_sum size (%p. length (fst (snd (snd p)))) <*mlex*>
+   case_sum (%x. 0) (%x. Suc 0) <*mlex*> {}"
+### theory "Draft.Multiset_Extension_Pair_Impl"
+### 1.501s elapsed time, 2.355s cpu time, 0.541s GC time
+Loading theory "Draft.Multiset_Extension2_Impl" (required by "Draft.Multiset_Extension2_ImplTemplates")
+Found termination order:
+  "case_sum (%p. length (snd p)) (%p. length (snd (snd (snd p)))) <*mlex*>
+   case_sum size (%p. length (fst p)) <*mlex*>
+   case_sum (%x. 0) (%x. Suc 0) <*mlex*> {}"
+Found termination order: "size_list (%p. size (snd p)) <*mlex*> {}"
+### theory "Draft.Multiset_Extension2_Impl"
+### 1.000s elapsed time, 1.060s cpu time, 0.076s GC time
+Loading theory "Draft.Multiset_Extension2_ImplTemplates"
+val templateLemmas =
+   [("Multiset_Extension2_Impl.Bag_mset",
+     "Bag ?xs = mset (ass_list_to_single_list (alist.impl_of ?xs))",
+     template_equation
+      (template_app (template_hole 3, template_var 0),
+       template_app
+        (template_hole 2,
+         template_app
+          (template_hole 1,
+           template_app (template_hole 0, template_var 0))))),
+    ("Multiset_Extension2_Impl.count_mset_replicate",
+     "count (mset (replicate ?n ?x)) ?x = ?n",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 2,
+           template_app
+            (template_hole 1,
+             template_app
+              (template_app (template_hole 0, template_var 1),
+               template_var 0))),
+         template_var 0),
+       template_var 1)),
+    ("Multiset_Extension2_Impl.mul_ext_impl_sound",
+     "mul_ext_impl ?f ?xs ?ys = mul_ext ?f ?xs ?ys",
+     template_equation
+      (template_app
+        (template_app
+          (template_app (template_hole 1, template_var 2), template_var 1),
+         template_var 0),
+       template_app
+        (template_app
+          (template_app (template_hole 0, template_var 2), template_var 1),
+         template_var 0))),
+    ("Multiset_Extension2_Impl.mul_ext_impl_sound0",
+     "mul_ext_impl ?sns ?xs ?ys = mult2_impl (%x y. ?sns y x) ?ys ?xs",
+     template_equation
+      (template_app
+        (template_app
+          (template_app (template_hole 1, template_var 2), template_var 1),
+         template_var 0),
+       template_app
+        (template_app
+          (template_app (template_hole 0, t_empty), template_var 0),
+         template_var 1))),
+    ("Multiset_Extension2_Impl.mset_lal",
+     "distinct (map fst ?xs) ==>
+      mset (ass_list_to_single_list ?xs) = Bag (Alist ?xs)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_hole 7,
+              template_app
+               (template_app (template_hole 6, template_hole 5),
+                template_var 0))
+            )],
+       template_equation
+        (template_app
+          (template_hole 3, template_app (template_hole 2, template_var 0)),
+         template_app
+          (template_hole 1,
+           template_app (template_hole 0, template_var 0))))),
+    ("Multiset_Extension2_Impl.cond1_cond2",
+     "??.Multiset_Extension2_Impl.cond1 ?f ?bs ?y ?xs ?ys ==>
+      ??.Multiset_Extension2_Impl.cond2 ?f ?bs ?y ?xs ?ys",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app (template_hole 1, template_var 4),
+                    template_var 3),
+                  template_var 2),
+                template_var 1),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_app (template_hole 0, template_var 4),
+                   template_var 3),
+                 template_var 2),
+               template_var 1),
+             template_var 0)
+           ))),
+    ("Multiset_Extension2_Impl.mulextp_code",
+     "mulextp ?f (Bag ?xs) (Bag ?ys) =
+      mul_ext ?f (ass_list_to_single_list (alist.impl_of ?xs))
+       (ass_list_to_single_list (alist.impl_of ?ys))",
+     template_equation
+      (template_app
+        (template_app
+          (template_app (template_hole 4, template_var 2),
+           template_app (template_hole 3, template_var 1)),
+         template_app (template_hole 3, template_var 0)),
+       template_app
+        (template_app
+          (template_app (template_hole 2, template_var 2),
+           template_app
+            (template_hole 1,
+             template_app (template_hole 0, template_var 1))),
+         template_app
+          (template_hole 1,
+           template_app (template_hole 0, template_var 0))))),
+    ("Multiset_Extension2_Impl.count_of_count_mset_lal",
+     "distinct (map fst ?y) ==>
+      count_of ?y ?x = count (mset (ass_list_to_single_list ?y)) ?x",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_hole 7,
+              template_app
+               (template_app (template_hole 6, template_hole 5),
+                template_var 1))
+            )],
+       template_equation
+        (template_app
+          (template_app (template_hole 3, template_var 1), template_var 0),
+         template_app
+          (template_app
+            (template_hole 2,
+             template_app
+              (template_hole 1,
+               template_app (template_hole 0, template_var 1))),
+           template_var 0)))),
+    ("Multiset_Extension2_Impl.count_mset_lal_ge",
+     "(?x, ?n) : set ?xs ==>
+      ?n <= count (mset (ass_list_to_single_list ?xs)) ?x",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 6,
+                template_app
+                 (template_app (template_hole 5, template_var 2),
+                  template_var 1)),
+              template_app (template_hole 4, template_var 0))
+            )],
+       template_inequation
+        (less_equals, template_var 1,
+         template_app
+          (template_app
+            (template_hole 2,
+             template_app
+              (template_hole 1,
+               template_app (template_hole 0, template_var 0))),
+           template_var 2)))),
+    ("Multiset_Extension2_Impl.nsmulextp_code",
+     "nsmulextp ?f (Bag ?xs) (Bag ?ys) =
+      snd (mul_ext ?f (ass_list_to_single_list (alist.impl_of ?xs))
+            (ass_list_to_single_list (alist.impl_of ?ys)))",
+     template_equation
+      (template_app
+        (template_app
+          (template_app (template_hole 5, template_var 2),
+           template_app (template_hole 4, template_var 1)),
+         template_app (template_hole 4, template_var 0)),
+       template_app
+        (template_hole 3,
+         template_app
+          (template_app
+            (template_app (template_hole 2, template_var 2),
+             template_app
+              (template_hole 1,
+               template_app (template_hole 0, template_var 1))),
+           template_app
+            (template_hole 1,
+             template_app (template_hole 0, template_var 0)))))),
+    ("Multiset_Extension2_Impl.smulextp_code",
+     "smulextp ?f (Bag ?xs) (Bag ?ys) =
+      fst (mul_ext ?f (ass_list_to_single_list (alist.impl_of ?xs))
+            (ass_list_to_single_list (alist.impl_of ?ys)))",
+     template_equation
+      (template_app
+        (template_app
+          (template_app (template_hole 5, template_var 2),
+           template_app (template_hole 4, template_var 1)),
+         template_app (template_hole 4, template_var 0)),
+       template_app
+        (template_hole 3,
+         template_app
+          (template_app
+            (template_app (template_hole 2, template_var 2),
+             template_app
+              (template_hole 1,
+               template_app (template_hole 0, template_var 1))),
+           template_app
+            (template_hole 1,
+             template_app (template_hole 0, template_var 0)))))),
+    ("Multiset_Extension2_Impl.cond1_propagate",
+     "??.Multiset_Extension2_Impl.cond1 ?f ?bs ?y ?xs ?ys ==>
+      ??.Multiset_Extension2_Impl.cond1 ?f (?b # ?bs) ?y ?xs ?ys",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app (template_hole 1, template_var 5),
+                    template_var 4),
+                  template_var 3),
+                template_var 2),
+              template_var 1)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_app (template_hole 1, template_var 5),
+                   template_app
+                    (template_app (template_hole 0, template_var 0),
+                     template_var 4)),
+                 template_var 3),
+               template_var 2),
+             template_var 1)
+           ))),
+    ("Multiset_Extension2_Impl.cond2_propagate",
+     "??.Multiset_Extension2_Impl.cond2 ?f ?bs ?y ?xs ?ys ==>
+      ??.Multiset_Extension2_Impl.cond2 ?f (?b # ?bs) ?y ?xs ?ys",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app (template_hole 1, template_var 5),
+                    template_var 4),
+                  template_var 3),
+                template_var 2),
+              template_var 1)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_app (template_hole 1, template_var 5),
+                   template_app
+                    (template_app (template_hole 0, template_var 0),
+                     template_var 4)),
+                 template_var 3),
+               template_var 2),
+             template_var 1)
+           ))),
+    ("Multiset_Extension2_Impl.mul_ext_impl_sound0",
+     "mul_ex_dom ?sns ?xs ?xs' ?y ?ys =
+      mult2_ex_dom (%x y. ?sns y x) ?y ?ys ?xs ?xs'",
+     template_equation
+      (template_app
+        (template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 1, template_var 4),
+               template_var 3),
+             template_var 2),
+           template_var 1),
+         template_var 0),
+       template_app
+        (template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 0, t_empty), template_var 1),
+             template_var 0),
+           template_var 3),
+         template_var 2))),
+    ("Multiset_Extension2_Impl.set_ass_list_to_single_list",
+     "set (ass_list_to_single_list ?xs) =
+      {x. EX n. (x, n) : set ?xs & 0 < n}",
+     template_equation
+      (template_app
+        (template_hole 9, template_app (template_hole 8, template_var 0)),
+       template_app (template_hole 7, t_empty))),
+    ("Multiset_Extension2_Impl.Bag_Alist_Cons",
+     "[| ?x ~: fst ` set ?xs; distinct (map fst ?xs) |]
+      ==> Bag (Alist ((?x, ?n) # ?xs)) =
+          mset (replicate ?n ?x) + Bag (Alist ?xs)",
+     template_implication
+      ([template_negation
+         (
+            template_predicate
+             (
+                template_app
+                 (template_app (template_hole 13, template_var 2),
+                  template_app
+                   (template_app (template_hole 12, template_hole 11),
+                    template_app (template_hole 10, template_var 1)))
+                )
+            ),
+        template_predicate
+         (
+            template_app
+             (template_hole 9,
+              template_app
+               (template_app (template_hole 8, template_hole 11),
+                template_var 1))
+            )],
+       template_equation
+        (template_app
+          (template_hole 6,
+           template_app
+            (template_hole 5,
+             template_app
+              (template_app
+                (template_hole 4,
+                 template_app
+                  (template_app (template_hole 3, template_var 2),
+                   template_var 0)),
+               template_var 1))),
+         template_app
+          (template_app
+            (template_hole 2,
+             template_app
+              (template_hole 1,
+               template_app
+                (template_app (template_hole 0, template_var 0),
+                 template_var 2))),
+           template_app
+            (template_hole 6,
+             template_app (template_hole 5, template_var 1)))))),
+    ("Multiset_Extension2_Impl.Bag_ns_mul_ext",
+     "((Bag ?xs, Bag ?ys)
+       : ns_mul_ext {(x, y). snd (?f x y)} {(x, y). fst (?f x y)}) =
+      snd (mul_ext ?f (ass_list_to_single_list (alist.impl_of ?xs))
+            (ass_list_to_single_list (alist.impl_of ?ys)))",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 10,
+           template_app
+            (template_app
+              (template_hole 9,
+               template_app (template_hole 8, template_var 2)),
+             template_app (template_hole 8, template_var 1))),
+         template_app
+          (template_app
+            (template_hole 7,
+             template_app
+              (template_hole 6, template_app (template_hole 5, t_empty))),
+           template_app
+            (template_hole 6, template_app (template_hole 5, t_empty)))),
+       template_app
+        (template_hole 4,
+         template_app
+          (template_app
+            (template_app (template_hole 2, template_var 0),
+             template_app
+              (template_hole 1,
+               template_app (template_hole 0, template_var 2))),
+           template_app
+            (template_hole 1,
+             template_app (template_hole 0, template_var 1)))))),
+    ("Multiset_Extension2_Impl.Bag_s_mul_ext",
+     "((Bag ?xs, Bag ?ys)
+       : s_mul_ext {(x, y). snd (?f x y)} {(x, y). fst (?f x y)}) =
+      fst (mul_ext ?f (ass_list_to_single_list (alist.impl_of ?xs))
+            (ass_list_to_single_list (alist.impl_of ?ys)))",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 10,
+           template_app
+            (template_app
+              (template_hole 9,
+               template_app (template_hole 8, template_var 2)),
+             template_app (template_hole 8, template_var 1))),
+         template_app
+          (template_app
+            (template_hole 7,
+             template_app
+              (template_hole 6, template_app (template_hole 5, t_empty))),
+           template_app
+            (template_hole 6, template_app (template_hole 5, t_empty)))),
+       template_app
+        (template_hole 3,
+         template_app
+          (template_app
+            (template_app (template_hole 2, template_var 0),
+             template_app
+              (template_hole 1,
+               template_app (template_hole 0, template_var 2))),
+           template_app
+            (template_hole 1,
+             template_app (template_hole 0, template_var 1)))))),
+    ("Multiset_Extension2_Impl.mul_ext_impl_cong",
+     "(!!x x'. [| x : set ?xs; x' : set ?ys |] ==> ?f x x' = ?g x x') ==>
+      mul_ext_impl ?f ?xs ?ys = mul_ext_impl ?g ?xs ?ys",
+     template_implication
+      ([template_predicate (template_app (template_hole 5, t_empty))],
+       template_equation
+        (template_app
+          (template_app
+            (template_app (template_hole 0, template_var 1),
+             template_var 3),
+           template_var 2),
+         template_app
+          (template_app
+            (template_app (template_hole 0, template_var 0),
+             template_var 3),
+           template_var 2))))]:
+   (string * thm * template) list
+### theory "Draft.Multiset_Extension2_ImplTemplates"
+### 0.417s elapsed time, 0.567s cpu time, 0.048s GC time
+val it = (): unit

@@ -1,0 +1,2943 @@
+Loading theory "Draft.Basics" (required by "Draft.Deutsch_JozsaTemplates" via "Draft.Deutsch_Jozsa" via "Draft.Deutsch" via "Draft.More_Tensor" via "Draft.Quantum")
+Loading theory "Draft.Templates" (required by "Draft.Deutsch_JozsaTemplates" via "Draft.ExtrEqs")
+datatype template_term
+=
+     t_empty
+   | template_app of template_term * template_term
+   | template_hole of int
+   | template_var of int
+datatype sign
+= equals | greater_equals | greater_than | less_equals | less_than
+datatype template
+=
+     template_bimplication of template * template
+   | template_dunno
+   | template_equation of template_term * template_term
+   | template_implication of template list * template
+   | template_inequation of sign * template_term * template_term
+   | template_negation of template
+   | template_predicate of template_term
+constructor t_empty: template_term
+constructor template_app: template_term * template_term -> template_term
+constructor template_hole: int -> template_term
+constructor template_var: int -> template_term
+constructor equals: sign
+constructor greater_equals: sign
+constructor greater_than: sign
+constructor less_equals: sign
+constructor less_than: sign
+constructor template_bimplication: template * template -> template
+constructor template_dunno: template
+constructor template_equation: template_term * template_term -> template
+constructor template_implication: template list * template -> template
+constructor template_inequation:
+   sign * template_term * template_term -> template
+constructor template_negation: template -> template
+constructor template_predicate: template_term -> template
+val vfs = fn: term -> (indexname * typ) list * (string * typ) list
+val indexOf = fn: ''a list -> ''a -> int -> int
+val has_eq = fn: term -> bool
+val term2template = fn:
+   (indexname * typ) list -> (string * typ) list -> term -> template_term
+val lemma2predicate = fn: term -> term -> template
+val makeTemplatewithContext = fn: term -> term -> template
+val lemma2template = fn: term -> template
+val thm2template = fn: thm -> template
+val tterm2string = fn: template_term -> string
+val template2string = fn: template -> string
+val t = "height ?t <= size ?t": thm
+val th =
+   Const ("HOL.Trueprop", "bool => prop") $
+     (Const ("Orderings.ord_class.less_eq", "nat => nat => bool") $
+       (Const ("Tree.height_class.height", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree")) $
+       (Const ("Nat.size_class.size", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree"))):
+   term
+### theory "Draft.Templates"
+### 0.064s elapsed time, 0.174s cpu time, 0.000s GC time
+Loading theory "Draft.ExtrEqs" (required by "Draft.Deutsch_JozsaTemplates")
+### theory "Draft.Basics"
+### 0.168s elapsed time, 0.381s cpu time, 0.042s GC time
+Loading theory "Draft.Binary_Nat" (required by "Draft.Deutsch_JozsaTemplates" via "Draft.Deutsch_Jozsa" via "Draft.Deutsch" via "Draft.More_Tensor" via "Draft.Quantum")
+consts
+  bin_rep_aux :: "nat => nat => nat list"
+### theory "Draft.Binary_Nat"
+### 0.087s elapsed time, 0.175s cpu time, 0.000s GC time
+Loading theory "Draft.Quantum" (required by "Draft.Deutsch_JozsaTemplates" via "Draft.Deutsch_Jozsa" via "Draft.Deutsch" via "Draft.More_Tensor")
+val eqpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Var (("_dummy_", 2), "?'a"))
+       ):
+   term Find_Theorems.criterion
+val badeqpattern = Pattern (Const ("Pure.eq", "?'a => ?'a => prop")):
+   term Find_Theorems.criterion
+val undefpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Const ("HOL.undefined", "?'a"))
+       ):
+   term Find_Theorems.criterion
+val thmpattern =
+   Pattern
+    (Const ("HOL.Trueprop", "bool => prop") $ Var (("_dummy_", 1), "bool")):
+   term Find_Theorems.criterion
+val badnames =
+   ["*nitpick*", "*Nitpick*", "*full_exhaustive*", "*_def*", "Enum.finite*",
+    "*Quickcheck*", "ATP*", "*Nunchaku*", "*Code*", "*BNF*", "*SMT*",
+    "*.*.*"]:
+   string list
+val unwanted_names =
+   [(false, Name "*nitpick*"), (false, Name "*Nitpick*"),
+    (false, Name "*full_exhaustive*"), (false, Name "*_def*"),
+    (false, Name "Enum.finite*"), (false, Name "*Quickcheck*"),
+    (false, Name "ATP*"), (false, Name "*Nunchaku*"),
+    (false, Name "*Code*"), (false, Name "*BNF*"), (false, Name "*SMT*"),
+    (false, Name "*.*.*")]:
+   (bool * term Find_Theorems.criterion) list
+val has_vars = fn: term -> bool
+val get_all_eqs = fn: string -> Proof.context -> (string * thm) list
+val get_all_thms = fn: string -> Proof.context -> (string * thm) list
+val get_noneq_thms = fn: string -> Proof.context -> (string * thm) list
+val template_eqs = fn:
+   string -> Proof.context -> (string * thm * template) list
+val template_thms = fn:
+   string -> Proof.context -> (string * thm * template) list
+### theory "Draft.ExtrEqs"
+### 0.586s elapsed time, 1.194s cpu time, 0.150s GC time
+locale state
+  fixes n :: "nat"
+    and v :: "complex mat"
+  assumes "state n v"
+locale gate
+  fixes n :: "nat"
+    and A :: "complex mat"
+  assumes "gate n A"
+### Ambiguous input (line 282 of "$AFP/Isabelle_Marries_Dirac/Quantum.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("\<^const>Matrix.transpose_mat"
+###       ("\<^const>Groups.times_class.times" ("_position" M) ("_position" N)))
+###     ("\<^const>Groups.times_class.times"
+###       ("\<^const>Matrix.transpose_mat" ("_position" N))
+###       ("\<^const>Matrix.transpose_mat" ("_position" M)))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>Groups.times_class.times"
+###     ("\<^const>Matrix.transpose_mat"
+###       ("\<^const>HOL.eq"
+###         ("\<^const>Matrix.transpose_mat"
+###           ("\<^const>Groups.times_class.times" ("_position" M)
+###             ("_position" N)))
+###         ("_position" N)))
+###     ("\<^const>Matrix.transpose_mat" ("_position" M))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ambiguous input (line 338 of "$AFP/Isabelle_Marries_Dirac/Quantum.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("\<^const>Quantum.dagger"
+###       ("\<^const>Groups.times_class.times" ("_position" M) ("_position" N)))
+###     ("\<^const>Groups.times_class.times"
+###       ("\<^const>Quantum.dagger" ("_position" N))
+###       ("\<^const>Quantum.dagger" ("_position" M)))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>Groups.times_class.times"
+###     ("\<^const>Quantum.dagger"
+###       ("\<^const>HOL.eq"
+###         ("\<^const>Quantum.dagger"
+###           ("\<^const>Groups.times_class.times" ("_position" M)
+###             ("_position" N)))
+###         ("_position" N)))
+###     ("\<^const>Quantum.dagger" ("_position" M))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ambiguous input (line 1313 of "$AFP/Isabelle_Marries_Dirac/Quantum.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>Quantum.bip"
+###     ("\<^const>HOL.eq"
+###       ("\<^const>Quantum.bip" ("_position" i)
+###         ("_applC" ("_position" Suc) ("_position" n)) ("_position" j))
+###       ("\<^const>Rings.modulo_class.modulo" ("_position" i)
+###         ("\<^const>Power.power_class.power"
+###           ("_Numeral" ("_constify" ("_position" 2))) ("_position" n))))
+###     ("_position" n)
+###     ("\<^const>Rings.modulo_class.modulo" ("_position" j)
+###       ("\<^const>Power.power_class.power"
+###         ("_Numeral" ("_constify" ("_position" 2))) ("_position" n)))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("\<^const>Quantum.bip" ("_position" i)
+###       ("_applC" ("_position" Suc) ("_position" n)) ("_position" j))
+###     ("\<^const>Quantum.bip"
+###       ("\<^const>Rings.modulo_class.modulo" ("_position" i)
+###         ("\<^const>Power.power_class.power"
+###           ("_Numeral" ("_constify" ("_position" 2))) ("_position" n)))
+###       ("_position" n)
+###       ("\<^const>Rings.modulo_class.modulo" ("_position" j)
+###         ("\<^const>Power.power_class.power"
+###           ("_Numeral" ("_constify" ("_position" 2))) ("_position" n))))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### theory "Draft.Quantum"
+### 1.129s elapsed time, 1.591s cpu time, 0.208s GC time
+Loading theory "Draft.Measurement" (required by "Draft.Deutsch_JozsaTemplates" via "Draft.Deutsch_Jozsa" via "Draft.Deutsch")
+Loading theory "Draft.Complex_Vectors" (required by "Draft.Deutsch_JozsaTemplates" via "Draft.Deutsch_Jozsa" via "Draft.Deutsch" via "Draft.More_Tensor" via "Draft.Tensor")
+consts
+  iter_post_meas0 :: "nat => nat => complex mat => complex mat"
+### theory "Draft.Measurement"
+### 0.297s elapsed time, 0.612s cpu time, 0.103s GC time
+### theory "Draft.Complex_Vectors"
+### 0.478s elapsed time, 0.885s cpu time, 0.227s GC time
+Loading theory "Draft.Tensor" (required by "Draft.Deutsch_JozsaTemplates" via "Draft.Deutsch_Jozsa" via "Draft.Deutsch" via "Draft.More_Tensor")
+### theory "Draft.Tensor"
+### 0.653s elapsed time, 1.065s cpu time, 0.603s GC time
+Loading theory "Draft.More_Tensor" (required by "Draft.Deutsch_JozsaTemplates" via "Draft.Deutsch_Jozsa" via "Draft.Deutsch")
+### Ambiguous input (line 43 of "$AFP/Isabelle_Marries_Dirac/More_Tensor.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("\<^const>Group.monoid.mult_indexed" ("_position" v) ("_indexdefault")
+###       ("_position" w))
+###     ("_applC" ("_position" vec_of_list)
+###       ("_list"
+###         ("_args"
+###           ("\<^const>Groups.times_class.times"
+###             ("\<^const>Matrix.vec_index" ("_position" v)
+###               ("\<^const>Groups.zero_class.zero"))
+###             ("\<^const>Matrix.vec_index" ("_position" w)
+###               ("\<^const>Groups.zero_class.zero")))
+###           ("_args"
+###             ("\<^const>Groups.times_class.times"
+###               ("\<^const>Matrix.vec_index" ("_position" v)
+###                 ("\<^const>Groups.zero_class.zero"))
+###               ("\<^const>Matrix.vec_index" ("_position" w)
+###                 ("\<^const>Groups.one_class.one")))
+###             ("_args"
+###               ("\<^const>Groups.times_class.times"
+###                 ("\<^const>Matrix.vec_index" ("_position" v)
+###                   ("\<^const>Groups.one_class.one"))
+###                 ("\<^const>Matrix.vec_index" ("_position" w)
+###                   ("\<^const>Groups.zero_class.zero")))
+###               ("\<^const>Groups.times_class.times"
+###                 ("\<^const>Matrix.vec_index" ("_position" v)
+###                   ("\<^const>Groups.one_class.one"))
+###                 ("\<^const>Matrix.vec_index" ("_position" w)
+###                   ("\<^const>Groups.one_class.one"))))))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("\<^const>Tensor.tensor_vec" ("_position" v) ("_position" w))
+###     ("_applC" ("_position" vec_of_list)
+###       ("_list"
+###         ("_args"
+###           ("\<^const>Groups.times_class.times"
+###             ("\<^const>Matrix.vec_index" ("_position" v)
+###               ("\<^const>Groups.zero_class.zero"))
+###             ("\<^const>Matrix.vec_index" ("_position" w)
+###               ("\<^const>Groups.zero_class.zero")))
+###           ("_args"
+###             ("\<^const>Groups.times_class.times"
+###               ("\<^const>Matrix.vec_index" ("_position" v)
+###                 ("\<^const>Groups.zero_class.zero"))
+###               ("\<^const>Matrix.vec_index" ("_position" w)
+###                 ("\<^const>Groups.one_class.one")))
+###             ("_args"
+###               ("\<^const>Groups.times_class.times"
+###                 ("\<^const>Matrix.vec_index" ("_position" v)
+###                   ("\<^const>Groups.one_class.one"))
+###                 ("\<^const>Matrix.vec_index" ("_position" w)
+###                   ("\<^const>Groups.zero_class.zero")))
+###               ("\<^const>Groups.times_class.times"
+###                 ("\<^const>Matrix.vec_index" ("_position" v)
+###                   ("\<^const>Groups.one_class.one"))
+###                 ("\<^const>Matrix.vec_index" ("_position" w)
+###                   ("\<^const>Groups.one_class.one"))))))))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ambiguous input (line 60 of "$AFP/Isabelle_Marries_Dirac/More_Tensor.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("\<^const>Group.monoid.mult_indexed" ("_position" v) ("_indexdefault")
+###       ("_position" w))
+###     ("_applC" ("_position" Matrix.vec)
+###       ("_cargs" ("_Numeral" ("_constify" ("_position" 4)))
+###         ("_lambda" ("_position" i)
+###           ("\<^const>HOL.If"
+###             ("\<^const>HOL.eq" ("_position" i)
+###               ("\<^const>Groups.zero_class.zero"))
+###             ("\<^const>Groups.times_class.times"
+###               ("\<^const>Matrix.vec_index" ("_position" v)
+###                 ("\<^const>Groups.zero_class.zero"))
+###               ("\<^const>Matrix.vec_index" ("_position" w)
+###                 ("\<^const>Groups.zero_class.zero")))
+###             ("\<^const>HOL.If"
+###               ("\<^const>HOL.eq" ("_position" i)
+###                 ("_Numeral" ("_constify" ("_position" 3))))
+###               ("\<^const>Groups.times_class.times"
+###                 ("\<^const>Matrix.vec_index" ("_position" v)
+###                   ("\<^const>Groups.one_class.one"))
+###                 ("\<^const>Matrix.vec_index" ("_position" w)
+###                   ("\<^const>Groups.one_class.one")))
+###               ("\<^const>HOL.If"
+###                 ("\<^const>HOL.eq" ("_position" i)
+###                   ("\<^const>Groups.one_class.one"))
+###                 ("\<^const>Groups.times_class.times"
+###                   ("\<^const>Matrix.vec_index" ("_position" v)
+###                     ("\<^const>Groups.zero_class.zero"))
+###                   ("\<^const>Matrix.vec_index" ("_position" w)
+###                     ("\<^const>Groups.one_class.one")))
+###                 ("\<^const>Groups.times_class.times"
+###                   ("\<^const>Matrix.vec_index" ("_position" v)
+###                     ("\<^const>Groups.one_class.one"))
+###                   ("\<^const>Matrix.vec_index" ("_position" w)
+###                     ("\<^const>Groups.zero_class.zero")))))))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("\<^const>Tensor.tensor_vec" ("_position" v) ("_position" w))
+###     ("_applC" ("_position" Matrix.vec)
+###       ("_cargs" ("_Numeral" ("_constify" ("_position" 4)))
+###         ("_lambda" ("_position" i)
+###           ("\<^const>HOL.If"
+###             ("\<^const>HOL.eq" ("_position" i)
+###               ("\<^const>Groups.zero_class.zero"))
+###             ("\<^const>Groups.times_class.times"
+###               ("\<^const>Matrix.vec_index" ("_position" v)
+###                 ("\<^const>Groups.zero_class.zero"))
+###               ("\<^const>Matrix.vec_index" ("_position" w)
+###                 ("\<^const>Groups.zero_class.zero")))
+###             ("\<^const>HOL.If"
+###               ("\<^const>HOL.eq" ("_position" i)
+###                 ("_Numeral" ("_constify" ("_position" 3))))
+###               ("\<^const>Groups.times_class.times"
+###                 ("\<^const>Matrix.vec_index" ("_position" v)
+###                   ("\<^const>Groups.one_class.one"))
+###                 ("\<^const>Matrix.vec_index" ("_position" w)
+###                   ("\<^const>Groups.one_class.one")))
+###               ("\<^const>HOL.If"
+###                 ("\<^const>HOL.eq" ("_position" i)
+###                   ("\<^const>Groups.one_class.one"))
+###                 ("\<^const>Groups.times_class.times"
+###                   ("\<^const>Matrix.vec_index" ("_position" v)
+###                     ("\<^const>Groups.zero_class.zero"))
+###                   ("\<^const>Matrix.vec_index" ("_position" w)
+###                     ("\<^const>Groups.one_class.one")))
+###                 ("\<^const>Groups.times_class.times"
+###                   ("\<^const>Matrix.vec_index" ("_position" v)
+###                     ("\<^const>Groups.one_class.one"))
+###                   ("\<^const>Matrix.vec_index" ("_position" w)
+###                     ("\<^const>Groups.zero_class.zero")))))))))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ambiguous input (line 134 of "$AFP/Isabelle_Marries_Dirac/More_Tensor.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" Matrix.col)
+###       ("_cargs"
+###         ("\<^const>Tensor.tensor_mat" ("_position" v) ("_position" w))
+###         ("\<^const>Groups.zero_class.zero")))
+###     ("\<^const>Group.monoid.mult_indexed"
+###       ("_applC" ("_position" Matrix.col)
+###         ("_cargs" ("_position" v) ("\<^const>Groups.zero_class.zero")))
+###       ("_indexdefault")
+###       ("_applC" ("_position" Matrix.col)
+###         ("_cargs" ("_position" w) ("\<^const>Groups.zero_class.zero"))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" Matrix.col)
+###       ("_cargs"
+###         ("\<^const>Tensor.tensor_mat" ("_position" v) ("_position" w))
+###         ("\<^const>Groups.zero_class.zero")))
+###     ("\<^const>Tensor.tensor_vec"
+###       ("_applC" ("_position" Matrix.col)
+###         ("_cargs" ("_position" v) ("\<^const>Groups.zero_class.zero")))
+###       ("_applC" ("_position" Matrix.col)
+###         ("_cargs" ("_position" w) ("\<^const>Groups.zero_class.zero"))))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ambiguous input (line 225 of "$AFP/Isabelle_Marries_Dirac/More_Tensor.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("\<^const>Tensor.tensor_mat" ("_position" v) ("_position" w))
+###     ("\<^const>Quantum.ket_vec"
+###       ("\<^const>Group.monoid.mult_indexed"
+###         ("_applC" ("_position" Matrix.col)
+###           ("_cargs" ("_position" v) ("\<^const>Groups.zero_class.zero")))
+###         ("_indexdefault")
+###         ("_applC" ("_position" Matrix.col)
+###           ("_cargs" ("_position" w)
+###             ("\<^const>Groups.zero_class.zero")))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("\<^const>Tensor.tensor_mat" ("_position" v) ("_position" w))
+###     ("\<^const>Quantum.ket_vec"
+###       ("\<^const>Tensor.tensor_vec"
+###         ("_applC" ("_position" Matrix.col)
+###           ("_cargs" ("_position" v) ("\<^const>Groups.zero_class.zero")))
+###         ("_applC" ("_position" Matrix.col)
+###           ("_cargs" ("_position" w)
+###             ("\<^const>Groups.zero_class.zero")))))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### theory "Draft.More_Tensor"
+### 0.154s elapsed time, 0.154s cpu time, 0.000s GC time
+Loading theory "Draft.Deutsch" (required by "Draft.Deutsch_JozsaTemplates" via "Draft.Deutsch_Jozsa")
+locale deutsch
+  fixes f :: "nat => nat"
+  assumes "deutsch f"
+locale deutsch
+  fixes f :: "nat => nat"
+  assumes "deutsch f"
+### theory "Draft.Deutsch"
+### 1.018s elapsed time, 1.101s cpu time, 0.146s GC time
+Loading theory "Draft.Deutsch_Jozsa" (required by "Draft.Deutsch_JozsaTemplates")
+locale bob_fun
+  fixes f :: "nat => nat"
+    and n :: "nat"
+  assumes "bob_fun f n"
+locale bob_fun
+  fixes f :: "nat => nat"
+    and n :: "nat"
+  assumes "bob_fun f n"
+locale jozsa
+  fixes f :: "nat => nat"
+    and n :: "nat"
+  assumes "jozsa f n"
+### Missing patterns in function definition:
+### !!a. a \<otimes>\<^bsup>0\<^esup> = undefined
+Found termination order: "(%p. size (snd p)) <*mlex*> {}"
+### theory "Draft.Deutsch_Jozsa"
+### 0.758s elapsed time, 0.860s cpu time, 0.166s GC time
+Loading theory "Draft.Deutsch_JozsaTemplates"
+val templateLemmas =
+   [("Deutsch_Jozsa.one_tensor_is_id", "?A \<otimes>\<^bsup>1\<^esup> = ?A",
+     template_equation
+      (template_app
+        (template_app (template_hole 1, template_var 0), template_hole 0),
+       template_var 0)),
+    ("Deutsch_Jozsa.iter_tensor_of_H_is_gate",
+     "1 <= ?n ==> gate ?n (H \<otimes>\<^bsup>?n\<^esup>)",
+     template_implication
+      ([template_inequation (less_equals, template_hole 3, template_var 0)],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 2, template_var 0),
+             template_app
+              (template_app (template_hole 1, template_hole 0),
+               template_var 0))
+           ))),
+    ("Deutsch_Jozsa.cmod_square_real",
+     "(cmod (complex_of_real ?n))\<^sup>2 = ?n\<^sup>2",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 5,
+           template_app
+            (template_hole 4,
+             template_app (template_hole 3, template_var 0))),
+         template_app
+          (template_hole 2,
+           template_app (template_hole 1, template_hole 0))),
+       template_app
+        (template_app (template_hole 5, template_var 0),
+         template_app
+          (template_hole 2,
+           template_app (template_hole 1, template_hole 0))))),
+    ("Deutsch_Jozsa.dim_col_of_iter_tensor",
+     "1 <= ?n ==>
+      dim_col (?A \<otimes>\<^bsup>?n\<^esup>) = dim_col ?A ^ ?n",
+     template_implication
+      ([template_inequation (less_equals, template_hole 4, template_var 1)],
+       template_equation
+        (template_app
+          (template_hole 2,
+           template_app
+            (template_app (template_hole 1, template_var 0),
+             template_var 1)),
+         template_app
+          (template_app
+            (template_hole 0,
+             template_app (template_hole 2, template_var 0)),
+           template_var 1)))),
+    ("Deutsch_Jozsa.dim_row_of_iter_tensor",
+     "1 <= ?n ==>
+      dim_row (?A \<otimes>\<^bsup>?n\<^esup>) = dim_row ?A ^ ?n",
+     template_implication
+      ([template_inequation (less_equals, template_hole 4, template_var 1)],
+       template_equation
+        (template_app
+          (template_hole 2,
+           template_app
+            (template_app (template_hole 1, template_var 0),
+             template_var 1)),
+         template_app
+          (template_app
+            (template_hole 0,
+             template_app (template_hole 2, template_var 0)),
+           template_var 1)))),
+    ("Deutsch_Jozsa.iter_tensor_suc",
+     "1 <= ?n ==>
+      ?A \<otimes>\<^bsup>Suc ?n\<^esup> =
+      ?A \<Otimes> ?A \<otimes>\<^bsup>?n\<^esup>",
+     template_implication
+      ([template_inequation (less_equals, template_hole 4, template_var 1)],
+       template_equation
+        (template_app
+          (template_app (template_hole 2, template_var 0),
+           template_app (template_hole 1, template_var 1)),
+         template_app
+          (template_app (template_hole 0, template_var 0),
+           template_app
+            (template_app (template_hole 2, template_var 0),
+             template_var 1))))),
+    ("Deutsch_Jozsa.\<psi>\<^sub>1\<^sub>0_tensor_is_state",
+     "1 <= ?n ==>
+      state ?n (|Deutsch.zero\<rangle> \<otimes>\<^bsup>?n\<^esup>)",
+     template_implication
+      ([template_inequation (less_equals, template_hole 8, template_var 0)],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 7, template_var 0),
+             template_app
+              (template_app
+                (template_hole 6,
+                 template_app
+                  (template_hole 5,
+                   template_app
+                    (template_app
+                      (template_hole 4,
+                       template_app
+                        (template_hole 3,
+                         template_app (template_hole 2, template_hole 1))),
+                     template_hole 0))),
+               template_var 0))
+           ))),
+    ("Deutsch_Jozsa.aux_ineq_with_card",
+     "finite ?A ==> (SUM k:?A. (- 1) ^ ?g k) <= int (card ?A)",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 7, template_var 1))],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_app (template_hole 5, t_empty), template_var 1),
+         template_app
+          (template_hole 1,
+           template_app (template_hole 0, template_var 1))))),
+    ("Deutsch_Jozsa.aux_ineq_with_card",
+     "finite ?A ==> - int (card ?A) <= (SUM k:?A. (- 1) ^ ?g k)",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 7, template_var 1))],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_hole 5,
+           template_app
+            (template_hole 4,
+             template_app (template_hole 3, template_var 1))),
+         template_app
+          (template_app (template_hole 2, t_empty), template_var 1)))),
+    ("Deutsch_Jozsa.cmod_less",
+     "[| ?a < ?n; - ?n < ?a |] ==> cmod (of_int ?a) < real_of_int ?n",
+     template_implication
+      ([template_inequation (less_than, template_var 1, template_var 0),
+        template_inequation
+         (less_than, template_app (template_hole 4, template_var 0),
+          template_var 1)],
+       template_inequation
+        (less_than,
+         template_app
+          (template_hole 2, template_app (template_hole 1, template_var 1)),
+         template_app (template_hole 0, template_var 0)))),
+    ("Deutsch_Jozsa.iter_tensor_of_gate_is_gate",
+     "[| gate ?m ?A; 1 <= ?n |]
+      ==> gate (?m * ?n) (?A \<otimes>\<^bsup>?n\<^esup>)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 4, template_var 2),
+              template_var 1)
+            ),
+        template_inequation (less_equals, template_hole 2, template_var 0)],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 4,
+               template_app
+                (template_app (template_hole 1, template_var 2),
+                 template_var 0)),
+             template_app
+              (template_app (template_hole 0, template_var 1),
+               template_var 0))
+           ))),
+    ("Deutsch_Jozsa.iter_tensor_of_state_is_state",
+     "[| state ?m ?A; 1 <= ?n |]
+      ==> state (?m * ?n) (?A \<otimes>\<^bsup>?n\<^esup>)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 4, template_var 2),
+              template_var 1)
+            ),
+        template_inequation (less_equals, template_hole 2, template_var 0)],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 4,
+               template_app
+                (template_app (template_hole 1, template_var 2),
+                 template_var 0)),
+             template_app
+              (template_app (template_hole 0, template_var 1),
+               template_var 0))
+           ))),
+    ("Deutsch_Jozsa.aux_comp_with_sqrt2",
+     "sqrt 2 ^ ?n * sqrt 2 ^ ?n = 2 ^ ?n",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 5,
+           template_app
+            (template_app
+              (template_hole 4,
+               template_app
+                (template_hole 3,
+                 template_app
+                  (template_hole 2,
+                   template_app (template_hole 1, template_hole 0)))),
+             template_var 0)),
+         template_app
+          (template_app
+            (template_hole 4,
+             template_app
+              (template_hole 3,
+               template_app
+                (template_hole 2,
+                 template_app (template_hole 1, template_hole 0)))),
+           template_var 0)),
+       template_app
+        (template_app
+          (template_hole 4,
+           template_app
+            (template_hole 2,
+             template_app (template_hole 1, template_hole 0))),
+         template_var 0))),
+    ("Deutsch_Jozsa.square_less",
+     "[| ?a < ?n; - ?n < ?a |] ==> ?a\<^sup>2 < ?n\<^sup>2",
+     template_implication
+      ([template_inequation (less_than, template_var 1, template_var 0),
+        template_inequation
+         (less_than, template_app (template_hole 4, template_var 0),
+          template_var 1)],
+       template_inequation
+        (less_than,
+         template_app
+          (template_app (template_hole 3, template_var 1),
+           template_app
+            (template_hole 2,
+             template_app (template_hole 1, template_hole 0))),
+         template_app
+          (template_app (template_hole 3, template_var 0),
+           template_app
+            (template_hole 2,
+             template_app (template_hole 1, template_hole 0)))))),
+    ("Deutsch_Jozsa.aux_comp_with_sqrt2_bis",
+     "2 ^ ?n / (sqrt 2 ^ ?n * sqrt 2 ^ (?n + 1)) = 1 / sqrt 2",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 9,
+           template_app
+            (template_app
+              (template_hole 8,
+               template_app
+                (template_hole 7,
+                 template_app (template_hole 6, template_hole 5))),
+             template_var 0)),
+         template_app
+          (template_app
+            (template_hole 4,
+             template_app
+              (template_app
+                (template_hole 8,
+                 template_app
+                  (template_hole 3,
+                   template_app
+                    (template_hole 7,
+                     template_app (template_hole 6, template_hole 5)))),
+               template_var 0)),
+           template_app
+            (template_app
+              (template_hole 8,
+               template_app
+                (template_hole 3,
+                 template_app
+                  (template_hole 7,
+                   template_app (template_hole 6, template_hole 5)))),
+             template_app
+              (template_app (template_hole 2, template_var 0),
+               template_hole 1)))),
+       template_app
+        (template_app (template_hole 9, template_hole 0),
+         template_app
+          (template_hole 3,
+           template_app
+            (template_hole 7,
+             template_app (template_hole 6, template_hole 5)))))),
+    ("Deutsch_Jozsa.\<psi>\<^sub>1\<^sub>0_is_state",
+     "1 <= ?n ==>
+      state ?n
+       (Matrix.mat (2 ^ ?n) 1
+         (%x. complex_of_real (case x of (i, j) => 1 / sqrt 2 ^ ?n)))",
+     template_implication
+      ([template_inequation
+         (less_equals, template_hole 13, template_var 0)],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 12, template_var 0),
+             template_app
+              (template_app
+                (template_app
+                  (template_hole 11,
+                   template_app
+                    (template_app
+                      (template_hole 10,
+                       template_app
+                        (template_hole 9,
+                         template_app (template_hole 8, template_hole 7))),
+                     template_var 0)),
+                 template_hole 13),
+               t_empty))
+           ))),
+    ("Deutsch_Jozsa.aux_comp_sum_divide_cmod",
+     "(cmod (complex_of_real (SUM k<?n. real_of_int (?g k) / ?a)))\<^sup>2 =
+      (cmod (of_int (sum ?g {..<?n})) / ?a)\<^sup>2",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 11,
+           template_app
+            (template_hole 10,
+             template_app
+              (template_hole 9,
+               template_app
+                (template_app (template_hole 8, t_empty),
+                 template_app (template_hole 5, template_var 0))))),
+         template_app
+          (template_hole 4,
+           template_app (template_hole 3, template_hole 2))),
+       template_app
+        (template_app
+          (template_hole 11,
+           template_app
+            (template_app
+              (template_hole 7,
+               template_app
+                (template_hole 10,
+                 template_app
+                  (template_hole 1,
+                   template_app
+                    (template_app (template_hole 0, t_empty),
+                     template_app (template_hole 5, template_var 0))))),
+             template_var 1)),
+         template_app
+          (template_hole 4,
+           template_app (template_hole 3, template_hole 2))))),
+    ("Deutsch_Jozsa.disj_four_cases",
+     "[| ?A | ?B | ?C | ?D; ?A ==> ?P; ?B ==> ?P; ?C ==> ?P; ?D ==> ?P |]
+      ==> ?P",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 0, template_var 4),
+              template_app
+               (template_app (template_hole 0, template_var 3),
+                template_app
+                 (template_app (template_hole 0, template_var 2),
+                  template_var 1)))
+            ),
+        template_implication
+         ([template_predicate (template_var 4)],
+          template_predicate (template_var 0)),
+        template_implication
+         ([template_predicate (template_var 3)],
+          template_predicate (template_var 0)),
+        template_implication
+         ([template_predicate (template_var 2)],
+          template_predicate (template_var 0)),
+        template_implication
+         ([template_predicate (template_var 1)],
+          template_predicate (template_var 0))],
+       template_predicate (template_var 0))),
+    ("Deutsch_Jozsa.mod_2_is_both_even_or_odd",
+     "(even ?i & even ?j | odd ?i & odd ?j) =
+      (?i mod (2::?'a) = ?j mod (2::?'a))",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 8,
+                template_app
+                 (template_app
+                   (template_hole 7,
+                    template_app
+                     (template_app
+                       (template_hole 6,
+                        template_app
+                         (template_hole 5,
+                          template_app (template_hole 4, template_hole 3))),
+                      template_var 1)),
+                  template_app
+                   (template_app
+                     (template_hole 6,
+                      template_app
+                       (template_hole 5,
+                        template_app (template_hole 4, template_hole 3))),
+                    template_var 0))),
+              template_app
+               (template_app
+                 (template_hole 7,
+                  template_app
+                   (template_hole 2,
+                    template_app
+                     (template_app
+                       (template_hole 6,
+                        template_app
+                         (template_hole 5,
+                          template_app (template_hole 4, template_hole 3))),
+                      template_var 1))),
+                template_app
+                 (template_hole 2,
+                  template_app
+                   (template_app
+                     (template_hole 6,
+                      template_app
+                       (template_hole 5,
+                        template_app (template_hole 4, template_hole 3))),
+                    template_var 0))))
+            )],
+       template_equation
+        (template_app
+          (template_app (template_hole 0, template_var 1),
+           template_app
+            (template_hole 5,
+             template_app (template_hole 4, template_hole 3))),
+         template_app
+          (template_app (template_hole 0, template_var 0),
+           template_app
+            (template_hole 5,
+             template_app (template_hole 4, template_hole 3)))))),
+    ("Deutsch_Jozsa.sum_union_disjoint_finite_set",
+     "finite ?C ==>
+      ALL A B.
+         A Int B = {} & A Un B = ?C --> sum ?g ?C = sum ?g A + sum ?g B",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 10, template_var 1))],
+       template_predicate (template_app (template_hole 9, t_empty)))),
+    ("Deutsch_Jozsa.iter_tensor_of_H_on_zero_tensor",
+     "1 <= ?n ==>
+      H \<otimes>\<^bsup>?n\<^esup> *
+      |Deutsch.zero\<rangle> \<otimes>\<^bsup>?n\<^esup> =
+      Matrix.mat (2 ^ ?n) 1
+       (%x. complex_of_real (case x of (i, j) => 1 / sqrt 2 ^ ?n))",
+     template_implication
+      ([template_inequation
+         (less_equals, template_hole 19, template_var 0)],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 17,
+             template_app
+              (template_app (template_hole 16, template_hole 15),
+               template_var 0)),
+           template_app
+            (template_app
+              (template_hole 16,
+               template_app
+                (template_hole 14,
+                 template_app
+                  (template_app
+                    (template_hole 13,
+                     template_app
+                      (template_hole 12,
+                       template_app (template_hole 11, template_hole 10))),
+                   template_hole 9))),
+             template_var 0)),
+         template_app
+          (template_app
+            (template_app
+              (template_hole 8,
+               template_app
+                (template_app
+                  (template_hole 7,
+                   template_app
+                    (template_hole 12,
+                     template_app (template_hole 11, template_hole 10))),
+                 template_var 0)),
+             template_hole 19),
+           t_empty)))),
+    ("Deutsch_Jozsa.dim_row_of_iter_tensor_of_H",
+     "1 <= ?n ==>
+      1 < dim_row
+           (Matrix.mat (2 ^ ?n) (2 ^ ?n)
+             (%x. complex_of_real
+                   (case x of
+                    (i, j) =>
+                      (- 1) ^ i \<cdot>\<^bsub>?n\<^esub>  j /
+                      sqrt 2 ^ ?n)))",
+     template_implication
+      ([template_inequation
+         (less_equals, template_hole 16, template_var 0)],
+       template_inequation
+        (less_than, template_hole 16,
+         template_app
+          (template_hole 14,
+           template_app
+            (template_app
+              (template_app
+                (template_hole 13,
+                 template_app
+                  (template_app
+                    (template_hole 12,
+                     template_app
+                      (template_hole 11,
+                       template_app (template_hole 10, template_hole 9))),
+                   template_var 0)),
+               template_app
+                (template_app
+                  (template_hole 12,
+                   template_app
+                    (template_hole 11,
+                     template_app (template_hole 10, template_hole 9))),
+                 template_var 0)),
+             t_empty))))),
+    ("Deutsch_Jozsa.iter_tensor_of_H_rep_is_correct",
+     "1 <= ?n ==>
+      H \<otimes>\<^bsup>?n\<^esup> =
+      Matrix.mat (2 ^ ?n) (2 ^ ?n)
+       (%x. complex_of_real
+             (case x of
+              (i, j) =>
+                (- 1) ^ i \<cdot>\<^bsub>?n\<^esub>  j / sqrt 2 ^ ?n))",
+     template_implication
+      ([template_inequation
+         (less_equals, template_hole 17, template_var 0)],
+       template_equation
+        (template_app
+          (template_app (template_hole 15, template_hole 14),
+           template_var 0),
+         template_app
+          (template_app
+            (template_app
+              (template_hole 13,
+               template_app
+                (template_app
+                  (template_hole 12,
+                   template_app
+                    (template_hole 11,
+                     template_app (template_hole 10, template_hole 9))),
+                 template_var 0)),
+             template_app
+              (template_app
+                (template_hole 12,
+                 template_app
+                  (template_hole 11,
+                   template_app (template_hole 10, template_hole 9))),
+               template_var 0)),
+           t_empty)))),
+    ("Deutsch_Jozsa.iter_tensor_values",
+     "[| 1 <= ?n;
+         ?i < dim_row (?A \<Otimes> ?A \<otimes>\<^bsup>?n\<^esup>);
+         ?j < dim_col (?A \<Otimes> ?A \<otimes>\<^bsup>?n\<^esup>) |]
+      ==> (?A \<otimes>\<^bsup>Suc ?n\<^esup>) $$ (?i, ?j) =
+          (?A \<Otimes> ?A \<otimes>\<^bsup>?n\<^esup>) $$ (?i, ?j)",
+     template_implication
+      ([template_inequation (less_equals, template_hole 9, template_var 3),
+        template_inequation
+         (less_than, template_var 2,
+          template_app
+           (template_hole 7,
+            template_app
+             (template_app (template_hole 6, template_var 1),
+              template_app
+               (template_app (template_hole 5, template_var 1),
+                template_var 3)))),
+        template_inequation
+         (less_than, template_var 0,
+          template_app
+           (template_hole 4,
+            template_app
+             (template_app (template_hole 6, template_var 1),
+              template_app
+               (template_app (template_hole 5, template_var 1),
+                template_var 3))))],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 2,
+             template_app
+              (template_app (template_hole 5, template_var 1),
+               template_app (template_hole 1, template_var 3))),
+           template_app
+            (template_app (template_hole 0, template_var 2),
+             template_var 0)),
+         template_app
+          (template_app
+            (template_hole 2,
+             template_app
+              (template_app (template_hole 6, template_var 1),
+               template_app
+                (template_app (template_hole 5, template_var 1),
+                 template_var 3))),
+           template_app
+            (template_app (template_hole 0, template_var 2),
+             template_var 0))))),
+    ("Deutsch_Jozsa.iter_tensor_mult_distr",
+     "[| 1 <= ?n; dim_col ?A = dim_row ?B; 0 < dim_col ?A; 0 < dim_col ?B |]
+      ==> ?A \<otimes>\<^bsup>Suc ?n\<^esup> *
+          ?B \<otimes>\<^bsup>Suc ?n\<^esup> =
+          ?A * ?B \<Otimes>
+          ?A \<otimes>\<^bsup>?n\<^esup> * ?B \<otimes>\<^bsup>?n\<^esup>",
+     template_implication
+      ([template_inequation (less_equals, template_hole 10, template_var 2),
+        template_equation
+         (template_app (template_hole 8, template_var 1),
+          template_app (template_hole 7, template_var 0)),
+        template_inequation
+         (less_than, template_hole 5,
+          template_app (template_hole 8, template_var 1)),
+        template_inequation
+         (less_than, template_hole 5,
+          template_app (template_hole 8, template_var 0))],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 3,
+             template_app
+              (template_app (template_hole 2, template_var 1),
+               template_app (template_hole 1, template_var 2))),
+           template_app
+            (template_app (template_hole 2, template_var 0),
+             template_app (template_hole 1, template_var 2))),
+         template_app
+          (template_app
+            (template_hole 0,
+             template_app
+              (template_app (template_hole 3, template_var 1),
+               template_var 0)),
+           template_app
+            (template_app
+              (template_hole 3,
+               template_app
+                (template_app (template_hole 2, template_var 1),
+                 template_var 2)),
+             template_app
+              (template_app (template_hole 2, template_var 0),
+               template_var 2)))))),
+    ("Deutsch_Jozsa.\<psi>\<^sub>1_is_state",
+     "1 <= ?n ==>
+      state (?n + 1)
+       (Matrix.mat (2 ^ (?n + 1)) 1
+         (%x. complex_of_real
+               (case x of
+                (i, j) =>
+                  if even i then 1 / sqrt 2 ^ (?n + 1)
+                  else - 1 / sqrt 2 ^ (?n + 1))))",
+     template_implication
+      ([template_inequation
+         (less_equals, template_hole 17, template_var 0)],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 16,
+               template_app
+                (template_app (template_hole 15, template_var 0),
+                 template_hole 17)),
+             template_app
+              (template_app
+                (template_app
+                  (template_hole 14,
+                   template_app
+                    (template_app
+                      (template_hole 13,
+                       template_app
+                        (template_hole 12,
+                         template_app
+                          (template_hole 11, template_hole 10))),
+                     template_app
+                      (template_app (template_hole 15, template_var 0),
+                       template_hole 17))),
+                 template_hole 17),
+               t_empty))
+           ))),
+    ("Deutsch_Jozsa.index_tensor_mat_with_vec2_row_cond",
+     "[| ?i < 2 * dim_row ?B; dim_row ?B <= ?i; 0 < dim_col ?B;
+         dim_row ?A = 2; dim_col ?A = 1 |]
+      ==> (?A \<Otimes> ?B) $$ (?i, 0) =
+          ?A $$ (1, 0) * ?B $$ (?i - dim_row ?B, 0)",
+     template_implication
+      ([template_inequation
+         (less_than, template_var 2,
+          template_app
+           (template_app
+             (template_hole 15,
+              template_app
+               (template_hole 14,
+                template_app (template_hole 13, template_hole 12))),
+            template_app (template_hole 11, template_var 1))),
+        template_inequation
+         (less_equals, template_app (template_hole 11, template_var 1),
+          template_var 2),
+        template_inequation
+         (less_than, template_hole 9,
+          template_app (template_hole 8, template_var 1)),
+        template_equation
+         (template_app (template_hole 11, template_var 0),
+          template_app
+           (template_hole 14,
+            template_app (template_hole 13, template_hole 12))),
+        template_equation
+         (template_app (template_hole 8, template_var 0), template_hole 6)],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 4,
+             template_app
+              (template_app (template_hole 3, template_var 0),
+               template_var 1)),
+           template_app
+            (template_app (template_hole 2, template_var 2),
+             template_hole 9)),
+         template_app
+          (template_app
+            (template_hole 1,
+             template_app
+              (template_app (template_hole 4, template_var 0),
+               template_app
+                (template_app (template_hole 2, template_hole 6),
+                 template_hole 9))),
+           template_app
+            (template_app (template_hole 4, template_var 1),
+             template_app
+              (template_app
+                (template_hole 2,
+                 template_app
+                  (template_app (template_hole 0, template_var 2),
+                   template_app (template_hole 11, template_var 1))),
+               template_hole 9)))))),
+    ("Deutsch_Jozsa.aux_comp_with_cmod",
+     "(ALL x<2 ^ ?n. ?g x = 0) | (ALL x<2 ^ ?n. ?g x = 1) ==>
+      (cmod (SUM k<2 ^ ?n. (- 1) ^ ?g k))\<^sup>2 = 2 ^ (2 * ?n)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 20, template_app (template_hole 19, t_empty)),
+              template_app (template_hole 19, t_empty))
+            )],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 8,
+             template_app
+              (template_hole 7,
+               template_app
+                (template_app (template_hole 6, t_empty),
+                 template_app
+                  (template_hole 2,
+                   template_app
+                    (template_app
+                      (template_hole 16,
+                       template_app
+                        (template_hole 15,
+                         template_app
+                          (template_hole 14, template_hole 13))),
+                     template_var 1))))),
+           template_app
+            (template_hole 15,
+             template_app (template_hole 14, template_hole 13))),
+         template_app
+          (template_app
+            (template_hole 8,
+             template_app
+              (template_hole 1,
+               template_app (template_hole 14, template_hole 13))),
+           template_app
+            (template_app
+              (template_hole 0,
+               template_app
+                (template_hole 15,
+                 template_app (template_hole 14, template_hole 13))),
+             template_var 1))))),
+    ("Deutsch_Jozsa.sum_every_odd_summand_is_zero",
+     "1 <= ?n ==>
+      ALL f.
+         (ALL i. i < 2 ^ (?n + 1) & odd i --> f i = 0) -->
+         sum f {0..<2 ^ (?n + 1)} = (SUM k = 0..<2 ^ ?n. f (2 * k))",
+     template_implication
+      ([template_inequation
+         (less_equals, template_hole 18, template_var 0)],
+       template_predicate (template_app (template_hole 17, t_empty)))),
+    ("Deutsch_Jozsa.sum_every_even_summand_is_zero",
+     "1 <= ?n ==>
+      ALL f.
+         (ALL i. i < 2 ^ (?n + 1) & even i --> f i = 0) -->
+         sum f {0..<2 ^ (?n + 1)} = (SUM k = 0..<2 ^ ?n. f (2 * k + 1))",
+     template_implication
+      ([template_inequation
+         (less_equals, template_hole 17, template_var 0)],
+       template_predicate (template_app (template_hole 16, t_empty)))),
+    ("Deutsch_Jozsa.HId_is_gate",
+     "1 <= ?n ==>
+      gate (?n + 1)
+       (Matrix.mat (2 ^ (?n + 1)) (2 ^ (?n + 1))
+         (%x. complex_of_real
+               (case x of
+                (i, j) =>
+                  if i mod 2 = j mod 2
+                  then (- 1) ^ i div 2 \<cdot>\<^bsub>?n\<^esub>  j div 2 /
+                       sqrt 2 ^ ?n
+                  else 0)))",
+     template_implication
+      ([template_inequation
+         (less_equals, template_hole 21, template_var 0)],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 20,
+               template_app
+                (template_app (template_hole 19, template_var 0),
+                 template_hole 21)),
+             template_app
+              (template_app
+                (template_app
+                  (template_hole 18,
+                   template_app
+                    (template_app
+                      (template_hole 17,
+                       template_app
+                        (template_hole 16,
+                         template_app
+                          (template_hole 15, template_hole 14))),
+                     template_app
+                      (template_app (template_hole 19, template_var 0),
+                       template_hole 21))),
+                 template_app
+                  (template_app
+                    (template_hole 17,
+                     template_app
+                      (template_hole 16,
+                       template_app (template_hole 15, template_hole 14))),
+                   template_app
+                    (template_app (template_hole 19, template_var 0),
+                     template_hole 21))),
+               t_empty))
+           ))),
+    ("Deutsch_Jozsa.H_tensor_iter_tensor_of_H",
+     "H \<Otimes>
+      Matrix.mat (2 ^ ?n) (2 ^ ?n)
+       (%x. complex_of_real
+             (case x of
+              (i, j) =>
+                (- 1) ^ i \<cdot>\<^bsub>?n\<^esub>  j / sqrt 2 ^ ?n)) =
+      Matrix.mat (2 ^ Suc ?n) (2 ^ Suc ?n)
+       (%x. complex_of_real
+             (case x of
+              (i, j) =>
+                (- 1) ^ i \<cdot>\<^bsub>Suc ?n\<^esub>  j /
+                sqrt 2 ^ Suc ?n))",
+     template_equation
+      (template_app
+        (template_app (template_hole 16, template_hole 15),
+         template_app
+          (template_app
+            (template_app
+              (template_hole 14,
+               template_app
+                (template_app
+                  (template_hole 13,
+                   template_app
+                    (template_hole 12,
+                     template_app (template_hole 11, template_hole 10))),
+                 template_var 0)),
+             template_app
+              (template_app
+                (template_hole 13,
+                 template_app
+                  (template_hole 12,
+                   template_app (template_hole 11, template_hole 10))),
+               template_var 0)),
+           t_empty)),
+       template_app
+        (template_app
+          (template_app
+            (template_hole 14,
+             template_app
+              (template_app
+                (template_hole 13,
+                 template_app
+                  (template_hole 12,
+                   template_app (template_hole 11, template_hole 10))),
+               template_app (template_hole 0, template_var 0))),
+           template_app
+            (template_app
+              (template_hole 13,
+               template_app
+                (template_hole 12,
+                 template_app (template_hole 11, template_hole 10))),
+             template_app (template_hole 0, template_var 0))),
+         t_empty))),
+    ("Deutsch_Jozsa.\<psi>\<^sub>1\<^sub>0_tensor",
+     "1 <= ?n ==>
+      Matrix.mat (2 ^ 1) 1
+       (%x. complex_of_real (case x of (i, j) => 1 / sqrt 2 ^ 1)) \<Otimes>
+      Matrix.mat (2 ^ ?n) 1
+       (%x. complex_of_real (case x of (i, j) => 1 / sqrt 2 ^ ?n)) =
+      Matrix.mat (2 ^ Suc ?n) 1
+       (%x. complex_of_real (case x of (i, j) => 1 / sqrt 2 ^ Suc ?n))",
+     template_implication
+      ([template_inequation
+         (less_equals, template_hole 15, template_var 0)],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 13,
+             template_app
+              (template_app
+                (template_app
+                  (template_hole 12,
+                   template_app
+                    (template_app
+                      (template_hole 11,
+                       template_app
+                        (template_hole 10,
+                         template_app (template_hole 9, template_hole 8))),
+                     template_hole 15)),
+                 template_hole 15),
+               t_empty)),
+           template_app
+            (template_app
+              (template_app
+                (template_hole 12,
+                 template_app
+                  (template_app
+                    (template_hole 11,
+                     template_app
+                      (template_hole 10,
+                       template_app (template_hole 9, template_hole 8))),
+                   template_var 0)),
+               template_hole 15),
+             t_empty)),
+         template_app
+          (template_app
+            (template_app
+              (template_hole 12,
+               template_app
+                (template_app
+                  (template_hole 11,
+                   template_app
+                    (template_hole 10,
+                     template_app (template_hole 9, template_hole 8))),
+                 template_app (template_hole 0, template_var 0))),
+             template_hole 15),
+           t_empty)))),
+    ("Deutsch_Jozsa.\<psi>\<^sub>1\<^sub>0_values",
+     "[| ?i < dim_row
+               (Matrix.mat (2 ^ ?n) 1
+                 (%x. complex_of_real
+                       (case x of (i, j) => 1 / sqrt 2 ^ ?n)));
+         ?j < dim_col
+               (Matrix.mat (2 ^ ?n) 1
+                 (%x. complex_of_real
+                       (case x of (i, j) => 1 / sqrt 2 ^ ?n))) |]
+      ==> Matrix.mat (2 ^ ?n) 1
+           (%x. complex_of_real (case x of (i, j) => 1 / sqrt 2 ^ ?n)) $$
+          (?i, ?j) =
+          complex_of_real (1 / sqrt 2 ^ ?n)",
+     template_implication
+      ([template_inequation
+         (less_than, template_var 2,
+          template_app
+           (template_hole 17,
+            template_app
+             (template_app
+               (template_app
+                 (template_hole 16,
+                  template_app
+                   (template_app
+                     (template_hole 15,
+                      template_app
+                       (template_hole 14,
+                        template_app (template_hole 13, template_hole 12))),
+                    template_var 1)),
+                template_hole 11),
+              t_empty))),
+        template_inequation
+         (less_than, template_var 0,
+          template_app
+           (template_hole 3,
+            template_app
+             (template_app
+               (template_app
+                 (template_hole 16,
+                  template_app
+                   (template_app
+                     (template_hole 15,
+                      template_app
+                       (template_hole 14,
+                        template_app (template_hole 13, template_hole 12))),
+                    template_var 1)),
+                template_hole 11),
+              t_empty)))],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 1,
+             template_app
+              (template_app
+                (template_app
+                  (template_hole 16,
+                   template_app
+                    (template_app
+                      (template_hole 15,
+                       template_app
+                        (template_hole 14,
+                         template_app
+                          (template_hole 13, template_hole 12))),
+                     template_var 1)),
+                 template_hole 11),
+               t_empty)),
+           template_app
+            (template_app (template_hole 0, template_var 2),
+             template_var 0)),
+         template_app
+          (template_hole 10,
+           template_app
+            (template_app (template_hole 8, template_hole 7),
+             template_app
+              (template_app
+                (template_hole 6,
+                 template_app
+                  (template_hole 5,
+                   template_app
+                    (template_hole 4,
+                     template_app (template_hole 13, template_hole 12)))),
+               template_var 1)))))),
+    ("Deutsch_Jozsa.iter_tensor_of_H_tensor_Id_is_HId",
+     "Matrix.mat (2 ^ ?n) (2 ^ ?n)
+       (%x. complex_of_real
+             (case x of
+              (i, j) =>
+                (- 1) ^ i \<cdot>\<^bsub>?n\<^esub>  j /
+                sqrt 2 ^ ?n)) \<Otimes>
+      Quantum.Id 1 =
+      Matrix.mat (2 ^ (?n + 1)) (2 ^ (?n + 1))
+       (%x. complex_of_real
+             (case x of
+              (i, j) =>
+                if i mod 2 = j mod 2
+                then (- 1) ^ i div 2 \<cdot>\<^bsub>?n\<^esub>  j div 2 /
+                     sqrt 2 ^ ?n
+                else 0))",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 22,
+           template_app
+            (template_app
+              (template_app
+                (template_hole 21,
+                 template_app
+                  (template_app
+                    (template_hole 20,
+                     template_app
+                      (template_hole 19,
+                       template_app (template_hole 18, template_hole 17))),
+                   template_var 0)),
+               template_app
+                (template_app
+                  (template_hole 20,
+                   template_app
+                    (template_hole 19,
+                     template_app (template_hole 18, template_hole 17))),
+                 template_var 0)),
+             t_empty)),
+         template_app (template_hole 7, template_hole 6)),
+       template_app
+        (template_app
+          (template_app
+            (template_hole 21,
+             template_app
+              (template_app
+                (template_hole 20,
+                 template_app
+                  (template_hole 19,
+                   template_app (template_hole 18, template_hole 17))),
+               template_app
+                (template_app (template_hole 5, template_var 0),
+                 template_hole 6))),
+           template_app
+            (template_app
+              (template_hole 20,
+               template_app
+                (template_hole 19,
+                 template_app (template_hole 18, template_hole 17))),
+             template_app
+              (template_app (template_hole 5, template_var 0),
+               template_hole 6))),
+         t_empty))),
+    ("Deutsch_Jozsa.\<psi>\<^sub>1\<^sub>0_tensor_\<psi>\<^sub>1\<^sub>1_is_\<psi>\<^sub>1",
+     "1 <= ?n ==>
+      Matrix.mat (2 ^ ?n) 1
+       (%x. complex_of_real (case x of (i, j) => 1 / sqrt 2 ^ ?n)) \<Otimes>
+      Matrix.mat 2 1
+       (%x. complex_of_real
+             (case x of
+              (i, j) => if i = 0 then 1 / sqrt 2 else - 1 / sqrt 2)) =
+      Matrix.mat (2 ^ (?n + 1)) 1
+       (%x. complex_of_real
+             (case x of
+              (i, j) =>
+                if even i then 1 / sqrt 2 ^ (?n + 1)
+                else - 1 / sqrt 2 ^ (?n + 1)))",
+     template_implication
+      ([template_inequation
+         (less_equals, template_hole 20, template_var 0)],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 18,
+             template_app
+              (template_app
+                (template_app
+                  (template_hole 17,
+                   template_app
+                    (template_app
+                      (template_hole 16,
+                       template_app
+                        (template_hole 15,
+                         template_app
+                          (template_hole 14, template_hole 13))),
+                     template_var 0)),
+                 template_hole 20),
+               t_empty)),
+           template_app
+            (template_app
+              (template_app
+                (template_hole 17,
+                 template_app
+                  (template_hole 15,
+                   template_app (template_hole 14, template_hole 13))),
+               template_hole 20),
+             t_empty)),
+         template_app
+          (template_app
+            (template_app
+              (template_hole 17,
+               template_app
+                (template_app
+                  (template_hole 16,
+                   template_app
+                    (template_hole 15,
+                     template_app (template_hole 14, template_hole 13))),
+                 template_app
+                  (template_app (template_hole 1, template_var 0),
+                   template_hole 20))),
+             template_hole 20),
+           t_empty)))),
+    ("Deutsch_Jozsa.tensor_of_H_values",
+     "[| ?i < dim_row
+               (Matrix.mat (2 ^ ?n) (2 ^ ?n)
+                 (%x. complex_of_real
+                       (case x of
+                        (i, j) =>
+                          (- 1) ^ i \<cdot>\<^bsub>?n\<^esub>  j /
+                          sqrt 2 ^ ?n)));
+         ?j < dim_col
+               (Matrix.mat (2 ^ ?n) (2 ^ ?n)
+                 (%x. complex_of_real
+                       (case x of
+                        (i, j) =>
+                          (- 1) ^ i \<cdot>\<^bsub>?n\<^esub>  j /
+                          sqrt 2 ^ ?n))) |]
+      ==> Matrix.mat (2 ^ ?n) (2 ^ ?n)
+           (%x. complex_of_real
+                 (case x of
+                  (i, j) =>
+                    (- 1) ^ i \<cdot>\<^bsub>?n\<^esub>  j /
+                    sqrt 2 ^ ?n)) $$
+          (?i, ?j) =
+          complex_of_real
+           ((- 1) ^ ?i \<cdot>\<^bsub>?n\<^esub>  ?j / sqrt 2 ^ ?n)",
+     template_implication
+      ([template_inequation
+         (less_than, template_var 2,
+          template_app
+           (template_hole 18,
+            template_app
+             (template_app
+               (template_app
+                 (template_hole 17,
+                  template_app
+                   (template_app
+                     (template_hole 16,
+                      template_app
+                       (template_hole 15,
+                        template_app (template_hole 14, template_hole 13))),
+                    template_var 1)),
+                template_app
+                 (template_app
+                   (template_hole 16,
+                    template_app
+                     (template_hole 15,
+                      template_app (template_hole 14, template_hole 13))),
+                  template_var 1)),
+              t_empty))),
+        template_inequation
+         (less_than, template_var 0,
+          template_app
+           (template_hole 3,
+            template_app
+             (template_app
+               (template_app
+                 (template_hole 17,
+                  template_app
+                   (template_app
+                     (template_hole 16,
+                      template_app
+                       (template_hole 15,
+                        template_app (template_hole 14, template_hole 13))),
+                    template_var 1)),
+                template_app
+                 (template_app
+                   (template_hole 16,
+                    template_app
+                     (template_hole 15,
+                      template_app (template_hole 14, template_hole 13))),
+                  template_var 1)),
+              t_empty)))],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 1,
+             template_app
+              (template_app
+                (template_app
+                  (template_hole 17,
+                   template_app
+                    (template_app
+                      (template_hole 16,
+                       template_app
+                        (template_hole 15,
+                         template_app
+                          (template_hole 14, template_hole 13))),
+                     template_var 1)),
+                 template_app
+                  (template_app
+                    (template_hole 16,
+                     template_app
+                      (template_hole 15,
+                       template_app (template_hole 14, template_hole 13))),
+                   template_var 1)),
+               t_empty)),
+           template_app
+            (template_app (template_hole 0, template_var 2),
+             template_var 0)),
+         template_app
+          (template_hole 12,
+           template_app
+            (template_app
+              (template_hole 10,
+               template_app
+                (template_app
+                  (template_hole 9,
+                   template_app (template_hole 8, template_hole 7)),
+                 template_app
+                  (template_app
+                    (template_app (template_hole 6, template_var 1),
+                     template_var 2),
+                   template_var 0))),
+             template_app
+              (template_app
+                (template_hole 9,
+                 template_app
+                  (template_hole 5,
+                   template_app
+                    (template_hole 4,
+                     template_app (template_hole 14, template_hole 13)))),
+               template_var 1)))))),
+    ("Deutsch_Jozsa.iter_tensor_of_H_fst_pos",
+     "[| ?i < 2 ^ ?n | ?j < 2 ^ ?n; ?i < 2 ^ (?n + 1) & ?j < 2 ^ (?n + 1) |]
+      ==> Matrix.mat (2 ^ Suc ?n) (2 ^ Suc ?n)
+           (%x. complex_of_real
+                 (case x of
+                  (i, j) =>
+                    (- 1) ^ i \<cdot>\<^bsub>Suc ?n\<^esub>  j /
+                    sqrt 2 ^ Suc ?n)) $$
+          (?i, ?j) =
+          complex_of_real (1 / sqrt 2) *
+          Matrix.mat (2 ^ ?n) (2 ^ ?n)
+           (%x. complex_of_real
+                 (case x of
+                  (i, j) =>
+                    (- 1) ^ i \<cdot>\<^bsub>?n\<^esub>  j /
+                    sqrt 2 ^ ?n)) $$
+          (?i mod 2 ^ ?n, ?j mod 2 ^ ?n)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 24,
+                template_app
+                 (template_app (template_hole 23, template_var 2),
+                  template_app
+                   (template_app
+                     (template_hole 22,
+                      template_app
+                       (template_hole 21,
+                        template_app (template_hole 20, template_hole 19))),
+                    template_var 1))),
+              template_app
+               (template_app (template_hole 23, template_var 0),
+                template_app
+                 (template_app
+                   (template_hole 22,
+                    template_app
+                     (template_hole 21,
+                      template_app (template_hole 20, template_hole 19))),
+                  template_var 1)))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 18,
+                template_app
+                 (template_app (template_hole 23, template_var 2),
+                  template_app
+                   (template_app
+                     (template_hole 22,
+                      template_app
+                       (template_hole 21,
+                        template_app (template_hole 20, template_hole 19))),
+                    template_app
+                     (template_app (template_hole 17, template_var 1),
+                      template_hole 16)))),
+              template_app
+               (template_app (template_hole 23, template_var 0),
+                template_app
+                 (template_app
+                   (template_hole 22,
+                    template_app
+                     (template_hole 21,
+                      template_app (template_hole 20, template_hole 19))),
+                  template_app
+                   (template_app (template_hole 17, template_var 1),
+                    template_hole 16))))
+            )],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 14,
+             template_app
+              (template_app
+                (template_app
+                  (template_hole 13,
+                   template_app
+                    (template_app
+                      (template_hole 22,
+                       template_app
+                        (template_hole 21,
+                         template_app
+                          (template_hole 20, template_hole 19))),
+                     template_app (template_hole 12, template_var 1))),
+                 template_app
+                  (template_app
+                    (template_hole 22,
+                     template_app
+                      (template_hole 21,
+                       template_app (template_hole 20, template_hole 19))),
+                   template_app (template_hole 12, template_var 1))),
+               t_empty)),
+           template_app
+            (template_app (template_hole 2, template_var 2),
+             template_var 0)),
+         template_app
+          (template_app
+            (template_hole 1,
+             template_app
+              (template_hole 11,
+               template_app
+                (template_app (template_hole 9, template_hole 6),
+                 template_app
+                  (template_hole 4,
+                   template_app
+                    (template_hole 3,
+                     template_app (template_hole 20, template_hole 19)))))),
+           template_app
+            (template_app
+              (template_hole 14,
+               template_app
+                (template_app
+                  (template_app
+                    (template_hole 13,
+                     template_app
+                      (template_app
+                        (template_hole 22,
+                         template_app
+                          (template_hole 21,
+                           template_app
+                            (template_hole 20, template_hole 19))),
+                       template_var 1)),
+                   template_app
+                    (template_app
+                      (template_hole 22,
+                       template_app
+                        (template_hole 21,
+                         template_app
+                          (template_hole 20, template_hole 19))),
+                     template_var 1)),
+                 t_empty)),
+             template_app
+              (template_app
+                (template_hole 2,
+                 template_app
+                  (template_app (template_hole 0, template_var 2),
+                   template_app
+                    (template_app
+                      (template_hole 22,
+                       template_app
+                        (template_hole 21,
+                         template_app
+                          (template_hole 20, template_hole 19))),
+                     template_var 1))),
+               template_app
+                (template_app (template_hole 0, template_var 0),
+                 template_app
+                  (template_app
+                    (template_hole 22,
+                     template_app
+                      (template_hole 21,
+                       template_app (template_hole 20, template_hole 19))),
+                   template_var 1)))))))),
+    ("Deutsch_Jozsa.iter_tensor_of_H_fst_neg",
+     "[| 2 ^ ?n <= ?i & 2 ^ ?n <= ?j;
+         ?i < 2 ^ (?n + 1) & ?j < 2 ^ (?n + 1) |]
+      ==> Matrix.mat (2 ^ Suc ?n) (2 ^ Suc ?n)
+           (%x. complex_of_real
+                 (case x of
+                  (i, j) =>
+                    (- 1) ^ i \<cdot>\<^bsub>Suc ?n\<^esub>  j /
+                    sqrt 2 ^ Suc ?n)) $$
+          (?i, ?j) =
+          complex_of_real (- 1 / sqrt 2) *
+          Matrix.mat (2 ^ ?n) (2 ^ ?n)
+           (%x. complex_of_real
+                 (case x of
+                  (i, j) =>
+                    (- 1) ^ i \<cdot>\<^bsub>?n\<^esub>  j /
+                    sqrt 2 ^ ?n)) $$
+          (?i mod 2 ^ ?n, ?j mod 2 ^ ?n)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 24,
+                template_app
+                 (template_app
+                   (template_hole 23,
+                    template_app
+                     (template_app
+                       (template_hole 22,
+                        template_app
+                         (template_hole 21,
+                          template_app
+                           (template_hole 20, template_hole 19))),
+                      template_var 2)),
+                  template_var 1)),
+              template_app
+               (template_app
+                 (template_hole 23,
+                  template_app
+                   (template_app
+                     (template_hole 22,
+                      template_app
+                       (template_hole 21,
+                        template_app (template_hole 20, template_hole 19))),
+                    template_var 2)),
+                template_var 0))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 24,
+                template_app
+                 (template_app (template_hole 18, template_var 1),
+                  template_app
+                   (template_app
+                     (template_hole 22,
+                      template_app
+                       (template_hole 21,
+                        template_app (template_hole 20, template_hole 19))),
+                    template_app
+                     (template_app (template_hole 17, template_var 2),
+                      template_hole 16)))),
+              template_app
+               (template_app (template_hole 18, template_var 0),
+                template_app
+                 (template_app
+                   (template_hole 22,
+                    template_app
+                     (template_hole 21,
+                      template_app (template_hole 20, template_hole 19))),
+                  template_app
+                   (template_app (template_hole 17, template_var 2),
+                    template_hole 16))))
+            )],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 14,
+             template_app
+              (template_app
+                (template_app
+                  (template_hole 13,
+                   template_app
+                    (template_app
+                      (template_hole 22,
+                       template_app
+                        (template_hole 21,
+                         template_app
+                          (template_hole 20, template_hole 19))),
+                     template_app (template_hole 12, template_var 2))),
+                 template_app
+                  (template_app
+                    (template_hole 22,
+                     template_app
+                      (template_hole 21,
+                       template_app (template_hole 20, template_hole 19))),
+                   template_app (template_hole 12, template_var 2))),
+               t_empty)),
+           template_app
+            (template_app (template_hole 2, template_var 1),
+             template_var 0)),
+         template_app
+          (template_app
+            (template_hole 1,
+             template_app
+              (template_hole 11,
+               template_app
+                (template_app
+                  (template_hole 9,
+                   template_app (template_hole 7, template_hole 6)),
+                 template_app
+                  (template_hole 4,
+                   template_app
+                    (template_hole 3,
+                     template_app (template_hole 20, template_hole 19)))))),
+           template_app
+            (template_app
+              (template_hole 14,
+               template_app
+                (template_app
+                  (template_app
+                    (template_hole 13,
+                     template_app
+                      (template_app
+                        (template_hole 22,
+                         template_app
+                          (template_hole 21,
+                           template_app
+                            (template_hole 20, template_hole 19))),
+                       template_var 2)),
+                   template_app
+                    (template_app
+                      (template_hole 22,
+                       template_app
+                        (template_hole 21,
+                         template_app
+                          (template_hole 20, template_hole 19))),
+                     template_var 2)),
+                 t_empty)),
+             template_app
+              (template_app
+                (template_hole 2,
+                 template_app
+                  (template_app (template_hole 0, template_var 1),
+                   template_app
+                    (template_app
+                      (template_hole 22,
+                       template_app
+                        (template_hole 21,
+                         template_app
+                          (template_hole 20, template_hole 19))),
+                     template_var 2))),
+               template_app
+                (template_app (template_hole 0, template_var 0),
+                 template_app
+                  (template_app
+                    (template_hole 22,
+                     template_app
+                      (template_hole 21,
+                       template_app (template_hole 20, template_hole 19))),
+                   template_var 2)))))))),
+    ("Deutsch_Jozsa.\<psi>\<^sub>1_values_even",
+     "[| ?i < dim_row
+               (Matrix.mat (2 ^ (?n + 1)) 1
+                 (%x. complex_of_real
+                       (case x of
+                        (i, j) =>
+                          if even i then 1 / sqrt 2 ^ (?n + 1)
+                          else - 1 / sqrt 2 ^ (?n + 1))));
+         ?j < dim_col
+               (Matrix.mat (2 ^ (?n + 1)) 1
+                 (%x. complex_of_real
+                       (case x of
+                        (i, j) =>
+                          if even i then 1 / sqrt 2 ^ (?n + 1)
+                          else - 1 / sqrt 2 ^ (?n + 1))));
+         even ?i |]
+      ==> Matrix.mat (2 ^ (?n + 1)) 1
+           (%x. complex_of_real
+                 (case x of
+                  (i, j) =>
+                    if even i then 1 / sqrt 2 ^ (?n + 1)
+                    else - 1 / sqrt 2 ^ (?n + 1))) $$
+          (?i, ?j) =
+          complex_of_real (1 / sqrt 2 ^ (?n + 1))",
+     template_implication
+      ([template_inequation
+         (less_than, template_var 2,
+          template_app
+           (template_hole 21,
+            template_app
+             (template_app
+               (template_app
+                 (template_hole 20,
+                  template_app
+                   (template_app
+                     (template_hole 19,
+                      template_app
+                       (template_hole 18,
+                        template_app (template_hole 17, template_hole 16))),
+                    template_app
+                     (template_app (template_hole 15, template_var 1),
+                      template_hole 14))),
+                template_hole 14),
+              t_empty))),
+        template_inequation
+         (less_than, template_var 0,
+          template_app
+           (template_hole 3,
+            template_app
+             (template_app
+               (template_app
+                 (template_hole 20,
+                  template_app
+                   (template_app
+                     (template_hole 19,
+                      template_app
+                       (template_hole 18,
+                        template_app (template_hole 17, template_hole 16))),
+                    template_app
+                     (template_app (template_hole 15, template_var 1),
+                      template_hole 14))),
+                template_hole 14),
+              t_empty))),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 10,
+                template_app
+                 (template_hole 18,
+                  template_app (template_hole 17, template_hole 16))),
+              template_var 2)
+            )],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 1,
+             template_app
+              (template_app
+                (template_app
+                  (template_hole 20,
+                   template_app
+                    (template_app
+                      (template_hole 19,
+                       template_app
+                        (template_hole 18,
+                         template_app
+                          (template_hole 17, template_hole 16))),
+                     template_app
+                      (template_app (template_hole 15, template_var 1),
+                       template_hole 14))),
+                 template_hole 14),
+               t_empty)),
+           template_app
+            (template_app (template_hole 0, template_var 2),
+             template_var 0)),
+         template_app
+          (template_hole 13,
+           template_app
+            (template_app (template_hole 9, template_hole 8),
+             template_app
+              (template_app
+                (template_hole 7,
+                 template_app
+                  (template_hole 6,
+                   template_app
+                    (template_hole 5,
+                     template_app (template_hole 17, template_hole 16)))),
+               template_app
+                (template_app (template_hole 15, template_var 1),
+                 template_hole 14))))))),
+    ("Deutsch_Jozsa.\<psi>\<^sub>1_values_odd",
+     "[| ?i < dim_row
+               (Matrix.mat (2 ^ (?n + 1)) 1
+                 (%x. complex_of_real
+                       (case x of
+                        (i, j) =>
+                          if even i then 1 / sqrt 2 ^ (?n + 1)
+                          else - 1 / sqrt 2 ^ (?n + 1))));
+         ?j < dim_col
+               (Matrix.mat (2 ^ (?n + 1)) 1
+                 (%x. complex_of_real
+                       (case x of
+                        (i, j) =>
+                          if even i then 1 / sqrt 2 ^ (?n + 1)
+                          else - 1 / sqrt 2 ^ (?n + 1))));
+         odd ?i |]
+      ==> Matrix.mat (2 ^ (?n + 1)) 1
+           (%x. complex_of_real
+                 (case x of
+                  (i, j) =>
+                    if even i then 1 / sqrt 2 ^ (?n + 1)
+                    else - 1 / sqrt 2 ^ (?n + 1))) $$
+          (?i, ?j) =
+          complex_of_real (- 1 / sqrt 2 ^ (?n + 1))",
+     template_implication
+      ([template_inequation
+         (less_than, template_var 2,
+          template_app
+           (template_hole 22,
+            template_app
+             (template_app
+               (template_app
+                 (template_hole 21,
+                  template_app
+                   (template_app
+                     (template_hole 20,
+                      template_app
+                       (template_hole 19,
+                        template_app (template_hole 18, template_hole 17))),
+                    template_app
+                     (template_app (template_hole 16, template_var 1),
+                      template_hole 15))),
+                template_hole 15),
+              t_empty))),
+        template_inequation
+         (less_than, template_var 0,
+          template_app
+           (template_hole 4,
+            template_app
+             (template_app
+               (template_app
+                 (template_hole 21,
+                  template_app
+                   (template_app
+                     (template_hole 20,
+                      template_app
+                       (template_hole 19,
+                        template_app (template_hole 18, template_hole 17))),
+                    template_app
+                     (template_app (template_hole 16, template_var 1),
+                      template_hole 15))),
+                template_hole 15),
+              t_empty))),
+        template_negation
+         (
+            template_predicate
+             (
+                template_app
+                 (template_app
+                   (template_hole 11,
+                    template_app
+                     (template_hole 19,
+                      template_app (template_hole 18, template_hole 17))),
+                  template_var 2)
+                )
+            )],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 1,
+             template_app
+              (template_app
+                (template_app
+                  (template_hole 21,
+                   template_app
+                    (template_app
+                      (template_hole 20,
+                       template_app
+                        (template_hole 19,
+                         template_app
+                          (template_hole 18, template_hole 17))),
+                     template_app
+                      (template_app (template_hole 16, template_var 1),
+                       template_hole 15))),
+                 template_hole 15),
+               t_empty)),
+           template_app
+            (template_app (template_hole 0, template_var 2),
+             template_var 0)),
+         template_app
+          (template_hole 14,
+           template_app
+            (template_app
+              (template_hole 10,
+               template_app (template_hole 5, template_hole 9)),
+             template_app
+              (template_app
+                (template_hole 8,
+                 template_app
+                  (template_hole 7,
+                   template_app
+                    (template_hole 6,
+                     template_app (template_hole 18, template_hole 17)))),
+               template_app
+                (template_app (template_hole 16, template_var 1),
+                 template_hole 15))))))),
+    ("Deutsch_Jozsa.HId_values",
+     "[| 1 <= ?n;
+         ?i < dim_row
+               (Matrix.mat (2 ^ (?n + 1)) (2 ^ (?n + 1))
+                 (%x. complex_of_real
+                       (case x of
+                        (i, j) =>
+                          if i mod 2 = j mod 2
+                          then (- 1) ^
+                               i div 2 \<cdot>\<^bsub>?n\<^esub>  j div 2 /
+                               sqrt 2 ^ ?n
+                          else 0)));
+         ?j < dim_col
+               (Matrix.mat (2 ^ (?n + 1)) (2 ^ (?n + 1))
+                 (%x. complex_of_real
+                       (case x of
+                        (i, j) =>
+                          if i mod 2 = j mod 2
+                          then (- 1) ^
+                               i div 2 \<cdot>\<^bsub>?n\<^esub>  j div 2 /
+                               sqrt 2 ^ ?n
+                          else 0))) |]
+      ==> ?i mod 2 ~= ?j mod 2 -->
+          Matrix.mat (2 ^ (?n + 1)) (2 ^ (?n + 1))
+           (%x. complex_of_real
+                 (case x of
+                  (i, j) =>
+                    if i mod 2 = j mod 2
+                    then (- 1) ^
+                         i div 2 \<cdot>\<^bsub>?n\<^esub>  j div 2 /
+                         sqrt 2 ^ ?n
+                    else 0)) $$
+          (?i, ?j) =
+          0",
+     template_implication
+      ([template_inequation (less_equals, template_hole 29, template_var 2),
+        template_inequation
+         (less_than, template_var 1,
+          template_app
+           (template_hole 27,
+            template_app
+             (template_app
+               (template_app
+                 (template_hole 26,
+                  template_app
+                   (template_app
+                     (template_hole 25,
+                      template_app
+                       (template_hole 24,
+                        template_app (template_hole 23, template_hole 22))),
+                    template_app
+                     (template_app (template_hole 21, template_var 2),
+                      template_hole 29))),
+                template_app
+                 (template_app
+                   (template_hole 25,
+                    template_app
+                     (template_hole 24,
+                      template_app (template_hole 23, template_hole 22))),
+                  template_app
+                   (template_app (template_hole 21, template_var 2),
+                    template_hole 29))),
+              t_empty))),
+        template_inequation
+         (less_than, template_var 0,
+          template_app
+           (template_hole 6,
+            template_app
+             (template_app
+               (template_app
+                 (template_hole 26,
+                  template_app
+                   (template_app
+                     (template_hole 25,
+                      template_app
+                       (template_hole 24,
+                        template_app (template_hole 23, template_hole 22))),
+                    template_app
+                     (template_app (template_hole 21, template_var 2),
+                      template_hole 29))),
+                template_app
+                 (template_app
+                   (template_hole 25,
+                    template_app
+                     (template_hole 24,
+                      template_app (template_hole 23, template_hole 22))),
+                  template_app
+                   (template_app (template_hole 21, template_var 2),
+                    template_hole 29))),
+              t_empty)))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 5,
+               template_app
+                (template_hole 4,
+                 template_app
+                  (template_app
+                    (template_hole 17,
+                     template_app
+                      (template_app (template_hole 16, template_var 1),
+                       template_app
+                        (template_hole 24,
+                         template_app
+                          (template_hole 23, template_hole 22)))),
+                   template_app
+                    (template_app (template_hole 16, template_var 0),
+                     template_app
+                      (template_hole 24,
+                       template_app
+                        (template_hole 23, template_hole 22)))))),
+             template_app
+              (template_app
+                (template_hole 3,
+                 template_app
+                  (template_app
+                    (template_hole 2,
+                     template_app
+                      (template_app
+                        (template_app
+                          (template_hole 26,
+                           template_app
+                            (template_app
+                              (template_hole 25,
+                               template_app
+                                (template_hole 24,
+                                 template_app
+                                  (template_hole 23, template_hole 22))),
+                             template_app
+                              (template_app
+                                (template_hole 21, template_var 2),
+                               template_hole 29))),
+                         template_app
+                          (template_app
+                            (template_hole 25,
+                             template_app
+                              (template_hole 24,
+                               template_app
+                                (template_hole 23, template_hole 22))),
+                           template_app
+                            (template_app
+                              (template_hole 21, template_var 2),
+                             template_hole 29))),
+                       t_empty)),
+                   template_app
+                    (template_app (template_hole 1, template_var 1),
+                     template_var 0))),
+               template_hole 0))
+           ))),
+    ("Deutsch_Jozsa.HId_values",
+     "[| 1 <= ?n;
+         ?i < dim_row
+               (Matrix.mat (2 ^ (?n + 1)) (2 ^ (?n + 1))
+                 (%x. complex_of_real
+                       (case x of
+                        (i, j) =>
+                          if i mod 2 = j mod 2
+                          then (- 1) ^
+                               i div 2 \<cdot>\<^bsub>?n\<^esub>  j div 2 /
+                               sqrt 2 ^ ?n
+                          else 0)));
+         ?j < dim_col
+               (Matrix.mat (2 ^ (?n + 1)) (2 ^ (?n + 1))
+                 (%x. complex_of_real
+                       (case x of
+                        (i, j) =>
+                          if i mod 2 = j mod 2
+                          then (- 1) ^
+                               i div 2 \<cdot>\<^bsub>?n\<^esub>  j div 2 /
+                               sqrt 2 ^ ?n
+                          else 0))) |]
+      ==> even ?i & even ?j -->
+          Matrix.mat (2 ^ (?n + 1)) (2 ^ (?n + 1))
+           (%x. complex_of_real
+                 (case x of
+                  (i, j) =>
+                    if i mod 2 = j mod 2
+                    then (- 1) ^
+                         i div 2 \<cdot>\<^bsub>?n\<^esub>  j div 2 /
+                         sqrt 2 ^ ?n
+                    else 0)) $$
+          (?i, ?j) =
+          complex_of_real
+           ((- 1) ^ ?i div 2 \<cdot>\<^bsub>?n\<^esub>  ?j div 2 /
+            sqrt 2 ^ ?n)",
+     template_implication
+      ([template_inequation (less_equals, template_hole 29, template_var 2),
+        template_inequation
+         (less_than, template_var 1,
+          template_app
+           (template_hole 27,
+            template_app
+             (template_app
+               (template_app
+                 (template_hole 26,
+                  template_app
+                   (template_app
+                     (template_hole 25,
+                      template_app
+                       (template_hole 24,
+                        template_app (template_hole 23, template_hole 22))),
+                    template_app
+                     (template_app (template_hole 21, template_var 2),
+                      template_hole 29))),
+                template_app
+                 (template_app
+                   (template_hole 25,
+                    template_app
+                     (template_hole 24,
+                      template_app (template_hole 23, template_hole 22))),
+                  template_app
+                   (template_app (template_hole 21, template_var 2),
+                    template_hole 29))),
+              t_empty))),
+        template_inequation
+         (less_than, template_var 0,
+          template_app
+           (template_hole 6,
+            template_app
+             (template_app
+               (template_app
+                 (template_hole 26,
+                  template_app
+                   (template_app
+                     (template_hole 25,
+                      template_app
+                       (template_hole 24,
+                        template_app (template_hole 23, template_hole 22))),
+                    template_app
+                     (template_app (template_hole 21, template_var 2),
+                      template_hole 29))),
+                template_app
+                 (template_app
+                   (template_hole 25,
+                    template_app
+                     (template_hole 24,
+                      template_app (template_hole 23, template_hole 22))),
+                  template_app
+                   (template_app (template_hole 21, template_var 2),
+                    template_hole 29))),
+              t_empty)))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 5,
+               template_app
+                (template_app
+                  (template_hole 4,
+                   template_app
+                    (template_app
+                      (template_hole 3,
+                       template_app
+                        (template_hole 24,
+                         template_app
+                          (template_hole 23, template_hole 22))),
+                     template_var 1)),
+                 template_app
+                  (template_app
+                    (template_hole 3,
+                     template_app
+                      (template_hole 24,
+                       template_app (template_hole 23, template_hole 22))),
+                   template_var 0))),
+             template_app
+              (template_app
+                (template_hole 2,
+                 template_app
+                  (template_app
+                    (template_hole 1,
+                     template_app
+                      (template_app
+                        (template_app
+                          (template_hole 26,
+                           template_app
+                            (template_app
+                              (template_hole 25,
+                               template_app
+                                (template_hole 24,
+                                 template_app
+                                  (template_hole 23, template_hole 22))),
+                             template_app
+                              (template_app
+                                (template_hole 21, template_var 2),
+                               template_hole 29))),
+                         template_app
+                          (template_app
+                            (template_hole 25,
+                             template_app
+                              (template_hole 24,
+                               template_app
+                                (template_hole 23, template_hole 22))),
+                           template_app
+                            (template_app
+                              (template_hole 21, template_var 2),
+                             template_hole 29))),
+                       t_empty)),
+                   template_app
+                    (template_app (template_hole 0, template_var 1),
+                     template_var 0))),
+               template_app
+                (template_hole 20,
+                 template_app
+                  (template_app
+                    (template_hole 15,
+                     template_app
+                      (template_app
+                        (template_hole 14,
+                         template_app (template_hole 13, template_hole 12)),
+                       template_app
+                        (template_app
+                          (template_app (template_hole 11, template_var 2),
+                           template_app
+                            (template_app
+                              (template_hole 10, template_var 1),
+                             template_app
+                              (template_hole 24,
+                               template_app
+                                (template_hole 23, template_hole 22)))),
+                         template_app
+                          (template_app (template_hole 10, template_var 0),
+                           template_app
+                            (template_hole 24,
+                             template_app
+                              (template_hole 23, template_hole 22)))))),
+                   template_app
+                    (template_app
+                      (template_hole 14,
+                       template_app
+                        (template_hole 9,
+                         template_app
+                          (template_hole 8,
+                           template_app
+                            (template_hole 23, template_hole 22)))),
+                     template_var 2)))))
+           ))),
+    ("Deutsch_Jozsa.HId_values",
+     "[| 1 <= ?n;
+         ?i < dim_row
+               (Matrix.mat (2 ^ (?n + 1)) (2 ^ (?n + 1))
+                 (%x. complex_of_real
+                       (case x of
+                        (i, j) =>
+                          if i mod 2 = j mod 2
+                          then (- 1) ^
+                               i div 2 \<cdot>\<^bsub>?n\<^esub>  j div 2 /
+                               sqrt 2 ^ ?n
+                          else 0)));
+         ?j < dim_col
+               (Matrix.mat (2 ^ (?n + 1)) (2 ^ (?n + 1))
+                 (%x. complex_of_real
+                       (case x of
+                        (i, j) =>
+                          if i mod 2 = j mod 2
+                          then (- 1) ^
+                               i div 2 \<cdot>\<^bsub>?n\<^esub>  j div 2 /
+                               sqrt 2 ^ ?n
+                          else 0))) |]
+      ==> ?i mod 2 = ?j mod 2 -->
+          Matrix.mat (2 ^ (?n + 1)) (2 ^ (?n + 1))
+           (%x. complex_of_real
+                 (case x of
+                  (i, j) =>
+                    if i mod 2 = j mod 2
+                    then (- 1) ^
+                         i div 2 \<cdot>\<^bsub>?n\<^esub>  j div 2 /
+                         sqrt 2 ^ ?n
+                    else 0)) $$
+          (?i, ?j) =
+          complex_of_real
+           ((- 1) ^ ?i div 2 \<cdot>\<^bsub>?n\<^esub>  ?j div 2 /
+            sqrt 2 ^ ?n)",
+     template_implication
+      ([template_inequation (less_equals, template_hole 27, template_var 2),
+        template_inequation
+         (less_than, template_var 1,
+          template_app
+           (template_hole 25,
+            template_app
+             (template_app
+               (template_app
+                 (template_hole 24,
+                  template_app
+                   (template_app
+                     (template_hole 23,
+                      template_app
+                       (template_hole 22,
+                        template_app (template_hole 21, template_hole 20))),
+                    template_app
+                     (template_app (template_hole 19, template_var 2),
+                      template_hole 27))),
+                template_app
+                 (template_app
+                   (template_hole 23,
+                    template_app
+                     (template_hole 22,
+                      template_app (template_hole 21, template_hole 20))),
+                  template_app
+                   (template_app (template_hole 19, template_var 2),
+                    template_hole 27))),
+              t_empty))),
+        template_inequation
+         (less_than, template_var 0,
+          template_app
+           (template_hole 4,
+            template_app
+             (template_app
+               (template_app
+                 (template_hole 24,
+                  template_app
+                   (template_app
+                     (template_hole 23,
+                      template_app
+                       (template_hole 22,
+                        template_app (template_hole 21, template_hole 20))),
+                    template_app
+                     (template_app (template_hole 19, template_var 2),
+                      template_hole 27))),
+                template_app
+                 (template_app
+                   (template_hole 23,
+                    template_app
+                     (template_hole 22,
+                      template_app (template_hole 21, template_hole 20))),
+                  template_app
+                   (template_app (template_hole 19, template_var 2),
+                    template_hole 27))),
+              t_empty)))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 3,
+               template_app
+                (template_app
+                  (template_hole 15,
+                   template_app
+                    (template_app (template_hole 14, template_var 1),
+                     template_app
+                      (template_hole 22,
+                       template_app (template_hole 21, template_hole 20)))),
+                 template_app
+                  (template_app (template_hole 14, template_var 0),
+                   template_app
+                    (template_hole 22,
+                     template_app (template_hole 21, template_hole 20))))),
+             template_app
+              (template_app
+                (template_hole 2,
+                 template_app
+                  (template_app
+                    (template_hole 1,
+                     template_app
+                      (template_app
+                        (template_app
+                          (template_hole 24,
+                           template_app
+                            (template_app
+                              (template_hole 23,
+                               template_app
+                                (template_hole 22,
+                                 template_app
+                                  (template_hole 21, template_hole 20))),
+                             template_app
+                              (template_app
+                                (template_hole 19, template_var 2),
+                               template_hole 27))),
+                         template_app
+                          (template_app
+                            (template_hole 23,
+                             template_app
+                              (template_hole 22,
+                               template_app
+                                (template_hole 21, template_hole 20))),
+                           template_app
+                            (template_app
+                              (template_hole 19, template_var 2),
+                             template_hole 27))),
+                       t_empty)),
+                   template_app
+                    (template_app (template_hole 0, template_var 1),
+                     template_var 0))),
+               template_app
+                (template_hole 18,
+                 template_app
+                  (template_app
+                    (template_hole 13,
+                     template_app
+                      (template_app
+                        (template_hole 12,
+                         template_app (template_hole 11, template_hole 10)),
+                       template_app
+                        (template_app
+                          (template_app (template_hole 9, template_var 2),
+                           template_app
+                            (template_app (template_hole 8, template_var 1),
+                             template_app
+                              (template_hole 22,
+                               template_app
+                                (template_hole 21, template_hole 20)))),
+                         template_app
+                          (template_app (template_hole 8, template_var 0),
+                           template_app
+                            (template_hole 22,
+                             template_app
+                              (template_hole 21, template_hole 20)))))),
+                   template_app
+                    (template_app
+                      (template_hole 12,
+                       template_app
+                        (template_hole 7,
+                         template_app
+                          (template_hole 6,
+                           template_app
+                            (template_hole 21, template_hole 20)))),
+                     template_var 2)))))
+           ))),
+    ("Deutsch_Jozsa.HId_values",
+     "[| 1 <= ?n;
+         ?i < dim_row
+               (Matrix.mat (2 ^ (?n + 1)) (2 ^ (?n + 1))
+                 (%x. complex_of_real
+                       (case x of
+                        (i, j) =>
+                          if i mod 2 = j mod 2
+                          then (- 1) ^
+                               i div 2 \<cdot>\<^bsub>?n\<^esub>  j div 2 /
+                               sqrt 2 ^ ?n
+                          else 0)));
+         ?j < dim_col
+               (Matrix.mat (2 ^ (?n + 1)) (2 ^ (?n + 1))
+                 (%x. complex_of_real
+                       (case x of
+                        (i, j) =>
+                          if i mod 2 = j mod 2
+                          then (- 1) ^
+                               i div 2 \<cdot>\<^bsub>?n\<^esub>  j div 2 /
+                               sqrt 2 ^ ?n
+                          else 0))) |]
+      ==> odd ?i & odd ?j -->
+          Matrix.mat (2 ^ (?n + 1)) (2 ^ (?n + 1))
+           (%x. complex_of_real
+                 (case x of
+                  (i, j) =>
+                    if i mod 2 = j mod 2
+                    then (- 1) ^
+                         i div 2 \<cdot>\<^bsub>?n\<^esub>  j div 2 /
+                         sqrt 2 ^ ?n
+                    else 0)) $$
+          (?i, ?j) =
+          complex_of_real
+           ((- 1) ^ ?i div 2 \<cdot>\<^bsub>?n\<^esub>  ?j div 2 /
+            sqrt 2 ^ ?n)",
+     template_implication
+      ([template_inequation (less_equals, template_hole 30, template_var 2),
+        template_inequation
+         (less_than, template_var 1,
+          template_app
+           (template_hole 28,
+            template_app
+             (template_app
+               (template_app
+                 (template_hole 27,
+                  template_app
+                   (template_app
+                     (template_hole 26,
+                      template_app
+                       (template_hole 25,
+                        template_app (template_hole 24, template_hole 23))),
+                    template_app
+                     (template_app (template_hole 22, template_var 2),
+                      template_hole 30))),
+                template_app
+                 (template_app
+                   (template_hole 26,
+                    template_app
+                     (template_hole 25,
+                      template_app (template_hole 24, template_hole 23))),
+                  template_app
+                   (template_app (template_hole 22, template_var 2),
+                    template_hole 30))),
+              t_empty))),
+        template_inequation
+         (less_than, template_var 0,
+          template_app
+           (template_hole 7,
+            template_app
+             (template_app
+               (template_app
+                 (template_hole 27,
+                  template_app
+                   (template_app
+                     (template_hole 26,
+                      template_app
+                       (template_hole 25,
+                        template_app (template_hole 24, template_hole 23))),
+                    template_app
+                     (template_app (template_hole 22, template_var 2),
+                      template_hole 30))),
+                template_app
+                 (template_app
+                   (template_hole 26,
+                    template_app
+                     (template_hole 25,
+                      template_app (template_hole 24, template_hole 23))),
+                  template_app
+                   (template_app (template_hole 22, template_var 2),
+                    template_hole 30))),
+              t_empty)))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 6,
+               template_app
+                (template_app
+                  (template_hole 5,
+                   template_app
+                    (template_hole 4,
+                     template_app
+                      (template_app
+                        (template_hole 3,
+                         template_app
+                          (template_hole 25,
+                           template_app
+                            (template_hole 24, template_hole 23))),
+                       template_var 1))),
+                 template_app
+                  (template_hole 4,
+                   template_app
+                    (template_app
+                      (template_hole 3,
+                       template_app
+                        (template_hole 25,
+                         template_app
+                          (template_hole 24, template_hole 23))),
+                     template_var 0)))),
+             template_app
+              (template_app
+                (template_hole 2,
+                 template_app
+                  (template_app
+                    (template_hole 1,
+                     template_app
+                      (template_app
+                        (template_app
+                          (template_hole 27,
+                           template_app
+                            (template_app
+                              (template_hole 26,
+                               template_app
+                                (template_hole 25,
+                                 template_app
+                                  (template_hole 24, template_hole 23))),
+                             template_app
+                              (template_app
+                                (template_hole 22, template_var 2),
+                               template_hole 30))),
+                         template_app
+                          (template_app
+                            (template_hole 26,
+                             template_app
+                              (template_hole 25,
+                               template_app
+                                (template_hole 24, template_hole 23))),
+                           template_app
+                            (template_app
+                              (template_hole 22, template_var 2),
+                             template_hole 30))),
+                       t_empty)),
+                   template_app
+                    (template_app (template_hole 0, template_var 1),
+                     template_var 0))),
+               template_app
+                (template_hole 21,
+                 template_app
+                  (template_app
+                    (template_hole 16,
+                     template_app
+                      (template_app
+                        (template_hole 15,
+                         template_app (template_hole 14, template_hole 13)),
+                       template_app
+                        (template_app
+                          (template_app (template_hole 12, template_var 2),
+                           template_app
+                            (template_app
+                              (template_hole 11, template_var 1),
+                             template_app
+                              (template_hole 25,
+                               template_app
+                                (template_hole 24, template_hole 23)))),
+                         template_app
+                          (template_app (template_hole 11, template_var 0),
+                           template_app
+                            (template_hole 25,
+                             template_app
+                              (template_hole 24, template_hole 23)))))),
+                   template_app
+                    (template_app
+                      (template_hole 15,
+                       template_app
+                        (template_hole 10,
+                         template_app
+                          (template_hole 9,
+                           template_app
+                            (template_hole 24, template_hole 23)))),
+                     template_var 2)))))
+           )))]:
+   (string * thm * template) list
+### theory "Draft.Deutsch_JozsaTemplates"
+### 1.081s elapsed time, 1.773s cpu time, 0.845s GC time
+val it = (): unit

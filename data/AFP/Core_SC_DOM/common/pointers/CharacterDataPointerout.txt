@@ -1,0 +1,296 @@
+Loading theory "Draft.Hiding_Type_Variables" (required by "Draft.CharacterDataPointerTemplates" via "Draft.CharacterDataPointer" via "Draft.ElementPointer" via "Draft.NodePointer" via "Draft.ObjectPointer" via "Draft.Ref")
+Loading theory "Draft.Templates" (required by "Draft.CharacterDataPointerTemplates" via "Draft.ExtrEqs")
+datatype template_term
+=
+     t_empty
+   | template_app of template_term * template_term
+   | template_hole of int
+   | template_var of int
+datatype sign
+= equals | greater_equals | greater_than | less_equals | less_than
+datatype template
+=
+     template_bimplication of template * template
+   | template_dunno
+   | template_equation of template_term * template_term
+   | template_implication of template list * template
+   | template_inequation of sign * template_term * template_term
+   | template_negation of template
+   | template_predicate of template_term
+constructor t_empty: template_term
+constructor template_app: template_term * template_term -> template_term
+constructor template_hole: int -> template_term
+constructor template_var: int -> template_term
+constructor equals: sign
+constructor greater_equals: sign
+constructor greater_than: sign
+constructor less_equals: sign
+constructor less_than: sign
+constructor template_bimplication: template * template -> template
+constructor template_dunno: template
+constructor template_equation: template_term * template_term -> template
+constructor template_implication: template list * template -> template
+constructor template_inequation:
+   sign * template_term * template_term -> template
+constructor template_negation: template -> template
+constructor template_predicate: template_term -> template
+val vfs = fn: term -> (indexname * typ) list * (string * typ) list
+val indexOf = fn: ''a list -> ''a -> int -> int
+val has_eq = fn: term -> bool
+val term2template = fn:
+   (indexname * typ) list -> (string * typ) list -> term -> template_term
+val lemma2predicate = fn: term -> term -> template
+val makeTemplatewithContext = fn: term -> term -> template
+val lemma2template = fn: term -> template
+val thm2template = fn: thm -> template
+val tterm2string = fn: template_term -> string
+val template2string = fn: template -> string
+val t = "height ?t <= size ?t": thm
+val th =
+   Const ("HOL.Trueprop", "bool => prop") $
+     (Const ("Orderings.ord_class.less_eq", "nat => nat => bool") $
+       (Const ("Tree.height_class.height", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree")) $
+       (Const ("Nat.size_class.size", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree"))):
+   term
+### theory "Draft.Templates"
+### 0.075s elapsed time, 0.185s cpu time, 0.000s GC time
+Loading theory "Draft.ExtrEqs" (required by "Draft.CharacterDataPointerTemplates")
+signature HIDE_TVAR =
+  sig
+    val hide_tvar_ast_tr: Proof.context -> Ast.ast list -> Ast.ast
+    val hide_tvar_subst_ast_tr:
+       tvar_subst -> Proof.context -> Ast.ast list -> Ast.ast
+    val hide_tvar_subst_return_ast_tr:
+       tvar_subst -> Proof.context -> Ast.ast list -> Ast.ast
+    val hide_tvar_tr': string -> Proof.context -> term list -> term
+    type hide_varT =
+       {name: string,
+        parse_mode: parse_mode,
+        print_mode: print_mode,
+        tvars: typ list,
+        typ_syn_tab: (string * typ list * string) Symtab.table}
+    val lookup: theory -> string -> hide_varT option
+    datatype parse_mode = noparse | parse
+    val parse_parse_mode: string -> parse_mode
+    val parse_print_mode: string -> print_mode
+    datatype print_mode = noprint | print | print_all
+    val register:
+       string -> print_mode option -> parse_mode option -> theory -> theory
+    datatype tvar_subst = left | right
+    val update_mode:
+       string -> print_mode option -> parse_mode option -> theory -> theory
+  end
+structure Hide_Tvar: HIDE_TVAR
+val modeP = fn: Token.T list -> (string * string) * Token.T list
+val typ_modeP = fn:
+   Token.T list -> (string * (string * string)) * Token.T list
+### theory "Draft.Hiding_Type_Variables"
+### 0.589s elapsed time, 1.240s cpu time, 0.104s GC time
+Loading theory "Draft.Ref" (required by "Draft.CharacterDataPointerTemplates" via "Draft.CharacterDataPointer" via "Draft.ElementPointer" via "Draft.NodePointer" via "Draft.ObjectPointer")
+val eqpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Var (("_dummy_", 2), "?'a"))
+       ):
+   term Find_Theorems.criterion
+val badeqpattern = Pattern (Const ("Pure.eq", "?'a => ?'a => prop")):
+   term Find_Theorems.criterion
+val undefpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Const ("HOL.undefined", "?'a"))
+       ):
+   term Find_Theorems.criterion
+val thmpattern =
+   Pattern
+    (Const ("HOL.Trueprop", "bool => prop") $ Var (("_dummy_", 1), "bool")):
+   term Find_Theorems.criterion
+val badnames =
+   ["*nitpick*", "*Nitpick*", "*full_exhaustive*", "*_def*", "Enum.finite*",
+    "*Quickcheck*", "ATP*", "*Nunchaku*", "*Code*", "*BNF*", "*SMT*",
+    "*.*.*"]:
+   string list
+val unwanted_names =
+   [(false, Name "*nitpick*"), (false, Name "*Nitpick*"),
+    (false, Name "*full_exhaustive*"), (false, Name "*_def*"),
+    (false, Name "Enum.finite*"), (false, Name "*Quickcheck*"),
+    (false, Name "ATP*"), (false, Name "*Nunchaku*"),
+    (false, Name "*Code*"), (false, Name "*BNF*"), (false, Name "*SMT*"),
+    (false, Name "*.*.*")]:
+   (bool * term Find_Theorems.criterion) list
+val has_vars = fn: term -> bool
+val get_all_eqs = fn: string -> Proof.context -> (string * thm) list
+val get_all_thms = fn: string -> Proof.context -> (string * thm) list
+val get_noneq_thms = fn: string -> Proof.context -> (string * thm) list
+val template_eqs = fn:
+   string -> Proof.context -> (string * thm * template) list
+val template_thms = fn:
+   string -> Proof.context -> (string * thm * template) list
+### theory "Draft.ExtrEqs"
+### 0.536s elapsed time, 1.105s cpu time, 0.104s GC time
+instantiation
+  sum :: (linorder, linorder) linorder
+  less_eq_sum == less_eq :: 'a + 'b => 'a + 'b => bool
+  less_sum == less :: 'a + 'b => 'a + 'b => bool
+### theory "Draft.Ref"
+### 0.114s elapsed time, 0.132s cpu time, 0.000s GC time
+Loading theory "Draft.ObjectPointer" (required by "Draft.CharacterDataPointerTemplates" via "Draft.CharacterDataPointer" via "Draft.ElementPointer" via "Draft.NodePointer")
+instantiation
+  (_) object_ptr :: (linorder) linorder
+  less_eq_object_ptr == less_eq :: (_) object_ptr => (_) object_ptr => bool
+  less_object_ptr == less :: (_) object_ptr => (_) object_ptr => bool
+### theory "Draft.ObjectPointer"
+### 0.283s elapsed time, 0.323s cpu time, 0.057s GC time
+Loading theory "Draft.NodePointer" (required by "Draft.CharacterDataPointerTemplates" via "Draft.CharacterDataPointer" via "Draft.ElementPointer")
+instantiation
+  (_) node_ptr :: (linorder) linorder
+  less_eq_node_ptr == less_eq :: (_) node_ptr => (_) node_ptr => bool
+  less_node_ptr == less :: (_) node_ptr => (_) node_ptr => bool
+### theory "Draft.NodePointer"
+### 0.285s elapsed time, 0.286s cpu time, 0.000s GC time
+Loading theory "Draft.ElementPointer" (required by "Draft.CharacterDataPointerTemplates" via "Draft.CharacterDataPointer")
+instantiation
+  (_) element_ptr :: (linorder) linorder
+  less_eq_element_ptr == less_eq ::
+    (_) element_ptr => (_) element_ptr => bool
+  less_element_ptr == less :: (_) element_ptr => (_) element_ptr => bool
+### theory "Draft.ElementPointer"
+### 0.414s elapsed time, 0.463s cpu time, 0.071s GC time
+Loading theory "Draft.CharacterDataPointer" (required by "Draft.CharacterDataPointerTemplates")
+instantiation
+  (_) character_data_ptr :: (linorder) linorder
+  less_eq_character_data_ptr == less_eq ::
+    (_) character_data_ptr => (_) character_data_ptr => bool
+  less_character_data_ptr == less ::
+    (_) character_data_ptr => (_) character_data_ptr => bool
+### theory "Draft.CharacterDataPointer"
+### 0.455s elapsed time, 0.502s cpu time, 0.067s GC time
+Loading theory "Draft.CharacterDataPointerTemplates"
+val templateLemmas =
+   [("CharacterDataPointer.is_character_data_ptr_ref",
+     "is_character_data_ptr (character_data_ptr.Ref ?n)",
+     template_predicate
+      (
+         template_app
+          (template_hole 1, template_app (template_hole 0, template_var 0))
+         )),
+    ("CharacterDataPointer.is_character_data_ptr_kind\<^sub>_cast",
+     "is_character_data_ptr_kind (cast ?character_data_ptr)",
+     template_predicate
+      (
+         template_app
+          (template_hole 1, template_app (template_hole 0, template_var 0))
+         )),
+    ("CharacterDataPointer.is_character_data_ptr_kind_not_element_ptr",
+     "~ is_character_data_ptr_kind (cast ?element_ptr)",
+     template_negation
+      (
+         template_predicate
+          (
+             template_app
+              (template_hole 1,
+               template_app (template_hole 0, template_var 0))
+             )
+         )),
+    ("CharacterDataPointer.is_element_ptr_kind_not_character_data_ptr",
+     "~ is_element_ptr_kind (cast ?character_data_ptr)",
+     template_negation
+      (
+         template_predicate
+          (
+             template_app
+              (template_hole 1,
+               template_app (template_hole 0, template_var 0))
+             )
+         )),
+    ("CharacterDataPointer.cast_element_ptr_not_character_data_ptr",
+     "cast ?element_ptr ~= cast ?character_data_ptr",
+     template_negation
+      (
+         template_equation
+          (template_app (template_hole 1, template_var 1),
+           template_app (template_hole 0, template_var 0))
+         )),
+    ("CharacterDataPointer.cast_element_ptr_not_character_data_ptr",
+     "cast ?character_data_ptr ~= cast ?element_ptr",
+     template_negation
+      (
+         template_equation
+          (template_app (template_hole 1, template_var 1),
+           template_app (template_hole 0, template_var 0))
+         )),
+    ("CharacterDataPointer.character_data_ptr_casts_commute2",
+     "cast (cast ?character_data_ptr) = Some ?character_data_ptr",
+     template_equation
+      (template_app
+        (template_hole 2, template_app (template_hole 1, template_var 0)),
+       template_app (template_hole 0, template_var 0))),
+    ("CharacterDataPointer.cast\<^sub>n\<^sub>o\<^sub>d\<^sub>e\<^sub>_\<^sub>p\<^sub>t\<^sub>r\<^sub>2\<^sub>c\<^sub>h\<^sub>a\<^sub>r\<^sub>a\<^sub>c\<^sub>t\<^sub>e\<^sub>r\<^sub>_\<^sub>d\<^sub>a\<^sub>t\<^sub>a\<^sub>_\<^sub>p\<^sub>t\<^sub>r_ext_none",
+     "cast (node_ptr.Ext (Inr (Inr ?node_ext_ptr))) = None",
+     template_equation
+      (template_app
+        (template_hole 4,
+         template_app
+          (template_hole 3,
+           template_app
+            (template_hole 2,
+             template_app (template_hole 1, template_var 0)))),
+       template_hole 0)),
+    ("CharacterDataPointer.cast\<^sub>c\<^sub>h\<^sub>a\<^sub>r\<^sub>a\<^sub>c\<^sub>t\<^sub>e\<^sub>r\<^sub>_\<^sub>d\<^sub>a\<^sub>t\<^sub>a\<^sub>_\<^sub>p\<^sub>t\<^sub>r\<^sub>2\<^sub>n\<^sub>o\<^sub>d\<^sub>e\<^sub>_\<^sub>p\<^sub>t\<^sub>r_inject",
+     "(cast ?x = cast ?y) = (?x = ?y)",
+     template_bimplication
+      (template_equation
+        (template_app (template_hole 1, template_var 1),
+         template_app (template_hole 1, template_var 0)),
+       template_equation (template_var 1, template_var 0))),
+    ("CharacterDataPointer.is_character_data_ptr_kind_none",
+     "~ is_character_data_ptr_kind ?node_ptr ==> cast ?node_ptr = None",
+     template_implication
+      ([template_negation
+         (
+            template_predicate
+             (template_app (template_hole 3, template_var 0))
+            )],
+       template_equation
+        (template_app (template_hole 1, template_var 0), template_hole 0))),
+    ("CharacterDataPointer.character_data_ptr_casts_commute",
+     "(cast ?node_ptr = Some ?character_data_ptr) =
+      (cast ?character_data_ptr = ?node_ptr)",
+     template_bimplication
+      (template_equation
+        (template_app (template_hole 3, template_var 1),
+         template_app (template_hole 2, template_var 0)),
+       template_equation
+        (template_app (template_hole 0, template_var 0), template_var 1))),
+    ("CharacterDataPointer.character_data_ptr_casts_commute3",
+     "is_character_data_ptr_kind ?node_ptr ==>
+      cast (the (cast ?node_ptr)) = ?node_ptr",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 4, template_var 0))],
+       template_equation
+        (template_app
+          (template_hole 2,
+           template_app
+            (template_hole 1,
+             template_app (template_hole 0, template_var 0))),
+         template_var 0))),
+    ("CharacterDataPointer.is_character_data_ptr_kind_obtains",
+     "[| is_character_data_ptr_kind ?node_ptr;
+         !!character_data_ptr.
+            cast character_data_ptr = ?node_ptr ==> ?thesis |]
+      ==> ?thesis",
+     template_implication
+      ([template_predicate (template_app (template_hole 3, template_var 1)),
+        template_predicate (template_app (template_hole 2, t_empty))],
+       template_predicate (template_var 0)))]:
+   (string * thm * template) list
+### theory "Draft.CharacterDataPointerTemplates"
+### 0.521s elapsed time, 0.926s cpu time, 0.447s GC time
+val it = (): unit

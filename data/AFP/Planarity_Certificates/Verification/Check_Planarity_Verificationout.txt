@@ -1,0 +1,2104 @@
+Loading theory "Case_Labeling.Case_Labeling" (required by "Draft.Check_Planarity_VerificationMoreTemplates" via "Draft.Check_Planarity_Verification" via "Draft.Setup_AutoCorres")
+Loading theory "Draft.Lib" (required by "Draft.Check_Planarity_VerificationMoreTemplates" via "Draft.Check_Planarity_Verification" via "Draft.Setup_AutoCorres" via "Draft.AutoCorres_Misc" via "Draft.OptionMonadWP" via "Draft.OptionMonadND" via "Draft.OptionMonad")
+Loading theory "HOL-Eisbach.Eisbach" (required by "Draft.Check_Planarity_VerificationMoreTemplates" via "Draft.Check_Planarity_Verification" via "Draft.Setup_AutoCorres")
+Loading theory "Draft.WP" (required by "Draft.Check_Planarity_VerificationMoreTemplates" via "Draft.Check_Planarity_Verification" via "Draft.Setup_AutoCorres" via "Draft.AutoCorres_Misc" via "Draft.OptionMonadWP")
+signature PARSE_TOOLS =
+  sig
+    val is_real_val: ('a, 'b) parse_val -> bool
+    val name_term: (term, string) parse_val parser
+    val parse_term_val: 'a parser -> (term, 'a) parse_val parser
+    val parse_thm_val: 'a parser -> (thm, 'a) parse_val parser
+    datatype ('a, 'b) parse_val
+    = Parse_Val of 'b * ('a -> unit) | Real_Val of 'a
+    val parse_val_cases:
+       ('a -> 'b) -> ('b, 'a) parse_val -> 'b * ('b -> unit)
+    val the_parse_fun: ('a, 'b) parse_val -> 'a -> unit
+    val the_parse_val: ('a, 'b) parse_val -> 'b
+    val the_real_val: ('a, 'b) parse_val -> 'a
+  end
+structure Parse_Tools: PARSE_TOOLS
+locale Labeling_Syntax
+consts
+  delete :: "'a => 'a list => 'a list"
+signature METHOD_CLOSURE =
+  sig
+    val apply_method:
+       Proof.context ->
+         string ->
+           term list ->
+             thm list list ->
+               (Proof.context -> Method.method) list ->
+                 Proof.context -> thm list -> context_tactic
+    val method:
+       binding ->
+         (binding * typ option * mixfix) list ->
+           binding list ->
+             binding list ->
+               binding list ->
+                 Token.src -> local_theory -> string * local_theory
+    val method_cmd:
+       binding ->
+         (binding * string option * mixfix) list ->
+           binding list ->
+             binding list ->
+               binding list ->
+                 Token.src -> local_theory -> string * local_theory
+  end
+structure Method_Closure: METHOD_CLOSURE
+consts
+  find :: "('a => bool) => 'a list => 'a option"
+consts
+  theRight :: "'a + 'b => 'b"
+signature PRINT_NESTED_CASES =
+  sig
+    val pretty_cases: Proof.context -> Pretty.T
+    val print_cases: Proof.context -> unit
+  end
+structure Print_Nested_Cases: PRINT_NESTED_CASES
+consts
+  theLeft :: "'a + 'b => 'a"
+infix 1 THEN_CONTEXT
+infix 1 THEN_ALL_NEW_FWD
+signature BASIC_UTIL =
+  sig
+    val INTERVAL_FWD: (int -> tactic) -> int -> int -> tactic
+    val REPEAT_ALL_NEW_FWD: (int -> tactic) -> int -> tactic
+    val THEN_ALL_NEW_FWD: (int -> tactic) * (int -> tactic) -> int -> tactic
+    val THEN_CONTEXT: tactic * context_tactic -> context_tactic
+  end
+signature UTIL =
+  sig
+    val INTERVAL_FWD: (int -> tactic) -> int -> int -> tactic
+    val REPEAT_ALL_NEW_FWD: (int -> tactic) -> int -> tactic
+    val SIMPLE_METHOD_CASES: context_tactic -> Method.method
+    val THEN_ALL_NEW_FWD: (int -> tactic) * (int -> tactic) -> int -> tactic
+    val THEN_CONTEXT: tactic * context_tactic -> context_tactic
+    val appair: ('a -> 'b) -> ('c -> 'd) -> 'a * 'c -> 'b * 'd
+    val dest_bool: term -> bool
+    val dest_option: term -> term option
+    val dest_pair: term -> term * term
+    val dest_tuple: term -> term list
+    val fst_ord: ('a * 'a -> order) -> ('a * 'b) * ('a * 'b) -> order
+    val infst: ('a -> 'b -> 'c * 'b) -> 'a * 'd -> 'b -> ('c * 'd) * 'b
+    val none_inf_ord: ('a * 'a -> order) -> 'a option * 'a option -> order
+    val snd_ord: ('a * 'a -> order) -> ('b * 'a) * ('b * 'a) -> order
+  end
+structure Util: UTIL
+structure Basic_Util: BASIC_UTIL
+val INTERVAL_FWD = fn: (int -> tactic) -> int -> int -> tactic
+val THEN_CONTEXT = fn: tactic * context_tactic -> context_tactic
+val REPEAT_ALL_NEW_FWD = fn: (int -> tactic) -> int -> tactic
+val THEN_ALL_NEW_FWD = fn:
+   (int -> tactic) * (int -> tactic) -> int -> tactic
+### theory "Draft.Lib"
+### 0.175s elapsed time, 0.684s cpu time, 0.037s GC time
+structure Eisbach_Rule_Insts: sig end
+Loading theory "Draft.NonDetMonad" (required by "Draft.Check_Planarity_VerificationMoreTemplates" via "Draft.Check_Planarity_Verification" via "Draft.Setup_AutoCorres" via "Draft.AutoCorres_Misc" via "Draft.OptionMonadWP" via "Draft.OptionMonadND" via "Draft.NonDetMonadLemmas")
+signature WP =
+  sig
+    val apply_once_args:
+       bool -> (Proof.context -> Method.method) context_parser
+    val apply_once_tac:
+       bool -> Proof.context -> thm list -> thm list ref -> tactic
+    val apply_rules_args:
+       bool -> (Proof.context -> Method.method) context_parser
+    val apply_rules_tac:
+       bool -> Proof.context -> thm list -> thm list ref -> tactic
+    val apply_rules_tac_n:
+       bool -> Proof.context -> thm list -> thm list ref -> int -> tactic
+    val combs_add: attribute
+    val combs_del: attribute
+    val debug_get: Proof.context -> wp_rules
+    val derived_rule: thm -> thm -> thm list
+    val get_combined_rules: thm list -> thm list -> thm list
+    val get_combined_rules': thm list -> thm -> thm list
+    val get_rules: Proof.context -> thm list -> wp_rules
+    val setup: theory -> theory
+    val splits_add: attribute
+    val splits_del: attribute
+    val warn_unused: bool Config.T
+    val wp_add: attribute
+    val wp_del: attribute
+    type wp_rules =
+       {combs: thm list,
+        rules: (int * thm) Net.net * int * (int * thm) list,
+        splits: thm list,
+        trips: thm list * (theory -> term -> term), unsafe_rules: thm list}
+    val wp_unsafe_add: attribute
+    val wp_unsafe_del: attribute
+  end
+structure WeakestPre:
+  sig
+    structure WPData: GENERIC_DATA
+    val accum_last_occurence: (thm * 'a) list -> (thm * 'a list) list
+    val accum_last_occurence':
+       (thm * 'a) list ->
+         'a list Termtab.table -> (thm * 'a list) list * unit Termtab.table
+    val add_comb:
+       thm ->
+         wp_rules ->
+           {combs: thm list,
+            rules: (int * thm) Net.net * int * (int * thm) list,
+            splits: thm list,
+            trips: thm list * (theory -> term -> term),
+            unsafe_rules: thm list}
+    val add_extra_rule: 'a -> 'a list ref -> unit
+    val add_rule:
+       thm ->
+         {combs: 'a,
+          rules: (int * thm) Net.net * int * (int * thm) list,
+          splits: 'b,
+          trips: 'c * (theory -> term -> term), unsafe_rules: 'd}
+           ->
+           {combs: 'a,
+            rules: (int * thm) Net.net * int * (int * thm) list,
+            splits: 'b,
+            trips: 'c * (theory -> term -> term), unsafe_rules: 'd}
+    val add_rule_inner:
+       (theory -> term -> term) ->
+         thm ->
+           (int * thm) Net.net * int * (int * thm) list ->
+             (int * thm) Net.net * int * (int * thm) list
+    val add_split:
+       thm ->
+         wp_rules ->
+           {combs: thm list,
+            rules: (int * thm) Net.net * int * (int * thm) list,
+            splits: thm list,
+            trips: thm list * (theory -> term -> term),
+            unsafe_rules: thm list}
+    val add_trip:
+       thm ->
+         wp_rules ->
+           {combs: thm list,
+            rules: (int * thm) Net.net * int * (int * thm) list,
+            splits: thm list,
+            trips: thm list * (theory -> term -> term),
+            unsafe_rules: thm list}
+    val add_unsafe_rule:
+       thm ->
+         {combs: 'a,
+          rules: 'b, splits: 'c, trips: 'd, unsafe_rules: thm list}
+           ->
+           {combs: 'a,
+            rules: 'b, splits: 'c, trips: 'd, unsafe_rules: thm list}
+    val app:
+       (Proof.context -> Proof.context) * attribute ->
+         thm list -> Context.generic -> thm list * Context.generic
+    val append_used_rule: 'a -> 'a list ref -> unit
+    val apply_once_args:
+       bool ->
+         Context.generic * Token.T list ->
+           (Proof.context -> Method.method) *
+           (Context.generic * Token.T list)
+    val apply_once_tac:
+       bool ->
+         Proof.context -> thm list -> thm list ref -> thm -> thm Seq.seq
+    val apply_rules_args:
+       bool ->
+         Context.generic * Token.T list ->
+           (Proof.context -> Method.method) *
+           (Context.generic * Token.T list)
+    val apply_rules_tac:
+       bool -> Proof.context -> thm list -> thm list ref -> tactic
+    val apply_rules_tac_n:
+       bool -> Proof.context -> thm list -> thm list ref -> int -> tactic
+    val clear_rules:
+       {combs: 'a, rules: 'b, splits: 'c, trips: 'd, unsafe_rules: 'e} ->
+         {combs: 'a,
+          rules: 'f Net.net * int * 'g list,
+          splits: 'c, trips: 'd, unsafe_rules: 'e}
+    val combs_add: attribute
+    val combs_del: attribute
+    val debug_get: Proof.context -> WPData.T
+    val del_comb:
+       thm ->
+         {combs: thm list,
+          rules: 'a, splits: 'b, trips: 'c, unsafe_rules: 'd}
+           ->
+           {combs: thm list,
+            rules: 'a, splits: 'b, trips: 'c, unsafe_rules: 'd}
+    val del_rule:
+       thm ->
+         {combs: 'a,
+          rules: ('b * thm) Net.net * 'b * ('b * thm) list,
+          splits: 'c,
+          trips: 'd * (theory -> term -> term), unsafe_rules: 'e}
+           ->
+           {combs: 'a,
+            rules: ('b * thm) Net.net * 'b * ('b * thm) list,
+            splits: 'c,
+            trips: 'd * (theory -> term -> term), unsafe_rules: 'e}
+    val del_rule_inner:
+       (theory -> term -> term) ->
+         thm ->
+           ('a * thm) Net.net * 'a * ('a * thm) list ->
+             ('a * thm) Net.net * 'a * ('a * thm) list
+    val del_split:
+       thm ->
+         {combs: 'a,
+          rules: 'b, splits: thm list, trips: 'c, unsafe_rules: 'd}
+           ->
+           {combs: 'a,
+            rules: 'b, splits: thm list, trips: 'c, unsafe_rules: 'd}
+    val del_trip:
+       thm ->
+         wp_rules ->
+           {combs: thm list,
+            rules: (int * thm) Net.net * int * (int * thm) list,
+            splits: thm list,
+            trips: thm list * (theory -> term -> term),
+            unsafe_rules: thm list}
+    val del_unsafe_rule:
+       thm ->
+         {combs: 'a,
+          rules: 'b, splits: 'c, trips: 'd, unsafe_rules: thm list}
+           ->
+           {combs: 'a,
+            rules: 'b, splits: 'c, trips: 'd, unsafe_rules: thm list}
+    val derived_rule: thm -> thm -> thm list
+    val dest_rules: (int * 'a) Net.net * 'b * (int * 'a) list -> 'a list
+    val flat_last_occurence: thm list -> thm list
+    val gen_att: (thm -> WPData.T -> WPData.T) -> attribute
+    val get_combined_rules: thm list -> thm list -> thm list
+    val get_combined_rules': thm list -> thm -> thm list
+    val get_key: (theory -> term -> term) -> thm -> term option
+    val get_rules:
+       Proof.context ->
+         thm list ->
+           {combs: thm list,
+            rules: (int * thm) Net.net * int * (int * thm) list,
+            splits: thm list,
+            trips: thm list * (theory -> term -> term),
+            unsafe_rules: thm list}
+    val has_colon: Token.T list -> bool
+    val if_colon:
+       ('a * Token.T list -> 'b) ->
+         ('a * Token.T list -> 'b) -> 'a * Token.T list -> 'b
+    val mk_rules:
+       (theory -> term -> term) ->
+         thm list -> (int * thm) Net.net * int * (int * thm) list
+    val mk_trip_conv: thm list -> theory -> term -> term
+    val no_rules: 'a Net.net * int * 'b list
+    val pretty_rule: Proof.context -> thm -> string
+    val resolve_ruleset_tac:
+       Proof.context ->
+         {combs: thm list,
+          rules: (int * thm) Net.net * 'a * ('b * thm) list,
+          splits: thm list,
+          trips: 'c * (theory -> term -> term), unsafe_rules: 'd}
+           -> thm list ref -> int -> thm -> thm Seq.seq
+    val rules_merge:
+       {combs: thm list,
+        rules: (int * thm) Net.net * 'a * (int * thm) list,
+        splits: thm list, trips: thm list * 'b, unsafe_rules: thm list}
+       *
+       {combs: thm list,
+        rules: (int * thm) Net.net * 'c * (int * thm) list,
+        splits: thm list, trips: thm list * 'd, unsafe_rules: thm list}
+         ->
+         {combs: thm list,
+          rules: (int * thm) Net.net * int * (int * thm) list,
+          splits: thm list,
+          trips: thm list * (theory -> term -> term),
+          unsafe_rules: thm list}
+    val section:
+       (Token.T list ->
+          ((Proof.context -> Proof.context) * attribute) * Token.T list
+       )
+       list
+         ->
+         Context.generic * Token.T list ->
+           thm list * (Context.generic * Token.T list)
+    val sections:
+       (Token.T list ->
+          ((Proof.context -> Proof.context) * attribute) * Token.T list
+       )
+       list
+         ->
+         Context.generic * Token.T list ->
+           thm list list * (Context.generic * Token.T list)
+    val setup: theory -> theory
+    val splits_add: attribute
+    val splits_del: attribute
+    val thms:
+       (Token.T list -> 'a * Token.T list) list ->
+         Context.generic * Token.T list ->
+           thm list * (Context.generic * Token.T list)
+    val trace_used_thms:
+       bool -> thm list ref -> Proof.context -> unit Seq.seq
+    val trip_add: attribute
+    val trip_del: attribute
+    val warn_unsafe_thms: thm list -> int -> Proof.context -> thm -> unit
+    val warn_unused: bool Config.T
+    val warn_unused_thms:
+       Proof.context -> thm list -> thm list ref -> thm list ref -> unit
+    val wp_add: attribute
+    val wp_del: attribute
+    val wp_modifiers:
+       thm list ref ->
+         (Token.T list ->
+            ((Proof.context -> Proof.context) *
+             (Context.generic * thm -> Context.generic option * thm option))
+            *
+            Token.T list
+         )
+         list
+    type wp_rules =
+       {combs: thm list,
+        rules: (int * thm) Net.net * int * (int * thm) list,
+        splits: thm list,
+        trips: thm list * (theory -> term -> term), unsafe_rules: thm list}
+    val wp_unsafe_add: attribute
+    val wp_unsafe_del: attribute
+  end
+structure WeakestPreInst: WP
+### theory "Draft.WP"
+### 0.254s elapsed time, 0.983s cpu time, 0.076s GC time
+Loading theory "Draft.OptionMonad" (required by "Draft.Check_Planarity_VerificationMoreTemplates" via "Draft.Check_Planarity_Verification" via "Draft.Setup_AutoCorres" via "Draft.AutoCorres_Misc" via "Draft.OptionMonadWP" via "Draft.OptionMonadND")
+signature CASIFY =
+  sig
+    val SPLIT_subst_tac: Proof.context -> int -> tactic
+    val casify_method_setup:
+       options -> (Proof.context -> Method.method) context_parser
+    val casify_options: options -> options parser
+    val casify_tac: options -> context_tactic
+    val extract_cases_tac: context_tactic
+    val hyp_subst_tac: Proof.context -> int -> tactic
+    datatype options
+    =
+         Options of
+             {protect_subgoals: bool,
+              simp_all_cases: bool, split_right_only: bool}
+    val prepare_labels_tac: Proof.context -> int -> tactic
+    val split_bind_all_tac:
+       {right_only: bool, simp_all_cases: bool} ->
+         Proof.context -> int -> tactic
+  end
+structure Casify: CASIFY
+val casify_defs =
+   Options
+    {protect_subgoals = false, simp_all_cases = true, split_right_only =
+     true}:
+   Casify.options
+### theory "Case_Labeling.Case_Labeling"
+### 0.344s elapsed time, 1.347s cpu time, 0.076s GC time
+Loading theory "Graph_Theory.Rtrancl_On" (required by "Draft.Check_Planarity_VerificationMoreTemplates" via "Draft.Check_Planarity_Verification" via "Draft.Graph_Genus" via "Graph_Theory.Graph_Theory" via "Graph_Theory.Digraph")
+Proofs for inductive predicate(s) "rtrancl_onp"
+### ML warning (line 170 of "~~/src/HOL/Eisbach/match_method.ML"):
+### Pattern is not exhaustive.
+### ML warning (line 187 of "~~/src/HOL/Eisbach/match_method.ML"):
+### Pattern is not exhaustive.
+### ML warning (line 309 of "~~/src/HOL/Eisbach/match_method.ML"):
+### Pattern is not exhaustive.
+signature MATCH_METHOD =
+  sig
+    val focus_params: Proof.context -> term list
+    val focus_schematics: Proof.context -> Envir.tenv
+  end
+structure Match_Method: MATCH_METHOD
+  Proving monotonicity ...
+val method_evaluate = fn: Method.text -> Proof.context -> thm list -> tactic
+Proofs for inductive predicate(s) "option_while'p"
+  Proving monotonicity ...
+### theory "HOL-Eisbach.Eisbach"
+### 0.441s elapsed time, 1.719s cpu time, 0.106s GC time
+Loading theory "HOL-Combinatorics.Transposition" (required by "Draft.Check_Planarity_VerificationMoreTemplates" via "Draft.Check_Planarity_Verification" via "Draft.Graph_Genus" via "HOL-Combinatorics.Permutations")
+### theory "Graph_Theory.Rtrancl_On"
+### 0.174s elapsed time, 0.711s cpu time, 0.068s GC time
+Loading theory "HOL-Library.Cancellation" (required by "Draft.Check_Planarity_VerificationMoreTemplates" via "Draft.Check_Planarity_Verification" via "Draft.Graph_Genus" via "HOL-Combinatorics.Permutations" via "HOL-Library.Multiset")
+consts
+  filterM ::
+    "('a => 's => (bool * 's) set * bool)
+     => 'a list => 's => ('a list * 's) set * bool"
+### theory "Draft.OptionMonad"
+### 0.308s elapsed time, 1.250s cpu time, 0.068s GC time
+Loading theory "HOL-Library.FuncSet" (required by "Draft.Check_Planarity_VerificationMoreTemplates" via "Draft.Check_Planarity_Verification" via "Draft.Graph_Genus" via "HOL-Combinatorics.Permutations" via "HOL-Library.Disjoint_Sets")
+### theory "HOL-Combinatorics.Transposition"
+### 0.138s elapsed time, 0.589s cpu time, 0.037s GC time
+Loading theory "HOL-Library.Function_Algebras" (required by "Draft.Check_Planarity_VerificationMoreTemplates" via "Draft.ExtrEqs" via "HOL-Library.BigO")
+instantiation
+  fun :: (type, plus) plus
+  plus_fun == plus :: ('a => 'b) => ('a => 'b) => 'a => 'b
+Proofs for inductive predicate(s) "whileLoop_resultsp"
+  Proving monotonicity ...
+instantiation
+  fun :: (type, zero) zero
+  zero_fun == zero_class.zero :: 'a => 'b
+instantiation
+  fun :: (type, times) times
+  times_fun == times :: ('a => 'b) => ('a => 'b) => 'a => 'b
+instantiation
+  fun :: (type, one) one
+  one_fun == one_class.one :: 'a => 'b
+### theory "HOL-Library.Function_Algebras"
+### 0.129s elapsed time, 0.511s cpu time, 0.063s GC time
+Loading theory "HOL-Library.Infinite_Set" (required by "Draft.Check_Planarity_VerificationMoreTemplates" via "Draft.Check_Planarity_Verification" via "Draft.Graph_Genus" via "Graph_Theory.Graph_Theory" via "Graph_Theory.Digraph" via "Graph_Theory.Stuff" via "HOL-Library.Extended_Real" via "HOL-Library.Extended_Nat" via "HOL-Library.Order_Continuity" via "HOL-Library.Countable_Complete_Lattices" via "HOL-Library.Countable_Set")
+Proofs for inductive predicate(s) "whileLoop_terminates"
+  Proving monotonicity ...
+signature CANCEL = sig val proc: Proof.context -> cterm -> thm option end
+functor Cancel_Fun (Data: CANCEL_NUMERALS_DATA): CANCEL
+consts
+  enumerate :: "'a set => nat => 'a"
+signature CANCEL_DATA =
+  sig
+    val dest_coeff: term -> int * term
+    val dest_sum: term -> term list
+    val find_first_coeff: term -> term list -> int * term list
+    val mk_coeff: int * term -> term
+    val mk_sum: typ -> term list -> term
+    val norm_ss1: simpset
+    val norm_ss2: simpset
+    val norm_tac: Proof.context -> tactic
+    val numeral_simp_tac: Proof.context -> tactic
+    val prove_conv:
+       tactic list -> Proof.context -> thm list -> term * term -> thm option
+    val simplify_meta_eq: Proof.context -> thm -> thm
+    val trans_tac: Proof.context -> thm option -> tactic
+  end
+structure Cancel_Data: CANCEL_DATA
+### theory "Draft.NonDetMonad"
+### 0.885s elapsed time, 3.372s cpu time, 0.607s GC time
+Loading theory "Draft.NonDetMonadLemmas" (required by "Draft.Check_Planarity_VerificationMoreTemplates" via "Draft.Check_Planarity_Verification" via "Draft.Setup_AutoCorres" via "Draft.AutoCorres_Misc" via "Draft.OptionMonadWP" via "Draft.OptionMonadND")
+### theory "HOL-Library.FuncSet"
+### 0.570s elapsed time, 2.118s cpu time, 0.500s GC time
+Loading theory "HOL-Library.Disjoint_Sets" (required by "Draft.Check_Planarity_VerificationMoreTemplates" via "Draft.Check_Planarity_Verification" via "Draft.Graph_Genus" via "HOL-Combinatorics.Permutations")
+signature CANCEL_SIMPROCS =
+  sig
+    val diff_cancel: Proof.context -> cterm -> thm option
+    val eq_cancel: Proof.context -> cterm -> thm option
+    val less_cancel: Proof.context -> cterm -> thm option
+    val less_eq_cancel: Proof.context -> cterm -> thm option
+  end
+structure Cancel_Simprocs: CANCEL_SIMPROCS
+### theory "HOL-Library.Cancellation"
+### 0.626s elapsed time, 2.331s cpu time, 0.500s GC time
+Loading theory "HOL-Library.Multiset" (required by "Draft.Check_Planarity_VerificationMoreTemplates" via "Draft.Check_Planarity_Verification" via "Draft.Graph_Genus" via "HOL-Combinatorics.Permutations")
+### theory "HOL-Library.Infinite_Set"
+### 0.446s elapsed time, 1.628s cpu time, 0.437s GC time
+Loading theory "HOL-Library.Nat_Bijection" (required by "Draft.Check_Planarity_VerificationMoreTemplates" via "Draft.ExtrEqs" via "HOL-Library.Stream")
+Found termination order: "(%p. size (snd p)) <*mlex*> {}"
+locale comm_monoid_set
+  fixes f :: "'a => 'a => 'a"  (infixl \<open>\<^bold>*\<close> 70)
+    and z :: "'a"  (\<open>\<^bold>1\<close>)
+  assumes "comm_monoid_set (\<^bold>*) \<^bold>1"
+instantiation
+  multiset :: (type) cancel_comm_monoid_add
+  zero_multiset == zero_class.zero :: 'a multiset
+  minus_multiset == minus :: 'a multiset => 'a multiset => 'a multiset
+  plus_multiset == plus :: 'a multiset => 'a multiset => 'a multiset
+### theory "Draft.NonDetMonadLemmas"
+### 0.257s elapsed time, 1.011s cpu time, 0.099s GC time
+Loading theory "Draft.OptionMonadND" (required by "Draft.Check_Planarity_VerificationMoreTemplates" via "Draft.Check_Planarity_Verification" via "Draft.Setup_AutoCorres" via "Draft.AutoCorres_Misc" via "Draft.OptionMonadWP")
+Found termination order: "size_list size <*mlex*> {}"
+### theory "HOL-Library.Disjoint_Sets"
+### 0.311s elapsed time, 1.220s cpu time, 0.169s GC time
+Loading theory "HOL-Library.Old_Datatype" (required by "Draft.Check_Planarity_VerificationMoreTemplates" via "Draft.Check_Planarity_Verification" via "Draft.Graph_Genus" via "Graph_Theory.Graph_Theory" via "Graph_Theory.Digraph" via "Graph_Theory.Stuff" via "HOL-Library.Extended_Real" via "HOL-Library.Extended_Nat" via "HOL-Library.Countable")
+### theory "HOL-Library.Nat_Bijection"
+### 0.352s elapsed time, 1.382s cpu time, 0.169s GC time
+Loading theory "HOL-Library.Stream" (required by "Draft.Check_Planarity_VerificationMoreTemplates" via "Draft.ExtrEqs")
+### theory "Draft.OptionMonadND"
+### 0.302s elapsed time, 1.185s cpu time, 0.156s GC time
+Loading theory "Draft.OptionMonadWP" (required by "Draft.Check_Planarity_VerificationMoreTemplates" via "Draft.Check_Planarity_Verification" via "Draft.Setup_AutoCorres" via "Draft.AutoCorres_Misc")
+signature OLD_DATATYPE =
+  sig
+    val check_specs: spec list -> theory -> spec list * Proof.context
+    type config = {quiet: bool, strict: bool}
+    val default_config: config
+    type descr =
+       (int * (string * dtyp list * (string * dtyp list) list)) list
+    val distinct_lemma: thm
+    datatype dtyp
+    = DtRec of int | DtTFree of string * sort | DtType of string * dtyp list
+    type info =
+       {case_cong: thm,
+        case_cong_weak: thm,
+        case_name: string,
+        case_rewrites: thm list,
+        descr: descr,
+        distinct: thm list,
+        exhaust: thm,
+        index: int,
+        induct: thm,
+        inducts: thm list,
+        inject: thm list,
+        nchotomy: thm,
+        rec_names: string list,
+        rec_rewrites: thm list, split: thm, split_asm: thm}
+    val read_specs: spec_cmd list -> theory -> spec list * Proof.context
+    type spec =
+       (binding * (string * sort) list * mixfix) *
+       (binding * typ list * mixfix) list
+    type spec_cmd =
+       (binding * (string * string option) list * mixfix) *
+       (binding * string list * mixfix) list
+  end
+structure Old_Datatype: OLD_DATATYPE
+### theory "HOL-Library.Old_Datatype"
+### 0.654s elapsed time, 2.423s cpu time, 0.893s GC time
+Loading theory "HOL-Library.Rewrite" (required by "Draft.Check_Planarity_VerificationMoreTemplates" via "Draft.Check_Planarity_Verification" via "Draft.Graph_Genus" via "Graph_Theory.Graph_Theory" via "Graph_Theory.Kuratowski")
+### Partially applied constant "Multiset.inter_mset" on left hand side of equation, in theorem:
+### semilattice_inf.Inf_fin (\<inter>#) (set (?x # ?xs)) ==
+### fold (\<inter>#) ?xs ?x
+consts
+  shift :: "'a list => 'a stream => 'a stream"
+### Partially applied constant "Multiset.union_mset" on left hand side of equation, in theorem:
+### semilattice_sup.Sup_fin (\<union>#) (set (?x # ?xs)) ==
+### fold (\<union>#) ?xs ?x
+Proofs for coinductive predicate(s) "streamsp"
+  Proving monotonicity ...
+infix 1 then_cconv
+infix 0 else_cconv
+type cconv = conv
+signature BASIC_CCONV =
+  sig
+    val CCONVERSION: cconv -> int -> tactic
+    type cconv = conv
+    val else_cconv: cconv * cconv -> cconv
+    val then_cconv: cconv * cconv -> cconv
+  end
+signature CCONV =
+  sig
+    val CCONVERSION: cconv -> int -> tactic
+    val abs_cconv:
+       (cterm * Proof.context -> cconv) -> Proof.context -> cconv
+    val all_cconv: cconv
+    val arg1_cconv: cconv -> cconv
+    val arg_cconv: cconv -> cconv
+    type cconv = conv
+    val comb_cconv: cconv -> cconv
+    val combination_cconv: cconv -> cconv -> cconv
+    val concl_cconv: int -> cconv -> cconv
+    val else_cconv: cconv * cconv -> cconv
+    val fconv_rule: cconv -> thm -> thm
+    val first_cconv: cconv list -> cconv
+    val fun2_cconv: cconv -> cconv
+    val fun_cconv: cconv -> cconv
+    val gconv_rule: cconv -> int -> thm -> thm
+    val no_cconv: cconv
+    val params_cconv:
+       int -> (Proof.context -> cconv) -> Proof.context -> cconv
+    val prems_cconv: int -> cconv -> cconv
+    val rewr_cconv: thm -> cconv
+    val rewrs_cconv: thm list -> cconv
+    val then_cconv: cconv * cconv -> cconv
+    val with_prems_cconv: int -> cconv -> cconv
+  end
+structure CConv: CCONV
+structure Basic_CConv: BASIC_CCONV
+val then_cconv = fn: cconv * cconv -> cconv
+val CCONVERSION = fn: cconv -> int -> tactic
+val else_cconv = fn: cconv * cconv -> cconv
+### theory "Draft.OptionMonadWP"
+### 0.602s elapsed time, 2.204s cpu time, 0.845s GC time
+Loading theory "Draft.AutoCorres_Misc" (required by "Draft.Check_Planarity_VerificationMoreTemplates" via "Draft.Check_Planarity_Verification" via "Draft.Setup_AutoCorres")
+### theory "Draft.AutoCorres_Misc"
+### 0.065s elapsed time, 0.257s cpu time, 0.000s GC time
+Loading theory "Draft.Setup_AutoCorres" (required by "Draft.Check_Planarity_VerificationMoreTemplates" via "Draft.Check_Planarity_Verification")
+consts
+  snth :: "'a stream => nat => 'a"
+consts
+  stake :: "nat => 'a stream => 'a list"
+consts
+  sdrop :: "nat => 'a stream => 'a stream"
+infix 1 then_pconv
+infix 0 else_pconv
+signature REWRITE =
+  sig
+    val abs_pconv: patconv -> string option * typ -> patconv
+    val all_pconv: patconv
+    val arg_pconv: patconv -> patconv
+    val asm_pconv: patconv -> patconv
+    val asms_pconv: patconv -> patconv
+    val concl_pconv: patconv -> patconv
+    val else_pconv: patconv * patconv -> patconv
+    val for_pconv: patconv -> (string option * typ option) list -> patconv
+    val forall_pconv: patconv -> string option * typ option -> patconv
+    val fun_pconv: patconv -> patconv
+    val imp_pconv: patconv -> patconv
+    val in_pconv: patconv -> patconv
+    val judgment_pconv: patconv -> patconv
+    val match_pconv: patconv -> term * (string option * typ) list -> patconv
+    val mk_hole: int -> typ -> term
+    val params_pconv: patconv -> patconv
+    type patconv =
+       Proof.context -> Type.tyenv * (string * term) list -> cconv
+    datatype ('a, 'b) pattern
+    = Asm | At | Concl | For of 'b list | In | Term of 'a
+    val rewrite_conv:
+       Proof.context ->
+         (term * (string * typ) list, string * typ option) pattern list *
+         term option
+           -> thm list -> conv
+    val rewrs_pconv: term option -> thm list -> patconv
+    val then_pconv: patconv * patconv -> patconv
+  end
+structure Rewrite: REWRITE
+### theory "HOL-Library.Rewrite"
+### 0.260s elapsed time, 1.010s cpu time, 0.107s GC time
+Loading theory "HOL-Library.Set_Algebras" (required by "Draft.Check_Planarity_VerificationMoreTemplates" via "Draft.ExtrEqs" via "HOL-Library.BigO")
+instantiation
+  set :: (plus) plus
+  plus_set == plus :: 'a set => 'a set => 'a set
+instantiation
+  set :: (times) times
+  times_set == times :: 'a set => 'a set => 'a set
+consts
+  sfilter :: "('a => bool) => 'a stream => 'a stream"
+instantiation
+  set :: (zero) zero
+  zero_set == zero_class.zero :: 'a set
+instantiation
+  set :: (one) one
+  one_set == one_class.one :: 'a set
+consts
+  cycle :: "'a list => 'a stream"
+signature MULTISET_SIMPROCS =
+  sig
+    val subset_cancel_msets: Proof.context -> cterm -> thm option
+    val subseteq_cancel_msets: Proof.context -> cterm -> thm option
+  end
+structure Multiset_Simprocs: MULTISET_SIMPROCS
+consts
+  siterate :: "('a => 'a) => 'a => 'a stream"
+instantiation
+  multiset :: (type) Inf
+  Inf_multiset == Inf :: 'a multiset set => 'a multiset
+instantiation
+  multiset :: (type) Sup
+  Sup_multiset == Sup :: 'a multiset set => 'a multiset
+consts
+  flat :: "'a list stream => 'a stream"
+### theory "HOL-Library.Set_Algebras"
+### 0.218s elapsed time, 0.859s cpu time, 0.067s GC time
+Loading theory "HOL-Library.Tree" (required by "Draft.Check_Planarity_VerificationMoreTemplates" via "Draft.ExtrEqs" via "Draft.Templates")
+consts
+  sinterleave :: "'a stream => 'a stream => 'a stream"
+infix 1 THEN_CONTEXT
+infix 1 THEN_ALL_NEW_FWD
+signature BASIC_UTIL =
+  sig
+    val INTERVAL_FWD: (int -> tactic) -> int -> int -> tactic
+    val REPEAT_ALL_NEW_FWD: (int -> tactic) -> int -> tactic
+    val THEN_ALL_NEW_FWD: (int -> tactic) * (int -> tactic) -> int -> tactic
+    val THEN_CONTEXT: tactic * context_tactic -> context_tactic
+  end
+signature UTIL =
+  sig
+    val INTERVAL_FWD: (int -> tactic) -> int -> int -> tactic
+    val REPEAT_ALL_NEW_FWD: (int -> tactic) -> int -> tactic
+    val SIMPLE_METHOD_CASES: context_tactic -> Method.method
+    val THEN_ALL_NEW_FWD: (int -> tactic) * (int -> tactic) -> int -> tactic
+    val THEN_CONTEXT: tactic * context_tactic -> context_tactic
+    val appair: ('a -> 'b) -> ('c -> 'd) -> 'a * 'c -> 'b * 'd
+    val dest_bool: term -> bool
+    val dest_option: term -> term option
+    val dest_pair: term -> term * term
+    val dest_tuple: term -> term list
+    val fst_ord: ('a * 'a -> order) -> ('a * 'b) * ('a * 'b) -> order
+    val infst: ('a -> 'b -> 'c * 'b) -> 'a * 'd -> 'b -> ('c * 'd) * 'b
+    val none_inf_ord: ('a * 'a -> order) -> 'a option * 'a option -> order
+    val snd_ord: ('a * 'a -> order) -> ('b * 'a) * ('b * 'a) -> order
+  end
+structure Util: UTIL
+structure Basic_Util: BASIC_UTIL
+val INTERVAL_FWD = fn: (int -> tactic) -> int -> int -> tactic
+val THEN_CONTEXT = fn: tactic * context_tactic -> context_tactic
+val REPEAT_ALL_NEW_FWD = fn: (int -> tactic) -> int -> tactic
+val THEN_ALL_NEW_FWD = fn:
+   (int -> tactic) * (int -> tactic) -> int -> tactic
+val vcg_tac = fn: string -> string -> Proof.context -> int -> tactic
+consts
+  szip :: "'a stream => 'b stream => ('a * 'b) stream"
+consts
+  smap2 :: "('a => 'b => 'c) => 'a stream => 'b stream => 'c stream"
+### theory "HOL-Library.Stream"
+### 1.201s elapsed time, 4.554s cpu time, 1.181s GC time
+Loading theory "HOL-Library.Countable" (required by "Draft.Check_Planarity_VerificationMoreTemplates" via "Draft.Check_Planarity_Verification" via "Draft.Graph_Genus" via "Graph_Theory.Graph_Theory" via "Graph_Theory.Digraph" via "Graph_Theory.Stuff" via "HOL-Library.Extended_Real" via "HOL-Library.Extended_Nat")
+instantiation
+  multiset :: (type) size
+  size_multiset == size :: 'a multiset => nat
+locale comp_fun_commute
+  fixes f :: "'a => 'b => 'b"
+  assumes "comp_fun_commute f"
+consts
+  mset :: "'a list => 'a multiset"
+class linorder = order +
+  assumes "linear": "!!x y. x <= y | y <= x"
+### Additional type variable(s) in locale specification "countable": 'a
+consts
+  left :: "'a tree => 'a tree"
+class countable = type +
+  assumes "ex_inj": "EX to_nat. inj to_nat"
+consts
+  right :: "'a tree => 'a tree"
+locale comm_monoid_mset
+  fixes f :: "'a => 'a => 'a"  (infixl \<open>\<^bold>*\<close> 70)
+    and z :: "'a"  (\<open>\<^bold>1\<close>)
+  assumes "comm_monoid_mset (\<^bold>*) \<^bold>1"
+Found termination order: "size <*mlex*> {}"
+class comm_monoid_add = ab_semigroup_add + monoid_add +
+  assumes "add_0": "!!a. (0::'a) + a = a"
+Found termination order: "size <*mlex*> {}"
+class comm_monoid_add = ab_semigroup_add + monoid_add +
+  assumes "add_0": "!!a. (0::'a) + a = a"
+### theory "Draft.Setup_AutoCorres"
+### 1.077s elapsed time, 4.240s cpu time, 0.495s GC time
+Loading theory "HOL-Library.BigO" (required by "Draft.Check_Planarity_VerificationMoreTemplates" via "Draft.ExtrEqs")
+Found termination order: "size <*mlex*> {}"
+Proofs for inductive predicate(s) "finite_item"
+  Proving monotonicity ...
+class canonically_ordered_monoid_add = ordered_comm_monoid_add +
+  assumes "le_iff_add": "!!a b. (a <= b) = (EX c. b = a + c)"
+class height = type +
+  fixes height :: "'a => nat"
+instantiation
+  tree :: (type) height
+  height_tree == height :: 'a tree => nat
+Found termination order: "size <*mlex*> {}"
+val old_countable_datatype_tac = fn: Proof.context -> int -> tactic
+Found termination order: "size <*mlex*> {}"
+### ML warning (line 93 of "~~/src/HOL/Tools/BNF/bnf_lfp_countable.ML"):
+### Pattern is not exhaustive.
+### ML warning (line 139 of "~~/src/HOL/Tools/BNF/bnf_lfp_countable.ML"):
+### Pattern is not exhaustive.
+### ML warning (line 143 of "~~/src/HOL/Tools/BNF/bnf_lfp_countable.ML"):
+### Matches are not exhaustive.
+### ML warning (line 145 of "~~/src/HOL/Tools/BNF/bnf_lfp_countable.ML"):
+### Matches are not exhaustive.
+### ML warning (line 156 of "~~/src/HOL/Tools/BNF/bnf_lfp_countable.ML"):
+### Pattern is not exhaustive.
+signature BNF_LFP_COUNTABLE =
+  sig
+    val countable_datatype_tac: Proof.context -> tactic
+    val derive_encode_injectives_thms:
+       Proof.context -> string list -> thm list
+  end
+structure BNF_LFP_Countable: BNF_LFP_COUNTABLE
+val countable_datatype_tac = fn: Proof.context -> thm -> thm Seq.seq
+val countable_tac = fn: Proof.context -> int -> tactic
+Found termination order: "size <*mlex*> {}"
+class comm_monoid_mult = ab_semigroup_mult + monoid_mult + dvd +
+  assumes "mult_1": "!!a. (1::'a) * a = a"
+Found termination order: "size <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+### theory "HOL-Library.Countable"
+### 1.158s elapsed time, 4.583s cpu time, 0.389s GC time
+Loading theory "HOL-Library.Countable_Set" (required by "Draft.Check_Planarity_VerificationMoreTemplates" via "Draft.Check_Planarity_Verification" via "Draft.Graph_Genus" via "Graph_Theory.Graph_Theory" via "Graph_Theory.Digraph" via "Graph_Theory.Stuff" via "HOL-Library.Extended_Real" via "HOL-Library.Extended_Nat" via "HOL-Library.Order_Continuity" via "HOL-Library.Countable_Complete_Lattices")
+Found termination order: "size <*mlex*> {}"
+Found termination order: "(%p. size (fst p)) <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+Found termination order: "(%p. size (snd p)) <*mlex*> {}"
+locale comm_monoid_set
+  fixes f :: "'a => 'a => 'a"  (infixl \<open>\<^bold>*\<close> 70)
+    and z :: "'a"  (\<open>\<^bold>1\<close>)
+  assumes "comm_monoid_set (\<^bold>*) \<^bold>1"
+### theory "HOL-Library.BigO"
+### 0.874s elapsed time, 3.455s cpu time, 0.300s GC time
+Loading theory "HOL-Library.Liminf_Limsup" (required by "Draft.Check_Planarity_VerificationMoreTemplates" via "Draft.Check_Planarity_Verification" via "Draft.Graph_Genus" via "Graph_Theory.Graph_Theory" via "Graph_Theory.Digraph" via "Graph_Theory.Stuff" via "HOL-Library.Extended_Real")
+class linorder = order +
+  assumes "linear": "!!x y. x <= y | y <= x"
+### theory "HOL-Library.Countable_Set"
+### 0.855s elapsed time, 3.168s cpu time, 1.403s GC time
+Loading theory "HOL-Library.Countable_Complete_Lattices" (required by "Draft.Check_Planarity_VerificationMoreTemplates" via "Draft.Check_Planarity_Verification" via "Draft.Graph_Genus" via "Graph_Theory.Graph_Theory" via "Graph_Theory.Digraph" via "Graph_Theory.Stuff" via "HOL-Library.Extended_Real" via "HOL-Library.Extended_Nat" via "HOL-Library.Order_Continuity")
+Found termination order: "size <*mlex*> {}"
+instantiation
+  multiset :: (preorder) order
+  less_eq_multiset == less_eq :: 'a multiset => 'a multiset => bool
+  less_multiset == less :: 'a multiset => 'a multiset => bool
+instantiation
+  multiset :: (preorder) ordered_ab_semigroup_add
+### theory "HOL-Library.Tree"
+### 2.423s elapsed time, 9.349s cpu time, 2.006s GC time
+Loading theory "Draft.Templates" (required by "Draft.Check_Planarity_VerificationMoreTemplates" via "Draft.ExtrEqs")
+Proofs for inductive predicate(s) "pw_leq"
+  Proving monotonicity ...
+datatype template_term
+=
+     t_empty
+   | template_app of template_term * template_term
+   | template_hole of int
+   | template_var of int
+datatype sign
+= equals | greater_equals | greater_than | less_equals | less_than
+datatype template
+=
+     template_bimplication of template * template
+   | template_dunno
+   | template_equation of template_term * template_term
+   | template_implication of template list * template
+   | template_inequation of sign * template_term * template_term
+   | template_negation of template
+   | template_predicate of template_term
+constructor t_empty: template_term
+constructor template_app: template_term * template_term -> template_term
+constructor template_hole: int -> template_term
+constructor template_var: int -> template_term
+constructor equals: sign
+constructor greater_equals: sign
+constructor greater_than: sign
+constructor less_equals: sign
+constructor less_than: sign
+constructor template_bimplication: template * template -> template
+constructor template_dunno: template
+constructor template_equation: template_term * template_term -> template
+constructor template_implication: template list * template -> template
+constructor template_inequation:
+   sign * template_term * template_term -> template
+constructor template_negation: template -> template
+constructor template_predicate: template_term -> template
+val vfs = fn: term -> (indexname * typ) list * (string * typ) list
+val indexOf = fn: ''a list -> ''a -> int -> int
+val has_eq = fn: term -> bool
+val term2template = fn:
+   (indexname * typ) list -> (string * typ) list -> term -> template_term
+val lemma2predicate = fn: term -> term -> template
+val makeTemplatewithContext = fn: term -> term -> template
+val lemma2template = fn: term -> template
+val thm2template = fn: thm -> template
+val tterm2string = fn: template_term -> string
+val template2string = fn: template -> string
+val t = "height ?t <= size ?t": thm
+val th =
+   Const ("HOL.Trueprop", "bool => prop") $
+     (Const ("Orderings.ord_class.less_eq", "nat => nat => bool") $
+       (Const ("Tree.height_class.height", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree")) $
+       (Const ("Nat.size_class.size", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree"))):
+   term
+### theory "Draft.Templates"
+### 0.065s elapsed time, 0.262s cpu time, 0.000s GC time
+Loading theory "Draft.ExtrEqs" (required by "Draft.Check_Planarity_VerificationMoreTemplates")
+### theory "HOL-Library.Liminf_Limsup"
+### 0.916s elapsed time, 3.390s cpu time, 1.452s GC time
+class countable_complete_lattice = Inf + Sup + lattice + bot + top +
+  assumes "ccInf_lower": "!!A x. [| countable A; x : A |] ==> Inf A <= x"
+  assumes
+    "ccInf_greatest":
+      "!!A z. [| countable A; !!x. x : A ==> z <= x |] ==> z <= Inf A"
+  assumes "ccSup_upper": "!!A x. [| countable A; x : A |] ==> x <= Sup A"
+  assumes
+    "ccSup_least":
+      "!!A z. [| countable A; !!x. x : A ==> x <= z |] ==> Sup A <= z"
+  assumes "ccInf_empty": "Inf {} = top"
+  assumes "ccSup_empty": "Sup {} = bot"
+Found termination order: "(%p. length (fst p)) <*mlex*> {}"
+instantiation
+  multiset :: (equal) equal
+  equal_multiset == equal_class.equal :: 'a multiset => 'a multiset => bool
+instantiation
+  multiset :: (random) random
+  random_multiset == random_class.random ::
+    natural
+    => natural * natural
+       => ('a multiset * (unit => term)) * natural * natural
+instantiation
+  multiset :: (full_exhaustive) full_exhaustive
+  full_exhaustive_multiset == full_exhaustive_class.full_exhaustive ::
+    ('a multiset * (unit => term) => (bool * term list) option)
+    => natural => (bool * term list) option
+Proofs for inductive predicate(s) "pred_mset"
+  Proving monotonicity ...
+Proofs for inductive predicate(s) "rel_mset'"
+  Proving monotonicity ...
+### theory "HOL-Library.Multiset"
+### 4.349s elapsed time, 16.446s cpu time, 3.440s GC time
+Loading theory "HOL-Combinatorics.Permutations" (required by "Draft.Check_Planarity_VerificationMoreTemplates" via "Draft.Check_Planarity_Verification" via "Draft.Graph_Genus")
+val eqpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Var (("_dummy_", 2), "?'a"))
+       ):
+   term Find_Theorems.criterion
+val badeqpattern = Pattern (Const ("Pure.eq", "?'a => ?'a => prop")):
+   term Find_Theorems.criterion
+val undefpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Const ("HOL.undefined", "?'a"))
+       ):
+   term Find_Theorems.criterion
+val thmpattern =
+   Pattern
+    (Const ("HOL.Trueprop", "bool => prop") $ Var (("_dummy_", 1), "bool")):
+   term Find_Theorems.criterion
+val badnames =
+   ["*nitpick*", "*Nitpick*", "*full_exhaustive*", "*_def*", "Enum.finite*",
+    "*Quickcheck*", "ATP*", "*Nunchaku*", "*Code*", "*BNF*", "*SMT*",
+    "*.*.*"]:
+   string list
+val unwanted_names =
+   [(false, Name "*nitpick*"), (false, Name "*Nitpick*"),
+    (false, Name "*full_exhaustive*"), (false, Name "*_def*"),
+    (false, Name "Enum.finite*"), (false, Name "*Quickcheck*"),
+    (false, Name "ATP*"), (false, Name "*Nunchaku*"),
+    (false, Name "*Code*"), (false, Name "*BNF*"), (false, Name "*SMT*"),
+    (false, Name "*.*.*")]:
+   (bool * term Find_Theorems.criterion) list
+val has_vars = fn: term -> bool
+val get_all_eqs = fn: string -> Proof.context -> (string * thm) list
+val get_all_thms = fn: string -> Proof.context -> (string * thm) list
+val get_noneq_thms = fn: string -> Proof.context -> (string * thm) list
+val template_eqs = fn:
+   string -> Proof.context -> (string * thm * template) list
+val template_thms = fn:
+   string -> Proof.context -> (string * thm * template) list
+### theory "Draft.ExtrEqs"
+### 0.683s elapsed time, 2.250s cpu time, 0.270s GC time
+Proofs for inductive predicate(s) "swapidseq"
+  Proving monotonicity ...
+class countable_complete_distrib_lattice = countable_complete_lattice +
+  assumes
+    "sup_ccInf": "!!B a. countable B ==> sup a (Inf B) = Inf (sup a ` B)"
+  assumes
+    "inf_ccSup": "!!B a. countable B ==> inf a (Sup B) = Sup (inf a ` B)"
+"(bij, bij_betw, permutation)"
+  :: "(('a => 'b) => bool) *
+      (('c => 'd) => 'c set => 'd set => bool) * (('e => 'e) => bool)"
+locale comm_monoid_set
+  fixes f :: "'a => 'a => 'a"  (infixl \<open>\<^bold>*\<close> 70)
+    and z :: "'a"  (\<open>\<^bold>1\<close>)
+  assumes "comm_monoid_set (\<^bold>*) \<^bold>1"
+Found termination order: "(%p. size_list size (fst p)) <*mlex*> {}"
+### theory "HOL-Combinatorics.Permutations"
+### 0.803s elapsed time, 1.975s cpu time, 0.231s GC time
+Loading theory "HOL-Combinatorics.Orbits" (required by "Draft.Check_Planarity_VerificationMoreTemplates" via "Draft.Check_Planarity_Verification" via "Draft.Graph_Genus" via "Graph_Theory.Graph_Theory" via "Graph_Theory.Subdivision" via "Graph_Theory.Auxiliary")
+Proofs for inductive predicate(s) "orbitp"
+  Proving monotonicity ...
+### theory "HOL-Combinatorics.Orbits"
+### 0.211s elapsed time, 0.423s cpu time, 0.000s GC time
+Loading theory "Graph_Theory.Auxiliary" (required by "Draft.Check_Planarity_VerificationMoreTemplates" via "Draft.Check_Planarity_Verification" via "Draft.Graph_Genus" via "Graph_Theory.Graph_Theory" via "Graph_Theory.Subdivision")
+Proofs for inductive predicate(s) "segmentp"
+  Proving monotonicity ...
+### theory "HOL-Library.Countable_Complete_Lattices"
+### 1.939s elapsed time, 5.492s cpu time, 0.493s GC time
+Loading theory "HOL-Library.Order_Continuity" (required by "Draft.Check_Planarity_VerificationMoreTemplates" via "Draft.Check_Planarity_Verification" via "Draft.Graph_Genus" via "Graph_Theory.Graph_Theory" via "Graph_Theory.Digraph" via "Graph_Theory.Stuff" via "HOL-Library.Extended_Real" via "HOL-Library.Extended_Nat")
+### theory "Graph_Theory.Auxiliary"
+### 0.585s elapsed time, 1.833s cpu time, 1.550s GC time
+### theory "HOL-Library.Order_Continuity"
+### 0.876s elapsed time, 2.097s cpu time, 1.604s GC time
+Loading theory "HOL-Library.Extended_Nat" (required by "Draft.Check_Planarity_VerificationMoreTemplates" via "Draft.Check_Planarity_Verification" via "Draft.Graph_Genus" via "Graph_Theory.Graph_Theory" via "Graph_Theory.Digraph" via "Graph_Theory.Stuff" via "HOL-Library.Extended_Real")
+class infinity = type +
+  fixes infinity :: "'a"
+instantiation
+  enat :: infinity
+  infinity_enat == infinity :: enat
+Proofs for inductive predicate(s) "rec_set_enat"
+### No equation for constructor "Extended_Nat.infinity_class.infinity"
+### in definition of function "the_enat"
+consts
+  the_enat :: "enat => nat"
+instantiation
+  enat :: zero_neq_one
+  one_enat == one_class.one :: enat
+  zero_enat == zero_class.zero :: enat
+instantiation
+  enat :: comm_monoid_add
+  plus_enat == plus :: enat => enat => enat
+instantiation
+  enat :: {comm_semiring_1,semiring_no_zero_divisors}
+  times_enat == times :: enat => enat => enat
+instantiation
+  enat :: minus
+  minus_enat == minus :: enat => enat => enat
+instantiation
+  enat :: linordered_ab_semigroup_add
+  less_eq_enat == less_eq :: enat => enat => bool
+  less_enat == less :: enat => enat => bool
+instantiation
+  enat :: {order_bot,order_top}
+  top_enat == top :: enat
+  bot_enat == bot :: enat
+structure Cancel_Enat_Common:
+  sig
+    val dest_sum: term -> term list
+    val dest_summing: term * term list -> term list
+    val find_first: term -> term list -> term list
+    val find_first_t: term list -> term -> term list -> term list
+    val mk_eq: term * term -> term
+    val mk_sum: typ -> term list -> term
+    val norm_ss: simpset
+    val norm_tac: Proof.context -> tactic
+    val simplify_meta_eq: Proof.context -> thm -> thm -> thm
+    val trans_tac: Proof.context -> thm option -> tactic
+  end
+structure Eq_Enat_Cancel:
+  sig val proc: Proof.context -> term -> thm option end
+structure Le_Enat_Cancel:
+  sig val proc: Proof.context -> term -> thm option end
+structure Less_Enat_Cancel:
+  sig val proc: Proof.context -> term -> thm option end
+instantiation
+  enat :: complete_lattice
+  Inf_enat == Inf :: enat set => enat
+  Sup_enat == Sup :: enat set => enat
+  sup_enat == sup :: enat => enat => enat
+  inf_enat == inf :: enat => enat => enat
+### theory "HOL-Library.Extended_Nat"
+### 0.551s elapsed time, 0.551s cpu time, 0.000s GC time
+Loading theory "HOL-Library.Extended_Real" (required by "Draft.Check_Planarity_VerificationMoreTemplates" via "Draft.Check_Planarity_Verification" via "Draft.Graph_Genus" via "Graph_Theory.Graph_Theory" via "Graph_Theory.Digraph" via "Graph_Theory.Stuff")
+instantiation
+  enat :: linorder_topology
+  open_enat == open :: enat set => bool
+instantiation
+  ereal :: uminus
+  uminus_ereal == uminus :: ereal => ereal
+Found termination order: "{}"
+instantiation
+  ereal :: infinity
+  infinity_ereal == infinity :: ereal
+instantiation
+  ereal :: abs
+  abs_ereal == abs :: ereal => ereal
+instantiation
+  ereal :: {comm_monoid_add,zero_neq_one}
+  one_ereal == one_class.one :: ereal
+  zero_ereal == zero_class.zero :: ereal
+  plus_ereal == plus :: ereal => ereal => ereal
+instantiation
+  ereal :: linorder
+  less_eq_ereal == less_eq :: ereal => ereal => bool
+  less_ereal == less :: ereal => ereal => bool
+instantiation
+  ereal :: {comm_monoid_mult,sgn}
+  sgn_ereal == sgn :: ereal => ereal
+  times_ereal == times :: ereal => ereal => ereal
+instantiation
+  ereal :: minus
+  minus_ereal == minus :: ereal => ereal => ereal
+instantiation
+  ereal :: inverse
+  inverse_ereal == inverse :: ereal => ereal
+  divide_ereal == divide :: ereal => ereal => ereal
+instantiation
+  ereal :: lattice
+  inf_ereal == inf :: ereal => ereal => ereal
+  sup_ereal == sup :: ereal => ereal => ereal
+instantiation
+  ereal :: complete_lattice
+  Inf_ereal == Inf :: ereal set => ereal
+  Sup_ereal == Sup :: ereal set => ereal
+  bot_ereal == bot :: ereal
+  top_ereal == top :: ereal
+instantiation
+  ereal :: linear_continuum_topology
+  open_ereal == open :: ereal set => bool
+### theory "HOL-Library.Extended_Real"
+### 1.873s elapsed time, 2.161s cpu time, 0.382s GC time
+Loading theory "Graph_Theory.Stuff" (required by "Draft.Check_Planarity_VerificationMoreTemplates" via "Draft.Check_Planarity_Verification" via "Draft.Graph_Genus" via "Graph_Theory.Graph_Theory" via "Graph_Theory.Digraph")
+### theory "Graph_Theory.Stuff"
+### 0.088s elapsed time, 0.354s cpu time, 0.000s GC time
+Loading theory "Graph_Theory.Digraph" (required by "Draft.Check_Planarity_VerificationMoreTemplates" via "Draft.Check_Planarity_Verification" via "Draft.Graph_Genus" via "Graph_Theory.Graph_Theory")
+"- \<infinity>"
+  :: "ereal"
+"True"
+  :: "bool"
+"\<infinity>"
+  :: "ereal"
+"True"
+  :: "bool"
+"ereal (13 / 4)"
+  :: "ereal"
+locale pre_digraph
+  fixes G :: "('a, 'b) pre_digraph"  (structure)
+locale wf_digraph
+  fixes G :: "('a, 'b) pre_digraph"  (structure)
+  assumes "wf_digraph G"
+locale fin_digraph
+  fixes G :: "('a, 'b) pre_digraph"  (structure)
+  assumes "fin_digraph G"
+locale loopfree_digraph
+  fixes G :: "('a, 'b) pre_digraph"  (structure)
+  assumes "loopfree_digraph G"
+locale nomulti_digraph
+  fixes G :: "('a, 'b) pre_digraph"  (structure)
+  assumes "nomulti_digraph G"
+locale sym_digraph
+  fixes G :: "('a, 'b) pre_digraph"  (structure)
+  assumes "sym_digraph G"
+locale digraph
+  fixes G :: "('a, 'b) pre_digraph"  (structure)
+  assumes "digraph G"
+locale pseudo_graph
+  fixes G :: "('a, 'b) pre_digraph"  (structure)
+  assumes "pseudo_graph G"
+locale graph
+  fixes G :: "('a, 'b) pre_digraph"  (structure)
+  assumes "graph G"
+locale wf_digraph
+  fixes G :: "('a, 'b) pre_digraph"  (structure)
+  assumes "wf_digraph G"
+locale pre_digraph
+  fixes G :: "('a, 'b) pre_digraph"  (structure)
+locale wf_digraph
+  fixes G :: "('a, 'b) pre_digraph"  (structure)
+  assumes "wf_digraph G"
+locale fin_digraph
+  fixes G :: "('a, 'b) pre_digraph"  (structure)
+  assumes "fin_digraph G"
+### theory "Graph_Theory.Digraph"
+### 1.505s elapsed time, 3.367s cpu time, 1.899s GC time
+Loading theory "Graph_Theory.Arc_Walk" (required by "Draft.Check_Planarity_VerificationMoreTemplates" via "Draft.Check_Planarity_Verification" via "Draft.Graph_Genus" via "Graph_Theory.Graph_Theory")
+Loading theory "Graph_Theory.Bidirected_Digraph" (required by "Draft.Check_Planarity_VerificationMoreTemplates" via "Draft.Check_Planarity_Verification" via "Draft.Graph_Genus" via "Graph_Theory.Graph_Theory")
+locale pre_digraph
+  fixes G :: "('a, 'b) pre_digraph"  (structure)
+consts
+  awalk_verts :: "'a => 'b list => 'a list"
+Found termination order: "(%p. length (fst (snd p))) <*mlex*> {}"
+locale wf_digraph
+  fixes G :: "('a, 'b) pre_digraph"  (structure)
+  assumes "wf_digraph G"
+locale bidirected_digraph
+  fixes G :: "('a, 'b) pre_digraph"
+    and arev :: "'b => 'b"
+  assumes "bidirected_digraph G arev"
+locale bidirected_digraph
+  fixes G :: "('a, 'b) pre_digraph"
+    and arev :: "'b => 'b"
+  assumes "bidirected_digraph G arev"
+### theory "Graph_Theory.Bidirected_Digraph"
+### 0.333s elapsed time, 0.723s cpu time, 0.111s GC time
+Found termination order: "{}"
+### theory "Graph_Theory.Arc_Walk"
+### 0.866s elapsed time, 1.254s cpu time, 0.111s GC time
+Loading theory "Graph_Theory.Vertex_Walk" (required by "Draft.Check_Planarity_VerificationMoreTemplates" via "Draft.Check_Planarity_Verification" via "Draft.Graph_Genus" via "Graph_Theory.Graph_Theory" via "Graph_Theory.Digraph_Component_Vwalk")
+Loading theory "Graph_Theory.Pair_Digraph" (required by "Draft.Check_Planarity_VerificationMoreTemplates" via "Draft.Check_Planarity_Verification" via "Draft.Graph_Genus" via "Graph_Theory.Graph_Theory" via "Graph_Theory.Digraph_Component")
+Loading theory "Graph_Theory.Weighted_Graph" (required by "Draft.Check_Planarity_VerificationMoreTemplates" via "Draft.Check_Planarity_Verification" via "Draft.Graph_Genus" via "Graph_Theory.Graph_Theory" via "Graph_Theory.Shortest_Path")
+locale wf_digraph
+  fixes G :: "('a, 'b) pre_digraph"  (structure)
+  assumes "wf_digraph G"
+### theory "Graph_Theory.Weighted_Graph"
+### 0.103s elapsed time, 0.341s cpu time, 0.114s GC time
+Loading theory "Graph_Theory.Shortest_Path" (required by "Draft.Check_Planarity_VerificationMoreTemplates" via "Draft.Check_Planarity_Verification" via "Draft.Graph_Genus" via "Graph_Theory.Graph_Theory")
+Found termination order: "length <*mlex*> {}"
+locale wf_digraph
+  fixes G :: "('a, 'b) pre_digraph"  (structure)
+  assumes "wf_digraph G"
+Found termination order: "(%p. size (fst p)) <*mlex*> {}"
+consts
+  pawalk_verts :: "'a => ('a * 'a) list => 'a list"
+### theory "Graph_Theory.Vertex_Walk"
+### 0.499s elapsed time, 1.563s cpu time, 0.247s GC time
+Found termination order: "(%p. size_list size (fst (snd p))) <*mlex*> {}"
+locale pair_pre_digraph
+  fixes G :: "'a pair_pre_digraph"
+locale pair_wf_digraph
+  fixes G :: "'a pair_pre_digraph"
+  assumes "pair_wf_digraph G"
+locale pair_fin_digraph
+  fixes G :: "'a pair_pre_digraph"
+  assumes "pair_fin_digraph G"
+locale pair_sym_digraph
+  fixes G :: "'a pair_pre_digraph"
+  assumes "pair_sym_digraph G"
+locale pair_loopfree_digraph
+  fixes G :: "'a pair_pre_digraph"
+  assumes "pair_loopfree_digraph G"
+locale pair_bidirected_digraph
+  fixes G :: "'a pair_pre_digraph"
+  assumes "pair_bidirected_digraph G"
+locale pair_pseudo_graph
+  fixes G :: "'a pair_pre_digraph"
+  assumes "pair_pseudo_graph G"
+locale pair_digraph
+  fixes G :: "'a pair_pre_digraph"
+  assumes "pair_digraph G"
+locale pair_graph
+  fixes G :: "'a pair_pre_digraph"
+  assumes "pair_graph G"
+### theory "Graph_Theory.Shortest_Path"
+### 0.602s elapsed time, 1.694s cpu time, 0.247s GC time
+locale pair_digraph
+  fixes G :: "'a pair_pre_digraph"
+  assumes "pair_digraph G"
+consts
+  rev_path :: "('a * 'a) list => ('a * 'a) list"
+Found termination order: "{}"
+Found termination order: "(%p. size_list size (snd (snd p))) <*mlex*> {}"
+Found termination order: "(%p. size_list size (snd (snd p))) <*mlex*> {}"
+locale pair_sym_digraph
+  fixes G :: "'a pair_pre_digraph"
+  assumes "pair_sym_digraph G"
+### theory "Graph_Theory.Pair_Digraph"
+### 3.046s elapsed time, 4.589s cpu time, 0.643s GC time
+Loading theory "Graph_Theory.Digraph_Component" (required by "Draft.Check_Planarity_VerificationMoreTemplates" via "Draft.Check_Planarity_Verification" via "Draft.Graph_Genus" via "Graph_Theory.Graph_Theory")
+### Ambiguous input (line 336 of "$AFP/Graph_Theory/Digraph_Component.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>Digraph.dominates_indexed" ("_position" u) ("_indexdefault")
+###     ("_position" v)))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>FuncSet.funcset" ("_position" u) ("_position" v)))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+locale wf_digraph
+  fixes G :: "('a, 'b) pre_digraph"  (structure)
+  assumes "wf_digraph G"
+locale wf_digraph
+  fixes G :: "('a, 'b) pre_digraph"  (structure)
+  assumes "wf_digraph G"
+locale max_reachable_set
+  fixes G :: "('a, 'b) pre_digraph"  (structure)
+    and S :: "'a set"
+  assumes "max_reachable_set G S"
+locale wf_digraph
+  fixes G :: "('a, 'b) pre_digraph"  (structure)
+  assumes "wf_digraph G"
+"LEAST x. P x"
+  :: "'a"
+locale wf_digraph
+  fixes G :: "('a, 'b) pre_digraph"  (structure)
+  assumes "wf_digraph G"
+locale wf_digraph
+  fixes G :: "('a, 'b) pre_digraph"  (structure)
+  assumes "wf_digraph G"
+### theory "Graph_Theory.Digraph_Component"
+### 1.579s elapsed time, 1.718s cpu time, 0.183s GC time
+Loading theory "Graph_Theory.Digraph_Component_Vwalk" (required by "Draft.Check_Planarity_VerificationMoreTemplates" via "Draft.Check_Planarity_Verification" via "Draft.Graph_Genus" via "Graph_Theory.Graph_Theory")
+Loading theory "Graph_Theory.Digraph_Isomorphism" (required by "Draft.Check_Planarity_VerificationMoreTemplates" via "Draft.Check_Planarity_Verification" via "Draft.Graph_Genus" via "Graph_Theory.Graph_Theory")
+Loading theory "Graph_Theory.Subdivision" (required by "Draft.Check_Planarity_VerificationMoreTemplates" via "Draft.Check_Planarity_Verification" via "Draft.Graph_Genus" via "Graph_Theory.Graph_Theory")
+Proofs for inductive predicate(s) "subdivision"
+### theory "Graph_Theory.Digraph_Component_Vwalk"
+### 0.254s elapsed time, 0.787s cpu time, 0.099s GC time
+  Proving monotonicity ...
+locale subdiv_step
+  fixes G :: "('a, 'b) pre_digraph"
+    and rev_G :: "'b => 'b"
+    and H :: "('a, 'b) pre_digraph"
+    and rev_H :: "'b => 'b"
+    and u :: "'a"
+    and v :: "'a"
+    and w :: "'a"
+    and uv :: "'b"
+    and uw :: "'b"
+    and vw :: "'b"
+  assumes "subdiv_step G rev_G H rev_H u v w uv uw vw"
+locale pre_digraph
+  fixes G :: "('a, 'b) pre_digraph"  (structure)
+locale wf_digraph
+  fixes G :: "('a, 'b) pre_digraph"  (structure)
+  assumes "wf_digraph G"
+locale subdiv_step
+  fixes G :: "('a, 'b) pre_digraph"
+    and rev_G :: "'b => 'b"
+    and H :: "('a, 'b) pre_digraph"
+    and rev_H :: "'b => 'b"
+    and u :: "'a"
+    and v :: "'a"
+    and w :: "'a"
+    and uv :: "'b"
+    and uw :: "'b"
+    and vw :: "'b"
+  assumes "subdiv_step G rev_G H rev_H u v w uv uw vw"
+Proofs for inductive predicate(s) "pair_sd"
+  Proving monotonicity ...
+### theory "Graph_Theory.Subdivision"
+### 0.830s elapsed time, 2.036s cpu time, 0.296s GC time
+Loading theory "Graph_Theory.Kuratowski" (required by "Draft.Check_Planarity_VerificationMoreTemplates" via "Draft.Check_Planarity_Verification" via "Draft.Graph_Genus" via "Graph_Theory.Graph_Theory")
+### theory "Graph_Theory.Digraph_Isomorphism"
+### 0.935s elapsed time, 2.244s cpu time, 0.296s GC time
+Loading theory "Graph_Theory.Euler" (required by "Draft.Check_Planarity_VerificationMoreTemplates" via "Draft.Check_Planarity_Verification" via "Draft.Graph_Genus" via "Graph_Theory.Graph_Theory")
+locale wf_digraph
+  fixes G :: "('a, 'b) pre_digraph"  (structure)
+  assumes "wf_digraph G"
+locale pre_digraph
+  fixes G :: "('a, 'b) pre_digraph"  (structure)
+locale pre_digraph
+  fixes G :: "('a, 'b) pre_digraph"  (structure)
+locale wf_digraph
+  fixes G :: "('a, 'b) pre_digraph"  (structure)
+  assumes "wf_digraph G"
+locale wf_digraph
+  fixes G :: "('a, 'b) pre_digraph"  (structure)
+  assumes "wf_digraph G"
+locale fin_digraph
+  fixes G :: "('a, 'b) pre_digraph"  (structure)
+  assumes "fin_digraph G"
+### theory "Graph_Theory.Euler"
+### 0.675s elapsed time, 1.453s cpu time, 0.207s GC time
+locale pair_sym_digraph
+  fixes G :: "'a pair_pre_digraph"
+  assumes "pair_sym_digraph G"
+locale pair_pseudo_graph
+  fixes G :: "'a pair_pre_digraph"
+  assumes "pair_pseudo_graph G"
+locale pair_pre_digraph
+  fixes G :: "'a pair_pre_digraph"
+locale pair_sym_digraph
+  fixes G :: "'a pair_pre_digraph"
+  assumes "pair_sym_digraph G"
+locale pair_pseudo_graph
+  fixes G :: "'a pair_pre_digraph"
+  assumes "pair_pseudo_graph G"
+locale pair_sym_digraph
+  fixes G :: "'a pair_pre_digraph"
+  assumes "pair_sym_digraph G"
+locale pair_sym_digraph
+  fixes G :: "'a pair_pre_digraph"
+  assumes "pair_sym_digraph G"
+locale pair_pseudo_graph
+  fixes G :: "'a pair_pre_digraph"
+  assumes "pair_pseudo_graph G"
+### theory "Graph_Theory.Kuratowski"
+### 2.432s elapsed time, 3.487s cpu time, 0.439s GC time
+Loading theory "Graph_Theory.Graph_Theory" (required by "Draft.Check_Planarity_VerificationMoreTemplates" via "Draft.Check_Planarity_Verification" via "Draft.Graph_Genus")
+### theory "Graph_Theory.Graph_Theory"
+### 0.423s elapsed time, 0.425s cpu time, 0.000s GC time
+Loading theory "Draft.Graph_Genus" (required by "Draft.Check_Planarity_VerificationMoreTemplates" via "Draft.Check_Planarity_Verification")
+locale pre_digraph_map
+  fixes G :: "('a, 'b) pre_digraph"  (structure)
+    and M :: "'b pre_map"
+locale digraph_map
+  fixes G :: "('a, 'b) pre_digraph"
+    and M :: "'b pre_map"
+  assumes "digraph_map G M"
+locale digraph_map
+  fixes G :: "('a, 'b) pre_digraph"
+    and M :: "'b pre_map"
+  assumes "digraph_map G M"
+locale digraph_map
+  fixes G :: "('a, 'b) pre_digraph"
+    and M :: "'b pre_map"
+  assumes "digraph_map G M"
+### theory "Draft.Graph_Genus"
+### 1.137s elapsed time, 1.296s cpu time, 0.211s GC time
+Loading theory "Draft.Check_Planarity_Verification" (required by "Draft.Check_Planarity_VerificationMoreTemplates")
+locale is_map_postcondition0
+  fixes iG :: "nat list * (nat * nat) list"
+    and iM :: "(nat => nat) * (nat => nat) * (nat => nat)"
+    and rev_ok :: "'a"
+    and succ_i :: "nat"
+    and succ_ok :: "bool"
+  assumes "is_map_postcondition0 iG iM succ_i succ_ok"
+locale is_map_postcondition
+  fixes iG :: "nat list * (nat * nat) list"
+    and iM :: "(nat => nat) * (nat => nat) * (nat => nat)"
+    and rev_ok :: "bool"
+    and succ_i :: "nat"
+    and succ_ok :: "bool"
+    and so_i :: "nat"
+    and so_ok :: "bool"
+    and V :: "nat set"
+    and A :: "nat set"
+  assumes "is_map_postcondition iG iM rev_ok succ_i succ_ok so_i so_ok V A"
+### theory "Draft.Check_Planarity_Verification"
+### 0.705s elapsed time, 0.778s cpu time, 0.097s GC time
+Loading theory "Draft.Check_Planarity_VerificationMoreTemplates"
+val templateLemmas =
+   [("Check_Planarity_Verification.finite_fcs_upto",
+     "finite (fcs_upto ?iM ?i)",
+     template_predicate
+      (
+         template_app
+          (template_hole 1,
+           template_app
+            (template_app (template_hole 0, template_var 1),
+             template_var 0))
+         )),
+    ("Check_Planarity_Verification.mkg_simps",
+     "head (mk_graph ?IG) = ig_head ?IG",
+     template_equation
+      (template_app
+        (template_hole 2, template_app (template_hole 1, template_var 0)),
+       template_app (template_hole 0, template_var 0))),
+    ("Check_Planarity_Verification.mkg_simps",
+     "tail (mk_graph ?IG) = ig_tail ?IG",
+     template_equation
+      (template_app
+        (template_hole 2, template_app (template_hole 1, template_var 0)),
+       template_app (template_hole 0, template_var 0))),
+    ("Check_Planarity_Verification.mkg_simps",
+     "verts (mk_graph ?IG) = set (fst ?IG)",
+     template_equation
+      (template_app
+        (template_hole 3, template_app (template_hole 2, template_var 0)),
+       template_app
+        (template_hole 1, template_app (template_hole 0, template_var 0)))),
+    ("Check_Planarity_Verification.trivial_label",
+     "?P ==> Case_Labeling.CTXT ?IC ?CT ?OC ?P",
+     template_implication
+      ([template_predicate (template_var 3)],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 0, template_var 2),
+                 template_var 1),
+               template_var 0),
+             template_var 3)
+           ))),
+    ("Check_Planarity_Verification.arcs_mkg",
+     "arcs (mk_graph ?IG) = {0..<length (snd ?IG)}",
+     template_equation
+      (template_app
+        (template_hole 5, template_app (template_hole 4, template_var 0)),
+       template_app
+        (template_app (template_hole 3, template_hole 2),
+         template_app
+          (template_hole 1,
+           template_app (template_hole 0, template_var 0))))),
+    ("Check_Planarity_Verification.arc_to_ends_mkg",
+     "arc_to_ends (mk_graph ?IG) ?a = snd ?IG ! ?a",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 3, template_app (template_hole 2, template_var 1)),
+         template_var 0),
+       template_app
+        (template_app
+          (template_hole 1, template_app (template_hole 0, template_var 1)),
+         template_var 0))),
+    ("Check_Planarity_Verification.mkm_simps",
+     "edge_rev (mk_map ?G ?iM) = perm_restrict (im_rev ?iM) (arcs ?G)",
+     template_equation
+      (template_app
+        (template_hole 4,
+         template_app
+          (template_app (template_hole 3, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 2, template_app (template_hole 1, template_var 0)),
+         template_app (template_hole 0, template_var 1)))),
+    ("Check_Planarity_Verification.mkm_simps",
+     "edge_succ (mk_map ?G ?iM) = perm_restrict (im_succ ?iM) (arcs ?G)",
+     template_equation
+      (template_app
+        (template_hole 4,
+         template_app
+          (template_app (template_hole 3, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 2, template_app (template_hole 1, template_var 0)),
+         template_app (template_hole 0, template_var 1)))),
+    ("Check_Planarity_Verification.segment_eq_orbit",
+     "?y ~: orbit ?f ?x ==> segment ?f ?x ?y = orbit ?f ?x",
+     template_implication
+      ([template_negation
+         (
+            template_predicate
+             (
+                template_app
+                 (template_app (template_hole 3, template_var 2),
+                  template_app
+                   (template_app (template_hole 2, template_var 1),
+                    template_var 0))
+                )
+            )],
+       template_equation
+        (template_app
+          (template_app
+            (template_app (template_hole 0, template_var 1),
+             template_var 0),
+           template_var 2),
+         template_app
+          (template_app (template_hole 2, template_var 1),
+           template_var 0)))),
+    ("Check_Planarity_Verification.es_eq_im",
+     "?a : arcs (mk_graph ?iG) ==>
+      edge_succ (mk_map (mk_graph ?iG) ?iM) ?a = im_succ ?iM ?a",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 6, template_var 2),
+              template_app
+               (template_hole 5,
+                template_app (template_hole 4, template_var 1)))
+            )],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 2,
+             template_app
+              (template_app
+                (template_hole 1,
+                 template_app (template_hole 4, template_var 1)),
+               template_var 0)),
+           template_var 2),
+         template_app
+          (template_app (template_hole 0, template_var 0),
+           template_var 2)))),
+    ("Check_Planarity_Verification.ovalidNF_face_cycles",
+     "ovalidNF (%s. digraph_map (mk_graph ?iG) ?iM) (face_cycles ?iG ?iM)
+       (%r s. r =
+              card (pre_digraph_map.face_cycle_sets (mk_graph ?iG) ?iM))",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_app (template_hole 6, t_empty),
+             template_app
+              (template_app (template_hole 3, template_var 1),
+               template_var 0)),
+           t_empty)
+         )),
+    ("Check_Planarity_Verification.card_orbit_eq_funpow_dist1",
+     "?x : orbit ?f ?x ==> card (orbit ?f ?x) = funpow_dist1 ?f ?x ?x",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 5, template_var 1),
+              template_app
+               (template_app (template_hole 4, template_var 0),
+                template_var 1))
+            )],
+       template_equation
+        (template_app
+          (template_hole 2,
+           template_app
+            (template_app (template_hole 4, template_var 0),
+             template_var 1)),
+         template_app
+          (template_hole 1,
+           template_app
+            (template_app
+              (template_app (template_hole 0, template_var 0),
+               template_app (template_var 0, template_var 1)),
+             template_var 1))))),
+    ("Check_Planarity_Verification.orbit_ss",
+     "[| ?f : ?A \<rightarrow> ?A; ?a : ?A |] ==> orbit ?f ?a <= ?A",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 4, template_var 2),
+              template_app
+               (template_app (template_hole 3, template_var 1), t_empty))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 2, template_var 0),
+              template_var 1)
+            )],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_app (template_hole 0, template_var 2), template_var 0),
+         template_var 1))),
+    ("Check_Planarity_Verification.ovalidNF_isolated_nodes",
+     "ovalidNF (%s. distinct (fst ?iG) & sym_digraph (mk_graph ?iG))
+       (isolated_nodes ?iG)
+       (%r s. r = card (pre_digraph.isolated_verts (mk_graph ?iG)))",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_app (template_hole 9, t_empty),
+             template_app (template_hole 3, template_var 0)),
+           t_empty)
+         )),
+    ("Check_Planarity_Verification.funpow_in_funcset",
+     "[| ?x : ?A; ?f : ?A \<rightarrow> ?A |] ==> (?f ^^ ?n) ?x : ?A",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 3, template_var 3),
+              template_var 2)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 2, template_var 1),
+              template_app
+               (template_app (template_hole 1, template_var 2), t_empty))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 3,
+               template_app
+                (template_app
+                  (template_app (template_hole 0, template_var 0),
+                   template_var 1),
+                 template_var 3)),
+             template_var 2)
+           ))),
+    ("Check_Planarity_Verification.ovalidNF_wp",
+     "ovalidNF ?P ?c (%r s. r = ?x) ==>
+      ovalidNF (%s. ?Q ?x s & ?P s) ?c ?Q",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 2, template_var 3),
+                template_var 2),
+              t_empty)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app (template_hole 2, t_empty), template_var 2),
+             template_var 0)
+           ))),
+    ("Check_Planarity_Verification.all_less_Suc_eq",
+     "(ALL x<Suc ?n. ?P x) = ((ALL x<?n. ?P x) & ?P ?n)",
+     template_equation
+      (template_app (template_hole 4, t_empty),
+       template_app
+        (template_app
+          (template_hole 0, template_app (template_hole 4, t_empty)),
+         template_app (template_var 0, template_var 1)))),
+    ("Check_Planarity_Verification.take_nth_distinct",
+     "[| distinct ?xs; ?n < length ?xs; ?xs ! ?n : set (take ?n ?xs) |]
+      ==> False",
+     template_implication
+      ([template_predicate (template_app (template_hole 7, template_var 1)),
+        template_inequation
+         (less_than, template_var 0,
+          template_app (template_hole 5, template_var 1)),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 4,
+                template_app
+                 (template_app (template_hole 3, template_var 1),
+                  template_var 0)),
+              template_app
+               (template_hole 2,
+                template_app
+                 (template_app (template_hole 1, template_var 0),
+                  template_var 1)))
+            )],
+       template_predicate (template_hole 0))),
+    ("Check_Planarity_Verification.funpow_dist1_le_card",
+     "[| ?y : orbit ?f ?x; ?x : orbit ?f ?x |]
+      ==> funpow_dist1 ?f ?x ?y <= card (orbit ?f ?x)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 5, template_var 2),
+              template_app
+               (template_app (template_hole 4, template_var 1),
+                template_var 0))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 5, template_var 0),
+              template_app
+               (template_app (template_hole 4, template_var 1),
+                template_var 0))
+            )],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_hole 2,
+           template_app
+            (template_app
+              (template_app (template_hole 1, template_var 1),
+               template_app (template_var 1, template_var 0)),
+             template_var 2)),
+         template_app
+          (template_hole 0,
+           template_app
+            (template_app (template_hole 4, template_var 1),
+             template_var 0))))),
+    ("Check_Planarity_Verification.in_orbit_imp_in_segment",
+     "[| ?y : orbit ?f ?x; ?x ~= ?y; bij ?f |]
+      ==> ?y : segment ?f ?x (?f ?y)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 6, template_var 2),
+              template_app
+               (template_app (template_hole 5, template_var 1),
+                template_var 0))
+            ),
+        template_negation
+         (template_equation (template_var 0, template_var 2)),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 2, template_var 1),
+                template_hole 1),
+              template_hole 1)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 6, template_var 2),
+             template_app
+              (template_app
+                (template_app (template_hole 0, template_var 1),
+                 template_var 0),
+               template_app (template_var 1, template_var 2)))
+           ))),
+    ("Check_Planarity_Verification.funpow_dist1_le",
+     "[| ?y : orbit ?f ?x; ?x : orbit ?f ?x |]
+      ==> funpow_dist1 ?f ?x ?y <= funpow_dist1 ?f ?x ?x",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 4, template_var 2),
+              template_app
+               (template_app (template_hole 3, template_var 1),
+                template_var 0))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 4, template_var 0),
+              template_app
+               (template_app (template_hole 3, template_var 1),
+                template_var 0))
+            )],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_hole 1,
+           template_app
+            (template_app
+              (template_app (template_hole 0, template_var 1),
+               template_app (template_var 1, template_var 0)),
+             template_var 2)),
+         template_app
+          (template_hole 1,
+           template_app
+            (template_app
+              (template_app (template_hole 0, template_var 1),
+               template_app (template_var 1, template_var 0)),
+             template_var 0))))),
+    ("Check_Planarity_Verification.rev_ok_final",
+     "[| wf_digraph (mk_graph ?iG);
+         is_map_rev_ok_inv ?iG ?iM ?rev_i ?rev_ok;
+         is_map_final ?iG ?rev_i ?rev_ok |]
+      ==> ?rev_ok =
+          bidirected_digraph (mk_graph ?iG)
+           (edge_rev (mk_map (mk_graph ?iG) ?iM))",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_hole 7,
+              template_app (template_hole 6, template_var 3))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 5, template_var 3),
+                  template_var 2),
+                template_var 1),
+              template_var 0)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 4, template_var 3),
+                template_var 1),
+              template_var 0)
+            )],
+       template_equation
+        (template_var 0,
+         template_app
+          (template_app
+            (template_hole 2,
+             template_app (template_hole 6, template_var 3)),
+           template_app
+            (template_hole 1,
+             template_app
+              (template_app
+                (template_hole 0,
+                 template_app (template_hole 6, template_var 3)),
+               template_var 2)))))),
+    ("Check_Planarity_Verification.ovalidNF_euler_genus",
+     "ovalidNF
+       (%s. distinct (fst ?iG) &
+            digraph_map (mk_graph ?iG) ?iM &
+            ?c = card (pre_digraph.sccs (mk_graph ?iG)))
+       (euler_genus ?iG ?iM ?c)
+       (%r s. r = pre_digraph_map.euler_genus (mk_graph ?iG) ?iM)",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_app (template_hole 11, t_empty),
+             template_app
+              (template_app
+                (template_app (template_hole 2, template_var 2),
+                 template_var 1),
+               template_var 0)),
+           t_empty)
+         )),
+    ("Check_Planarity_Verification.bij_betwI_finite_dom",
+     "[| finite ?A; ?f : ?A \<rightarrow> ?A;
+         !!a. a : ?A ==> ?g (?f a) = a |]
+      ==> bij_betw ?f ?A ?A",
+     template_implication
+      ([template_predicate (template_app (template_hole 6, template_var 2)),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 5, template_var 1),
+              template_app
+               (template_app (template_hole 4, template_var 2), t_empty))
+            ),
+        template_predicate (template_app (template_hole 3, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app (template_hole 0, template_var 1),
+               template_var 2),
+             template_var 2)
+           ))),
+    ("Check_Planarity_Verification.funpow_dist1_less_f",
+     "[| ?b : orbit ?f ?a; ?a : orbit ?f ?a; ?a ~= ?b |]
+      ==> funpow_dist1 ?f ?a ?b < funpow_dist1 ?f ?a (?f ?b)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 6, template_var 2),
+              template_app
+               (template_app (template_hole 5, template_var 1),
+                template_var 0))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 6, template_var 0),
+              template_app
+               (template_app (template_hole 5, template_var 1),
+                template_var 0))
+            ),
+        template_negation
+         (template_equation (template_var 0, template_var 2))],
+       template_inequation
+        (less_than,
+         template_app
+          (template_hole 1,
+           template_app
+            (template_app
+              (template_app (template_hole 0, template_var 1),
+               template_app (template_var 1, template_var 0)),
+             template_var 2)),
+         template_app
+          (template_hole 1,
+           template_app
+            (template_app
+              (template_app (template_hole 0, template_var 1),
+               template_app (template_var 1, template_var 0)),
+             template_app (template_var 1, template_var 2)))))),
+    ("Check_Planarity_Verification.funpow_dist1_f_eq",
+     "[| ?b : orbit ?f ?a; ?a : orbit ?f ?a; ?a ~= ?b |]
+      ==> funpow_dist1 ?f ?a (?f ?b) = Suc (funpow_dist1 ?f ?a ?b)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 6, template_var 2),
+              template_app
+               (template_app (template_hole 5, template_var 1),
+                template_var 0))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 6, template_var 0),
+              template_app
+               (template_app (template_hole 5, template_var 1),
+                template_var 0))
+            ),
+        template_negation
+         (template_equation (template_var 0, template_var 2))],
+       template_equation
+        (template_app
+          (template_hole 1,
+           template_app
+            (template_app
+              (template_app (template_hole 0, template_var 1),
+               template_app (template_var 1, template_var 0)),
+             template_app (template_var 1, template_var 2))),
+         template_app
+          (template_hole 1,
+           template_app
+            (template_hole 1,
+             template_app
+              (template_app
+                (template_app (template_hole 0, template_var 1),
+                 template_app (template_var 1, template_var 0)),
+               template_var 2)))))),
+    ("Check_Planarity_Verification.funpow_eq_funcset",
+     "[| ?x : ?A; ?f : ?A \<rightarrow> ?A; !!y. y : ?A ==> ?f y = ?g y |]
+      ==> (?f ^^ ?n) ?x = (?g ^^ ?n) ?x",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 5, template_var 4),
+              template_var 3)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 4, template_var 2),
+              template_app
+               (template_app (template_hole 3, template_var 3), t_empty))
+            ),
+        template_predicate (template_app (template_hole 2, t_empty))],
+       template_equation
+        (template_app
+          (template_app
+            (template_app (template_hole 0, template_var 0),
+             template_var 2),
+           template_var 4),
+         template_app
+          (template_app
+            (template_app (template_hole 0, template_var 0),
+             template_var 1),
+           template_var 4)))),
+    ("Check_Planarity_Verification.segment_cong0",
+     "[| ?x : ?A; ?f : ?A \<rightarrow> ?A; !!y. y : ?A ==> ?f y = ?g y |]
+      ==> segment ?f ?x ?y = segment ?g ?x ?y",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 6, template_var 4),
+              template_var 3)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 5, template_var 2),
+              template_app
+               (template_app (template_hole 4, template_var 3), t_empty))
+            ),
+        template_predicate (template_app (template_hole 3, t_empty))],
+       template_equation
+        (template_app
+          (template_app
+            (template_app (template_hole 0, template_var 2),
+             template_var 4),
+           template_var 0),
+         template_app
+          (template_app
+            (template_app (template_hole 0, template_var 1),
+             template_var 4),
+           template_var 0)))),
+    ("Check_Planarity_Verification.ovalidNF_is_map",
+     "ovalidNF (%s. distinct (fst ?iG) & wf_digraph (mk_graph ?iG))
+       (is_map ?iG ?iM)
+       (%r s. r =
+              (digraph_map (mk_graph ?iG) (mk_map (mk_graph ?iG) ?iM) &
+               (ALL i<length (snd ?iG). im_pred ?iM (im_succ ?iM i) = i)))",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_app (template_hole 17, t_empty),
+             template_app
+              (template_app (template_hole 11, template_var 1),
+               template_var 0)),
+           t_empty)
+         )),
+    ("Check_Planarity_Verification.permutesI_finite_dom",
+     "[| finite ?A; ?f : ?A \<rightarrow> ?A; !!a. a ~: ?A ==> ?f a = a;
+         !!a. a : ?A ==> ?g (?f a) = a |]
+      ==> ?f permutes ?A",
+     template_implication
+      ([template_predicate (template_app (template_hole 7, template_var 2)),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 6, template_var 1),
+              template_app
+               (template_app (template_hole 5, template_var 2), t_empty))
+            ),
+        template_predicate (template_app (template_hole 4, t_empty)),
+        template_predicate (template_app (template_hole 4, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 0, template_var 1), template_var 2)
+           ))),
+    ("Check_Planarity_Verification.funpow_dist1_eq_funcset",
+     "[| ?y : orbit ?f ?x; ?x : ?A; ?f : ?A \<rightarrow> ?A;
+         !!y. y : ?A ==> ?f y = ?g y |]
+      ==> funpow_dist1 ?f ?x ?y = funpow_dist1 ?g ?x ?y",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 8, template_var 4),
+              template_app
+               (template_app (template_hole 7, template_var 3),
+                template_var 2))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 8, template_var 2),
+              template_var 1)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 6, template_var 3),
+              template_app
+               (template_app (template_hole 5, template_var 1), t_empty))
+            ),
+        template_predicate (template_app (template_hole 4, t_empty))],
+       template_equation
+        (template_app
+          (template_hole 1,
+           template_app
+            (template_app
+              (template_app (template_hole 0, template_var 3),
+               template_app (template_var 3, template_var 2)),
+             template_var 4)),
+         template_app
+          (template_hole 1,
+           template_app
+            (template_app
+              (template_app (template_hole 0, template_var 0),
+               template_app (template_var 0, template_var 2)),
+             template_var 4))))),
+    ("Check_Planarity_Verification.ovalidNF_certify",
+     "ovalidNF
+       (%s. distinct (fst ?iG) &
+            fin_digraph (mk_graph ?iG) &
+            ?c = card (pre_digraph.sccs (mk_graph ?iG)))
+       (certify ?iG ?iM ?c)
+       (%r s. r =
+              (pre_digraph_map.euler_genus (mk_graph ?iG)
+                (mk_map (mk_graph ?iG) ?iM) =
+               0 &
+               digraph_map (mk_graph ?iG) (mk_map (mk_graph ?iG) ?iM) &
+               (ALL i<length (snd ?iG). im_pred ?iM (im_succ ?iM i) = i)))",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_app (template_hole 22, t_empty),
+             template_app
+              (template_app
+                (template_app (template_hole 13, template_var 2),
+                 template_var 0),
+               template_var 1)),
+           t_empty)
+         ))]:
+   (string * thm * template) list
+### theory "Draft.Check_Planarity_VerificationMoreTemplates"
+### 0.533s elapsed time, 0.779s cpu time, 0.150s GC time
+val it = (): unit

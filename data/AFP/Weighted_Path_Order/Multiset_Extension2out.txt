@@ -1,0 +1,2284 @@
+Loading theory "Draft.List_Order" (required by "Draft.Multiset_Extension2Templates" via "Draft.Multiset_Extension2")
+Loading theory "Draft.Relations" (required by "Draft.Multiset_Extension2Templates" via "Draft.Multiset_Extension2" via "Draft.Multiset_Extension_Pair")
+Loading theory "Draft.Templates" (required by "Draft.Multiset_Extension2Templates" via "Draft.ExtrEqs")
+locale list_order_extension
+  fixes
+    s_list :: "('a * 'a) set => ('a * 'a) set => ('a list * 'a list) set"
+    and
+    ns_list :: "('a * 'a) set => ('a * 'a) set => ('a list * 'a list) set"
+  assumes "list_order_extension s_list ns_list"
+datatype template_term
+=
+     t_empty
+   | template_app of template_term * template_term
+   | template_hole of int
+   | template_var of int
+datatype sign
+= equals | greater_equals | greater_than | less_equals | less_than
+datatype template
+=
+     template_bimplication of template * template
+   | template_dunno
+   | template_equation of template_term * template_term
+   | template_implication of template list * template
+   | template_inequation of sign * template_term * template_term
+   | template_negation of template
+   | template_predicate of template_term
+constructor t_empty: template_term
+constructor template_app: template_term * template_term -> template_term
+constructor template_hole: int -> template_term
+constructor template_var: int -> template_term
+constructor equals: sign
+constructor greater_equals: sign
+constructor greater_than: sign
+constructor less_equals: sign
+constructor less_than: sign
+constructor template_bimplication: template * template -> template
+constructor template_dunno: template
+constructor template_equation: template_term * template_term -> template
+constructor template_implication: template list * template -> template
+constructor template_inequation:
+   sign * template_term * template_term -> template
+constructor template_negation: template -> template
+constructor template_predicate: template_term -> template
+val vfs = fn: term -> (indexname * typ) list * (string * typ) list
+val indexOf = fn: ''a list -> ''a -> int -> int
+val has_eq = fn: term -> bool
+val term2template = fn:
+   (indexname * typ) list -> (string * typ) list -> term -> template_term
+val lemma2predicate = fn: term -> term -> template
+val makeTemplatewithContext = fn: term -> term -> template
+val lemma2template = fn: term -> template
+val thm2template = fn: thm -> template
+val tterm2string = fn: template_term -> string
+val template2string = fn: template -> string
+val t = "height ?t <= size ?t": thm
+val th =
+   Const ("HOL.Trueprop", "bool => prop") $
+     (Const ("Orderings.ord_class.less_eq", "nat => nat => bool") $
+       (Const ("Tree.height_class.height", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree")) $
+       (Const ("Nat.size_class.size", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree"))):
+   term
+### theory "Draft.Templates"
+### 0.068s elapsed time, 0.246s cpu time, 0.000s GC time
+Loading theory "Draft.ExtrEqs" (required by "Draft.Multiset_Extension2Templates")
+locale list_order_extension_impl
+  fixes
+    s_list :: "('a * 'a) set => ('a * 'a) set => ('a list * 'a list) set"
+    and
+    ns_list :: "('a * 'a) set => ('a * 'a) set => ('a list * 'a list) set"
+    and
+    list_ext ::
+      "('a => 'a => bool * bool) => 'a list => 'a list => bool * bool"
+  assumes "list_order_extension_impl s_list ns_list list_ext"
+### theory "Draft.List_Order"
+### 0.098s elapsed time, 0.346s cpu time, 0.000s GC time
+### theory "Draft.Relations"
+### 0.351s elapsed time, 0.854s cpu time, 0.032s GC time
+Loading theory "Draft.Multiset_Extension_Pair" (required by "Draft.Multiset_Extension2Templates" via "Draft.Multiset_Extension2")
+Proofs for inductive predicate(s) "multpwp"
+  Proving monotonicity ...
+val eqpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Var (("_dummy_", 2), "?'a"))
+       ):
+   term Find_Theorems.criterion
+val badeqpattern = Pattern (Const ("Pure.eq", "?'a => ?'a => prop")):
+   term Find_Theorems.criterion
+val undefpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Const ("HOL.undefined", "?'a"))
+       ):
+   term Find_Theorems.criterion
+val thmpattern =
+   Pattern
+    (Const ("HOL.Trueprop", "bool => prop") $ Var (("_dummy_", 1), "bool")):
+   term Find_Theorems.criterion
+val badnames =
+   ["*nitpick*", "*Nitpick*", "*full_exhaustive*", "*_def*", "Enum.finite*",
+    "*Quickcheck*", "ATP*", "*Nunchaku*", "*Code*", "*BNF*", "*SMT*",
+    "*.*.*"]:
+   string list
+val unwanted_names =
+   [(false, Name "*nitpick*"), (false, Name "*Nitpick*"),
+    (false, Name "*full_exhaustive*"), (false, Name "*_def*"),
+    (false, Name "Enum.finite*"), (false, Name "*Quickcheck*"),
+    (false, Name "ATP*"), (false, Name "*Nunchaku*"),
+    (false, Name "*Code*"), (false, Name "*BNF*"), (false, Name "*SMT*"),
+    (false, Name "*.*.*")]:
+   (bool * term Find_Theorems.criterion) list
+val has_vars = fn: term -> bool
+val get_all_eqs = fn: string -> Proof.context -> (string * thm) list
+val get_all_thms = fn: string -> Proof.context -> (string * thm) list
+val get_noneq_thms = fn: string -> Proof.context -> (string * thm) list
+val template_eqs = fn:
+   string -> Proof.context -> (string * thm * template) list
+val template_thms = fn:
+   string -> Proof.context -> (string * thm * template) list
+### theory "Draft.ExtrEqs"
+### 0.586s elapsed time, 1.245s cpu time, 0.117s GC time
+[| (?X, ?Y) : mult2_alt_ns ?ns ?s;
+   !!X1 X2 Y1 Y2.
+      [| ?X = X1 + X2; ?Y = Y1 + Y2; (X1, Y1) : multpw ?ns;
+         ALL x. x :# X2 --> (EX y. y :# Y2 & (x, y) : ?s) |]
+      ==> ?thesis |]
+==> ?thesis
+### theory "Draft.Multiset_Extension_Pair"
+### 0.457s elapsed time, 0.839s cpu time, 0.165s GC time
+Loading theory "Draft.Multiset_Extension2" (required by "Draft.Multiset_Extension2Templates")
+### theory "Draft.Multiset_Extension2"
+### 0.426s elapsed time, 0.474s cpu time, 0.069s GC time
+Loading theory "Draft.Multiset_Extension2Templates"
+val templateLemmas =
+   [("Multiset_Extension2.ns_mul_ext_bottom",
+     "(?A, {#}) : ns_mul_ext ?ns ?s",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_hole 3,
+             template_app
+              (template_app (template_hole 2, template_var 2),
+               template_hole 1)),
+           template_app
+            (template_app (template_hole 0, template_var 1),
+             template_var 0))
+         )),
+    ("Multiset_Extension2.s_mul_ext_bottom_strict",
+     "({#}, ?A) ~: s_mul_ext ?ns ?s",
+     template_negation
+      (
+         template_predicate
+          (
+             template_app
+              (template_app
+                (template_hole 3,
+                 template_app
+                  (template_app (template_hole 2, template_hole 1),
+                   template_var 2)),
+               template_app
+                (template_app (template_hole 0, template_var 1),
+                 template_var 0))
+             )
+         )),
+    ("Multiset_Extension2.refl_imp_locally_refl",
+     "refl ?NS ==> locally_refl ?NS ?A",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 2, template_hole 1),
+              template_var 1)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 0, template_var 1), template_var 0)
+           ))),
+    ("Multiset_Extension2.ns_mul_ext_Id_eq",
+     "ns_mul_ext Id ?R = (s_mul_ext Id ?R)^=",
+     template_equation
+      (template_app
+        (template_app (template_hole 4, template_hole 3), template_var 0),
+       template_app
+        (template_app
+          (template_hole 2,
+           template_app
+            (template_app (template_hole 1, template_hole 3),
+             template_var 0)),
+         template_hole 0))),
+    ("Multiset_Extension2.multpw_refl'",
+     "locally_refl ?ns ?A ==> (?A, ?A) : multpw ?ns",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 3, template_var 1),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 2,
+               template_app
+                (template_app (template_hole 1, template_var 0),
+                 template_var 0)),
+             template_app (template_hole 0, template_var 1))
+           ))),
+    ("Multiset_Extension2.nsmulextp_mset_code",
+     "nsmulextp ?f (mset ?xs) (mset ?ys) = snd (mul_ext ?f ?xs ?ys)",
+     template_equation
+      (template_app
+        (template_app
+          (template_app (template_hole 3, template_var 2),
+           template_app (template_hole 2, template_var 1)),
+         template_app (template_hole 2, template_var 0)),
+       template_app
+        (template_hole 1,
+         template_app
+          (template_app
+            (template_app (template_hole 0, template_var 2),
+             template_var 1),
+           template_var 0)))),
+    ("Multiset_Extension2.smulextp_mset_code",
+     "smulextp ?f (mset ?xs) (mset ?ys) = fst (mul_ext ?f ?xs ?ys)",
+     template_equation
+      (template_app
+        (template_app
+          (template_app (template_hole 3, template_var 2),
+           template_app (template_hole 2, template_var 1)),
+         template_app (template_hole 2, template_var 0)),
+       template_app
+        (template_hole 1,
+         template_app
+          (template_app
+            (template_app (template_hole 0, template_var 2),
+             template_var 1),
+           template_var 0)))),
+    ("Multiset_Extension2.mult_s_mul_ext_conv",
+     "trans ?R ==> (mult (?R^-1))^-1 = s_mul_ext Id ?R",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 6, template_var 0))],
+       template_equation
+        (template_app
+          (template_hole 4,
+           template_app
+            (template_hole 3,
+             template_app (template_hole 2, template_var 0))),
+         template_app
+          (template_app (template_hole 1, template_hole 0),
+           template_var 0)))),
+    ("Multiset_Extension2.subset_mset_imp_s_mul_ext_Id",
+     "?A <# ?B ==> (?B, ?A) : s_mul_ext Id ?R",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 4, template_var 2),
+              template_var 1)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 3,
+               template_app
+                (template_app (template_hole 2, template_var 1),
+                 template_var 2)),
+             template_app
+              (template_app (template_hole 1, template_hole 0),
+               template_var 0))
+           ))),
+    ("Multiset_Extension2.subseteq_mset_imp_ns_mul_ext_Id",
+     "?A <=# ?B ==> (?B, ?A) : ns_mul_ext Id ?R",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 4, template_var 2),
+              template_var 1)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 3,
+               template_app
+                (template_app (template_hole 2, template_var 1),
+                 template_var 2)),
+             template_app
+              (template_app (template_hole 1, template_hole 0),
+               template_var 0))
+           ))),
+    ("Multiset_Extension2.ns_mul_ext_refl",
+     "refl ?ns ==> (?A, ?A) : ns_mul_ext ?ns ?s",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 4, template_hole 3),
+              template_var 2)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 2,
+               template_app
+                (template_app (template_hole 1, template_var 1),
+                 template_var 1)),
+             template_app
+              (template_app (template_hole 0, template_var 2),
+               template_var 0))
+           ))),
+    ("Multiset_Extension2.ns_mul_ext_refl_local",
+     "locally_refl ?ns ?A ==> (?A, ?A) : ns_mul_ext ?ns ?s",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 3, template_var 2),
+              template_var 1)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 2,
+               template_app
+                (template_app (template_hole 1, template_var 1),
+                 template_var 1)),
+             template_app
+              (template_app (template_hole 0, template_var 2),
+               template_var 0))
+           ))),
+    ("Multiset_Extension2.mul_ext_stri_imp_nstri",
+     "fst (mul_ext ?f ?as ?bs) ==> snd (mul_ext ?f ?as ?bs)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_hole 2,
+              template_app
+               (template_app
+                 (template_app (template_hole 1, template_var 2),
+                  template_var 1),
+                template_var 0))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_hole 0,
+             template_app
+              (template_app
+                (template_app (template_hole 1, template_var 2),
+                 template_var 1),
+               template_var 0))
+           ))),
+    ("Multiset_Extension2.ns_mul_ext_bottom_uniqueness",
+     "({#}, ?A) : ns_mul_ext ?ns ?s ==> ?A = {#}",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 4,
+                template_app
+                 (template_app (template_hole 3, template_hole 2),
+                  template_var 2)),
+              template_app
+               (template_app (template_hole 1, template_var 1),
+                template_var 0))
+            )],
+       template_equation (template_var 2, template_hole 2))),
+    ("Multiset_Extension2.s_mul_ext_bottom",
+     "?A ~= {#} ==> (?A, {#}) : s_mul_ext ?ns ?s",
+     template_implication
+      ([template_negation
+         (template_equation (template_var 2, template_hole 3))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 2,
+               template_app
+                (template_app (template_hole 1, template_var 2),
+                 template_hole 3)),
+             template_app
+              (template_app (template_hole 0, template_var 1),
+               template_var 0))
+           ))),
+    ("Multiset_Extension2.SN_s_mul_ext",
+     "[| order_pair ?s ?ns; SN ?s |] ==> SN (s_mul_ext ?ns ?s)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 5, template_var 1),
+              template_var 0)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 4, template_var 1),
+              template_hole 3)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 2,
+               template_app
+                (template_app (template_hole 1, template_var 0),
+                 template_var 1)),
+             template_hole 0)
+           ))),
+    ("Multiset_Extension2.s_ns_mul_ext",
+     "(?A, ?B) : s_mul_ext ?ns ?s ==> (?A, ?B) : ns_mul_ext ?ns ?s",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 3,
+                template_app
+                 (template_app (template_hole 2, template_var 3),
+                  template_var 2)),
+              template_app
+               (template_app (template_hole 1, template_var 1),
+                template_var 0))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 3,
+               template_app
+                (template_app (template_hole 2, template_var 3),
+                 template_var 2)),
+             template_app
+              (template_app (template_hole 0, template_var 1),
+               template_var 0))
+           ))),
+    ("Multiset_Extension2.ns_mul_ext_mono",
+     "[| ?ns <= ?ns'; ?s <= ?s' |]
+      ==> ns_mul_ext ?ns ?s <= ns_mul_ext ?ns' ?s'",
+     template_implication
+      ([template_inequation (less_equals, template_var 3, template_var 2),
+        template_inequation (less_equals, template_var 1, template_var 0)],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_app (template_hole 0, template_var 3), template_var 1),
+         template_app
+          (template_app (template_hole 0, template_var 2),
+           template_var 0)))),
+    ("Multiset_Extension2.s_mul_ext_mono",
+     "[| ?ns <= ?ns'; ?s <= ?s' |]
+      ==> s_mul_ext ?ns ?s <= s_mul_ext ?ns' ?s'",
+     template_implication
+      ([template_inequation (less_equals, template_var 3, template_var 2),
+        template_inequation (less_equals, template_var 1, template_var 0)],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_app (template_hole 0, template_var 3), template_var 1),
+         template_app
+          (template_app (template_hole 0, template_var 2),
+           template_var 0)))),
+    ("Multiset_Extension2.supset_imp_s_mul_ext",
+     "[| refl ?NS; ?B <# ?A |] ==> (?A, ?B) : s_mul_ext ?NS ?S",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 5, template_hole 4),
+              template_var 3)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 3, template_var 2),
+              template_var 1)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 2,
+               template_app
+                (template_app (template_hole 1, template_var 1),
+                 template_var 2)),
+             template_app
+              (template_app (template_hole 0, template_var 3),
+               template_var 0))
+           ))),
+    ("Multiset_Extension2.supseteq_imp_ns_mul_ext",
+     "[| refl ?NS; ?B <=# ?A |] ==> (?A, ?B) : ns_mul_ext ?NS ?S",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 5, template_hole 4),
+              template_var 3)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 3, template_var 2),
+              template_var 1)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 2,
+               template_app
+                (template_app (template_hole 1, template_var 1),
+                 template_var 2)),
+             template_app
+              (template_app (template_hole 0, template_var 3),
+               template_var 0))
+           ))),
+    ("Multiset_Extension2.ns_mul_ext_singleton",
+     "(?a, ?b) : ?ns ==> ({#?a#}, {#?b#}) : ns_mul_ext ?ns ?s",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 6,
+                template_app
+                 (template_app (template_hole 5, template_var 3),
+                  template_var 2)),
+              template_var 1)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 4,
+               template_app
+                (template_app
+                  (template_hole 3,
+                   template_app
+                    (template_app (template_hole 2, template_var 3),
+                     template_hole 1)),
+                 template_app
+                  (template_app (template_hole 2, template_var 2),
+                   template_hole 1))),
+             template_app
+              (template_app (template_hole 0, template_var 1),
+               template_var 0))
+           ))),
+    ("Multiset_Extension2.ns_mul_ext_singleton2",
+     "(?a, ?b) : ?s ==> ({#?a#}, {#?b#}) : ns_mul_ext ?ns ?s",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 6,
+                template_app
+                 (template_app (template_hole 5, template_var 3),
+                  template_var 2)),
+              template_var 1)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 4,
+               template_app
+                (template_app
+                  (template_hole 3,
+                   template_app
+                    (template_app (template_hole 2, template_var 3),
+                     template_hole 1)),
+                 template_app
+                  (template_app (template_hole 2, template_var 2),
+                   template_hole 1))),
+             template_app
+              (template_app (template_hole 0, template_var 0),
+               template_var 1))
+           ))),
+    ("Multiset_Extension2.s_mul_ext_singleton",
+     "(?a, ?b) : ?s ==> ({#?a#}, {#?b#}) : s_mul_ext ?ns ?s",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 6,
+                template_app
+                 (template_app (template_hole 5, template_var 3),
+                  template_var 2)),
+              template_var 1)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 4,
+               template_app
+                (template_app
+                  (template_hole 3,
+                   template_app
+                    (template_app (template_hole 2, template_var 3),
+                     template_hole 1)),
+                 template_app
+                  (template_app (template_hole 2, template_var 2),
+                   template_hole 1))),
+             template_app
+              (template_app (template_hole 0, template_var 0),
+               template_var 1))
+           ))),
+    ("Multiset_Extension2.s_mul_ext_extend_left",
+     "(?B, ?C) : s_mul_ext ?W ?S ==> (?A + ?B, ?C) : s_mul_ext ?W ?S",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 3,
+                template_app
+                 (template_app (template_hole 2, template_var 4),
+                  template_var 3)),
+              template_app
+               (template_app (template_hole 1, template_var 2),
+                template_var 1))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 3,
+               template_app
+                (template_app
+                  (template_hole 2,
+                   template_app
+                    (template_app (template_hole 0, template_var 0),
+                     template_var 4)),
+                 template_var 3)),
+             template_app
+              (template_app (template_hole 1, template_var 2),
+               template_var 1))
+           ))),
+    ("Multiset_Extension2.ns_mul_ext_bottom2",
+     "[| (?A, ?B) : ns_mul_ext ?ns ?s; ?B ~= {#} |] ==> ?A ~= {#}",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 5,
+                template_app
+                 (template_app (template_hole 4, template_var 3),
+                  template_var 2)),
+              template_app
+               (template_app (template_hole 3, template_var 1),
+                template_var 0))
+            ),
+        template_negation
+         (template_equation (template_var 2, template_hole 0))],
+       template_negation
+        (template_equation (template_var 3, template_hole 0)))),
+    ("Multiset_Extension2.s_mul_ext_self_extend_left",
+     "[| ?A ~= {#}; locally_refl ?W ?B |]
+      ==> (?A + ?B, ?B) : s_mul_ext ?W ?S",
+     template_implication
+      ([template_negation
+         (template_equation (template_var 3, template_hole 5)),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 4, template_var 2),
+              template_var 1)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 3,
+               template_app
+                (template_app
+                  (template_hole 2,
+                   template_app
+                    (template_app (template_hole 1, template_var 3),
+                     template_var 1)),
+                 template_var 1)),
+             template_app
+              (template_app (template_hole 0, template_var 2),
+               template_var 0))
+           ))),
+    ("Multiset_Extension2.s_mul_ext_ne_extend_left",
+     "[| ?A ~= {#}; (?B, ?C) : ns_mul_ext ?W ?S |]
+      ==> (?A + ?B, ?C) : s_mul_ext ?W ?S",
+     template_implication
+      ([template_negation
+         (template_equation (template_var 4, template_hole 5)),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 4,
+                template_app
+                 (template_app (template_hole 3, template_var 3),
+                  template_var 2)),
+              template_app
+               (template_app (template_hole 2, template_var 1),
+                template_var 0))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 4,
+               template_app
+                (template_app
+                  (template_hole 3,
+                   template_app
+                    (template_app (template_hole 1, template_var 4),
+                     template_var 3)),
+                 template_var 2)),
+             template_app
+              (template_app (template_hole 0, template_var 1),
+               template_var 0))
+           ))),
+    ("Multiset_Extension2.ns_mul_ext_union_compat",
+     "[| (?A, ?B) : ns_mul_ext ?ns ?s; locally_refl ?ns ?C |]
+      ==> (?A + ?C, ?B + ?C) : ns_mul_ext ?ns ?s",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 4,
+                template_app
+                 (template_app (template_hole 3, template_var 4),
+                  template_var 3)),
+              template_app
+               (template_app (template_hole 2, template_var 2),
+                template_var 1))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 1, template_var 2),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 4,
+               template_app
+                (template_app
+                  (template_hole 3,
+                   template_app
+                    (template_app (template_hole 0, template_var 4),
+                     template_var 0)),
+                 template_app
+                  (template_app (template_hole 0, template_var 3),
+                   template_var 0))),
+             template_app
+              (template_app (template_hole 2, template_var 2),
+               template_var 1))
+           ))),
+    ("Multiset_Extension2.s_mul_ext_union_compat",
+     "[| (?A, ?B) : s_mul_ext ?ns ?s; locally_refl ?ns ?C |]
+      ==> (?A + ?C, ?B + ?C) : s_mul_ext ?ns ?s",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 4,
+                template_app
+                 (template_app (template_hole 3, template_var 4),
+                  template_var 3)),
+              template_app
+               (template_app (template_hole 2, template_var 2),
+                template_var 1))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 1, template_var 2),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 4,
+               template_app
+                (template_app
+                  (template_hole 3,
+                   template_app
+                    (template_app (template_hole 0, template_var 4),
+                     template_var 0)),
+                 template_app
+                  (template_app (template_hole 0, template_var 3),
+                   template_var 0))),
+             template_app
+              (template_app (template_hole 2, template_var 2),
+               template_var 1))
+           ))),
+    ("Multiset_Extension2.SN_s_mul_ext_strong",
+     "[| order_pair ?s ?ns; ALL y. y :# ?M --> SN_on ?s {y} |]
+      ==> SN_on (s_mul_ext ?ns ?s) {?M}",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 11, template_var 2),
+              template_var 1)
+            ),
+        template_predicate (template_app (template_hole 10, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 3,
+               template_app
+                (template_app (template_hole 2, template_var 1),
+                 template_var 2)),
+             template_app
+              (template_app (template_hole 1, template_var 0),
+               template_hole 0))
+           ))),
+    ("Multiset_Extension2.relation_inter",
+     "{(x, y). ?P x y} Int {(x, y). ?Q x y} = {(x, y). ?P x y & ?Q x y}",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 3,
+           template_app
+            (template_hole 2, template_app (template_hole 1, t_empty))),
+         template_app
+          (template_hole 2, template_app (template_hole 1, t_empty))),
+       template_app
+        (template_hole 2, template_app (template_hole 1, t_empty)))),
+    ("Multiset_Extension2.mset_ns_mul_ext",
+     "((mset ?xs, mset ?ys)
+       : ns_mul_ext {(x, y). snd (?f x y)} {(x, y). fst (?f x y)}) =
+      snd (mul_ext ?f ?xs ?ys)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 8,
+           template_app
+            (template_app
+              (template_hole 7,
+               template_app (template_hole 6, template_var 2)),
+             template_app (template_hole 6, template_var 1))),
+         template_app
+          (template_app
+            (template_hole 5,
+             template_app
+              (template_hole 4, template_app (template_hole 3, t_empty))),
+           template_app
+            (template_hole 4, template_app (template_hole 3, t_empty)))),
+       template_app
+        (template_hole 2,
+         template_app
+          (template_app
+            (template_app (template_hole 0, template_var 0),
+             template_var 2),
+           template_var 1)))),
+    ("Multiset_Extension2.mset_s_mul_ext",
+     "((mset ?xs, mset ?ys)
+       : s_mul_ext {(x, y). snd (?f x y)} {(x, y). fst (?f x y)}) =
+      fst (mul_ext ?f ?xs ?ys)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 8,
+           template_app
+            (template_app
+              (template_hole 7,
+               template_app (template_hole 6, template_var 2)),
+             template_app (template_hole 6, template_var 1))),
+         template_app
+          (template_app
+            (template_hole 5,
+             template_app
+              (template_hole 4, template_app (template_hole 3, t_empty))),
+           template_app
+            (template_hole 4, template_app (template_hole 3, t_empty)))),
+       template_app
+        (template_hole 1,
+         template_app
+          (template_app
+            (template_app (template_hole 0, template_var 0),
+             template_var 2),
+           template_var 1)))),
+    ("Multiset_Extension2.ns_ns_mul_ext_union_compat",
+     "[| (?A, ?B) : ns_mul_ext ?ns ?s; (?C, ?D) : ns_mul_ext ?ns ?s |]
+      ==> (?A + ?C, ?B + ?D) : ns_mul_ext ?ns ?s",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 3,
+                template_app
+                 (template_app (template_hole 2, template_var 5),
+                  template_var 4)),
+              template_app
+               (template_app (template_hole 1, template_var 3),
+                template_var 2))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 3,
+                template_app
+                 (template_app (template_hole 2, template_var 1),
+                  template_var 0)),
+              template_app
+               (template_app (template_hole 1, template_var 3),
+                template_var 2))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 3,
+               template_app
+                (template_app
+                  (template_hole 2,
+                   template_app
+                    (template_app (template_hole 0, template_var 5),
+                     template_var 1)),
+                 template_app
+                  (template_app (template_hole 0, template_var 4),
+                   template_var 0))),
+             template_app
+              (template_app (template_hole 1, template_var 3),
+               template_var 2))
+           ))),
+    ("Multiset_Extension2.s_ns_mul_ext_union_compat",
+     "[| (?A, ?B) : s_mul_ext ?ns ?s; (?C, ?D) : ns_mul_ext ?ns ?s |]
+      ==> (?A + ?C, ?B + ?D) : s_mul_ext ?ns ?s",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 4,
+                template_app
+                 (template_app (template_hole 3, template_var 5),
+                  template_var 4)),
+              template_app
+               (template_app (template_hole 2, template_var 3),
+                template_var 2))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 4,
+                template_app
+                 (template_app (template_hole 3, template_var 1),
+                  template_var 0)),
+              template_app
+               (template_app (template_hole 1, template_var 3),
+                template_var 2))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 4,
+               template_app
+                (template_app
+                  (template_hole 3,
+                   template_app
+                    (template_app (template_hole 0, template_var 5),
+                     template_var 1)),
+                 template_app
+                  (template_app (template_hole 0, template_var 4),
+                   template_var 0))),
+             template_app
+              (template_app (template_hole 2, template_var 3),
+               template_var 2))
+           ))),
+    ("Multiset_Extension2.all_nstri_imp_mul_nstri",
+     "[| ALL i<length ?ys. snd (?f (?xs ! i) (?ys ! i));
+         length ?xs = length ?ys |]
+      ==> snd (mul_ext ?f ?xs ?ys)",
+     template_implication
+      ([template_predicate (template_app (template_hole 7, t_empty)),
+        template_equation
+         (template_app (template_hole 4, template_var 0),
+          template_app (template_hole 4, template_var 2))],
+       template_predicate
+        (
+           template_app
+            (template_hole 3,
+             template_app
+              (template_app
+                (template_app (template_hole 0, template_var 1),
+                 template_var 0),
+               template_var 2))
+           ))),
+    ("Multiset_Extension2.all_s_s_mul_ext",
+     "[| ?A ~= {#}; ALL b. b :# ?B --> (EX a. a :# ?A & (a, b) : ?s) |]
+      ==> (?A, ?B) : s_mul_ext ?ns ?s",
+     template_implication
+      ([template_negation
+         (template_equation (template_var 3, template_hole 11)),
+        template_predicate (template_app (template_hole 10, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 2,
+               template_app
+                (template_app (template_hole 1, template_var 3),
+                 template_var 2)),
+             template_app
+              (template_app (template_hole 0, template_var 0),
+               template_var 1))
+           ))),
+    ("Multiset_Extension2.all_ns_ns_mul_ext",
+     "[| length ?as = length ?bs;
+         ALL i<length ?bs. (?as ! i, ?bs ! i) : ?ns |]
+      ==> (mset ?as, mset ?bs) : ns_mul_ext ?ns ?s",
+     template_implication
+      ([template_equation
+         (template_app (template_hole 10, template_var 3),
+          template_app (template_hole 10, template_var 2)),
+        template_predicate (template_app (template_hole 9, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 3,
+               template_app
+                (template_app
+                  (template_hole 2,
+                   template_app (template_hole 1, template_var 3)),
+                 template_app (template_hole 1, template_var 2))),
+             template_app
+              (template_app (template_hole 0, template_var 1),
+               template_var 0))
+           ))),
+    ("Multiset_Extension2.ns_mul_ext_IdI",
+     "[| ?M = ?X + ?Z; ?N = ?Y + ?Z;
+         \<forall>y:#?Y. \<exists>x:#?X. (x, y) : ?R |]
+      ==> (?M, ?N) : ns_mul_ext Id ?R",
+     template_implication
+      ([template_equation
+         (template_var 5,
+          template_app
+           (template_app (template_hole 9, template_var 4),
+            template_var 3)),
+        template_equation
+         (template_var 2,
+          template_app
+           (template_app (template_hole 9, template_var 1),
+            template_var 3)),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 8,
+                template_app (template_hole 7, template_var 1)),
+              t_empty)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 3,
+               template_app
+                (template_app (template_hole 2, template_var 5),
+                 template_var 2)),
+             template_app
+              (template_app (template_hole 1, template_hole 0),
+               template_var 0))
+           ))),
+    ("Multiset_Extension2.mul_ext_unfold",
+     "((?x, ?y) : {(a, b). fst (mul_ext ?g a b)}) =
+      ((mset ?x, mset ?y)
+       : s_mul_ext {(a, b). snd (?g a b)} {(a, b). fst (?g a b)})",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 12,
+           template_app
+            (template_app (template_hole 11, template_var 2),
+             template_var 1)),
+         template_app
+          (template_hole 10, template_app (template_hole 9, t_empty))),
+       template_app
+        (template_app
+          (template_hole 6,
+           template_app
+            (template_app
+              (template_hole 5,
+               template_app (template_hole 4, template_var 2)),
+             template_app (template_hole 4, template_var 1))),
+         template_app
+          (template_app
+            (template_hole 3,
+             template_app
+              (template_hole 2, template_app (template_hole 1, t_empty))),
+           template_app
+            (template_hole 2, template_app (template_hole 1, t_empty)))))),
+    ("Multiset_Extension2.ns_ns_mul_ext_union_compat_rtrancl",
+     "[| refl ?ns; (?A, ?B) : (ns_mul_ext ?ns ?s)^*;
+         (?C, ?D) : (ns_mul_ext ?ns ?s)^* |]
+      ==> (?A + ?C, ?B + ?D) : (ns_mul_ext ?ns ?s)^*",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 6, template_hole 5),
+              template_var 5)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 4,
+                template_app
+                 (template_app (template_hole 3, template_var 4),
+                  template_var 3)),
+              template_app
+               (template_hole 2,
+                template_app
+                 (template_app (template_hole 1, template_var 5),
+                  template_var 2)))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 4,
+                template_app
+                 (template_app (template_hole 3, template_var 1),
+                  template_var 0)),
+              template_app
+               (template_hole 2,
+                template_app
+                 (template_app (template_hole 1, template_var 5),
+                  template_var 2)))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 4,
+               template_app
+                (template_app
+                  (template_hole 3,
+                   template_app
+                    (template_app (template_hole 0, template_var 4),
+                     template_var 1)),
+                 template_app
+                  (template_app (template_hole 0, template_var 3),
+                   template_var 0))),
+             template_app
+              (template_hole 2,
+               template_app
+                (template_app (template_hole 1, template_var 5),
+                 template_var 2)))
+           ))),
+    ("Multiset_Extension2.ns_mul_ext_local_mono",
+     "[| set_mset ?xs \<times> set_mset ?ys Int ?ns <= ?ns';
+         set_mset ?xs \<times> set_mset ?ys Int ?s <= ?s';
+         (?xs, ?ys) : ns_mul_ext ?ns ?s |]
+      ==> (?xs, ?ys) : ns_mul_ext ?ns' ?s'",
+     template_implication
+      ([template_inequation
+         (less_equals,
+          template_app
+           (template_app
+             (template_hole 5,
+              template_app
+               (template_app
+                 (template_hole 4,
+                  template_app (template_hole 3, template_var 5)),
+                t_empty)),
+            template_var 3),
+          template_var 2),
+        template_inequation
+         (less_equals,
+          template_app
+           (template_app
+             (template_hole 5,
+              template_app
+               (template_app
+                 (template_hole 4,
+                  template_app (template_hole 3, template_var 5)),
+                t_empty)),
+            template_var 1),
+          template_var 0),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 2,
+                template_app
+                 (template_app (template_hole 1, template_var 5),
+                  template_var 4)),
+              template_app
+               (template_app (template_hole 0, template_var 3),
+                template_var 1))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 2,
+               template_app
+                (template_app (template_hole 1, template_var 5),
+                 template_var 4)),
+             template_app
+              (template_app (template_hole 0, template_var 2),
+               template_var 0))
+           ))),
+    ("Multiset_Extension2.s_mul_ext_local_mono",
+     "[| set_mset ?xs \<times> set_mset ?ys Int ?ns <= ?ns';
+         set_mset ?xs \<times> set_mset ?ys Int ?s <= ?s';
+         (?xs, ?ys) : s_mul_ext ?ns ?s |]
+      ==> (?xs, ?ys) : s_mul_ext ?ns' ?s'",
+     template_implication
+      ([template_inequation
+         (less_equals,
+          template_app
+           (template_app
+             (template_hole 5,
+              template_app
+               (template_app
+                 (template_hole 4,
+                  template_app (template_hole 3, template_var 5)),
+                t_empty)),
+            template_var 3),
+          template_var 2),
+        template_inequation
+         (less_equals,
+          template_app
+           (template_app
+             (template_hole 5,
+              template_app
+               (template_app
+                 (template_hole 4,
+                  template_app (template_hole 3, template_var 5)),
+                t_empty)),
+            template_var 1),
+          template_var 0),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 2,
+                template_app
+                 (template_app (template_hole 1, template_var 5),
+                  template_var 4)),
+              template_app
+               (template_app (template_hole 0, template_var 3),
+                template_var 1))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 2,
+               template_app
+                (template_app (template_hole 1, template_var 5),
+                 template_var 4)),
+             template_app
+              (template_app (template_hole 0, template_var 2),
+               template_var 0))
+           ))),
+    ("Multiset_Extension2.s_mul_ext_IdI",
+     "[| ?X ~= {#}; ?M = ?X + ?Z; ?N = ?Y + ?Z;
+         \<forall>y:#?Y. \<exists>x:#?X. (x, y) : ?R |]
+      ==> (?M, ?N) : s_mul_ext Id ?R",
+     template_implication
+      ([template_negation
+         (template_equation (template_var 5, template_hole 10)),
+        template_equation
+         (template_var 4,
+          template_app
+           (template_app (template_hole 9, template_var 5),
+            template_var 3)),
+        template_equation
+         (template_var 2,
+          template_app
+           (template_app (template_hole 9, template_var 1),
+            template_var 3)),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 8,
+                template_app (template_hole 7, template_var 1)),
+              t_empty)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 3,
+               template_app
+                (template_app (template_hole 2, template_var 4),
+                 template_var 2)),
+             template_app
+              (template_app (template_hole 1, template_hole 0),
+               template_var 0))
+           ))),
+    ("Multiset_Extension2.multpw_listI",
+     "[| length ?xs = length ?ys; ?X = mset ?xs; ?Y = mset ?ys;
+         ALL i<length ?ys. (?xs ! i, ?ys ! i) : ?ns |]
+      ==> (?X, ?Y) : multpw ?ns",
+     template_implication
+      ([template_equation
+         (template_app (template_hole 11, template_var 4),
+          template_app (template_hole 11, template_var 3)),
+        template_equation
+         (template_var 2, template_app (template_hole 9, template_var 4)),
+        template_equation
+         (template_var 1, template_app (template_hole 9, template_var 3)),
+        template_predicate (template_app (template_hole 8, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 2,
+               template_app
+                (template_app (template_hole 1, template_var 2),
+                 template_var 1)),
+             template_app (template_hole 0, template_var 0))
+           ))),
+    ("Multiset_Extension2.nsmulextp_cong",
+     "[| ?xs1.0 = ?ys1.0; ?xs2.0 = ?ys2.0;
+         !!x x'. [| x :# ?ys1.0; x' :# ?ys2.0 |] ==> ?f x x' = ?g x x' |]
+      ==> nsmulextp ?f ?xs1.0 ?xs2.0 = nsmulextp ?g ?ys1.0 ?ys2.0",
+     template_implication
+      ([template_equation (template_var 5, template_var 4),
+        template_equation (template_var 3, template_var 2),
+        template_predicate (template_app (template_hole 5, t_empty))],
+       template_equation
+        (template_app
+          (template_app
+            (template_app (template_hole 0, template_var 1),
+             template_var 5),
+           template_var 3),
+         template_app
+          (template_app
+            (template_app (template_hole 0, template_var 0),
+             template_var 4),
+           template_var 2)))),
+    ("Multiset_Extension2.smulextp_cong",
+     "[| ?xs1.0 = ?ys1.0; ?xs2.0 = ?ys2.0;
+         !!x x'. [| x :# ?ys1.0; x' :# ?ys2.0 |] ==> ?f x x' = ?g x x' |]
+      ==> smulextp ?f ?xs1.0 ?xs2.0 = smulextp ?g ?ys1.0 ?ys2.0",
+     template_implication
+      ([template_equation (template_var 5, template_var 4),
+        template_equation (template_var 3, template_var 2),
+        template_predicate (template_app (template_hole 5, t_empty))],
+       template_equation
+        (template_app
+          (template_app
+            (template_app (template_hole 0, template_var 1),
+             template_var 5),
+           template_var 3),
+         template_app
+          (template_app
+            (template_app (template_hole 0, template_var 0),
+             template_var 4),
+           template_var 2)))),
+    ("Multiset_Extension2.mulextp_cong",
+     "[| ?xs1.0 = ?ys1.0; ?xs2.0 = ?ys2.0;
+         !!x x'. [| x :# ?ys1.0; x' :# ?ys2.0 |] ==> ?f x x' = ?g x x' |]
+      ==> mulextp ?f ?xs1.0 ?xs2.0 = mulextp ?g ?ys1.0 ?ys2.0",
+     template_implication
+      ([template_equation (template_var 5, template_var 4),
+        template_equation (template_var 3, template_var 2),
+        template_predicate (template_app (template_hole 4, t_empty))],
+       template_equation
+        (template_app
+          (template_app
+            (template_app (template_hole 0, template_var 1),
+             template_var 5),
+           template_var 3),
+         template_app
+          (template_app
+            (template_app (template_hole 0, template_var 0),
+             template_var 4),
+           template_var 2)))),
+    ("Multiset_Extension2.ns_s_mul_ext_union_multiset_l",
+     "[| (?A, ?B) : ns_mul_ext ?ns ?s; ?C ~= {#};
+         ALL d. d :# ?D --> (EX c. c :# ?C & (c, d) : ?s) |]
+      ==> (?A + ?C, ?B + ?D) : s_mul_ext ?ns ?s",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 15,
+                template_app
+                 (template_app (template_hole 14, template_var 5),
+                  template_var 4)),
+              template_app
+               (template_app (template_hole 13, template_var 3),
+                template_var 2))
+            ),
+        template_negation
+         (template_equation (template_var 1, template_hole 10)),
+        template_predicate (template_app (template_hole 9, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 15,
+               template_app
+                (template_app
+                  (template_hole 14,
+                   template_app
+                    (template_app (template_hole 1, template_var 5),
+                     template_var 1)),
+                 template_app
+                  (template_app (template_hole 1, template_var 4),
+                   template_var 0))),
+             template_app
+              (template_app (template_hole 0, template_var 3),
+               template_var 2))
+           ))),
+    ("Multiset_Extension2.ns_mul_ext_IdE",
+     "[| (?M, ?N) : ns_mul_ext Id ?R;
+         !!X Y Z.
+            [| ?M = X + Z; ?N = Y + Z;
+               \<forall>y:#Y. \<exists>x:#X. (x, y) : ?R |]
+            ==> ?thesis |]
+      ==> ?thesis",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 11,
+                template_app
+                 (template_app (template_hole 10, template_var 3),
+                  template_var 2)),
+              template_app
+               (template_app (template_hole 9, template_hole 8),
+                template_var 1))
+            ),
+        template_predicate (template_app (template_hole 7, t_empty))],
+       template_predicate (template_var 0))),
+    ("Multiset_Extension2.mul_ext_cong",
+     "[| mset ?xs1.0 = mset ?ys1.0; mset ?xs2.0 = mset ?ys2.0;
+         !!x x'.
+            [| x : set ?ys1.0; x' : set ?ys2.0 |] ==> ?f x x' = ?g x x' |]
+      ==> mul_ext ?f ?xs1.0 ?xs2.0 = mul_ext ?g ?ys1.0 ?ys2.0",
+     template_implication
+      ([template_equation
+         (template_app (template_hole 5, template_var 5),
+          template_app (template_hole 5, template_var 4)),
+        template_equation
+         (template_app (template_hole 5, template_var 3),
+          template_app (template_hole 5, template_var 2)),
+        template_predicate (template_app (template_hole 4, t_empty))],
+       template_equation
+        (template_app
+          (template_app
+            (template_app (template_hole 0, template_var 1),
+             template_var 5),
+           template_var 3),
+         template_app
+          (template_app
+            (template_app (template_hole 0, template_var 0),
+             template_var 4),
+           template_var 2)))),
+    ("Multiset_Extension2.ns_mul_ext_trans",
+     "[| trans ?s; trans ?ns; compatible_l ?ns ?s; compatible_r ?ns ?s;
+         refl ?ns; (?A, ?B) : ns_mul_ext ?ns ?s;
+         (?B, ?C) : ns_mul_ext ?ns ?s |]
+      ==> (?A, ?C) : ns_mul_ext ?ns ?s",
+     template_implication
+      ([template_predicate (template_app (template_hole 7, template_var 4)),
+        template_predicate (template_app (template_hole 7, template_var 3)),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 6, template_var 3),
+              template_var 4)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 5, template_var 3),
+              template_var 4)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 4, template_hole 3),
+              template_var 3)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 2,
+                template_app
+                 (template_app (template_hole 1, template_var 2),
+                  template_var 1)),
+              template_app
+               (template_app (template_hole 0, template_var 3),
+                template_var 4))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 2,
+                template_app
+                 (template_app (template_hole 1, template_var 1),
+                  template_var 0)),
+              template_app
+               (template_app (template_hole 0, template_var 3),
+                template_var 4))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 2,
+               template_app
+                (template_app (template_hole 1, template_var 2),
+                 template_var 0)),
+             template_app
+              (template_app (template_hole 0, template_var 3),
+               template_var 4))
+           ))),
+    ("Multiset_Extension2.ns_s_mul_ext_trans",
+     "[| trans ?s; trans ?ns; compatible_l ?ns ?s; compatible_r ?ns ?s;
+         refl ?ns; (?A, ?B) : ns_mul_ext ?ns ?s;
+         (?B, ?C) : s_mul_ext ?ns ?s |]
+      ==> (?A, ?C) : s_mul_ext ?ns ?s",
+     template_implication
+      ([template_predicate (template_app (template_hole 8, template_var 4)),
+        template_predicate (template_app (template_hole 8, template_var 3)),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 7, template_var 3),
+              template_var 4)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 6, template_var 3),
+              template_var 4)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 5, template_hole 4),
+              template_var 3)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 3,
+                template_app
+                 (template_app (template_hole 2, template_var 2),
+                  template_var 1)),
+              template_app
+               (template_app (template_hole 1, template_var 3),
+                template_var 4))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 3,
+                template_app
+                 (template_app (template_hole 2, template_var 1),
+                  template_var 0)),
+              template_app
+               (template_app (template_hole 0, template_var 3),
+                template_var 4))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 3,
+               template_app
+                (template_app (template_hole 2, template_var 2),
+                 template_var 0)),
+             template_app
+              (template_app (template_hole 0, template_var 3),
+               template_var 4))
+           ))),
+    ("Multiset_Extension2.s_ns_mul_ext_trans",
+     "[| trans ?s; trans ?ns; compatible_l ?ns ?s; compatible_r ?ns ?s;
+         refl ?ns; (?A, ?B) : s_mul_ext ?ns ?s;
+         (?B, ?C) : ns_mul_ext ?ns ?s |]
+      ==> (?A, ?C) : s_mul_ext ?ns ?s",
+     template_implication
+      ([template_predicate (template_app (template_hole 8, template_var 4)),
+        template_predicate (template_app (template_hole 8, template_var 3)),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 7, template_var 3),
+              template_var 4)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 6, template_var 3),
+              template_var 4)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 5, template_hole 4),
+              template_var 3)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 3,
+                template_app
+                 (template_app (template_hole 2, template_var 2),
+                  template_var 1)),
+              template_app
+               (template_app (template_hole 1, template_var 3),
+                template_var 4))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 3,
+                template_app
+                 (template_app (template_hole 2, template_var 1),
+                  template_var 0)),
+              template_app
+               (template_app (template_hole 0, template_var 3),
+                template_var 4))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 3,
+               template_app
+                (template_app (template_hole 2, template_var 2),
+                 template_var 0)),
+             template_app
+              (template_app (template_hole 1, template_var 3),
+               template_var 4))
+           ))),
+    ("Multiset_Extension2.s_mul_ext_trans",
+     "[| trans ?s; trans ?ns; compatible_l ?ns ?s; compatible_r ?ns ?s;
+         refl ?ns; (?A, ?B) : s_mul_ext ?ns ?s;
+         (?B, ?C) : s_mul_ext ?ns ?s |]
+      ==> (?A, ?C) : s_mul_ext ?ns ?s",
+     template_implication
+      ([template_predicate (template_app (template_hole 7, template_var 4)),
+        template_predicate (template_app (template_hole 7, template_var 3)),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 6, template_var 3),
+              template_var 4)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 5, template_var 3),
+              template_var 4)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 4, template_hole 3),
+              template_var 3)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 2,
+                template_app
+                 (template_app (template_hole 1, template_var 2),
+                  template_var 1)),
+              template_app
+               (template_app (template_hole 0, template_var 3),
+                template_var 4))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 2,
+                template_app
+                 (template_app (template_hole 1, template_var 1),
+                  template_var 0)),
+              template_app
+               (template_app (template_hole 0, template_var 3),
+                template_var 4))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 2,
+               template_app
+                (template_app (template_hole 1, template_var 2),
+                 template_var 0)),
+             template_app
+              (template_app (template_hole 0, template_var 3),
+               template_var 4))
+           ))),
+    ("Multiset_Extension2.ns_mul_extI",
+     "[| ?A = ?A1.0 + ?A2.0; ?B = ?B1.0 + ?B2.0;
+         (?A1.0, ?B1.0) : multpw ?ns;
+         !!b. b :# ?B2.0 ==> EX a. a :# ?A2.0 & (a, b) : ?s |]
+      ==> (?A, ?B) : ns_mul_ext ?ns ?s",
+     template_implication
+      ([template_equation
+         (template_var 7,
+          template_app
+           (template_app (template_hole 11, template_var 6),
+            template_var 5)),
+        template_equation
+         (template_var 4,
+          template_app
+           (template_app (template_hole 11, template_var 3),
+            template_var 2)),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 10,
+                template_app
+                 (template_app (template_hole 9, template_var 6),
+                  template_var 3)),
+              template_app (template_hole 8, template_var 1))
+            ),
+        template_predicate (template_app (template_hole 7, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 10,
+               template_app
+                (template_app (template_hole 9, template_var 7),
+                 template_var 4)),
+             template_app
+              (template_app (template_hole 0, template_var 1),
+               template_var 0))
+           ))),
+    ("Multiset_Extension2.multpw_listE",
+     "[| (?X, ?Y) : multpw ?ns;
+         !!xs ys.
+            [| length xs = length ys; ?X = mset xs; ?Y = mset ys;
+               ALL i<length ys. (xs ! i, ys ! i) : ?ns |]
+            ==> ?thesis |]
+      ==> ?thesis",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 13,
+                template_app
+                 (template_app (template_hole 12, template_var 3),
+                  template_var 2)),
+              template_app (template_hole 11, template_var 1))
+            ),
+        template_predicate (template_app (template_hole 10, t_empty))],
+       template_predicate (template_var 0))),
+    ("Multiset_Extension2.s_mul_ext_IdE",
+     "[| (?M, ?N) : s_mul_ext Id ?R;
+         !!X Y Z.
+            [| X ~= {#}; ?M = X + Z; ?N = Y + Z;
+               \<forall>y:#Y. \<exists>x:#X. (x, y) : ?R |]
+            ==> ?thesis |]
+      ==> ?thesis",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 13,
+                template_app
+                 (template_app (template_hole 12, template_var 3),
+                  template_var 2)),
+              template_app
+               (template_app (template_hole 11, template_hole 10),
+                template_var 1))
+            ),
+        template_predicate (template_app (template_hole 9, t_empty))],
+       template_predicate (template_var 0))),
+    ("Multiset_Extension2.s_mul_extI",
+     "[| ?A = ?A1.0 + ?A2.0; ?B = ?B1.0 + ?B2.0;
+         (?A1.0, ?B1.0) : multpw ?ns; ?A2.0 ~= {#};
+         !!b. b :# ?B2.0 ==> EX a. a :# ?A2.0 & (a, b) : ?s |]
+      ==> (?A, ?B) : s_mul_ext ?ns ?s",
+     template_implication
+      ([template_equation
+         (template_var 7,
+          template_app
+           (template_app (template_hole 13, template_var 6),
+            template_var 5)),
+        template_equation
+         (template_var 4,
+          template_app
+           (template_app (template_hole 13, template_var 3),
+            template_var 2)),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 12,
+                template_app
+                 (template_app (template_hole 11, template_var 6),
+                  template_var 3)),
+              template_app (template_hole 10, template_var 1))
+            ),
+        template_negation
+         (template_equation (template_var 5, template_hole 8)),
+        template_predicate (template_app (template_hole 7, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 12,
+               template_app
+                (template_app (template_hole 11, template_var 7),
+                 template_var 4)),
+             template_app
+              (template_app (template_hole 0, template_var 1),
+               template_var 0))
+           ))),
+    ("Multiset_Extension2.ns_mul_extE",
+     "[| (?A, ?B) : ns_mul_ext ?ns ?s;
+         !!A1 A2 B1 B2.
+            [| ?A = A1 + A2; ?B = B1 + B2; (A1, B1) : multpw ?ns;
+               !!b. b :# B2 ==> EX a. a :# A2 & (a, b) : ?s |]
+            ==> ?thesis |]
+      ==> ?thesis",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 13,
+                template_app
+                 (template_app (template_hole 12, template_var 4),
+                  template_var 3)),
+              template_app
+               (template_app (template_hole 11, template_var 2),
+                template_var 1))
+            ),
+        template_predicate (template_app (template_hole 10, t_empty))],
+       template_predicate (template_var 0))),
+    ("Multiset_Extension2.mul_ext_mono",
+     "[| !!x y.
+            [| x : set ?xs; y : set ?ys; fst (?P x y) |] ==> fst (?P' x y);
+         !!x y.
+            [| x : set ?xs; y : set ?ys; snd (?P x y) |] ==> snd (?P' x y);
+         fst (mul_ext ?P ?xs ?ys) |]
+      ==> fst (mul_ext ?P' ?xs ?ys)",
+     template_implication
+      ([template_predicate (template_app (template_hole 6, t_empty)),
+        template_predicate (template_app (template_hole 6, t_empty)),
+        template_predicate
+         (
+            template_app
+             (template_hole 2,
+              template_app
+               (template_app
+                 (template_app (template_hole 0, template_var 1),
+                  template_var 3),
+                template_var 2))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_hole 2,
+             template_app
+              (template_app
+                (template_app (template_hole 0, template_var 0),
+                 template_var 3),
+               template_var 2))
+           ))),
+    ("Multiset_Extension2.mul_ext_mono",
+     "[| !!x y.
+            [| x : set ?xs; y : set ?ys; fst (?P x y) |] ==> fst (?P' x y);
+         !!x y.
+            [| x : set ?xs; y : set ?ys; snd (?P x y) |] ==> snd (?P' x y);
+         snd (mul_ext ?P ?xs ?ys) |]
+      ==> snd (mul_ext ?P' ?xs ?ys)",
+     template_implication
+      ([template_predicate (template_app (template_hole 6, t_empty)),
+        template_predicate (template_app (template_hole 6, t_empty)),
+        template_predicate
+         (
+            template_app
+             (template_hole 1,
+              template_app
+               (template_app
+                 (template_app (template_hole 0, template_var 1),
+                  template_var 3),
+                template_var 2))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_hole 1,
+             template_app
+              (template_app
+                (template_app (template_hole 0, template_var 0),
+                 template_var 3),
+               template_var 2))
+           ))),
+    ("Multiset_Extension2.s_mul_extE",
+     "[| (?A, ?B) : s_mul_ext ?ns ?s;
+         !!A1 A2 B1 B2.
+            [| ?A = A1 + A2; ?B = B1 + B2; (A1, B1) : multpw ?ns; A2 ~= {#};
+               !!b. b :# B2 ==> EX a. a :# A2 & (a, b) : ?s |]
+            ==> ?thesis |]
+      ==> ?thesis",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 15,
+                template_app
+                 (template_app (template_hole 14, template_var 4),
+                  template_var 3)),
+              template_app
+               (template_app (template_hole 13, template_var 2),
+                template_var 1))
+            ),
+        template_predicate (template_app (template_hole 12, t_empty))],
+       template_predicate (template_var 0))),
+    ("Multiset_Extension2.ns_mul_extI_old",
+     "[| ?A = mset ?xs + ?A2.0; ?B = mset ?ys + ?B2.0;
+         length ?xs = length ?ys;
+         !!i. i < length ?ys ==> (?xs ! i, ?ys ! i) : ?ns;
+         !!b. b :# ?B2.0 ==> EX a. a :# ?A2.0 & (a, b) : ?s |]
+      ==> (?A, ?B) : ns_mul_ext ?ns ?s",
+     template_implication
+      ([template_equation
+         (template_var 7,
+          template_app
+           (template_app
+             (template_hole 16,
+              template_app (template_hole 15, template_var 6)),
+            template_var 5)),
+        template_equation
+         (template_var 4,
+          template_app
+           (template_app
+             (template_hole 16,
+              template_app (template_hole 15, template_var 3)),
+            template_var 2)),
+        template_equation
+         (template_app (template_hole 13, template_var 6),
+          template_app (template_hole 13, template_var 3)),
+        template_predicate (template_app (template_hole 12, t_empty)),
+        template_predicate (template_app (template_hole 7, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 2,
+               template_app
+                (template_app (template_hole 1, template_var 7),
+                 template_var 4)),
+             template_app
+              (template_app (template_hole 0, template_var 1),
+               template_var 0))
+           ))),
+    ("Multiset_Extension2.stri_mul_ext_map",
+     "[| !!s t.
+            [| s : set ?ss; t : set ?ts; fst (?order s t) |]
+            ==> fst (?order' (?f s) (?f t));
+         !!s t.
+            [| s : set ?ss; t : set ?ts; snd (?order s t) |]
+            ==> snd (?order' (?f s) (?f t));
+         fst (mul_ext ?order ?ss ?ts) |]
+      ==> fst (mul_ext ?order' (map ?f ?ss) (map ?f ?ts))",
+     template_implication
+      ([template_predicate (template_app (template_hole 8, t_empty)),
+        template_predicate (template_app (template_hole 8, t_empty)),
+        template_predicate
+         (
+            template_app
+             (template_hole 4,
+              template_app
+               (template_app
+                 (template_app (template_hole 2, template_var 2),
+                  template_var 4),
+                template_var 3))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_hole 4,
+             template_app
+              (template_app
+                (template_app (template_hole 1, template_var 1),
+                 template_app
+                  (template_app (template_hole 0, template_var 0),
+                   template_var 4)),
+               template_app
+                (template_app (template_hole 0, template_var 0),
+                 template_var 3)))
+           ))),
+    ("Multiset_Extension2.nstri_mul_ext_map",
+     "[| !!s t.
+            [| s : set ?ss; t : set ?ts; fst (?order s t) |]
+            ==> fst (?order' (?f s) (?f t));
+         !!s t.
+            [| s : set ?ss; t : set ?ts; snd (?order s t) |]
+            ==> snd (?order' (?f s) (?f t));
+         snd (mul_ext ?order ?ss ?ts) |]
+      ==> snd (mul_ext ?order' (map ?f ?ss) (map ?f ?ts))",
+     template_implication
+      ([template_predicate (template_app (template_hole 8, t_empty)),
+        template_predicate (template_app (template_hole 8, t_empty)),
+        template_predicate
+         (
+            template_app
+             (template_hole 3,
+              template_app
+               (template_app
+                 (template_app (template_hole 2, template_var 2),
+                  template_var 4),
+                template_var 3))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_hole 3,
+             template_app
+              (template_app
+                (template_app (template_hole 1, template_var 1),
+                 template_app
+                  (template_app (template_hole 0, template_var 0),
+                   template_var 4)),
+               template_app
+                (template_app (template_hole 0, template_var 0),
+                 template_var 3)))
+           ))),
+    ("Multiset_Extension2.s_mul_extI_old",
+     "[| ?A = mset ?xs + ?A2.0; ?B = mset ?ys + ?B2.0;
+         length ?xs = length ?ys;
+         !!i. i < length ?ys ==> (?xs ! i, ?ys ! i) : ?ns; ?A2.0 ~= {#};
+         !!b. b :# ?B2.0 ==> EX a. a :# ?A2.0 & (a, b) : ?s |]
+      ==> (?A, ?B) : s_mul_ext ?ns ?s",
+     template_implication
+      ([template_equation
+         (template_var 7,
+          template_app
+           (template_app
+             (template_hole 18,
+              template_app (template_hole 17, template_var 6)),
+            template_var 5)),
+        template_equation
+         (template_var 4,
+          template_app
+           (template_app
+             (template_hole 18,
+              template_app (template_hole 17, template_var 3)),
+            template_var 2)),
+        template_equation
+         (template_app (template_hole 15, template_var 6),
+          template_app (template_hole 15, template_var 3)),
+        template_predicate (template_app (template_hole 14, t_empty)),
+        template_negation
+         (template_equation (template_var 5, template_hole 8)),
+        template_predicate (template_app (template_hole 7, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 2,
+               template_app
+                (template_app (template_hole 1, template_var 7),
+                 template_var 4)),
+             template_app
+              (template_app (template_hole 0, template_var 1),
+               template_var 0))
+           ))),
+    ("Multiset_Extension2.mul_ext_SN",
+     "[| ALL x. snd (?g x x);
+         ALL x y z. fst (?g x y) --> snd (?g y z) --> fst (?g x z);
+         ALL x y z. snd (?g x y) --> fst (?g y z) --> fst (?g x z);
+         ALL x y z. snd (?g x y) --> snd (?g y z) --> snd (?g x z);
+         ALL x y z. fst (?g x y) --> fst (?g y z) --> fst (?g x z) |]
+      ==> SN {(ys, xs).
+              (ALL y:set ys. SN_on {(s, t). fst (?g s t)} {y}) &
+              fst (mul_ext ?g ys xs)}",
+     template_implication
+      ([template_predicate (template_app (template_hole 16, t_empty)),
+        template_predicate (template_app (template_hole 16, t_empty)),
+        template_predicate (template_app (template_hole 16, t_empty)),
+        template_predicate (template_app (template_hole 16, t_empty)),
+        template_predicate (template_app (template_hole 16, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 12,
+               template_app
+                (template_hole 11,
+                 template_app (template_hole 10, t_empty))),
+             template_hole 0)
+           ))),
+    ("Multiset_Extension2.mul_ext_compat",
+     "(!!s t u.
+          [| s : set ?ss; t : set ?ts; u : set ?us |]
+          ==> (snd (?f s t) & fst (?f t u) --> fst (?f s u)) &
+              (fst (?f s t) & snd (?f t u) --> fst (?f s u)) &
+              (snd (?f s t) & snd (?f t u) --> snd (?f s u)) &
+              (fst (?f s t) & fst (?f t u) --> fst (?f s u))) ==>
+      (snd (mul_ext ?f ?ss ?ts) & fst (mul_ext ?f ?ts ?us) -->
+       fst (mul_ext ?f ?ss ?us)) &
+      (fst (mul_ext ?f ?ss ?ts) & snd (mul_ext ?f ?ts ?us) -->
+       fst (mul_ext ?f ?ss ?us)) &
+      (snd (mul_ext ?f ?ss ?ts) & snd (mul_ext ?f ?ts ?us) -->
+       snd (mul_ext ?f ?ss ?us)) &
+      (fst (mul_ext ?f ?ss ?ts) & fst (mul_ext ?f ?ts ?us) -->
+       fst (mul_ext ?f ?ss ?us))",
+     template_implication
+      ([template_predicate (template_app (template_hole 8, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 4,
+               template_app
+                (template_app
+                  (template_hole 3,
+                   template_app
+                    (template_app
+                      (template_hole 4,
+                       template_app
+                        (template_hole 2,
+                         template_app
+                          (template_app
+                            (template_app (template_hole 0, template_var 0),
+                             template_var 3),
+                           template_var 2))),
+                     template_app
+                      (template_hole 1,
+                       template_app
+                        (template_app
+                          (template_app (template_hole 0, template_var 0),
+                           template_var 2),
+                         template_var 1)))),
+                 template_app
+                  (template_hole 1,
+                   template_app
+                    (template_app
+                      (template_app (template_hole 0, template_var 0),
+                       template_var 3),
+                     template_var 1)))),
+             template_app
+              (template_app
+                (template_hole 4,
+                 template_app
+                  (template_app
+                    (template_hole 3,
+                     template_app
+                      (template_app
+                        (template_hole 4,
+                         template_app
+                          (template_hole 1,
+                           template_app
+                            (template_app
+                              (template_app
+                                (template_hole 0, template_var 0),
+                               template_var 3),
+                             template_var 2))),
+                       template_app
+                        (template_hole 2,
+                         template_app
+                          (template_app
+                            (template_app (template_hole 0, template_var 0),
+                             template_var 2),
+                           template_var 1)))),
+                   template_app
+                    (template_hole 1,
+                     template_app
+                      (template_app
+                        (template_app (template_hole 0, template_var 0),
+                         template_var 3),
+                       template_var 1)))),
+               template_app
+                (template_app
+                  (template_hole 4,
+                   template_app
+                    (template_app
+                      (template_hole 3,
+                       template_app
+                        (template_app
+                          (template_hole 4,
+                           template_app
+                            (template_hole 2,
+                             template_app
+                              (template_app
+                                (template_app
+                                  (template_hole 0, template_var 0),
+                                 template_var 3),
+                               template_var 2))),
+                         template_app
+                          (template_hole 2,
+                           template_app
+                            (template_app
+                              (template_app
+                                (template_hole 0, template_var 0),
+                               template_var 2),
+                             template_var 1)))),
+                     template_app
+                      (template_hole 2,
+                       template_app
+                        (template_app
+                          (template_app (template_hole 0, template_var 0),
+                           template_var 3),
+                         template_var 1)))),
+                 template_app
+                  (template_app
+                    (template_hole 3,
+                     template_app
+                      (template_app
+                        (template_hole 4,
+                         template_app
+                          (template_hole 1,
+                           template_app
+                            (template_app
+                              (template_app
+                                (template_hole 0, template_var 0),
+                               template_var 3),
+                             template_var 2))),
+                       template_app
+                        (template_hole 1,
+                         template_app
+                          (template_app
+                            (template_app (template_hole 0, template_var 0),
+                             template_var 2),
+                           template_var 1)))),
+                   template_app
+                    (template_hole 1,
+                     template_app
+                      (template_app
+                        (template_app (template_hole 0, template_var 0),
+                         template_var 3),
+                       template_var 1))))))
+           )))]:
+   (string * thm * template) list
+### theory "Draft.Multiset_Extension2Templates"
+### 0.400s elapsed time, 0.475s cpu time, 0.000s GC time
+val it = (): unit

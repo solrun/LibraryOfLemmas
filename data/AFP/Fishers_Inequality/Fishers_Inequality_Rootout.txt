@@ -1,0 +1,3734 @@
+Loading theory "HOL-Combinatorics.Transposition" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root" via "Draft.Set_Multiset_Extras" via "HOL-Combinatorics.Multiset_Permutations" via "HOL-Combinatorics.Permutations")
+Loading theory "HOL-Computational_Algebra.Fraction_Field" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root" via "Draft.Rank_Argument_General" via "Jordan_Normal_Form.Determinant" via "HOL-Computational_Algebra.Polynomial_Factorial" via "HOL-Computational_Algebra.Normalized_Fraction")
+Loading theory "HOL-Library.Adhoc_Overloading" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root" via "Draft.Matrix_Vector_Extras" via "Polynomial_Factorization.Missing_List" via "HOL-Library.Monad_Syntax")
+Loading theory "HOL-Library.Cancellation" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root" via "Draft.Set_Multiset_Extras" via "Design_Theory.Multisets_Extras" via "HOL-Library.Multiset")
+signature ADHOC_OVERLOADING =
+  sig
+    val generic_add_overloaded: string -> Context.generic -> Context.generic
+    val generic_add_variant:
+       string -> term -> Context.generic -> Context.generic
+    val generic_remove_overloaded:
+       string -> Context.generic -> Context.generic
+    val generic_remove_variant:
+       string -> term -> Context.generic -> Context.generic
+    val is_overloaded: Proof.context -> string -> bool
+    val show_variants: bool Config.T
+  end
+structure Adhoc_Overloading: ADHOC_OVERLOADING
+### theory "HOL-Library.Adhoc_Overloading"
+### 0.075s elapsed time, 0.324s cpu time, 0.012s GC time
+Loading theory "HOL-Library.Monad_Syntax" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root" via "Draft.Matrix_Vector_Extras" via "Polynomial_Factorization.Missing_List")
+### theory "HOL-Library.Monad_Syntax"
+### 0.033s elapsed time, 0.139s cpu time, 0.000s GC time
+Loading theory "HOL-Library.Fun_Lexorder" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root" via "Draft.Matrix_Vector_Extras" via "Groebner_Bases.Macaulay_Matrix" via "Groebner_Bases.More_MPoly_Type_Class" via "Polynomials.MPoly_Type_Class_Ordered" via "Polynomials.MPoly_Type_Class" via "Polynomials.Power_Products" via "Polynomials.More_MPoly_Type" via "Polynomials.MPoly_Type" via "HOL-Library.Poly_Mapping")
+### theory "HOL-Combinatorics.Transposition"
+### 0.121s elapsed time, 0.509s cpu time, 0.012s GC time
+Loading theory "HOL-Library.FuncSet" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root" via "Draft.Set_Multiset_Extras" via "Design_Theory.Multisets_Extras" via "Card_Partitions.Set_Partition" via "HOL-Library.Disjoint_Sets")
+### theory "HOL-Library.Fun_Lexorder"
+### 0.047s elapsed time, 0.192s cpu time, 0.000s GC time
+Loading theory "HOL-Library.Function_Algebras" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.ExtrEqs" via "HOL-Library.BigO")
+instantiation
+  fun :: (type, plus) plus
+  plus_fun == plus :: ('a => 'b) => ('a => 'b) => 'a => 'b
+instantiation
+  fun :: (type, zero) zero
+  zero_fun == zero_class.zero :: 'a => 'b
+instantiation
+  fun :: (type, times) times
+  times_fun == times :: ('a => 'b) => ('a => 'b) => 'a => 'b
+instantiation
+  fun :: (type, one) one
+  one_fun == one_class.one :: 'a => 'b
+### theory "HOL-Library.Function_Algebras"
+### 0.111s elapsed time, 0.436s cpu time, 0.044s GC time
+Loading theory "HOL-Library.Groups_Big_Fun" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root" via "Draft.Matrix_Vector_Extras" via "Groebner_Bases.Macaulay_Matrix" via "Groebner_Bases.More_MPoly_Type_Class" via "Polynomials.MPoly_Type_Class_Ordered" via "Polynomials.MPoly_Type_Class" via "Polynomials.Power_Products" via "Polynomials.More_MPoly_Type" via "Polynomials.MPoly_Type" via "HOL-Library.Poly_Mapping")
+locale comm_monoid_fun
+  fixes f :: "'a => 'a => 'a"  (infixl \<open>\<^bold>*\<close> 70)
+    and z :: "'a"  (\<open>\<^bold>1\<close>)
+  assumes "comm_monoid_fun (\<^bold>*) \<^bold>1"
+signature CANCEL = sig val proc: Proof.context -> cterm -> thm option end
+functor Cancel_Fun (Data: CANCEL_NUMERALS_DATA): CANCEL
+instantiation
+  fract :: (idom) comm_ring_1
+  uminus_fract == uminus :: 'a fract => 'a fract
+  one_fract == one_class.one :: 'a fract
+  times_fract == times :: 'a fract => 'a fract => 'a fract
+  zero_fract == zero_class.zero :: 'a fract
+  minus_fract == minus :: 'a fract => 'a fract => 'a fract
+  plus_fract == plus :: 'a fract => 'a fract => 'a fract
+signature CANCEL_DATA =
+  sig
+    val dest_coeff: term -> int * term
+    val dest_sum: term -> term list
+    val find_first_coeff: term -> term list -> int * term list
+    val mk_coeff: int * term -> term
+    val mk_sum: typ -> term list -> term
+    val norm_ss1: simpset
+    val norm_ss2: simpset
+    val norm_tac: Proof.context -> tactic
+    val numeral_simp_tac: Proof.context -> tactic
+    val prove_conv:
+       tactic list -> Proof.context -> thm list -> term * term -> thm option
+    val simplify_meta_eq: Proof.context -> thm -> thm
+    val trans_tac: Proof.context -> thm option -> tactic
+  end
+structure Cancel_Data: CANCEL_DATA
+class comm_monoid_add = ab_semigroup_add + monoid_add +
+  assumes "add_0": "!!a. (0::'a) + a = a"
+### Cannot skip proof of schematic goal statement
+signature CANCEL_SIMPROCS =
+  sig
+    val diff_cancel: Proof.context -> cterm -> thm option
+    val eq_cancel: Proof.context -> cterm -> thm option
+    val less_cancel: Proof.context -> cterm -> thm option
+    val less_eq_cancel: Proof.context -> cterm -> thm option
+  end
+structure Cancel_Simprocs: CANCEL_SIMPROCS
+### theory "HOL-Library.Cancellation"
+### 0.422s elapsed time, 1.693s cpu time, 0.131s GC time
+Loading theory "HOL-Library.Multiset" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root" via "Draft.Set_Multiset_Extras" via "Design_Theory.Multisets_Extras")
+class comm_monoid_mult = ab_semigroup_mult + monoid_mult + dvd +
+  assumes "mult_1": "!!a. (1::'a) * a = a"
+### Cannot skip proof of schematic goal statement
+### theory "HOL-Library.Groups_Big_Fun"
+### 0.251s elapsed time, 0.976s cpu time, 0.151s GC time
+Loading theory "HOL-Library.Infinite_Set" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root" via "Draft.Matrix_Vector_Extras" via "Groebner_Bases.Macaulay_Matrix" via "Groebner_Bases.More_MPoly_Type_Class" via "Polynomials.MPoly_Type_Class_Ordered" via "Polynomials.MPoly_Type_Class" via "Polynomials.Utils" via "Well_Quasi_Orders.Almost_Full_Relations" via "Well_Quasi_Orders.Minimal_Bad_Sequences" via "Well_Quasi_Orders.Almost_Full" via "HOL-Library.Ramsey")
+### theory "HOL-Library.FuncSet"
+### 0.421s elapsed time, 1.649s cpu time, 0.195s GC time
+Loading theory "HOL-Algebra.Congruence" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root" via "Draft.Matrix_Vector_Extras" via "Jordan_Normal_Form.Matrix" via "Jordan_Normal_Form.Missing_Ring" via "HOL-Algebra.Ring" via "HOL-Algebra.FiniteProduct" via "HOL-Algebra.Group" via "HOL-Algebra.Complete_Lattice" via "HOL-Algebra.Lattice" via "HOL-Algebra.Order")
+instantiation
+  multiset :: (type) cancel_comm_monoid_add
+  zero_multiset == zero_class.zero :: 'a multiset
+  minus_multiset == minus :: 'a multiset => 'a multiset => 'a multiset
+  plus_multiset == plus :: 'a multiset => 'a multiset => 'a multiset
+instantiation
+  fract :: (idom) field
+  inverse_fract == inverse :: 'a fract => 'a fract
+  divide_fract == divide :: 'a fract => 'a fract => 'a fract
+consts
+  enumerate :: "'a set => nat => 'a"
+instantiation
+  fract :: (linordered_idom) linorder
+  less_eq_fract == less_eq :: 'a fract => 'a fract => bool
+  less_fract == less :: 'a fract => 'a fract => bool
+instantiation
+  fract :: (linordered_idom) linordered_field
+  sgn_fract == sgn :: 'a fract => 'a fract
+  abs_fract == abs :: 'a fract => 'a fract
+instantiation
+  fract :: (linordered_idom) distrib_lattice
+  inf_fract == inf :: 'a fract => 'a fract => 'a fract
+  sup_fract == sup :: 'a fract => 'a fract => 'a fract
+### theory "HOL-Library.Infinite_Set"
+### 0.433s elapsed time, 1.571s cpu time, 0.454s GC time
+Loading theory "HOL-Library.Disjoint_Sets" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root" via "Draft.Set_Multiset_Extras" via "Design_Theory.Multisets_Extras" via "Card_Partitions.Set_Partition")
+### theory "HOL-Computational_Algebra.Fraction_Field"
+### 1.006s elapsed time, 3.857s cpu time, 0.661s GC time
+Loading theory "Abstract-Rewriting.Seq" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root" via "Draft.Matrix_Vector_Extras" via "Groebner_Bases.Macaulay_Matrix" via "Groebner_Bases.More_MPoly_Type_Class" via "Polynomials.MPoly_Type_Class_Ordered" via "Polynomials.MPoly_Type_Class" via "Polynomials.Utils" via "Well_Quasi_Orders.Almost_Full_Relations" via "Well_Quasi_Orders.Minimal_Bad_Sequences" via "Well_Quasi_Orders.Almost_Full")
+locale infinitely_many
+  fixes p :: "nat => bool"
+  assumes "infinitely_many p"
+Found termination order: "size <*mlex*> {}"
+locale comm_monoid_set
+  fixes f :: "'a => 'a => 'a"  (infixl \<open>\<^bold>*\<close> 70)
+    and z :: "'a"  (\<open>\<^bold>1\<close>)
+  assumes "comm_monoid_set (\<^bold>*) \<^bold>1"
+locale equivalence
+  fixes S :: "('a, 'b) eq_object_scheme"  (structure)
+  assumes "equivalence S"
+Found termination order: "(%p. size (snd p)) <*mlex*> {}"
+locale partition
+  fixes A :: "'a set"
+    and B :: "'a set set"
+  assumes "Congruence.partition A B"
+Found termination order: "(%p. size (snd p)) <*mlex*> {}"
+### theory "Abstract-Rewriting.Seq"
+### 0.354s elapsed time, 1.394s cpu time, 0.202s GC time
+Loading theory "HOL-Library.Ramsey" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root" via "Draft.Matrix_Vector_Extras" via "Groebner_Bases.Macaulay_Matrix" via "Groebner_Bases.More_MPoly_Type_Class" via "Polynomials.MPoly_Type_Class_Ordered" via "Polynomials.MPoly_Type_Class" via "Polynomials.Utils" via "Well_Quasi_Orders.Almost_Full_Relations" via "Well_Quasi_Orders.Minimal_Bad_Sequences" via "Well_Quasi_Orders.Almost_Full")
+### theory "HOL-Library.Disjoint_Sets"
+### 0.425s elapsed time, 1.683s cpu time, 0.202s GC time
+Loading theory "Card_Partitions.Set_Partition" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root" via "Draft.Set_Multiset_Extras" via "Design_Theory.Multisets_Extras")
+### theory "HOL-Algebra.Congruence"
+### 0.911s elapsed time, 3.451s cpu time, 0.770s GC time
+Loading theory "HOL-Algebra.Order" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root" via "Draft.Matrix_Vector_Extras" via "Jordan_Normal_Form.Matrix" via "Jordan_Normal_Form.Missing_Ring" via "HOL-Algebra.Ring" via "HOL-Algebra.FiniteProduct" via "HOL-Algebra.Group" via "HOL-Algebra.Complete_Lattice" via "HOL-Algebra.Lattice")
+### Partially applied constant "Multiset.inter_mset" on left hand side of equation, in theorem:
+### semilattice_inf.Inf_fin (\<inter>#) (set (?x # ?xs)) ==
+### fold (\<inter>#) ?xs ?x
+### Partially applied constant "Multiset.union_mset" on left hand side of equation, in theorem:
+### semilattice_sup.Sup_fin (\<union>#) (set (?x # ?xs)) ==
+### fold (\<union>#) ?xs ?x
+### theory "Card_Partitions.Set_Partition"
+### 0.151s elapsed time, 0.594s cpu time, 0.000s GC time
+Loading theory "HOL-Library.More_List" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root" via "Draft.Matrix_Vector_Extras" via "Groebner_Bases.Macaulay_Matrix" via "Groebner_Bases.More_MPoly_Type_Class" via "Polynomials.MPoly_Type_Class_Ordered" via "Polynomials.MPoly_Type_Class" via "Polynomials.Power_Products" via "Polynomials.More_MPoly_Type" via "Polynomials.MPoly_Type" via "HOL-Library.Poly_Mapping")
+locale weak_partial_order
+  fixes L :: "('a, 'b) gorder_scheme"  (structure)
+  assumes "weak_partial_order L"
+consts
+  choice :: "('a => bool) => ('a * 'a) set => nat => 'a"
+locale weak_partial_order
+  fixes L :: "('a, 'b) gorder_scheme"  (structure)
+  assumes "weak_partial_order L"
+### theory "HOL-Library.More_List"
+### 0.440s elapsed time, 1.580s cpu time, 0.800s GC time
+Loading theory "HOL-Library.Poly_Mapping" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root" via "Draft.Matrix_Vector_Extras" via "Groebner_Bases.Macaulay_Matrix" via "Groebner_Bases.More_MPoly_Type_Class" via "Polynomials.MPoly_Type_Class_Ordered" via "Polynomials.MPoly_Type_Class" via "Polynomials.Power_Products" via "Polynomials.More_MPoly_Type" via "Polynomials.MPoly_Type")
+signature MULTISET_SIMPROCS =
+  sig
+    val subset_cancel_msets: Proof.context -> cterm -> thm option
+    val subseteq_cancel_msets: Proof.context -> cterm -> thm option
+  end
+structure Multiset_Simprocs: MULTISET_SIMPROCS
+### theory "HOL-Library.Ramsey"
+### 0.764s elapsed time, 2.830s cpu time, 1.102s GC time
+Loading theory "HOL-Library.Nat_Bijection" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.ExtrEqs" via "HOL-Library.Stream")
+instantiation
+  multiset :: (type) Inf
+  Inf_multiset == Inf :: 'a multiset set => 'a multiset
+instantiation
+  multiset :: (type) Sup
+  Sup_multiset == Sup :: 'a multiset set => 'a multiset
+Found termination order: "(%p. size (snd p)) <*mlex*> {}"
+class zero = type +
+  fixes zero :: "'a"
+instantiation
+  multiset :: (type) size
+  size_multiset == size :: 'a multiset => nat
+locale weak_partial_order
+  fixes L :: "('a, 'b) gorder_scheme"  (structure)
+  assumes "weak_partial_order L"
+class monoid_add = semigroup_add + zero +
+  assumes "add_0_left": "!!a. (0::'a) + a = a"
+    and "add_0_right": "!!a. a + (0::'a) = a"
+Found termination order: "size_list size <*mlex*> {}"
+locale comp_fun_commute
+  fixes f :: "'a => 'b => 'b"
+  assumes "comp_fun_commute f"
+class comm_monoid_add = ab_semigroup_add + monoid_add +
+  assumes "add_0": "!!a. (0::'a) + a = a"
+locale partial_order
+  fixes L :: "('a, 'b) gorder_scheme"  (structure)
+  assumes "partial_order L"
+### theory "HOL-Library.Nat_Bijection"
+### 0.369s elapsed time, 1.457s cpu time, 0.189s GC time
+Loading theory "HOL-Library.Stream" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.ExtrEqs")
+class group_add = cancel_semigroup_add + minus + monoid_add + uminus +
+  assumes "left_minus": "!!a. - a + a = (0::'a)"
+  assumes "add_uminus_conv_diff": "!!a b. a + - b = a - b"
+class mult_zero = times + zero +
+  assumes "mult_zero_left": "!!a. (0::'a) * a = (0::'a)"
+  assumes "mult_zero_right": "!!a. a * (0::'a) = (0::'a)"
+locale weak_partial_order_bottom
+  fixes L :: "('a, 'b) gorder_scheme"  (structure)
+  assumes "weak_partial_order_bottom L"
+consts
+  mset :: "'a list => 'a multiset"
+locale weak_partial_order_top
+  fixes L :: "('a, 'b) gorder_scheme"  (structure)
+  assumes "weak_partial_order_top L"
+locale weak_total_order
+  fixes L :: "('a, 'b) gorder_scheme"  (structure)
+  assumes "weak_total_order L"
+instantiation
+  poly_mapping :: (type, zero) zero
+  zero_poly_mapping == zero_class.zero :: 'a \<Rightarrow>\<^sub>0 'b
+locale total_order
+  fixes L :: "('a, 'b) gorder_scheme"  (structure)
+  assumes "total_order L"
+instantiation
+  poly_mapping :: (type, monoid_add) monoid_add
+  plus_poly_mapping == plus ::
+    ('a \<Rightarrow>\<^sub>0 'b)
+    => ('a \<Rightarrow>\<^sub>0 'b) => 'a \<Rightarrow>\<^sub>0 'b
+### theory "HOL-Algebra.Order"
+### 1.210s elapsed time, 4.599s cpu time, 1.276s GC time
+Loading theory "HOL-Algebra.Lattice" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root" via "Draft.Matrix_Vector_Extras" via "Jordan_Normal_Form.Matrix" via "Jordan_Normal_Form.Missing_Ring" via "HOL-Algebra.Ring" via "HOL-Algebra.FiniteProduct" via "HOL-Algebra.Group" via "HOL-Algebra.Complete_Lattice")
+instantiation
+  poly_mapping :: (type, cancel_comm_monoid_add) cancel_comm_monoid_add
+  minus_poly_mapping == minus ::
+    ('a \<Rightarrow>\<^sub>0 'b)
+    => ('a \<Rightarrow>\<^sub>0 'b) => 'a \<Rightarrow>\<^sub>0 'b
+instantiation
+  poly_mapping :: (type, ab_group_add) ab_group_add
+  uminus_poly_mapping == uminus ::
+    ('a \<Rightarrow>\<^sub>0 'b) => 'a \<Rightarrow>\<^sub>0 'b
+instantiation
+  poly_mapping :: (zero, zero_neq_one) zero_neq_one
+  one_poly_mapping == one_class.one :: 'a \<Rightarrow>\<^sub>0 'b
+class linorder = order +
+  assumes "linear": "!!x y. x <= y | y <= x"
+instantiation
+  poly_mapping :: (monoid_add, semiring_0) semiring_0
+  times_poly_mapping == times ::
+    ('a \<Rightarrow>\<^sub>0 'b)
+    => ('a \<Rightarrow>\<^sub>0 'b) => 'a \<Rightarrow>\<^sub>0 'b
+locale weak_upper_semilattice
+  fixes L :: "('a, 'b) gorder_scheme"  (structure)
+  assumes "weak_upper_semilattice L"
+locale weak_lower_semilattice
+  fixes L :: "('a, 'b) gorder_scheme"  (structure)
+  assumes "weak_lower_semilattice L"
+locale weak_lattice
+  fixes L :: "('a, 'b) gorder_scheme"  (structure)
+  assumes "weak_lattice L"
+locale comm_monoid_mset
+  fixes f :: "'a => 'a => 'a"  (infixl \<open>\<^bold>*\<close> 70)
+    and z :: "'a"  (\<open>\<^bold>1\<close>)
+  assumes "comm_monoid_mset (\<^bold>*) \<^bold>1"
+instantiation
+  poly_mapping :: (linorder, {zero,linorder}) linorder
+  less_eq_poly_mapping == less_eq ::
+    ('a \<Rightarrow>\<^sub>0 'b) => ('a \<Rightarrow>\<^sub>0 'b) => bool
+  less_poly_mapping == less ::
+    ('a \<Rightarrow>\<^sub>0 'b) => ('a \<Rightarrow>\<^sub>0 'b) => bool
+class comm_monoid_add = ab_semigroup_add + monoid_add +
+  assumes "add_0": "!!a. (0::'a) + a = a"
+consts
+  shift :: "'a list => 'a stream => 'a stream"
+Proofs for coinductive predicate(s) "streamsp"
+  Proving monotonicity ...
+class comm_monoid_add = ab_semigroup_add + monoid_add +
+  assumes "add_0": "!!a. (0::'a) + a = a"
+class canonically_ordered_monoid_add = ordered_comm_monoid_add +
+  assumes "le_iff_add": "!!a b. (a <= b) = (EX c. b = a + c)"
+consts
+  snth :: "'a stream => nat => 'a"
+consts
+  stake :: "nat => 'a stream => 'a list"
+consts
+  sdrop :: "nat => 'a stream => 'a stream"
+consts
+  sfilter :: "('a => bool) => 'a stream => 'a stream"
+consts
+  cycle :: "'a list => 'a stream"
+locale weak_bounded_lattice
+  fixes L :: "('a, 'b) gorder_scheme"  (structure)
+  assumes "weak_bounded_lattice L"
+consts
+  siterate :: "('a => 'a) => 'a => 'a stream"
+locale upper_semilattice
+  fixes L :: "('a, 'b) gorder_scheme"  (structure)
+  assumes "upper_semilattice L"
+instantiation
+  poly_mapping :: (type, zero) size
+  size_poly_mapping == size :: ('a \<Rightarrow>\<^sub>0 'b) => nat
+consts
+  flat :: "'a list stream => 'a stream"
+locale lower_semilattice
+  fixes L :: "('a, 'b) gorder_scheme"  (structure)
+  assumes "lower_semilattice L"
+class comm_monoid_mult = ab_semigroup_mult + monoid_mult + dvd +
+  assumes "mult_1": "!!a. (1::'a) * a = a"
+locale Lattice.lattice
+  fixes L :: "('a, 'b) gorder_scheme"  (structure)
+  assumes "lattice L"
+consts
+  sinterleave :: "'a stream => 'a stream => 'a stream"
+consts
+  szip :: "'a stream => 'b stream => ('a * 'b) stream"
+consts
+  smap2 :: "('a => 'b => 'c) => 'a stream => 'b stream => 'c stream"
+### theory "HOL-Library.Poly_Mapping"
+### 1.789s elapsed time, 6.871s cpu time, 1.985s GC time
+Loading theory "Polynomials.MPoly_Type" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root" via "Draft.Matrix_Vector_Extras" via "Groebner_Bases.Macaulay_Matrix" via "Groebner_Bases.More_MPoly_Type_Class" via "Polynomials.MPoly_Type_Class_Ordered" via "Polynomials.MPoly_Type_Class" via "Polynomials.Power_Products" via "Polynomials.More_MPoly_Type")
+locale Lattice.bounded_lattice
+  fixes L :: "('a, 'b) gorder_scheme"  (structure)
+  assumes "bounded_lattice L"
+### theory "HOL-Library.Stream"
+### 1.384s elapsed time, 5.274s cpu time, 1.796s GC time
+Loading theory "HOL-Library.Old_Datatype" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root" via "Draft.Matrix_Vector_Extras" via "Groebner_Bases.Macaulay_Matrix" via "Groebner_Bases.More_MPoly_Type_Class" via "Polynomials.MPoly_Type_Class_Ordered" via "Polynomials.MPoly_Type_Class" via "Polynomials.Power_Products" via "HOL-Library.Countable")
+locale Lattice.bounded_lattice
+  fixes L :: "('a, 'b) gorder_scheme"  (structure)
+  assumes "bounded_lattice L"
+### theory "HOL-Algebra.Lattice"
+### 1.255s elapsed time, 4.769s cpu time, 1.697s GC time
+Loading theory "HOL-Algebra.Complete_Lattice" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root" via "Draft.Matrix_Vector_Extras" via "Jordan_Normal_Form.Matrix" via "Jordan_Normal_Form.Missing_Ring" via "HOL-Algebra.Ring" via "HOL-Algebra.FiniteProduct" via "HOL-Algebra.Group")
+### Generation of a parametrized correspondence relation failed.
+### Reason:  No relator for the type "Poly_Mapping.poly_mapping" found.
+instantiation
+  mpoly :: (zero) zero
+  zero_mpoly == zero_class.zero :: 'a mpoly
+instantiation
+  mpoly :: (monoid_add) monoid_add
+  plus_mpoly == plus :: 'a mpoly => 'a mpoly => 'a mpoly
+locale weak_complete_lattice
+  fixes L :: "('a, 'b) gorder_scheme"  (structure)
+  assumes "weak_complete_lattice L"
+instantiation
+  mpoly :: (cancel_comm_monoid_add) cancel_comm_monoid_add
+  minus_mpoly == minus :: 'a mpoly => 'a mpoly => 'a mpoly
+instantiation
+  mpoly :: (ab_group_add) ab_group_add
+  uminus_mpoly == uminus :: 'a mpoly => 'a mpoly
+instantiation
+  mpoly :: (zero_neq_one) zero_neq_one
+  one_mpoly == one_class.one :: 'a mpoly
+instantiation
+  mpoly :: (semiring_0) semiring_0
+  times_mpoly == times :: 'a mpoly => 'a mpoly => 'a mpoly
+locale weak_complete_lattice
+  fixes L :: "('a, 'b) gorder_scheme"  (structure)
+  assumes "weak_complete_lattice L"
+locale weak_complete_lattice
+  fixes L :: "('a, 'b) gorder_scheme"  (structure)
+  assumes "weak_complete_lattice L"
+signature OLD_DATATYPE =
+  sig
+    val check_specs: spec list -> theory -> spec list * Proof.context
+    type config = {quiet: bool, strict: bool}
+    val default_config: config
+    type descr =
+       (int * (string * dtyp list * (string * dtyp list) list)) list
+    val distinct_lemma: thm
+    datatype dtyp
+    = DtRec of int | DtTFree of string * sort | DtType of string * dtyp list
+    type info =
+       {case_cong: thm,
+        case_cong_weak: thm,
+        case_name: string,
+        case_rewrites: thm list,
+        descr: descr,
+        distinct: thm list,
+        exhaust: thm,
+        index: int,
+        induct: thm,
+        inducts: thm list,
+        inject: thm list,
+        nchotomy: thm,
+        rec_names: string list,
+        rec_rewrites: thm list, split: thm, split_asm: thm}
+    val read_specs: spec_cmd list -> theory -> spec list * Proof.context
+    type spec =
+       (binding * (string * sort) list * mixfix) *
+       (binding * typ list * mixfix) list
+    type spec_cmd =
+       (binding * (string * string option) list * mixfix) *
+       (binding * string list * mixfix) list
+  end
+structure Old_Datatype: OLD_DATATYPE
+### theory "HOL-Library.Old_Datatype"
+### 0.471s elapsed time, 1.846s cpu time, 0.241s GC time
+Loading theory "HOL-Library.Phantom_Type" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root" via "Draft.Vector_Matrix_Mod" via "Berlekamp_Zassenhaus.Finite_Field" via "HOL-Library.Cardinality")
+### Ambiguous input (line 494 of "$AFP/Polynomials/MPoly_Type.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("\<^const>Rings.divide_class.divide" ("_position" x) ("_position" y))
+###     ("_The" ("_position" q')
+###       ("\<^const>HOL.Ex_binder"
+###         ("_idts" ("_position" a) ("_idts" ("_position" q) ("_position" r)))
+###         ("\<^const>HOL.conj"
+###           ("_applC" ("_position" pseudo_divmod_rel)
+###             ("_cargs" ("_position" a)
+###               ("_cargs" ("_position" x)
+###                 ("_cargs" ("_position" y)
+###                   ("_cargs" ("_position" q) ("_position" r))))))
+###           ("\<^const>HOL.eq" ("_position" q')
+###             ("_applC" ("_position" smult)
+###               ("_cargs" ("_applC" ("_position" inverse) ("_position" a))
+###                 ("_position" q)))))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq" ("\<^fixed>div" ("_position" x) ("_position" y))
+###     ("_The" ("_position" q')
+###       ("\<^const>HOL.Ex_binder"
+###         ("_idts" ("_position" a) ("_idts" ("_position" q) ("_position" r)))
+###         ("\<^const>HOL.conj"
+###           ("_applC" ("_position" pseudo_divmod_rel)
+###             ("_cargs" ("_position" a)
+###               ("_cargs" ("_position" x)
+###                 ("_cargs" ("_position" y)
+###                   ("_cargs" ("_position" q) ("_position" r))))))
+###           ("\<^const>HOL.eq" ("_position" q')
+###             ("_applC" ("_position" smult)
+###               ("_cargs" ("_applC" ("_position" inverse) ("_position" a))
+###                 ("_position" q)))))))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ambiguous input (line 498 of "$AFP/Polynomials/MPoly_Type.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("\<^const>Rings.modulo_class.modulo" ("_position" x) ("_position" y))
+###     ("_The" ("_position" r')
+###       ("\<^const>HOL.Ex_binder"
+###         ("_idts" ("_position" a) ("_idts" ("_position" q) ("_position" r)))
+###         ("\<^const>HOL.conj"
+###           ("_applC" ("_position" pseudo_divmod_rel)
+###             ("_cargs" ("_position" a)
+###               ("_cargs" ("_position" x)
+###                 ("_cargs" ("_position" y)
+###                   ("_cargs" ("_position" q) ("_position" r))))))
+###           ("\<^const>HOL.eq" ("_position" r')
+###             ("_applC" ("_position" smult)
+###               ("_cargs" ("_applC" ("_position" inverse) ("_position" a))
+###                 ("_position" r)))))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq" ("\<^fixed>mod" ("_position" x) ("_position" y))
+###     ("_The" ("_position" r')
+###       ("\<^const>HOL.Ex_binder"
+###         ("_idts" ("_position" a) ("_idts" ("_position" q) ("_position" r)))
+###         ("\<^const>HOL.conj"
+###           ("_applC" ("_position" pseudo_divmod_rel)
+###             ("_cargs" ("_position" a)
+###               ("_cargs" ("_position" x)
+###                 ("_cargs" ("_position" y)
+###                   ("_cargs" ("_position" q) ("_position" r))))))
+###           ("\<^const>HOL.eq" ("_position" r')
+###             ("_applC" ("_position" smult)
+###               ("_cargs" ("_applC" ("_position" inverse) ("_position" a))
+###                 ("_position" r)))))))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ambiguous input (line 502 of "$AFP/Polynomials/MPoly_Type.thy") produces 4 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" divmod)
+###       ("_cargs" ("_position" p) ("_position" q)))
+###     ("_tuple"
+###       ("\<^const>Rings.divide_class.divide" ("_position" p) ("_position" q))
+###       ("_tuple_arg"
+###         ("\<^const>Rings.modulo_class.modulo" ("_position" p)
+###           ("_position" q))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" divmod)
+###       ("_cargs" ("_position" p) ("_position" q)))
+###     ("_tuple" ("\<^const>MPoly_Type.div" ("_position" p) ("_position" q))
+###       ("_tuple_arg"
+###         ("\<^const>Rings.modulo_class.modulo" ("_position" p)
+###           ("_position" q))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" divmod)
+###       ("_cargs" ("_position" p) ("_position" q)))
+###     ("_tuple"
+###       ("\<^const>Rings.divide_class.divide" ("_position" p) ("_position" q))
+###       ("_tuple_arg"
+###         ("\<^const>MPoly_Type.mod" ("_position" p) ("_position" q))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" divmod)
+###       ("_cargs" ("_position" p) ("_position" q)))
+###     ("_tuple" ("\<^const>MPoly_Type.div" ("_position" p) ("_position" q))
+###       ("_tuple_arg"
+###         ("\<^const>MPoly_Type.mod" ("_position" p) ("_position" q))))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ambiguous input (line 505 of "$AFP/Polynomials/MPoly_Type.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("\<^const>Rings.divide_class.divide" ("_position" p) ("_position" q))
+###     ("_applC" ("_position" fst)
+###       ("_applC" ("_position" divmod)
+###         ("_cargs" ("_position" p) ("_position" q))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("\<^const>MPoly_Type.div" ("_position" p) ("_position" q))
+###     ("_applC" ("_position" fst)
+###       ("_applC" ("_position" divmod)
+###         ("_cargs" ("_position" p) ("_position" q))))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ambiguous input (line 509 of "$AFP/Polynomials/MPoly_Type.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("\<^const>Rings.modulo_class.modulo" ("_position" p) ("_position" q))
+###     ("_applC" ("_position" snd)
+###       ("_applC" ("_position" divmod)
+###         ("_cargs" ("_position" p) ("_position" q))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("\<^const>MPoly_Type.mod" ("_position" p) ("_position" q))
+###     ("_applC" ("_position" snd)
+###       ("_applC" ("_position" divmod)
+###         ("_cargs" ("_position" p) ("_position" q))))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### theory "Polynomials.MPoly_Type"
+### 0.554s elapsed time, 2.180s cpu time, 0.241s GC time
+Loading theory "Polynomials.More_MPoly_Type" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root" via "Draft.Matrix_Vector_Extras" via "Groebner_Bases.Macaulay_Matrix" via "Groebner_Bases.More_MPoly_Type_Class" via "Polynomials.MPoly_Type_Class_Ordered" via "Polynomials.MPoly_Type_Class" via "Polynomials.Power_Products")
+locale Complete_Lattice.complete_lattice
+  fixes L :: "('a, 'b) gorder_scheme"  (structure)
+  assumes "complete_lattice L"
+class linorder = order +
+  assumes "linear": "!!x y. x <= y | y <= x"
+locale Complete_Lattice.complete_lattice
+  fixes L :: "('a, 'b) gorder_scheme"  (structure)
+  assumes "complete_lattice L"
+locale weak_complete_lattice
+  fixes L :: "('a, 'b) gorder_scheme"  (structure)
+  assumes "weak_complete_lattice L"
+### theory "HOL-Algebra.Complete_Lattice"
+### 0.789s elapsed time, 3.110s cpu time, 0.471s GC time
+Loading theory "HOL-Algebra.Group" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root" via "Draft.Matrix_Vector_Extras" via "Jordan_Normal_Form.Matrix" via "Jordan_Normal_Form.Missing_Ring" via "HOL-Algebra.Ring" via "HOL-Algebra.FiniteProduct")
+instantiation
+  multiset :: (preorder) order
+  less_eq_multiset == less_eq :: 'a multiset => 'a multiset => bool
+  less_multiset == less :: 'a multiset => 'a multiset => bool
+instantiation
+  multiset :: (preorder) ordered_ab_semigroup_add
+### theory "Polynomials.More_MPoly_Type"
+### 0.345s elapsed time, 1.356s cpu time, 0.230s GC time
+Loading theory "HOL-Library.Set_Algebras" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.ExtrEqs" via "HOL-Library.BigO")
+Proofs for inductive predicate(s) "pw_leq"
+  Proving monotonicity ...
+instantiation
+  set :: (plus) plus
+  plus_set == plus :: 'a set => 'a set => 'a set
+instantiation
+  set :: (times) times
+  times_set == times :: 'a set => 'a set => 'a set
+instantiation
+  set :: (zero) zero
+  zero_set == zero_class.zero :: 'a set
+instantiation
+  set :: (one) one
+  one_set == one_class.one :: 'a set
+### theory "HOL-Library.Phantom_Type"
+### 0.637s elapsed time, 2.514s cpu time, 0.380s GC time
+Loading theory "HOL-Library.Cardinality" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root" via "Draft.Vector_Matrix_Mod" via "Berlekamp_Zassenhaus.Finite_Field")
+locale Group.monoid
+  fixes G :: "('a, 'b) monoid_scheme"  (structure)
+  assumes "Group.monoid G"
+### theory "HOL-Library.Set_Algebras"
+### 0.237s elapsed time, 0.936s cpu time, 0.150s GC time
+Loading theory "HOL-Library.Sublist" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root" via "Draft.Set_Multiset_Extras" via "Design_Theory.Multisets_Extras" via "Nested_Multisets_Ordinals.Multiset_More")
+Found termination order: "(%p. length (fst p)) <*mlex*> {}"
+### Additional type variable(s) in locale specification "CARD_1": 'a
+instantiation
+  multiset :: (equal) equal
+  equal_multiset == equal_class.equal :: 'a multiset => 'a multiset => bool
+locale Group.group
+  fixes G :: "('a, 'b) monoid_scheme"  (structure)
+  assumes "Group.group G"
+instantiation
+  multiset :: (random) random
+  random_multiset == random_class.random ::
+    natural
+    => natural * natural
+       => ('a multiset * (unit => term)) * natural * natural
+class CARD_1 = type +
+  assumes "CARD_1": "CARD('a) = 1"
+instantiation
+  multiset :: (full_exhaustive) full_exhaustive
+  full_exhaustive_multiset == full_exhaustive_class.full_exhaustive ::
+    ('a multiset * (unit => term) => (bool * term list) option)
+    => natural => (bool * term list) option
+Proofs for inductive predicate(s) "pred_mset"
+  Proving monotonicity ...
+overloading
+  nat_pow \<equiv> pow :: ('a, 'b) monoid_scheme => 'a => nat => 'a
+Proofs for inductive predicate(s) "rel_mset'"
+  Proving monotonicity ...
+### Additional type variable(s) in locale specification "card2": 'a
+overloading
+  int_pow \<equiv> pow :: ('a, 'b) monoid_scheme => 'a => int => 'a
+class card2 = finite +
+  assumes "two_le_card": "2 <= CARD('a)"
+consts
+  prefixes :: "'a list => 'a list list"
+class finite_UNIV = type +
+  fixes finite_UNIV :: "('a, bool) phantom"
+  assumes "finite_UNIV": "finite_UNIV = Phantom('a) (finite UNIV)"
+### theory "HOL-Library.Multiset"
+### 4.972s elapsed time, 19.117s cpu time, 4.701s GC time
+Loading theory "HOL-Computational_Algebra.Factorial_Ring" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root" via "Draft.Matrix_Vector_Extras" via "Jordan_Normal_Form.Matrix" via "Polynomial_Interpolation.Ring_Hom")
+locale submonoid
+  fixes H :: "'a set"
+    and G :: "('a, 'b) monoid_scheme"  (structure)
+  assumes "submonoid H G"
+class card_UNIV = finite_UNIV +
+  fixes card_UNIV :: "('a, nat) phantom"
+  assumes "card_UNIV": "card_UNIV_class.card_UNIV = Phantom('a) CARD('a)"
+instantiation
+  nat :: card_UNIV
+  card_UNIV_nat == card_UNIV_class.card_UNIV :: (nat, nat) phantom
+  finite_UNIV_nat == finite_UNIV :: (nat, bool) phantom
+instantiation
+  int :: card_UNIV
+  card_UNIV_int == card_UNIV_class.card_UNIV :: (int, nat) phantom
+  finite_UNIV_int == finite_UNIV :: (int, bool) phantom
+instantiation
+  natural :: card_UNIV
+  card_UNIV_natural == card_UNIV_class.card_UNIV :: (natural, nat) phantom
+  finite_UNIV_natural == finite_UNIV :: (natural, bool) phantom
+locale subgroup
+  fixes H :: "'a set"
+    and G :: "('a, 'b) monoid_scheme"  (structure)
+  assumes "subgroup H G"
+instantiation
+  integer :: card_UNIV
+  card_UNIV_integer == card_UNIV_class.card_UNIV :: (integer, nat) phantom
+  finite_UNIV_integer == finite_UNIV :: (integer, bool) phantom
+instantiation
+  list :: (type) card_UNIV
+  card_UNIV_list == card_UNIV_class.card_UNIV :: ('a list, nat) phantom
+  finite_UNIV_list == finite_UNIV :: ('a list, bool) phantom
+instantiation
+  unit :: card_UNIV
+  card_UNIV_unit == card_UNIV_class.card_UNIV :: (unit, nat) phantom
+  finite_UNIV_unit == finite_UNIV :: (unit, bool) phantom
+instantiation
+  bool :: card_UNIV
+  card_UNIV_bool == card_UNIV_class.card_UNIV :: (bool, nat) phantom
+  finite_UNIV_bool == finite_UNIV :: (bool, bool) phantom
+Found termination order: "(%p. length (snd p)) <*mlex*> {}"
+instantiation
+  char :: card_UNIV
+  card_UNIV_char == card_UNIV_class.card_UNIV :: (char, nat) phantom
+  finite_UNIV_char == finite_UNIV :: (char, bool) phantom
+instantiation
+  prod :: (finite_UNIV, finite_UNIV) finite_UNIV
+  finite_UNIV_prod == finite_UNIV :: ('a * 'b, bool) phantom
+instantiation
+  prod :: (card_UNIV, card_UNIV) card_UNIV
+  card_UNIV_prod == card_UNIV_class.card_UNIV :: ('a * 'b, nat) phantom
+instantiation
+  sum :: (finite_UNIV, finite_UNIV) finite_UNIV
+  finite_UNIV_sum == finite_UNIV :: ('a + 'b, bool) phantom
+instantiation
+  sum :: (card_UNIV, card_UNIV) card_UNIV
+  card_UNIV_sum == card_UNIV_class.card_UNIV :: ('a + 'b, nat) phantom
+instantiation
+  fun :: (finite_UNIV, card_UNIV) finite_UNIV
+  finite_UNIV_fun == finite_UNIV :: ('a => 'b, bool) phantom
+instantiation
+  fun :: (card_UNIV, card_UNIV) card_UNIV
+  card_UNIV_fun == card_UNIV_class.card_UNIV :: ('a => 'b, nat) phantom
+instantiation
+  option :: (finite_UNIV) finite_UNIV
+  finite_UNIV_option == finite_UNIV :: ('a option, bool) phantom
+instantiation
+  option :: (card_UNIV) card_UNIV
+  card_UNIV_option == card_UNIV_class.card_UNIV :: ('a option, nat) phantom
+instantiation
+  String.literal :: card_UNIV
+  card_UNIV_literal == card_UNIV_class.card_UNIV ::
+    (String.literal, nat) phantom
+  finite_UNIV_literal == finite_UNIV :: (String.literal, bool) phantom
+instantiation
+  set :: (finite_UNIV) finite_UNIV
+  finite_UNIV_set == finite_UNIV :: ('a set, bool) phantom
+instantiation
+  set :: (card_UNIV) card_UNIV
+  card_UNIV_set == card_UNIV_class.card_UNIV :: ('a set, nat) phantom
+instantiation
+  Enum.finite_1 :: card_UNIV
+  card_UNIV_finite_1 == card_UNIV_class.card_UNIV ::
+    (Enum.finite_1, nat) phantom
+  finite_UNIV_finite_1 == finite_UNIV :: (Enum.finite_1, bool) phantom
+instantiation
+  Enum.finite_2 :: card_UNIV
+  card_UNIV_finite_2 == card_UNIV_class.card_UNIV ::
+    (Enum.finite_2, nat) phantom
+  finite_UNIV_finite_2 == finite_UNIV :: (Enum.finite_2, bool) phantom
+instantiation
+  Enum.finite_3 :: card_UNIV
+  card_UNIV_finite_3 == card_UNIV_class.card_UNIV ::
+    (Enum.finite_3, nat) phantom
+  finite_UNIV_finite_3 == finite_UNIV :: (Enum.finite_3, bool) phantom
+instantiation
+  Enum.finite_4 :: card_UNIV
+  card_UNIV_finite_4 == card_UNIV_class.card_UNIV ::
+    (Enum.finite_4, nat) phantom
+  finite_UNIV_finite_4 == finite_UNIV :: (Enum.finite_4, bool) phantom
+instantiation
+  Enum.finite_5 :: card_UNIV
+  card_UNIV_finite_5 == card_UNIV_class.card_UNIV ::
+    (Enum.finite_5, nat) phantom
+  finite_UNIV_finite_5 == finite_UNIV :: (Enum.finite_5, bool) phantom
+### theory "HOL-Library.Cardinality"
+### 0.819s elapsed time, 3.241s cpu time, 0.531s GC time
+Loading theory "HOL-Library.Multiset_Order" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root" via "Draft.Set_Multiset_Extras" via "Design_Theory.Multisets_Extras" via "Nested_Multisets_Ordinals.Multiset_More")
+class preorder = ord +
+  assumes "less_le_not_le": "!!x y. (x < y) = (x <= y & ~ y <= x)"
+    and "order_refl": "!!x. x <= x"
+    and "order_trans": "!!x y z. [| x <= y; y <= z |] ==> x <= z"
+consts
+  suffixes :: "'a list => 'a list list"
+Proofs for inductive predicate(s) "list_emb"
+  Proving monotonicity ...
+instantiation
+  multiset :: (preorder) ordered_ab_semigroup_monoid_add_imp_le
+locale group_hom
+  fixes G :: "('a, 'b) monoid_scheme"  (structure)
+    and H :: "('c, 'd) monoid_scheme"  (structure)
+    and h :: "'a => 'c"
+  assumes "group_hom G H h"
+instantiation
+  multiset :: (wellorder) wellorder
+instantiation
+  multiset :: (preorder) order_bot
+  bot_multiset == bot :: 'a multiset
+instantiation
+  multiset :: (linorder) distrib_lattice
+  inf_multiset == inf :: 'a multiset => 'a multiset => 'a multiset
+  sup_multiset == sup :: 'a multiset => 'a multiset => 'a multiset
+### theory "HOL-Library.Multiset_Order"
+### 0.311s elapsed time, 1.216s cpu time, 0.259s GC time
+Loading theory "HOL-Combinatorics.Permutations" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root" via "Draft.Set_Multiset_Extras" via "HOL-Combinatorics.Multiset_Permutations")
+locale Group.comm_monoid
+  fixes G :: "('a, 'b) monoid_scheme"  (structure)
+  assumes "Group.comm_monoid G"
+locale comm_group
+  fixes G :: "('a, 'b) monoid_scheme"  (structure)
+  assumes "comm_group G"
+### theory "HOL-Algebra.Group"
+### 1.806s elapsed time, 7.132s cpu time, 1.207s GC time
+Loading theory "HOL-Algebra.Coset" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root" via "Draft.Rank_Argument_General" via "Jordan_Normal_Form.DL_Rank" via "Jordan_Normal_Form.VS_Connect" via "Jordan_Normal_Form.Missing_VectorSpace" via "VectorSpace.VectorSpace")
+consts
+  sublists :: "'a list => 'a list list"
+class normalization_semidom = algebraic_semidom +
+  semidom_divide_unit_factor +
+  fixes normalize :: "'a => 'a"
+  assumes
+    "unit_factor_mult_normalize": "!!a. unit_factor a * normalize a = a"
+    and "normalize_0": "normalize (0::'a) = (0::'a)"
+locale normal
+  fixes H :: "'a set"
+    and G :: "('a, 'b) monoid_scheme"  (structure)
+  assumes "normal H G"
+### theory "HOL-Library.Sublist"
+### 1.632s elapsed time, 6.449s cpu time, 1.057s GC time
+Loading theory "HOL-Algebra.FiniteProduct" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root" via "Draft.Matrix_Vector_Extras" via "Jordan_Normal_Form.Matrix" via "Jordan_Normal_Form.Missing_Ring" via "HOL-Algebra.Ring")
+Proofs for inductive predicate(s) "swapidseq"
+  Proving monotonicity ...
+Proofs for inductive predicate(s) "foldSetDp"
+  Proving monotonicity ...
+locale LCD
+  fixes B :: "'b set"
+    and D :: "'a set"
+    and f :: "'b => 'a => 'a"  (infixl \<open>\<cdot>\<close> 70)
+  assumes "LCD B D (\<cdot>)"
+locale ACeD
+  fixes D :: "'a set"
+    and f :: "'a => 'a => 'a"  (infixl \<open>\<cdot>\<close> 70)
+    and e :: "'a"
+  assumes "ACeD D (\<cdot>) e"
+locale comm_monoid_set
+  fixes f :: "'a => 'a => 'a"  (infixl \<open>\<^bold>*\<close> 70)
+    and z :: "'a"  (\<open>\<^bold>1\<close>)
+  assumes "comm_monoid_set (\<^bold>*) \<^bold>1"
+locale Group.comm_monoid
+  fixes G :: "('a, 'b) monoid_scheme"  (structure)
+  assumes "Group.comm_monoid G"
+class semiring_gcd = gcd + normalization_semidom +
+  assumes "gcd_dvd1": "!!a b. gcd a b dvd a"
+    and "gcd_dvd2": "!!a b. gcd a b dvd b"
+    and "gcd_greatest": "!!c a b. [| c dvd a; c dvd b |] ==> c dvd gcd a b"
+    and "normalize_gcd": "!!a b. normalize (gcd a b) = gcd a b"
+    and "lcm_gcd": "!!a b. lcm a b = normalize (a * b div gcd a b)"
+locale Group.comm_monoid
+  fixes G :: "('a, 'b) monoid_scheme"  (structure)
+  assumes "Group.comm_monoid G"
+### Ambiguous input (line 611 of "~~/src/HOL/Algebra/Coset.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("\<^fixed>r_congruent_indexed" ("_index" ("_position" G))
+###       ("_position" H))
+###     ("_Coll" ("_pattern" ("_position" x) ("_position" y))
+###       ("\<^const>HOL.conj"
+###         ("\<^const>Set.member" ("_position" x)
+###           ("_applC" ("_position" carrier) ("_position" G)))
+###         ("\<^const>HOL.conj"
+###           ("\<^const>Set.member" ("_position" y)
+###             ("_applC" ("_position" carrier) ("_position" G)))
+###           ("\<^const>Set.member"
+###             ("\<^const>Group.monoid.mult_indexed"
+###               ("\<^const>Group.m_inv_indexed" ("_index" ("_position" G))
+###                 ("_position" x))
+###               ("_index" ("_position" G)) ("_position" y))
+###             ("_position" H)))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^fixed>r_congruent_indexed" ("_index" ("_position" G))
+###     ("\<^const>HOL.eq" ("_position" H)
+###       ("_Coll" ("_pattern" ("_position" x) ("_position" y))
+###         ("\<^const>HOL.conj"
+###           ("\<^const>Set.member" ("_position" x)
+###             ("_applC" ("_position" carrier) ("_position" G)))
+###           ("\<^const>HOL.conj"
+###             ("\<^const>Set.member" ("_position" y)
+###               ("_applC" ("_position" carrier) ("_position" G)))
+###             ("\<^const>Set.member"
+###               ("\<^const>Group.monoid.mult_indexed"
+###                 ("\<^const>Group.m_inv_indexed" ("_index" ("_position" G))
+###                   ("_position" x))
+###                 ("_index" ("_position" G)) ("_position" y))
+###               ("_position" H))))))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+Found termination order: "(%p. size_list size (fst p)) <*mlex*> {}"
+### theory "HOL-Algebra.FiniteProduct"
+### 0.550s elapsed time, 2.170s cpu time, 0.412s GC time
+Loading theory "HOL-Algebra.Ring" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root" via "Draft.Matrix_Vector_Extras" via "Jordan_Normal_Form.Matrix" via "Jordan_Normal_Form.Missing_Ring")
+### theory "HOL-Combinatorics.Permutations"
+### 1.065s elapsed time, 4.214s cpu time, 0.678s GC time
+Loading theory "Jordan_Normal_Form.Missing_Misc" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root" via "Draft.Matrix_Vector_Extras" via "Jordan_Normal_Form.Matrix" via "Jordan_Normal_Form.Missing_Ring")
+### theory "Jordan_Normal_Form.Missing_Misc"
+### 0.132s elapsed time, 0.520s cpu time, 0.123s GC time
+Loading theory "Nested_Multisets_Ordinals.Multiset_More" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root" via "Draft.Set_Multiset_Extras" via "Design_Theory.Multisets_Extras")
+locale abelian_monoid
+  fixes G :: "('a, 'b) ring_scheme"  (structure)
+  assumes "abelian_monoid G"
+locale abelian_group
+  fixes G :: "('a, 'b) ring_scheme"  (structure)
+  assumes "abelian_group G"
+### Cannot skip proof of schematic goal statement
+locale abelian_monoid
+  fixes G :: "('a, 'b) ring_scheme"  (structure)
+  assumes "abelian_monoid G"
+### Cannot skip proof of schematic goal statement
+class factorial_semiring = normalization_semidom +
+  assumes
+    "prime_factorization_exists":
+      "!!x. x ~= (0::'a) ==>
+            EX A. (ALL x. x :# A --> prime_elem x) &
+                  normalize (\<Prod>\<^sub># A) = normalize x"
+locale abelian_monoid
+  fixes G :: "('a, 'b) ring_scheme"  (structure)
+  assumes "abelian_monoid G"
+### Cannot skip proof of schematic goal statement
+locale abelian_group
+  fixes G :: "('a, 'b) ring_scheme"  (structure)
+  assumes "abelian_group G"
+### theory "HOL-Algebra.Coset"
+### 1.327s elapsed time, 5.249s cpu time, 0.758s GC time
+Loading theory "HOL-Algebra.Generated_Groups" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root" via "Draft.Vector_Matrix_Mod" via "Berlekamp_Zassenhaus.Finite_Field" via "HOL-Number_Theory.Residues" via "HOL-Algebra.Multiplicative_Group")
+### Cannot skip proof of schematic goal statement
+Proofs for inductive predicate(s) "generatep"
+  Proving monotonicity ...
+class factorial_semiring = normalization_semidom +
+  assumes
+    "prime_factorization_exists":
+      "!!x. x ~= (0::'a) ==>
+            EX A. (ALL x. x :# A --> prime_elem x) &
+                  normalize (\<Prod>\<^sub># A) = normalize x"
+locale Ring.semiring
+  fixes R :: "('a, 'b) ring_scheme"  (structure)
+  assumes "semiring R"
+locale Ring.ring
+  fixes R :: "('a, 'b) ring_scheme"  (structure)
+  assumes "ring R"
+### theory "Nested_Multisets_Ordinals.Multiset_More"
+### 0.760s elapsed time, 3.009s cpu time, 0.351s GC time
+Loading theory "Nested_Multisets_Ordinals.Duplicate_Free_Multiset" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root" via "Draft.Set_Multiset_Extras" via "Design_Theory.Multisets_Extras")
+locale cring
+  fixes R :: "('a, 'b) ring_scheme"  (structure)
+  assumes "cring R"
+### theory "Nested_Multisets_Ordinals.Duplicate_Free_Multiset"
+### 0.138s elapsed time, 0.536s cpu time, 0.115s GC time
+Loading theory "Design_Theory.Multisets_Extras" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root" via "Draft.Set_Multiset_Extras")
+locale domain
+  fixes R :: "('a, 'b) ring_scheme"  (structure)
+  assumes "domain R"
+locale Ring.field
+  fixes R :: "('a, 'b) ring_scheme"  (structure)
+  assumes "field R"
+locale Ring.ring
+  fixes R :: "('a, 'b) ring_scheme"  (structure)
+  assumes "ring R"
+### theory "HOL-Algebra.Generated_Groups"
+### 0.734s elapsed time, 2.906s cpu time, 0.374s GC time
+Loading theory "HOL-Algebra.Elementary_Groups" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root" via "Draft.Vector_Matrix_Mod" via "Berlekamp_Zassenhaus.Finite_Field" via "HOL-Number_Theory.Residues" via "HOL-Algebra.Multiplicative_Group")
+locale Ring.ring
+  fixes R :: "('a, 'b) ring_scheme"  (structure)
+  assumes "ring R"
+### ML warning (line 44 of "~~/src/HOL/Algebra/ringsimp.ML"):
+### Value identifier (s) has not been referenced.
+### ML warning (line 47 of "~~/src/HOL/Algebra/ringsimp.ML"):
+### Matches are not exhaustive.
+signature RINGSIMP =
+  sig
+    val add_struct: string * term list -> attribute
+    val algebra_tac: Proof.context -> int -> tactic
+    val del_struct: string * term list -> attribute
+    val print_structures: Proof.context -> unit
+  end
+structure Ringsimp: RINGSIMP
+locale group_disjoint_sum
+  fixes G :: "('a, 'b) monoid_scheme"  (structure)
+    and A :: "'a set"
+    and B :: "'a set"
+  assumes "group_disjoint_sum G A B"
+class ordered_semiring = ordered_comm_monoid_add + semiring +
+  assumes
+    "mult_left_mono":
+      "!!a b c. [| a <= b; (0::'a) <= c |] ==> c * a <= c * b"
+  assumes
+    "mult_right_mono":
+      "!!a b c. [| a <= b; (0::'a) <= c |] ==> a * c <= b * c"
+locale Ring.semiring
+  fixes R :: "('a, 'b) ring_scheme"  (structure)
+  assumes "semiring R"
+### theory "Design_Theory.Multisets_Extras"
+### 0.835s elapsed time, 3.287s cpu time, 0.449s GC time
+Loading theory "Design_Theory.Design_Basics" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root" via "Draft.Design_Extras" via "Design_Theory.BIBD" via "Design_Theory.Block_Designs" via "Design_Theory.Design_Operations")
+locale incidence_system
+  fixes point_set :: "'a set"  (\<open>\<V>\<close>)
+    and block_collection :: "'a set multiset"  (\<open>\<B>\<close>)
+  assumes "incidence_system \<V> \<B>"
+locale finite_incidence_system
+  fixes point_set :: "'a set"  (\<open>\<V>\<close>)
+    and block_collection :: "'a set multiset"  (\<open>\<B>\<close>)
+  assumes "finite_incidence_system \<V> \<B>"
+locale design
+  fixes point_set :: "'a set"  (\<open>\<V>\<close>)
+    and block_collection :: "'a set multiset"  (\<open>\<B>\<close>)
+  assumes "design \<V> \<B>"
+### theory "HOL-Algebra.Elementary_Groups"
+### 0.604s elapsed time, 2.383s cpu time, 0.317s GC time
+Loading theory "HOL-Library.Tree" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.ExtrEqs" via "Draft.Templates")
+locale domain
+  fixes R :: "('a, 'b) ring_scheme"  (structure)
+  assumes "domain R"
+locale incidence_system
+  fixes point_set :: "'a set"  (\<open>\<V>\<close>)
+    and block_collection :: "'a set multiset"  (\<open>\<B>\<close>)
+  assumes "incidence_system \<V> \<B>"
+locale incidence_system
+  fixes point_set :: "'a set"  (\<open>\<V>\<close>)
+    and block_collection :: "'a set multiset"  (\<open>\<B>\<close>)
+  assumes "incidence_system \<V> \<B>"
+locale incidence_system
+  fixes point_set :: "'a set"  (\<open>\<V>\<close>)
+    and block_collection :: "'a set multiset"  (\<open>\<B>\<close>)
+  assumes "incidence_system \<V> \<B>"
+locale finite_incidence_system
+  fixes point_set :: "'a set"  (\<open>\<V>\<close>)
+    and block_collection :: "'a set multiset"  (\<open>\<B>\<close>)
+  assumes "finite_incidence_system \<V> \<B>"
+locale design
+  fixes point_set :: "'a set"  (\<open>\<V>\<close>)
+    and block_collection :: "'a set multiset"  (\<open>\<B>\<close>)
+  assumes "design \<V> \<B>"
+locale incidence_system
+  fixes point_set :: "'a set"  (\<open>\<V>\<close>)
+    and block_collection :: "'a set multiset"  (\<open>\<B>\<close>)
+  assumes "incidence_system \<V> \<B>"
+locale ring_hom_cring
+  fixes R :: "('a, 'b) ring_scheme"  (structure)
+    and S :: "('c, 'd) ring_scheme"  (structure)
+    and h :: "'a => 'c"
+  assumes "ring_hom_cring R S h"
+locale finite_incidence_system
+  fixes point_set :: "'a set"  (\<open>\<V>\<close>)
+    and block_collection :: "'a set multiset"  (\<open>\<B>\<close>)
+  assumes "finite_incidence_system \<V> \<B>"
+locale design
+  fixes point_set :: "'a set"  (\<open>\<V>\<close>)
+    and block_collection :: "'a set multiset"  (\<open>\<B>\<close>)
+  assumes "design \<V> \<B>"
+locale simple_incidence_system
+  fixes point_set :: "'a set"  (\<open>\<V>\<close>)
+    and block_collection :: "'a set multiset"  (\<open>\<B>\<close>)
+  assumes "simple_incidence_system \<V> \<B>"
+locale simple_design
+  fixes point_set :: "'a set"  (\<open>\<V>\<close>)
+    and block_collection :: "'a set multiset"  (\<open>\<B>\<close>)
+  assumes "simple_design \<V> \<B>"
+locale incidence_system
+  fixes point_set :: "'a set"  (\<open>\<V>\<close>)
+    and block_collection :: "'a set multiset"  (\<open>\<B>\<close>)
+  assumes "incidence_system \<V> \<B>"
+locale proper_design
+  fixes point_set :: "'a set"  (\<open>\<V>\<close>)
+    and block_collection :: "'a set multiset"  (\<open>\<B>\<close>)
+  assumes "proper_design \<V> \<B>"
+locale proper_design
+  fixes point_set :: "'a set"  (\<open>\<V>\<close>)
+    and block_collection :: "'a set multiset"  (\<open>\<B>\<close>)
+  assumes "proper_design \<V> \<B>"
+consts
+  left :: "'a tree => 'a tree"
+### theory "Design_Theory.Design_Basics"
+### 0.740s elapsed time, 2.926s cpu time, 0.337s GC time
+Loading theory "Design_Theory.Design_Operations" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root" via "Draft.Design_Extras" via "Design_Theory.BIBD" via "Design_Theory.Block_Designs")
+consts
+  right :: "'a tree => 'a tree"
+locale incidence_system
+  fixes point_set :: "'a set"  (\<open>\<V>\<close>)
+    and block_collection :: "'a set multiset"  (\<open>\<B>\<close>)
+  assumes "incidence_system \<V> \<B>"
+Found termination order: "size <*mlex*> {}"
+class factorial_semiring_gcd = factorial_semiring + Gcd +
+  assumes "gcd_eq_gcd_factorial": "!!a b. gcd a b = gcd_factorial a b"
+    and "lcm_eq_lcm_factorial": "!!a b. lcm a b = lcm_factorial a b"
+    and "Gcd_eq_Gcd_factorial": "!!A. Gcd A = Gcd_factorial A"
+    and "Lcm_eq_Lcm_factorial": "!!A. Lcm A = Lcm_factorial A"
+Found termination order: "size <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+class height = type +
+  fixes height :: "'a => nat"
+instantiation
+  tree :: (type) height
+  height_tree == height :: 'a tree => nat
+Found termination order: "size <*mlex*> {}"
+locale finite_incidence_system
+  fixes point_set :: "'a set"  (\<open>\<V>\<close>)
+    and block_collection :: "'a set multiset"  (\<open>\<B>\<close>)
+  assumes "finite_incidence_system \<V> \<B>"
+### theory "HOL-Algebra.Ring"
+### 3.010s elapsed time, 11.892s cpu time, 1.550s GC time
+Loading theory "HOL-Algebra.AbelCoset" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root" via "Draft.Vector_Matrix_Mod" via "Berlekamp_Zassenhaus.Finite_Field" via "HOL-Number_Theory.Residues" via "HOL-Algebra.Multiplicative_Group" via "HOL-Algebra.UnivPoly" via "HOL-Algebra.RingHom" via "HOL-Algebra.Ideal")
+Found termination order: "size <*mlex*> {}"
+locale design
+  fixes point_set :: "'a set"  (\<open>\<V>\<close>)
+    and block_collection :: "'a set multiset"  (\<open>\<B>\<close>)
+  assumes "design \<V> \<B>"
+locale proper_design
+  fixes point_set :: "'a set"  (\<open>\<V>\<close>)
+    and block_collection :: "'a set multiset"  (\<open>\<B>\<close>)
+  assumes "proper_design \<V> \<B>"
+Found termination order: "size <*mlex*> {}"
+locale two_set_systems
+  fixes \<V> :: "'a set"
+    and \<B> :: "'a set multiset"
+    and \<V>' :: "'a set"
+    and \<B>' :: "'a set multiset"
+  assumes "two_set_systems \<V> \<B> \<V>' \<B>'"
+Found termination order: "size <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+locale two_fin_set_systems
+  fixes \<V> :: "'a set"
+    and \<B> :: "'a set multiset"
+    and \<V>' :: "'a set"
+    and \<B>' :: "'a set multiset"
+  assumes "two_fin_set_systems \<V> \<B> \<V>' \<B>'"
+Found termination order: "size <*mlex*> {}"
+locale two_designs
+  fixes \<V> :: "'a set"
+    and \<B> :: "'a set multiset"
+    and \<V>' :: "'a set"
+    and \<B>' :: "'a set multiset"
+  assumes "two_designs \<V> \<B> \<V>' \<B>'"
+Found termination order: "size <*mlex*> {}"
+Found termination order: "(%p. size (fst p)) <*mlex*> {}"
+locale two_designs_proper
+  fixes \<V> :: "'a set"
+    and \<B> :: "'a set multiset"
+    and \<V>' :: "'a set"
+    and \<B>' :: "'a set multiset"
+  assumes "two_designs_proper \<V> \<B> \<V>' \<B>'"
+### theory "Design_Theory.Design_Operations"
+### 0.863s elapsed time, 3.411s cpu time, 0.353s GC time
+Loading theory "HOL-Algebra.Module" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root" via "Draft.Matrix_Vector_Extras" via "Jordan_Normal_Form.Matrix")
+Found termination order: "size <*mlex*> {}"
+locale abelian_group_hom
+  fixes G :: "('a, 'b) ring_scheme"  (structure)
+    and H :: "('c, 'd) ring_scheme"  (structure)
+    and h :: "'a => 'c"
+  assumes "abelian_group_hom G H h"
+### Cannot skip proof of schematic goal statement
+Found termination order: "(%p. size (snd p)) <*mlex*> {}"
+locale abelian_group
+  fixes G :: "('a, 'b) ring_scheme"  (structure)
+  assumes "abelian_group G"
+Found termination order: "size <*mlex*> {}"
+locale additive_subgroup
+  fixes H :: "'a set"
+    and G :: "('a, 'b) ring_scheme"  (structure)
+  assumes "additive_subgroup H G"
+locale module
+  fixes R :: "('a, 'b) ring_scheme"  (structure)
+    and M :: "('a, 'c, 'd) module_scheme"  (structure)
+  assumes "module R M"
+locale abelian_subgroup
+  fixes H :: "'a set"
+    and G :: "('a, 'b) ring_scheme"  (structure)
+  assumes "abelian_subgroup H G"
+### theory "HOL-Library.Tree"
+### 2.121s elapsed time, 8.360s cpu time, 1.027s GC time
+Loading theory "Jordan_Normal_Form.Missing_Ring" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root" via "Draft.Matrix_Vector_Extras" via "Jordan_Normal_Form.Matrix")
+locale algebra
+  fixes R :: "('a, 'b) ring_scheme"  (structure)
+    and M :: "('a, 'c, 'd) module_scheme"  (structure)
+  assumes "algebra R M"
+locale submodule
+  fixes H :: "'c set"
+    and R :: "('a, 'b) ring_scheme"
+    and M :: "('a, 'c, 'd) module_scheme"  (structure)
+  assumes "submodule H R M"
+class ordered_semiring_strict = comm_monoid_add +
+  ordered_cancel_ab_semigroup_add + semiring +
+  assumes
+    "mult_strict_left_mono":
+      "!!a b c. [| a < b; (0::'a) < c |] ==> c * a < c * b"
+  assumes
+    "mult_strict_right_mono":
+      "!!a b c. [| a < b; (0::'a) < c |] ==> a * c < b * c"
+### theory "HOL-Algebra.Module"
+### 1.565s elapsed time, 6.163s cpu time, 0.687s GC time
+Loading theory "Design_Theory.Block_Designs" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root" via "Draft.Design_Extras" via "Design_Theory.BIBD")
+locale K_block_design
+  fixes point_set :: "'a set"  (\<open>\<V>\<close>)
+    and block_collection :: "'a set multiset"  (\<open>\<B>\<close>)
+    and sizes :: "nat set"  (\<open>\<K>\<close>)
+  assumes "K_block_design \<V> \<B> \<K>"
+locale block_design
+  fixes point_set :: "'a set"  (\<open>\<V>\<close>)
+    and block_collection :: "'a set multiset"  (\<open>\<B>\<close>)
+    and u_block_size :: "nat"  (\<open>\<k>\<close>)
+  assumes "block_design \<V> \<B> \<k>"
+locale block_design
+  fixes point_set :: "'a set"  (\<open>\<V>\<close>)
+    and block_collection :: "'a set multiset"  (\<open>\<B>\<close>)
+    and u_block_size :: "nat"  (\<open>\<k>\<close>)
+  assumes "block_design \<V> \<B> \<k>"
+locale incomplete_design
+  fixes point_set :: "'a set"  (\<open>\<V>\<close>)
+    and block_collection :: "'a set multiset"  (\<open>\<B>\<close>)
+    and u_block_size :: "nat"  (\<open>\<k>\<close>)
+  assumes "incomplete_design \<V> \<B> \<k>"
+locale incomplete_design
+  fixes point_set :: "'a set"  (\<open>\<V>\<close>)
+    and block_collection :: "'a set multiset"  (\<open>\<B>\<close>)
+    and u_block_size :: "nat"  (\<open>\<k>\<close>)
+  assumes "incomplete_design \<V> \<B> \<k>"
+locale t_wise_balance
+  fixes point_set :: "'a set"  (\<open>\<V>\<close>)
+    and block_collection :: "'a set multiset"  (\<open>\<B>\<close>)
+    and grouping :: "nat"  (\<open>\<t>\<close>)
+    and index :: "nat"  (\<open>\<Lambda>\<^sub>t\<close>)
+  assumes "t_wise_balance \<V> \<B> \<t> \<Lambda>\<^sub>t"
+locale t_wise_balance
+  fixes point_set :: "'a set"  (\<open>\<V>\<close>)
+    and block_collection :: "'a set multiset"  (\<open>\<B>\<close>)
+    and grouping :: "nat"  (\<open>\<t>\<close>)
+    and index :: "nat"  (\<open>\<Lambda>\<^sub>t\<close>)
+  assumes "t_wise_balance \<V> \<B> \<t> \<Lambda>\<^sub>t"
+locale pairwise_balance
+  fixes point_set :: "'a set"  (\<open>\<V>\<close>)
+    and block_collection :: "'a set multiset"  (\<open>\<B>\<close>)
+    and index :: "nat"  (\<open>\<Lambda>\<close>)
+  assumes "pairwise_balance \<V> \<B> \<Lambda>"
+locale tBD
+  fixes point_set :: "'a set"  (\<open>\<V>\<close>)
+    and block_collection :: "'a set multiset"  (\<open>\<B>\<close>)
+    and grouping :: "nat"  (\<open>\<t>\<close>)
+    and index :: "nat"  (\<open>\<Lambda>\<^sub>t\<close>)
+    and sizes :: "nat set"  (\<open>\<K>\<close>)
+  assumes "tBD \<V> \<B> \<t> \<Lambda>\<^sub>t \<K>"
+locale \<Lambda>_PBD
+  fixes point_set :: "'a set"  (\<open>\<V>\<close>)
+    and block_collection :: "'a set multiset"  (\<open>\<B>\<close>)
+    and index :: "nat"  (\<open>\<Lambda>\<close>)
+    and sizes :: "nat set"  (\<open>\<K>\<close>)
+  assumes "\<Lambda>_PBD \<V> \<B> \<Lambda> \<K>"
+### theory "HOL-Computational_Algebra.Factorial_Ring"
+### 7.428s elapsed time, 29.324s cpu time, 3.842s GC time
+Loading theory "HOL-Computational_Algebra.Euclidean_Algorithm" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root" via "Draft.Rank_Argument_General" via "Jordan_Normal_Form.Determinant" via "HOL-Computational_Algebra.Polynomial_Factorial" via "HOL-Computational_Algebra.Normalized_Fraction")
+locale PBD
+  fixes point_set :: "'a set"  (\<open>\<V>\<close>)
+    and block_collection :: "'a set multiset"  (\<open>\<B>\<close>)
+    and sizes :: "nat set"  (\<open>\<K>\<close>)
+  assumes "PBD \<V> \<B> \<K>"
+locale k_\<Lambda>_PBD
+  fixes point_set :: "'a set"  (\<open>\<V>\<close>)
+    and block_collection :: "'a set multiset"  (\<open>\<B>\<close>)
+    and index :: "nat"  (\<open>\<Lambda>\<close>)
+    and u_block_size :: "nat"  (\<open>\<k>\<close>)
+  assumes "k_\<Lambda>_PBD \<V> \<B> \<Lambda> \<k>"
+locale k_PBD
+  fixes point_set :: "'a set"  (\<open>\<V>\<close>)
+    and block_collection :: "'a set multiset"  (\<open>\<B>\<close>)
+    and u_block_size :: "nat"  (\<open>\<k>\<close>)
+  assumes "k_PBD \<V> \<B> \<k>"
+locale t_covering_design
+  fixes point_set :: "'a set"  (\<open>\<V>\<close>)
+    and block_collection :: "'a set multiset"  (\<open>\<B>\<close>)
+    and u_block_size :: "nat"  (\<open>\<k>\<close>)
+    and grouping :: "nat"  (\<open>\<t>\<close>)
+    and min_index :: "nat"  (\<open>\<Lambda>\<^sub>t\<close>)
+  assumes "t_covering_design \<V> \<B> \<k> \<t> \<Lambda>\<^sub>t"
+### theory "HOL-Algebra.AbelCoset"
+### 2.841s elapsed time, 11.194s cpu time, 1.189s GC time
+Loading theory "HOL-Algebra.Ideal" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root" via "Draft.Vector_Matrix_Mod" via "Berlekamp_Zassenhaus.Finite_Field" via "HOL-Number_Theory.Residues" via "HOL-Algebra.Multiplicative_Group" via "HOL-Algebra.UnivPoly" via "HOL-Algebra.RingHom")
+locale t_packing_design
+  fixes point_set :: "'a set"  (\<open>\<V>\<close>)
+    and block_collection :: "'a set multiset"  (\<open>\<B>\<close>)
+    and u_block_size :: "nat"  (\<open>\<k>\<close>)
+    and grouping :: "nat"  (\<open>\<t>\<close>)
+    and min_index :: "nat"  (\<open>\<Lambda>\<^sub>t\<close>)
+  assumes "t_packing_design \<V> \<B> \<k> \<t> \<Lambda>\<^sub>t"
+locale constant_rep_design
+  fixes point_set :: "'a set"  (\<open>\<V>\<close>)
+    and block_collection :: "'a set multiset"  (\<open>\<B>\<close>)
+    and design_rep_number :: "nat"  (\<open>\<r>\<close>)
+  assumes "constant_rep_design \<V> \<B> \<r>"
+locale ideal
+  fixes I :: "'a set"
+    and R :: "('a, 'b) ring_scheme"  (structure)
+  assumes "ideal I R"
+locale t_design
+  fixes point_set :: "'a set"  (\<open>\<V>\<close>)
+    and block_collection :: "'a set multiset"  (\<open>\<B>\<close>)
+    and u_block_size :: "nat"  (\<open>\<k>\<close>)
+    and grouping :: "nat"  (\<open>\<t>\<close>)
+    and index :: "nat"  (\<open>\<Lambda>\<^sub>t\<close>)
+  assumes "t_design \<V> \<B> \<k> \<t> \<Lambda>\<^sub>t"
+locale t_design
+  fixes point_set :: "'a set"  (\<open>\<V>\<close>)
+    and block_collection :: "'a set multiset"  (\<open>\<B>\<close>)
+    and u_block_size :: "nat"  (\<open>\<k>\<close>)
+    and grouping :: "nat"  (\<open>\<t>\<close>)
+    and index :: "nat"  (\<open>\<Lambda>\<^sub>t\<close>)
+  assumes "t_design \<V> \<B> \<k> \<t> \<Lambda>\<^sub>t"
+locale steiner_system
+  fixes point_set :: "'a set"  (\<open>\<V>\<close>)
+    and block_collection :: "'a set multiset"  (\<open>\<B>\<close>)
+    and u_block_size :: "nat"  (\<open>\<k>\<close>)
+    and grouping :: "nat"  (\<open>\<t>\<close>)
+  assumes "steiner_system \<V> \<B> \<k> \<t>"
+locale principalideal
+  fixes I :: "'a set"
+    and R :: "('a, 'b) ring_scheme"  (structure)
+  assumes "principalideal I R"
+locale two_t_wise_eq_points
+  fixes \<V> :: "'a set"
+    and \<B> :: "'a set multiset"
+    and \<t> :: "nat"
+    and \<Lambda>\<^sub>t :: "nat"
+    and \<B>' :: "'a set multiset"
+    and \<Lambda>\<^sub>t' :: "nat"
+  assumes
+    "two_t_wise_eq_points \<V> \<B> \<t> \<Lambda>\<^sub>t \<B>'
+      \<Lambda>\<^sub>t'"
+class ordered_idom = ordered_semiring_strict + idom +
+  assumes "zero_less_one": "(0::'a) < (1::'a)"
+locale two_k_block_designs
+  fixes \<V> :: "'a set"
+    and \<B> :: "'a set multiset"
+    and \<k> :: "nat"
+    and \<V>' :: "'a set"
+    and \<B>' :: "'a set multiset"
+  assumes "two_k_block_designs \<V> \<B> \<k> \<V>' \<B>'"
+locale maximalideal
+  fixes I :: "'a set"
+    and R :: "('a, 'b) ring_scheme"  (structure)
+  assumes "maximalideal I R"
+locale two_rep_designs_eq_points
+  fixes \<V> :: "'a set"
+    and \<B> :: "'a set multiset"
+    and \<r> :: "nat"
+    and \<B>' :: "'a set multiset"
+    and \<r>' :: "nat"
+  assumes "two_rep_designs_eq_points \<V> \<B> \<r> \<B>' \<r>'"
+locale primeideal
+  fixes I :: "'a set"
+    and R :: "('a, 'b) ring_scheme"  (structure)
+  assumes "primeideal I R"
+locale two_incomplete_designs
+  fixes \<V> :: "'a set"
+    and \<B> :: "'a set multiset"
+    and \<k> :: "nat"
+    and \<V>' :: "'a set"
+    and \<B>' :: "'a set multiset"
+  assumes "two_incomplete_designs \<V> \<B> \<k> \<V>' \<B>'"
+locale two_t_designs_eq_points
+  fixes \<V> :: "'a set"
+    and \<B> :: "'a set multiset"
+    and \<k> :: "nat"
+    and \<B>' :: "'a set multiset"
+    and \<t> :: "nat"
+    and \<Lambda>\<^sub>t :: "nat"
+    and \<Lambda>\<^sub>t' :: "nat"
+  assumes
+    "two_t_designs_eq_points \<V> \<B> \<k> \<B>' \<t> \<Lambda>\<^sub>t
+      \<Lambda>\<^sub>t'"
+### theory "Design_Theory.Block_Designs"
+### 1.897s elapsed time, 7.465s cpu time, 0.839s GC time
+Loading theory "Design_Theory.BIBD" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root" via "Draft.Design_Extras")
+locale bibd
+  fixes point_set :: "'a set"  (\<open>\<V>\<close>)
+    and block_collection :: "'a set multiset"  (\<open>\<B>\<close>)
+    and u_block_size :: "nat"  (\<open>\<k>\<close>)
+    and index :: "nat"  (\<open>\<Lambda>\<close>)
+  assumes "bibd \<V> \<B> \<k> \<Lambda>"
+locale bibd
+  fixes point_set :: "'a set"  (\<open>\<V>\<close>)
+    and block_collection :: "'a set multiset"  (\<open>\<B>\<close>)
+    and u_block_size :: "nat"  (\<open>\<k>\<close>)
+    and index :: "nat"  (\<open>\<Lambda>\<close>)
+  assumes "bibd \<V> \<B> \<k> \<Lambda>"
+locale two_bibd_eq_points
+  fixes \<V> :: "'a set"
+    and \<B> :: "'a set multiset"
+    and \<k> :: "nat"
+    and \<B>' :: "'a set multiset"
+    and \<Lambda> :: "nat"
+    and \<Lambda>' :: "nat"
+  assumes "two_bibd_eq_points \<V> \<B> \<k> \<B>' \<Lambda> \<Lambda>'"
+locale bibd_block_transformations
+  fixes point_set :: "'a set"  (\<open>\<V>\<close>)
+    and block_collection :: "'a set multiset"  (\<open>\<B>\<close>)
+    and u_block_size :: "nat"  (\<open>\<k>\<close>)
+    and index :: "nat"  (\<open>\<Lambda>\<close>)
+    and block :: "'a set"  (\<open>bl\<close>)
+  assumes "bibd_block_transformations \<V> \<B> \<k> \<Lambda> bl"
+locale Group.comm_monoid
+  fixes G :: "('a, 'b) monoid_scheme"  (structure)
+  assumes "Group.comm_monoid G"
+locale symmetric_bibd
+  fixes point_set :: "'a set"  (\<open>\<V>\<close>)
+    and block_collection :: "'a set multiset"  (\<open>\<B>\<close>)
+    and u_block_size :: "nat"  (\<open>\<k>\<close>)
+    and index :: "nat"  (\<open>\<Lambda>\<close>)
+  assumes "symmetric_bibd \<V> \<B> \<k> \<Lambda>"
+locale csemiring
+  fixes R :: "('a, 'b) ring_scheme"  (structure)
+  assumes "csemiring R"
+locale bibd
+  fixes point_set :: "'a set"  (\<open>\<V>\<close>)
+    and block_collection :: "'a set multiset"  (\<open>\<B>\<close>)
+    and u_block_size :: "nat"  (\<open>\<k>\<close>)
+    and index :: "nat"  (\<open>\<Lambda>\<close>)
+  assumes "bibd \<V> \<B> \<k> \<Lambda>"
+locale cring
+  fixes R :: "('a, 'b) ring_scheme"  (structure)
+  assumes "cring R"
+locale symmetric_bibd
+  fixes point_set :: "'a set"  (\<open>\<V>\<close>)
+    and block_collection :: "'a set multiset"  (\<open>\<B>\<close>)
+    and u_block_size :: "nat"  (\<open>\<k>\<close>)
+    and index :: "nat"  (\<open>\<Lambda>\<close>)
+  assumes "symmetric_bibd \<V> \<B> \<k> \<Lambda>"
+locale Group.comm_monoid
+  fixes G :: "('a, 'b) monoid_scheme"  (structure)
+  assumes "Group.comm_monoid G"
+locale symmetric_bibd_block_transformations
+  fixes point_set :: "'a set"  (\<open>\<V>\<close>)
+    and block_collection :: "'a set multiset"  (\<open>\<B>\<close>)
+    and u_block_size :: "nat"  (\<open>\<k>\<close>)
+    and index :: "nat"  (\<open>\<Lambda>\<close>)
+    and block :: "'a set"  (\<open>bl\<close>)
+  assumes "symmetric_bibd_block_transformations \<V> \<B> \<k> \<Lambda> bl"
+### theory "HOL-Algebra.Ideal"
+### 2.156s elapsed time, 8.458s cpu time, 1.018s GC time
+Loading theory "HOL-Algebra.RingHom" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root" via "Draft.Vector_Matrix_Mod" via "Berlekamp_Zassenhaus.Finite_Field" via "HOL-Number_Theory.Residues" via "HOL-Algebra.Multiplicative_Group" via "HOL-Algebra.UnivPoly")
+locale cring
+  fixes R :: "('a, 'b) ring_scheme"  (structure)
+  assumes "cring R"
+### theory "Jordan_Normal_Form.Missing_Ring"
+### 3.908s elapsed time, 15.366s cpu time, 1.692s GC time
+Loading theory "Design_Theory.Sub_Designs" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root" via "Draft.Incidence_Matrices" via "Design_Theory.Design_Isomorphisms")
+class euclidean_semiring_gcd = normalization_euclidean_semiring + Gcd +
+  assumes "gcd_eucl": "normalization_euclidean_semiring_class.gcd = gcd"
+    and "lcm_eucl": "normalization_euclidean_semiring_class.lcm = lcm"
+  assumes "Gcd_eucl": "normalization_euclidean_semiring_class.Gcd = Gcd"
+    and "Lcm_eucl": "normalization_euclidean_semiring_class.Lcm = Lcm"
+locale sub_set_system
+  fixes \<U> :: "'a set"
+    and \<A> :: "'a set multiset"
+    and \<V> :: "'a set"
+    and \<B> :: "'a set multiset"
+  assumes "sub_set_system \<U> \<A> \<V> \<B>"
+locale incomplete_PBD
+  fixes point_set :: "'a set"  (\<open>\<V>\<close>)
+    and block_collection :: "'a set multiset"  (\<open>\<B>\<close>)
+    and u_block_size :: "nat"  (\<open>\<k>\<close>)
+    and index :: "nat"  (\<open>\<Lambda>\<close>)
+  assumes "incomplete_PBD \<V> \<B> \<k> \<Lambda>"
+### theory "Design_Theory.BIBD"
+### 1.146s elapsed time, 4.507s cpu time, 0.503s GC time
+Loading theory "Draft.Templates" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.ExtrEqs")
+locale sub_incidence_system
+  fixes \<U> :: "'a set"
+    and \<A> :: "'a set multiset"
+    and \<V> :: "'a set"
+    and \<B> :: "'a set multiset"
+  assumes "sub_incidence_system \<U> \<A> \<V> \<B>"
+datatype template_term
+=
+     t_empty
+   | template_app of template_term * template_term
+   | template_hole of int
+   | template_var of int
+datatype sign
+= equals | greater_equals | greater_than | less_equals | less_than
+datatype template
+=
+     template_bimplication of template * template
+   | template_dunno
+   | template_equation of template_term * template_term
+   | template_implication of template list * template
+   | template_inequation of sign * template_term * template_term
+   | template_negation of template
+   | template_predicate of template_term
+constructor t_empty: template_term
+constructor template_app: template_term * template_term -> template_term
+constructor template_hole: int -> template_term
+constructor template_var: int -> template_term
+constructor equals: sign
+constructor greater_equals: sign
+constructor greater_than: sign
+constructor less_equals: sign
+constructor less_than: sign
+constructor template_bimplication: template * template -> template
+constructor template_dunno: template
+constructor template_equation: template_term * template_term -> template
+constructor template_implication: template list * template -> template
+constructor template_inequation:
+   sign * template_term * template_term -> template
+constructor template_negation: template -> template
+constructor template_predicate: template_term -> template
+val vfs = fn: term -> (indexname * typ) list * (string * typ) list
+val indexOf = fn: ''a list -> ''a -> int -> int
+val has_eq = fn: term -> bool
+val term2template = fn:
+   (indexname * typ) list -> (string * typ) list -> term -> template_term
+val lemma2predicate = fn: term -> term -> template
+val makeTemplatewithContext = fn: term -> term -> template
+val lemma2template = fn: term -> template
+val thm2template = fn: thm -> template
+val tterm2string = fn: template_term -> string
+val template2string = fn: template -> string
+val t = "height ?t <= size ?t": thm
+val th =
+   Const ("HOL.Trueprop", "bool => prop") $
+     (Const ("Orderings.ord_class.less_eq", "nat => nat => bool") $
+       (Const ("Tree.height_class.height", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree")) $
+       (Const ("Nat.size_class.size", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree"))):
+   term
+### theory "Draft.Templates"
+### 0.089s elapsed time, 0.344s cpu time, 0.081s GC time
+Loading theory "HOL-Library.While_Combinator" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root" via "Draft.Matrix_Vector_Extras" via "Groebner_Bases.Macaulay_Matrix" via "Groebner_Bases.More_MPoly_Type_Class" via "Polynomials.MPoly_Type_Class_Ordered" via "Polynomials.MPoly_Type_Class" via "Polynomials.Utils" via "Well_Quasi_Orders.Almost_Full_Relations" via "Well_Quasi_Orders.Minimal_Bad_Sequences" via "Well_Quasi_Orders.Almost_Full" via "Regular-Sets.Regexp_Method" via "Regular-Sets.Equivalence_Checking")
+locale sub_design
+  fixes \<U> :: "'a set"
+    and \<A> :: "'a set multiset"
+    and \<V> :: "'a set"
+    and \<B> :: "'a set multiset"
+  assumes "sub_design \<U> \<A> \<V> \<B>"
+locale proper_sub_set_system
+  fixes \<U> :: "'a set"
+    and \<A> :: "'a set multiset"
+    and \<V> :: "'a set"
+    and \<B> :: "'a set multiset"
+  assumes "proper_sub_set_system \<U> \<A> \<V> \<B>"
+locale ring_hom_ring
+  fixes R :: "('a, 'b) ring_scheme"  (structure)
+    and S :: "('c, 'd) ring_scheme"  (structure)
+    and h :: "'a => 'c"
+  assumes "ring_hom_ring R S h"
+locale sub_set_system
+  fixes \<U> :: "'a set"
+    and \<A> :: "'a set multiset"
+    and \<V> :: "'a set"
+    and \<B> :: "'a set multiset"
+  assumes "sub_set_system \<U> \<A> \<V> \<B>"
+locale proper_sub_incidence_system
+  fixes \<U> :: "'a set"
+    and \<A> :: "'a set multiset"
+    and \<V> :: "'a set"
+    and \<B> :: "'a set multiset"
+  assumes "proper_sub_incidence_system \<U> \<A> \<V> \<B>"
+locale sub_incidence_system
+  fixes \<U> :: "'a set"
+    and \<A> :: "'a set multiset"
+    and \<V> :: "'a set"
+    and \<B> :: "'a set multiset"
+  assumes "sub_incidence_system \<U> \<A> \<V> \<B>"
+locale proper_sub_design
+  fixes \<U> :: "'a set"
+    and \<A> :: "'a set multiset"
+    and \<V> :: "'a set"
+    and \<B> :: "'a set multiset"
+  assumes "proper_sub_design \<U> \<A> \<V> \<B>"
+Found termination order: "{}"
+locale sub_design
+  fixes \<U> :: "'a set"
+    and \<A> :: "'a set multiset"
+    and \<V> :: "'a set"
+    and \<B> :: "'a set multiset"
+  assumes "sub_design \<U> \<A> \<V> \<B>"
+locale sub_incidence_system
+  fixes \<U> :: "'a set"
+    and \<A> :: "'a set multiset"
+    and \<V> :: "'a set"
+    and \<B> :: "'a set multiset"
+  assumes "sub_incidence_system \<U> \<A> \<V> \<B>"
+Found termination order: "{}"
+locale incidence_system
+  fixes point_set :: "'a set"  (\<open>\<V>\<close>)
+    and block_collection :: "'a set multiset"  (\<open>\<B>\<close>)
+  assumes "incidence_system \<V> \<B>"
+locale design
+  fixes point_set :: "'a set"  (\<open>\<V>\<close>)
+    and block_collection :: "'a set multiset"  (\<open>\<B>\<close>)
+  assumes "design \<V> \<B>"
+Found termination order: "{}"
+### theory "HOL-Library.While_Combinator"
+### 0.499s elapsed time, 1.956s cpu time, 0.352s GC time
+Loading theory "HOL-Library.Countable" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root" via "Draft.Matrix_Vector_Extras" via "Groebner_Bases.Macaulay_Matrix" via "Groebner_Bases.More_MPoly_Type_Class" via "Polynomials.MPoly_Type_Class_Ordered" via "Polynomials.MPoly_Type_Class" via "Polynomials.Power_Products")
+### theory "Design_Theory.Sub_Designs"
+### 0.715s elapsed time, 2.799s cpu time, 0.434s GC time
+Loading theory "Design_Theory.Design_Isomorphisms" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root" via "Draft.Incidence_Matrices")
+locale incidence_system_isomorphism
+  fixes \<V> :: "'a set"
+    and \<B> :: "'a set multiset"
+    and \<V>' :: "'b set"
+    and \<B>' :: "'b set multiset"
+    and bij_map :: "'a => 'b"  (\<open>\<pi>\<close>)
+  assumes "incidence_system_isomorphism \<V> \<B> \<V>' \<B>' \<pi>"
+### theory "HOL-Algebra.RingHom"
+### 0.958s elapsed time, 3.754s cpu time, 0.566s GC time
+Loading theory "HOL-Algebra.UnivPoly" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root" via "Draft.Vector_Matrix_Mod" via "Berlekamp_Zassenhaus.Finite_Field" via "HOL-Number_Theory.Residues" via "HOL-Algebra.Multiplicative_Group")
+locale design_isomorphism
+  fixes \<V> :: "'a set"
+    and \<B> :: "'a set multiset"
+    and \<V>' :: "'b set"
+    and \<B>' :: "'b set multiset"
+    and bij_map :: "'a => 'b"  (\<open>\<pi>\<close>)
+  assumes "design_isomorphism \<V> \<B> \<V>' \<B>' \<pi>"
+locale design_isomorphism
+  fixes \<V> :: "'a set"
+    and \<B> :: "'a set multiset"
+    and \<V>' :: "'b set"
+    and \<B>' :: "'b set multiset"
+    and bij_map :: "'a => 'b"  (\<open>\<pi>\<close>)
+  assumes "design_isomorphism \<V> \<B> \<V>' \<B>' \<pi>"
+locale design
+  fixes point_set :: "'a set"  (\<open>\<V>\<close>)
+    and block_collection :: "'a set multiset"  (\<open>\<B>\<close>)
+  assumes "design \<V> \<B>"
+locale design_isomorphism
+  fixes \<V> :: "'a set"
+    and \<B> :: "'a set multiset"
+    and \<V>' :: "'b set"
+    and \<B>' :: "'b set multiset"
+    and bij_map :: "'a => 'b"  (\<open>\<pi>\<close>)
+  assumes "design_isomorphism \<V> \<B> \<V>' \<B>' \<pi>"
+### Additional type variable(s) in locale specification "countable": 'a
+### theory "Design_Theory.Design_Isomorphisms"
+### 0.418s elapsed time, 1.645s cpu time, 0.211s GC time
+Loading theory "Polynomials.More_Modules" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root" via "Draft.Matrix_Vector_Extras" via "Groebner_Bases.Macaulay_Matrix" via "Groebner_Bases.More_MPoly_Type_Class" via "Polynomials.MPoly_Type_Class_Ordered" via "Polynomials.MPoly_Type_Class")
+class countable = type +
+  assumes "ex_inj": "EX to_nat. inj to_nat"
+locale module
+  fixes scale :: "'a => 'b => 'b"  (infixr \<open>*s\<close> 75)
+  assumes "module (*s)"
+locale bound
+  fixes z :: "'a"
+    and n :: "nat"
+    and f :: "nat => 'a"
+  assumes "bound z n f"
+### theory "Polynomials.More_Modules"
+### 0.212s elapsed time, 0.830s cpu time, 0.133s GC time
+Loading theory "Polynomial_Interpolation.Missing_Unsorted" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root" via "Draft.Rank_Argument_General" via "Jordan_Normal_Form.Determinant")
+Proofs for inductive predicate(s) "finite_item"
+  Proving monotonicity ...
+val old_countable_datatype_tac = fn: Proof.context -> int -> tactic
+locale Ring.ring
+  fixes R :: "('a, 'b) ring_scheme"  (structure)
+  assumes "ring R"
+### ML warning (line 93 of "~~/src/HOL/Tools/BNF/bnf_lfp_countable.ML"):
+### Pattern is not exhaustive.
+### ML warning (line 139 of "~~/src/HOL/Tools/BNF/bnf_lfp_countable.ML"):
+### Pattern is not exhaustive.
+### ML warning (line 143 of "~~/src/HOL/Tools/BNF/bnf_lfp_countable.ML"):
+### Matches are not exhaustive.
+### ML warning (line 145 of "~~/src/HOL/Tools/BNF/bnf_lfp_countable.ML"):
+### Matches are not exhaustive.
+### ML warning (line 156 of "~~/src/HOL/Tools/BNF/bnf_lfp_countable.ML"):
+### Pattern is not exhaustive.
+signature BNF_LFP_COUNTABLE =
+  sig
+    val countable_datatype_tac: Proof.context -> tactic
+    val derive_encode_injectives_thms:
+       Proof.context -> string list -> thm list
+  end
+structure BNF_LFP_Countable: BNF_LFP_COUNTABLE
+val countable_datatype_tac = fn: Proof.context -> thm -> thm Seq.seq
+val countable_tac = fn: Proof.context -> int -> tactic
+locale UP
+  fixes R :: "('a, 'b) ring_scheme"  (structure)
+    and P :: "('a, nat => 'a) up_ring"  (structure)
+  defines "P == UP R"
+locale UP_ring
+  fixes R :: "('a, 'b) ring_scheme"  (structure)
+    and P :: "('a, nat => 'a) up_ring"  (structure)
+  assumes "UP_ring R"
+  defines "P == UP R"
+### Missing patterns in function definition:
+### max_list_non_empty [] = undefined
+locale UP_cring
+  fixes R :: "('a, 'b) ring_scheme"  (structure)
+    and P :: "('a, nat => 'a) up_ring"  (structure)
+  assumes "UP_cring R"
+  defines "P == UP R"
+Found termination order: "length <*mlex*> {}"
+### theory "HOL-Library.Countable"
+### 1.259s elapsed time, 4.929s cpu time, 0.712s GC time
+Loading theory "HOL-Combinatorics.Multiset_Permutations" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root" via "Draft.Set_Multiset_Extras")
+locale UP_domain
+  fixes R :: "('a, 'b) ring_scheme"  (structure)
+    and P :: "('a, nat => 'a) up_ring"  (structure)
+  assumes "UP_domain R"
+  defines "P == UP R"
+class comm_monoid_mult = ab_semigroup_mult + monoid_mult + dvd +
+  assumes "mult_1": "!!a. (1::'a) * a = a"
+locale UP
+  fixes R :: "('a, 'b) ring_scheme"  (structure)
+    and P :: "('a, nat => 'a) up_ring"  (structure)
+  defines "P == UP R"
+locale UP_ring
+  fixes R :: "('a, 'b) ring_scheme"  (structure)
+    and P :: "('a, nat => 'a) up_ring"  (structure)
+  assumes "UP_ring R"
+  defines "P == UP R"
+locale UP_ring
+  fixes R :: "('a, 'b) ring_scheme"  (structure)
+    and P :: "('a, nat => 'a) up_ring"  (structure)
+  assumes "UP_ring R"
+  defines "P == UP R"
+locale UP_ring
+  fixes R :: "('a, 'b) ring_scheme"  (structure)
+    and P :: "('a, nat => 'a) up_ring"  (structure)
+  assumes "UP_ring R"
+  defines "P == UP R"
+Found termination order: "length <*mlex*> {}"
+locale UP_cring
+  fixes R :: "('a, 'b) ring_scheme"  (structure)
+    and P :: "('a, nat => 'a) up_ring"  (structure)
+  assumes "UP_cring R"
+  defines "P == UP R"
+Found termination order: "(%p. length (snd p)) <*mlex*> {}"
+locale UP_ring
+  fixes R :: "('a, 'b) ring_scheme"  (structure)
+    and P :: "('a, nat => 'a) up_ring"  (structure)
+  assumes "UP_ring R"
+  defines "P == UP R"
+### theory "Polynomial_Interpolation.Missing_Unsorted"
+### 2.523s elapsed time, 9.550s cpu time, 4.950s GC time
+Loading theory "HOL-Computational_Algebra.Polynomial" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root" via "Draft.Rank_Argument_General" via "Jordan_Normal_Form.Determinant" via "HOL-Computational_Algebra.Polynomial_Factorial")
+Found termination order: "(%p. length (snd p)) <*mlex*> {}"
+### theory "HOL-Combinatorics.Multiset_Permutations"
+### 2.058s elapsed time, 7.723s cpu time, 4.650s GC time
+Loading theory "Draft.Set_Multiset_Extras" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root")
+locale UP_ring
+  fixes R :: "('a, 'b) ring_scheme"  (structure)
+    and P :: "('a, nat => 'a) up_ring"  (structure)
+  assumes "UP_ring R"
+  defines "P == UP R"
+class comm_monoid_add = ab_semigroup_add + monoid_add +
+  assumes "add_0": "!!a. (0::'a) + a = a"
+locale UP_ring
+  fixes R :: "('a, 'b) ring_scheme"  (structure)
+    and P :: "('a, nat => 'a) up_ring"  (structure)
+  assumes "UP_ring R"
+  defines "P == UP R"
+### theory "Draft.Set_Multiset_Extras"
+### 0.791s elapsed time, 3.113s cpu time, 0.329s GC time
+Loading theory "Draft.Design_Extras" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root")
+instantiation
+  poly :: (zero) zero
+  zero_poly == zero_class.zero :: 'a poly
+locale UP_ring
+  fixes R :: "('a, 'b) ring_scheme"  (structure)
+    and P :: "('a, nat => 'a) up_ring"  (structure)
+  assumes "UP_ring R"
+  defines "P == UP R"
+consts
+  Poly :: "'a list => 'a poly"
+instantiation
+  poly :: ({zero,equal}) equal
+  equal_poly == equal_class.equal :: 'a poly => 'a poly => bool
+locale incidence_system
+  fixes point_set :: "'a set"  (\<open>\<V>\<close>)
+    and block_collection :: "'a set multiset"  (\<open>\<B>\<close>)
+  assumes "incidence_system \<V> \<B>"
+locale finite_incidence_system
+  fixes point_set :: "'a set"  (\<open>\<V>\<close>)
+    and block_collection :: "'a set multiset"  (\<open>\<B>\<close>)
+  assumes "finite_incidence_system \<V> \<B>"
+locale design
+  fixes point_set :: "'a set"  (\<open>\<V>\<close>)
+    and block_collection :: "'a set multiset"  (\<open>\<B>\<close>)
+  assumes "design \<V> \<B>"
+locale proper_design
+  fixes point_set :: "'a set"  (\<open>\<V>\<close>)
+    and block_collection :: "'a set multiset"  (\<open>\<B>\<close>)
+  assumes "proper_design \<V> \<B>"
+instantiation
+  poly :: (comm_monoid_add) comm_monoid_add
+  plus_poly == plus :: 'a poly => 'a poly => 'a poly
+locale simple_design
+  fixes point_set :: "'a set"  (\<open>\<V>\<close>)
+    and block_collection :: "'a set multiset"  (\<open>\<B>\<close>)
+  assumes "simple_design \<V> \<B>"
+instantiation
+  poly :: (cancel_comm_monoid_add) cancel_comm_monoid_add
+  minus_poly == minus :: 'a poly => 'a poly => 'a poly
+locale constant_rep_design
+  fixes point_set :: "'a set"  (\<open>\<V>\<close>)
+    and block_collection :: "'a set multiset"  (\<open>\<B>\<close>)
+    and design_rep_number :: "nat"  (\<open>\<r>\<close>)
+  assumes "constant_rep_design \<V> \<B> \<r>"
+instantiation
+  poly :: (ab_group_add) ab_group_add
+  uminus_poly == uminus :: 'a poly => 'a poly
+locale t_wise_balance
+  fixes point_set :: "'a set"  (\<open>\<V>\<close>)
+    and block_collection :: "'a set multiset"  (\<open>\<B>\<close>)
+    and grouping :: "nat"  (\<open>\<t>\<close>)
+    and index :: "nat"  (\<open>\<Lambda>\<^sub>t\<close>)
+  assumes "t_wise_balance \<V> \<B> \<t> \<Lambda>\<^sub>t"
+locale UP_domain
+  fixes R :: "('a, 'b) ring_scheme"  (structure)
+    and P :: "('a, nat => 'a) up_ring"  (structure)
+  assumes "UP_domain R"
+  defines "P == UP R"
+locale pairwise_balance
+  fixes point_set :: "'a set"  (\<open>\<V>\<close>)
+    and block_collection :: "'a set multiset"  (\<open>\<B>\<close>)
+    and index :: "nat"  (\<open>\<Lambda>\<close>)
+  assumes "pairwise_balance \<V> \<B> \<Lambda>"
+locale bibd
+  fixes point_set :: "'a set"  (\<open>\<V>\<close>)
+    and block_collection :: "'a set multiset"  (\<open>\<B>\<close>)
+    and u_block_size :: "nat"  (\<open>\<k>\<close>)
+    and index :: "nat"  (\<open>\<Lambda>\<close>)
+  assumes "bibd \<V> \<B> \<k> \<Lambda>"
+locale regular_t_wise_balance
+  fixes point_set :: "'a set"  (\<open>\<V>\<close>)
+    and block_collection :: "'a set multiset"  (\<open>\<B>\<close>)
+    and grouping :: "nat"  (\<open>\<t>\<close>)
+    and index :: "nat"  (\<open>\<Lambda>\<^sub>t\<close>)
+    and design_rep_number :: "nat"  (\<open>\<r>\<close>)
+  assumes "regular_t_wise_balance \<V> \<B> \<t> \<Lambda>\<^sub>t \<r>"
+Found termination order: "(%p. length (snd p)) <*mlex*> {}"
+locale regular_pairwise_balance
+  fixes \<V> :: "'a set"
+    and \<B> :: "'a set multiset"
+    and \<Lambda> :: "nat"
+    and \<r> :: "nat"
+  assumes "regular_pairwise_balance \<V> \<B> \<Lambda> \<r>"
+locale UP_ring
+  fixes R :: "('a, 'b) ring_scheme"  (structure)
+    and P :: "('a, nat => 'a) up_ring"  (structure)
+  assumes "UP_ring R"
+  defines "P == UP R"
+locale const_intersect_design
+  fixes point_set :: "'a set"  (\<open>\<V>\<close>)
+    and block_collection :: "'a set multiset"  (\<open>\<B>\<close>)
+    and \<m> :: "nat"
+  assumes "const_intersect_design \<V> \<B> \<m>"
+instantiation
+  poly :: (comm_semiring_0) comm_semiring_0
+  times_poly == times :: 'a poly => 'a poly => 'a poly
+locale const_intersect_design
+  fixes point_set :: "'a set"  (\<open>\<V>\<close>)
+    and block_collection :: "'a set multiset"  (\<open>\<B>\<close>)
+    and \<m> :: "nat"
+  assumes "const_intersect_design \<V> \<B> \<m>"
+instantiation
+  poly :: (comm_semiring_1) comm_semiring_1
+  one_poly == one_class.one :: 'a poly
+locale simple_const_intersect_design
+  fixes point_set :: "'a set"  (\<open>\<V>\<close>)
+    and block_collection :: "'a set multiset"  (\<open>\<B>\<close>)
+    and \<m> :: "nat"
+  assumes "simple_const_intersect_design \<V> \<B> \<m>"
+### theory "Draft.Design_Extras"
+### 0.899s elapsed time, 3.523s cpu time, 0.416s GC time
+Loading theory "HOL-Library.BigO" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.ExtrEqs")
+locale UP_domain
+  fixes R :: "('a, 'b) ring_scheme"  (structure)
+    and P :: "('a, nat => 'a) up_ring"  (structure)
+  assumes "UP_domain R"
+  defines "P == UP R"
+instantiation
+  poly :: (linordered_idom) linordered_idom
+  sgn_poly == sgn :: 'a poly => 'a poly
+  abs_poly == abs :: 'a poly => 'a poly
+  less_eq_poly == less_eq :: 'a poly => 'a poly => bool
+  less_poly == less :: 'a poly => 'a poly => bool
+locale UP_ring
+  fixes R :: "('a, 'b) ring_scheme"  (structure)
+    and P :: "('a, nat => 'a) up_ring"  (structure)
+  assumes "UP_ring R"
+  defines "P == UP R"
+locale UP_domain
+  fixes R :: "('a, 'b) ring_scheme"  (structure)
+    and P :: "('a, nat => 'a) up_ring"  (structure)
+  assumes "UP_domain R"
+  defines "P == UP R"
+Found termination order: "(%p. length (snd p)) <*mlex*> {}"
+### theory "HOL-Library.BigO"
+### 0.890s elapsed time, 3.475s cpu time, 0.572s GC time
+Loading theory "Draft.ExtrEqs" (required by "Draft.Fishers_Inequality_RootMoreTemplates")
+locale Ring.ring
+  fixes R :: "('a, 'b) ring_scheme"  (structure)
+  assumes "ring R"
+Proofs for inductive predicate(s) "algebraic_int"
+  Proving monotonicity ...
+locale UP
+  fixes R :: "('a, 'b) ring_scheme"  (structure)
+    and P :: "('a, nat => 'a) up_ring"  (structure)
+  defines "P == UP R"
+instantiation
+  poly :: (idom_divide) idom_divide
+  divide_poly == divide :: 'a poly => 'a poly => 'a poly
+Found termination order:
+  "(%p. size (snd (snd (snd (snd (snd p)))))) <*mlex*> {}"
+locale UP_pre_univ_prop
+  fixes R :: "('a, 'b) ring_scheme"  (structure)
+    and S :: "('c, 'd) ring_scheme"  (structure)
+    and h :: "'a => 'c"
+    and P :: "('a, nat => 'a) up_ring"  (structure)
+  assumes "UP_pre_univ_prop R S h"
+  defines "P == UP R"
+Found termination order:
+  "(%p. size (snd (snd (snd (snd (snd p)))))) <*mlex*> {}"
+val eqpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Var (("_dummy_", 2), "?'a"))
+       ):
+   term Find_Theorems.criterion
+val badeqpattern = Pattern (Const ("Pure.eq", "?'a => ?'a => prop")):
+   term Find_Theorems.criterion
+val undefpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Const ("HOL.undefined", "?'a"))
+       ):
+   term Find_Theorems.criterion
+val thmpattern =
+   Pattern
+    (Const ("HOL.Trueprop", "bool => prop") $ Var (("_dummy_", 1), "bool")):
+   term Find_Theorems.criterion
+val badnames =
+   ["*nitpick*", "*Nitpick*", "*full_exhaustive*", "*_def*", "Enum.finite*",
+    "*Quickcheck*", "ATP*", "*Nunchaku*", "*Code*", "*BNF*", "*SMT*",
+    "*.*.*"]:
+   string list
+val unwanted_names =
+   [(false, Name "*nitpick*"), (false, Name "*Nitpick*"),
+    (false, Name "*full_exhaustive*"), (false, Name "*_def*"),
+    (false, Name "Enum.finite*"), (false, Name "*Quickcheck*"),
+    (false, Name "ATP*"), (false, Name "*Nunchaku*"),
+    (false, Name "*Code*"), (false, Name "*BNF*"), (false, Name "*SMT*"),
+    (false, Name "*.*.*")]:
+   (bool * term Find_Theorems.criterion) list
+val has_vars = fn: term -> bool
+val get_all_eqs = fn: string -> Proof.context -> (string * thm) list
+val get_all_thms = fn: string -> Proof.context -> (string * thm) list
+val get_noneq_thms = fn: string -> Proof.context -> (string * thm) list
+val template_eqs = fn:
+   string -> Proof.context -> (string * thm * template) list
+val template_thms = fn:
+   string -> Proof.context -> (string * thm * template) list
+### theory "Draft.ExtrEqs"
+### 0.720s elapsed time, 2.824s cpu time, 0.379s GC time
+Loading theory "HOL-Library.Complex_Order" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root" via "Draft.Matrix_Vector_Extras" via "Jordan_Normal_Form.Matrix" via "Jordan_Normal_Form.Conjugate")
+instantiation
+  complex :: order
+  less_eq_complex == less_eq :: complex => complex => bool
+  less_complex == less :: complex => complex => bool
+instantiation
+  poly :: ({idom_divide,semidom_divide_unit_factor}) normalization_semidom
+  normalize_poly == normalize :: 'a poly => 'a poly
+  unit_factor_poly == unit_factor :: 'a poly => 'a poly
+### theory "HOL-Library.Complex_Order"
+### 0.085s elapsed time, 0.338s cpu time, 0.069s GC time
+Loading theory "Jordan_Normal_Form.Conjugate" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root" via "Draft.Matrix_Vector_Extras" via "Jordan_Normal_Form.Matrix")
+class conjugate = type +
+  fixes conjugate :: "'a => 'a"
+  assumes "conjugate_id": "!!a. conjugate (conjugate a) = a"
+    and
+    "conjugate_cancel_iff": "!!a b. (conjugate a = conjugate b) = (a = b)"
+locale UP_univ_prop
+  fixes R :: "('a, 'b) ring_scheme"  (structure)
+    and S :: "('c, 'd) ring_scheme"  (structure)
+    and h :: "'a => 'c"
+    and P :: "('a, nat => 'a) up_ring"  (structure)
+    and s :: "'c"
+    and Eval :: "(nat => 'a) => 'c"
+  assumes "UP_univ_prop R S h s"
+  defines "P == UP R"
+    and "Eval == eval R S h s"
+class conjugatable_ring = conjugate + ring +
+  assumes
+    "conjugate_dist_mul":
+      "!!a b. conjugate (a * b) = conjugate a * conjugate b"
+    and
+    "conjugate_dist_add":
+      "!!a b. conjugate (a + b) = conjugate a + conjugate b"
+    and "conjugate_neg": "!!a. conjugate (- a) = - conjugate a"
+    and "conjugate_zero": "conjugate (0::'a) = (0::'a)"
+locale UP_pre_univ_prop
+  fixes R :: "('a, 'b) ring_scheme"  (structure)
+    and S :: "('c, 'd) ring_scheme"  (structure)
+    and h :: "'a => 'c"
+    and P :: "('a, nat => 'a) up_ring"  (structure)
+  assumes "UP_pre_univ_prop R S h"
+  defines "P == UP R"
+class field_unit_factor = field + unit_factor +
+  assumes "unit_factor_field": "unit_factor = id"
+Proofs for inductive predicate(s) "eucl_rel_poly"
+  Proving monotonicity ...
+instantiation
+  poly :: (field) semidom_modulo
+  modulo_poly == modulo :: 'a poly => 'a poly => 'a poly
+### theory "HOL-Computational_Algebra.Euclidean_Algorithm"
+### 11.335s elapsed time, 44.074s cpu time, 9.521s GC time
+Loading theory "HOL-Computational_Algebra.Normalized_Fraction" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root" via "Draft.Rank_Argument_General" via "Jordan_Normal_Form.Determinant" via "HOL-Computational_Algebra.Polynomial_Factorial")
+Found termination order: "(%p. length (snd p)) <*mlex*> {}"
+class conjugatable_ordered_ring = conjugatable_ring +
+  ordered_comm_monoid_add +
+  assumes "conjugate_square_positive": "!!a. (0::'a) <= a * conjugate a"
+Found termination order: "(%p. size (snd (snd (snd (snd p))))) <*mlex*> {}"
+locale fract_as_normalized_quot
+Found termination order: "(%p. size (snd (snd (snd p)))) <*mlex*> {}"
+### theory "HOL-Computational_Algebra.Normalized_Fraction"
+### 1.852s elapsed time, 6.933s cpu time, 5.127s GC time
+Loading theory "HOL-Computational_Algebra.Primes" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root" via "Draft.Vector_Matrix_Mod" via "Berlekamp_Zassenhaus.Finite_Field")
+Found termination order: "(%p. size (snd (snd (snd p)))) <*mlex*> {}"
+Found termination order: "(%p. size (snd (snd p))) <*mlex*> {}"
+### theory "HOL-Computational_Algebra.Primes"
+### 0.306s elapsed time, 1.206s cpu time, 0.126s GC time
+Loading theory "HOL-Number_Theory.Cong" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root" via "Draft.Vector_Matrix_Mod" via "Berlekamp_Zassenhaus.Finite_Field" via "HOL-Number_Theory.Residues")
+class unique_euclidean_semiring = euclidean_semiring_cancel +
+  fixes division_segment :: "'a => 'a"
+  assumes
+    "euclidean_size_mult":
+      "!!a b. euclidean_size (a * b) = euclidean_size a * euclidean_size b"
+  assumes "is_unit_division_segment": "!!a. is_unit (division_segment a)"
+    and
+    "division_segment_mult":
+      "!!a b.
+          [| a ~= (0::'a); b ~= (0::'a) |]
+          ==> division_segment (a * b) =
+              division_segment a * division_segment b"
+    and
+    "division_segment_mod":
+      "!!b a.
+          [| b ~= (0::'a); ~ b dvd a |]
+          ==> division_segment (a mod b) = division_segment b"
+  assumes
+    "div_bounded":
+      "!!b r q.
+          [| b ~= (0::'a); division_segment r = division_segment b;
+             euclidean_size r < euclidean_size b |]
+          ==> (q * b + r) div b = q"
+locale UP_pre_univ_prop
+  fixes R :: "('a, 'b) ring_scheme"  (structure)
+    and S :: "('c, 'd) ring_scheme"  (structure)
+    and h :: "'a => 'c"
+    and P :: "('a, nat => 'a) up_ring"  (structure)
+  assumes "UP_pre_univ_prop R S h"
+  defines "P == UP R"
+locale Group.monoid
+  fixes G :: "('a, 'b) monoid_scheme"  (structure)
+  assumes "Group.monoid G"
+Found termination order: "(%p. size (snd (snd (snd (snd p))))) <*mlex*> {}"
+locale UP_ring
+  fixes R :: "('a, 'b) ring_scheme"  (structure)
+    and P :: "('a, nat => 'a) up_ring"  (structure)
+  assumes "UP_ring R"
+  defines "P == UP R"
+### theory "HOL-Computational_Algebra.Polynomial"
+### 9.078s elapsed time, 34.852s cpu time, 12.957s GC time
+Loading theory "HOL-Computational_Algebra.Polynomial_Factorial" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root" via "Draft.Rank_Argument_General" via "Jordan_Normal_Form.Determinant")
+locale UP_cring
+  fixes R :: "('a, 'b) ring_scheme"  (structure)
+    and P :: "('a, nat => 'a) up_ring"  (structure)
+  assumes "UP_cring R"
+  defines "P == UP R"
+instantiation
+  complex :: conjugatable_ordered_field
+  conjugate_complex == conjugate :: complex => complex
+instantiation
+  real :: conjugatable_ordered_field
+  conjugate_real == conjugate :: real => real
+instantiation
+  rat :: conjugatable_ordered_field
+  conjugate_rat == conjugate :: rat => rat
+instantiation
+  int :: conjugatable_ordered_ring
+  conjugate_int == conjugate :: int => int
+### theory "Jordan_Normal_Form.Conjugate"
+### 5.918s elapsed time, 22.465s cpu time, 11.256s GC time
+Loading theory "Jordan_Normal_Form.DL_Missing_List" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root" via "Draft.Rank_Argument_General" via "Jordan_Normal_Form.DL_Rank")
+Found termination order: "(%p. length (snd p)) <*mlex*> {}"
+### theory "Jordan_Normal_Form.DL_Missing_List"
+### 0.116s elapsed time, 0.454s cpu time, 0.053s GC time
+Loading theory "List-Index.List_Index" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root" via "Draft.Incidence_Matrices")
+### theory "HOL-Number_Theory.Cong"
+### 2.331s elapsed time, 8.775s cpu time, 5.160s GC time
+Loading theory "HOL-Number_Theory.Totient" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root" via "Draft.Vector_Matrix_Mod" via "Berlekamp_Zassenhaus.Finite_Field" via "HOL-Number_Theory.Residues")
+consts
+  find_index :: "('a => bool) => 'a list => nat"
+locale UP_cring
+  fixes R :: "('a, 'b) ring_scheme"  (structure)
+    and P :: "('a, nat => 'a) up_ring"  (structure)
+  assumes "UP_cring R"
+  defines "P == UP R"
+### Cannot skip proof of schematic goal statement
+consts
+  map_index' :: "nat => (nat => 'a => 'b) => 'a list => 'b list"
+consts
+  insert_nth :: "nat => 'a => 'a list => 'a list"
+Found termination order: "(%p. length (snd p)) <*mlex*> {}"
+### theory "List-Index.List_Index"
+### 0.450s elapsed time, 1.780s cpu time, 0.322s GC time
+Loading theory "Matrix.Utility" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root" via "Draft.Matrix_Vector_Extras" via "Polynomial_Factorization.Missing_List")
+consts
+  totient_naive :: "nat => nat => nat => nat"
+instantiation
+  poly :: ({factorial_ring_gcd,semiring_gcd_mult_normalize})
+    factorial_ring_gcd
+  Gcd_poly == Gcd :: 'a poly set => 'a poly
+  Lcm_poly == Lcm :: 'a poly set => 'a poly
+  gcd_poly == gcd :: 'a poly => 'a poly => 'a poly
+  lcm_poly == lcm :: 'a poly => 'a poly => 'a poly
+### theory "HOL-Number_Theory.Totient"
+### 0.588s elapsed time, 2.328s cpu time, 0.322s GC time
+Loading theory "Open_Induction.Restricted_Predicates" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root" via "Draft.Matrix_Vector_Extras" via "Groebner_Bases.Macaulay_Matrix" via "Groebner_Bases.More_MPoly_Type_Class" via "Polynomials.MPoly_Type_Class_Ordered" via "Polynomials.MPoly_Type_Class" via "Polynomials.Utils" via "Well_Quasi_Orders.Almost_Full_Relations" via "Well_Quasi_Orders.Minimal_Bad_Sequences" via "Well_Quasi_Orders.Almost_Full")
+Found termination order:
+  "(%p. length (snd p)) <*mlex*> (%p. length (fst p)) <*mlex*> {}"
+instantiation
+  poly :: ({factorial_ring_gcd,field,semiring_gcd_mult_normalize})
+    {normalization_euclidean_semiring,unique_euclidean_ring}
+  division_segment_poly == division_segment :: 'a poly => 'a poly
+  euclidean_size_poly == euclidean_size :: 'a poly => nat
+Found termination order: "size_list size <*mlex*> {}"
+### theory "Matrix.Utility"
+### 0.293s elapsed time, 1.168s cpu time, 0.177s GC time
+Loading theory "Polynomial_Factorization.Missing_List" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root" via "Draft.Matrix_Vector_Extras")
+### theory "HOL-Computational_Algebra.Polynomial_Factorial"
+### 1.198s elapsed time, 4.742s cpu time, 0.614s GC time
+Loading theory "Polynomial_Interpolation.Missing_Polynomial" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root" via "Draft.Vector_Matrix_Mod" via "Berlekamp_Zassenhaus.Finite_Field" via "Polynomial_Interpolation.Ring_Hom_Poly")
+Proofs for inductive predicate(s) "accessible_on"
+  Proving monotonicity ...
+Found termination order: "size_list length <*mlex*> {}"
+### theory "Open_Induction.Restricted_Predicates"
+### 0.446s elapsed time, 1.758s cpu time, 0.349s GC time
+Loading theory "Polynomial_Interpolation.Ring_Hom" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root" via "Draft.Matrix_Vector_Extras" via "Jordan_Normal_Form.Matrix")
+Found termination order: "(%p. length (snd (snd p))) <*mlex*> {}"
+### theory "HOL-Algebra.UnivPoly"
+### 13.635s elapsed time, 52.427s cpu time, 18.973s GC time
+Loading theory "HOL-Algebra.Multiplicative_Group" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root" via "Draft.Vector_Matrix_Mod" via "Berlekamp_Zassenhaus.Finite_Field" via "HOL-Number_Theory.Residues")
+Found termination order: "length <*mlex*> {}"
+Found termination order: "(%p. length (snd p)) <*mlex*> {}"
+class mult_zero = times + zero +
+  assumes "mult_zero_left": "!!a. (0::'a) * a = (0::'a)"
+  assumes "mult_zero_right": "!!a. a * (0::'a) = (0::'a)"
+consts
+  list_union :: "'a list => 'a list => 'a list"
+locale zero_hom
+  fixes hom :: "'a => 'b"
+  assumes "zero_hom hom"
+Found termination order: "(%p. length (fst p)) <*mlex*> {}"
+locale one_hom
+  fixes hom :: "'a => 'b"
+  assumes "one_hom hom"
+locale times_hom
+  fixes hom :: "'a => 'b"
+  assumes "times_hom hom"
+consts
+  list_diff :: "'a list => 'a list => 'a list"
+locale plus_hom
+  fixes hom :: "'a => 'b"
+  assumes "plus_hom hom"
+locale semigroup_mult_hom
+  fixes hom :: "'a => 'b"
+  assumes "semigroup_mult_hom hom"
+### Ignoring duplicate rewrite rule:
+### set ?xs1 <= set ?ys1 == list_all (%x. x : set ?ys1) ?xs1
+locale semigroup_add_hom
+  fixes hom :: "'a => 'b"
+  assumes "semigroup_add_hom hom"
+locale monoid_mult_hom
+  fixes hom :: "'a => 'b"
+  assumes "monoid_mult_hom hom"
+locale monoid_add_hom
+  fixes hom :: "'a => 'b"
+  assumes "monoid_add_hom hom"
+locale group_add_hom
+  fixes hom :: "'a => 'b"
+  assumes "group_add_hom hom"
+locale ab_semigroup_mult_hom
+  fixes hom :: "'a => 'b"
+  assumes "ab_semigroup_mult_hom hom"
+locale ab_semigroup_add_hom
+  fixes hom :: "'a => 'b"
+  assumes "ab_semigroup_add_hom hom"
+locale comm_monoid_mult_hom
+  fixes hom :: "'a => 'b"
+  assumes "comm_monoid_mult_hom hom"
+Found termination order: "size_list (%p. size (fst p)) <*mlex*> {}"
+locale comm_monoid_add_hom
+  fixes hom :: "'a => 'b"
+  assumes "comm_monoid_add_hom hom"
+locale ab_group_add_hom
+  fixes hom :: "'a => 'b"
+  assumes "ab_group_add_hom hom"
+locale semiring_hom
+  fixes hom :: "'a => 'b"
+  assumes "semiring_hom hom"
+Found termination order:
+  "(%p. length (snd p)) <*mlex*> (%p. length (fst p)) <*mlex*> {}"
+locale ring_hom
+  fixes hom :: "'a => 'b"
+  assumes "ring_hom hom"
+locale comm_semiring_hom
+  fixes hom :: "'a => 'b"
+  assumes "comm_semiring_hom hom"
+locale comm_ring_hom
+  fixes hom :: "'a => 'b"
+  assumes "comm_ring_hom hom"
+locale idom_hom
+  fixes hom :: "'a => 'b"
+  assumes "idom_hom hom"
+locale idom_divide_hom
+  fixes hom :: "'a => 'b"
+  assumes "idom_divide_hom hom"
+locale field_hom
+  fixes hom :: "'a => 'b"
+  assumes "field_hom hom"
+### theory "Polynomial_Interpolation.Missing_Polynomial"
+### 1.037s elapsed time, 4.125s cpu time, 0.559s GC time
+Loading theory "Regular-Sets.Regular_Set" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root" via "Draft.Matrix_Vector_Extras" via "Groebner_Bases.Macaulay_Matrix" via "Groebner_Bases.More_MPoly_Type_Class" via "Polynomials.MPoly_Type_Class_Ordered" via "Polynomials.MPoly_Type_Class" via "Polynomials.Utils" via "Well_Quasi_Orders.Almost_Full_Relations" via "Well_Quasi_Orders.Minimal_Bad_Sequences" via "Well_Quasi_Orders.Almost_Full" via "Regular-Sets.Regexp_Method" via "Regular-Sets.Equivalence_Checking" via "Regular-Sets.NDerivative" via "Regular-Sets.Regular_Exp")
+Found termination order:
+  "(%p. length (snd p)) <*mlex*> (%p. length (fst p)) <*mlex*> {}"
+locale field_char_0_hom
+  fixes hom :: "'a => 'b"
+  assumes "field_char_0_hom hom"
+### Missing patterns in function definition:
+### min_list [] = undefined
+locale zero_hom_0
+  fixes hom :: "'a => 'b"
+  assumes "zero_hom_0 hom"
+overloading
+  lang_pow \<equiv> compow :: nat => 'a list set => 'a list set
+consts
+  lang_pow :: "nat => 'a list set => 'a list set"
+locale one_hom_1
+  fixes hom :: "'a => 'b"
+  assumes "one_hom_1 hom"
+locale monoid_mult_hom_1
+  fixes hom :: "'a => 'b"
+  assumes "monoid_mult_hom_1 hom"
+locale monoid_add_hom_0
+  fixes hom :: "'a => 'b"
+  assumes "monoid_add_hom_0 hom"
+locale comm_monoid_mult_hom_1
+  fixes hom :: "'a => 'b"
+  assumes "comm_monoid_mult_hom_1 hom"
+locale comm_monoid_add_hom_0
+  fixes hom :: "'a => 'b"
+  assumes "comm_monoid_add_hom_0 hom"
+Found termination order: "length <*mlex*> {}"
+locale injective
+  fixes f :: "'a => 'b"
+  assumes "injective f"
+locale inj_zero_hom
+  fixes hom :: "'a => 'b"
+  assumes "inj_zero_hom hom"
+locale inj_one_hom
+  fixes hom :: "'a => 'b"
+  assumes "inj_one_hom hom"
+consts
+  permut_aux :: "'a list => (nat => nat) => 'a list => 'a list"
+locale inj_semigroup_mult_hom
+  fixes hom :: "'a => 'b"
+  assumes "inj_semigroup_mult_hom hom"
+locale inj_semigroup_add_hom
+  fixes hom :: "'a => 'b"
+  assumes "inj_semigroup_add_hom hom"
+locale inj_monoid_mult_hom
+  fixes hom :: "'a => 'b"
+  assumes "inj_monoid_mult_hom hom"
+locale inj_monoid_add_hom
+  fixes hom :: "'a => 'b"
+  assumes "inj_monoid_add_hom hom"
+locale inj_comm_monoid_mult_hom
+  fixes hom :: "'a => 'b"
+  assumes "inj_comm_monoid_mult_hom hom"
+locale inj_comm_monoid_add_hom
+  fixes hom :: "'a => 'b"
+  assumes "inj_comm_monoid_add_hom hom"
+locale inj_semiring_hom
+  fixes hom :: "'a => 'b"
+  assumes "inj_semiring_hom hom"
+locale inj_comm_semiring_hom
+  fixes hom :: "'a => 'b"
+  assumes "inj_comm_semiring_hom hom"
+locale UP_ring
+  fixes R :: "('a, 'b) ring_scheme"  (structure)
+    and P :: "('a, nat => 'a) up_ring"  (structure)
+  assumes "UP_ring R"
+  defines "P == UP R"
+### theory "Regular-Sets.Regular_Set"
+### 0.298s elapsed time, 1.174s cpu time, 0.209s GC time
+Loading theory "Regular-Sets.Regular_Exp" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root" via "Draft.Matrix_Vector_Extras" via "Groebner_Bases.Macaulay_Matrix" via "Groebner_Bases.More_MPoly_Type_Class" via "Polynomials.MPoly_Type_Class_Ordered" via "Polynomials.MPoly_Type_Class" via "Polynomials.Utils" via "Well_Quasi_Orders.Almost_Full_Relations" via "Well_Quasi_Orders.Minimal_Bad_Sequences" via "Well_Quasi_Orders.Almost_Full" via "Regular-Sets.Regexp_Method" via "Regular-Sets.Equivalence_Checking" via "Regular-Sets.NDerivative")
+Found termination order: "(%p. length (snd p)) <*mlex*> {}"
+locale inj_group_add_hom
+  fixes hom :: "'a => 'b"
+  assumes "inj_group_add_hom hom"
+locale inj_ab_group_add_hom
+  fixes hom :: "'a => 'b"
+  assumes "inj_ab_group_add_hom hom"
+locale inj_ring_hom
+  fixes hom :: "'a => 'b"
+  assumes "inj_ring_hom hom"
+locale inj_comm_ring_hom
+  fixes hom :: "'a => 'b"
+  assumes "inj_comm_ring_hom hom"
+Found termination order: "(%p. length (snd p)) <*mlex*> {}"
+locale inj_idom_hom
+  fixes hom :: "'a => 'b"
+  assumes "inj_idom_hom hom"
+locale field_hom
+  fixes hom :: "'a => 'b"
+  assumes "field_hom hom"
+locale surjective
+  fixes f :: "'a => 'b"
+  assumes "surjective f"
+locale bijective
+  fixes f :: "'a => 'b"
+  assumes "bijective f"
+locale bijective
+  fixes f :: "'a => 'b"
+  assumes "bijective f"
+locale monoid_mult_isom
+  fixes hom :: "'a => 'b"
+  assumes "monoid_mult_isom hom"
+locale monoid_add_isom
+  fixes hom :: "'a => 'b"
+  assumes "monoid_add_isom hom"
+locale UP_cring
+  fixes R :: "('a, 'b) ring_scheme"  (structure)
+    and P :: "('a, nat => 'a) up_ring"  (structure)
+  assumes "UP_cring R"
+  defines "P == UP R"
+locale comm_monoid_mult_isom
+  fixes hom :: "'a => 'b"
+  assumes "comm_monoid_mult_isom hom"
+locale comm_monoid_add_isom
+  fixes hom :: "'a => 'b"
+  assumes "comm_monoid_add_isom hom"
+locale semiring_isom
+  fixes hom :: "'a => 'b"
+  assumes "semiring_isom hom"
+Found termination order: "(%p. length (snd (snd p))) <*mlex*> {}"
+locale Group.group
+  fixes G :: "('a, 'b) monoid_scheme"  (structure)
+  assumes "Group.group G"
+Found termination order: "(%p. length (snd p)) <*mlex*> {}"
+locale comm_semiring_isom
+  fixes hom :: "'a => 'b"
+  assumes "comm_semiring_isom hom"
+### theory "Polynomial_Factorization.Missing_List"
+### 2.004s elapsed time, 7.968s cpu time, 0.986s GC time
+Loading theory "Polynomial_Factorization.Missing_Multiset" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root" via "Draft.Vector_Matrix_Mod" via "Berlekamp_Zassenhaus.More_Missing_Multiset")
+locale ring_isom
+  fixes hom :: "'a => 'b"
+  assumes "ring_isom hom"
+### theory "Polynomial_Factorization.Missing_Multiset"
+### 0.278s elapsed time, 1.094s cpu time, 0.196s GC time
+Loading theory "Berlekamp_Zassenhaus.More_Missing_Multiset" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root" via "Draft.Vector_Matrix_Mod")
+locale comm_ring_isom
+  fixes hom :: "'a => 'b"
+  assumes "comm_ring_isom hom"
+locale Ring.field
+  fixes R :: "('a, 'b) ring_scheme"  (structure)
+  assumes "field R"
+### theory "Berlekamp_Zassenhaus.More_Missing_Multiset"
+### 0.264s elapsed time, 1.046s cpu time, 0.148s GC time
+Loading theory "Subresultants.Binary_Exponentiation" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root" via "Draft.Vector_Matrix_Mod" via "Berlekamp_Zassenhaus.Finite_Field")
+consts
+  lang :: "'a rexp => 'a list set"
+consts
+  nullable :: "'a rexp => bool"
+class monoid_mult = semigroup_mult + power +
+  assumes "mult_1_left": "!!a. (1::'a) * a = a"
+    and "mult_1_right": "!!a. a * (1::'a) = a"
+consts
+  rexp_empty :: "'a rexp => bool"
+locale idom_isom
+  fixes hom :: "'a => 'b"
+  assumes "idom_isom hom"
+instantiation
+  rexp :: (order) order
+  less_eq_rexp == less_eq :: 'a rexp => 'a rexp => bool
+  less_rexp == less :: 'a rexp => 'a rexp => bool
+Found termination order: "(%p. size (snd p)) <*mlex*> {}"
+### theory "Subresultants.Binary_Exponentiation"
+### 0.186s elapsed time, 0.740s cpu time, 0.000s GC time
+Loading theory "VectorSpace.FunctionLemmas" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root" via "Draft.Rank_Argument_General" via "Jordan_Normal_Form.DL_Rank" via "Jordan_Normal_Form.VS_Connect" via "Jordan_Normal_Form.Missing_VectorSpace" via "VectorSpace.VectorSpace" via "VectorSpace.MonoidSums")
+### theory "VectorSpace.FunctionLemmas"
+### 0.035s elapsed time, 0.145s cpu time, 0.000s GC time
+Loading theory "VectorSpace.RingModuleFacts" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root" via "Draft.Rank_Argument_General" via "Jordan_Normal_Form.DL_Rank" via "Jordan_Normal_Form.VS_Connect" via "Jordan_Normal_Form.Missing_VectorSpace" via "VectorSpace.VectorSpace")
+locale field_isom
+  fixes hom :: "'a => 'b"
+  assumes "field_isom hom"
+locale UP_cring
+  fixes R :: "('a, 'b) ring_scheme"  (structure)
+    and P :: "('a, nat => 'a) up_ring"  (structure)
+  assumes "UP_cring R"
+  defines "P == UP R"
+locale UP_domain
+  fixes R :: "('a, 'b) ring_scheme"  (structure)
+    and P :: "('a, nat => 'a) up_ring"  (structure)
+  assumes "UP_domain R"
+  defines "P == UP R"
+locale Ring.field
+  fixes R :: "('a, 'b) ring_scheme"  (structure)
+  assumes "field R"
+locale inj_idom_divide_hom
+  fixes hom :: "'a => 'b"
+  assumes "inj_idom_divide_hom hom"
+locale field_hom
+  fixes hom :: "'a => 'b"
+  assumes "field_hom hom"
+### theory "HOL-Algebra.Multiplicative_Group"
+### 3.012s elapsed time, 11.959s cpu time, 1.435s GC time
+Loading theory "HOL-Number_Theory.Residues" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root" via "Draft.Vector_Matrix_Mod" via "Berlekamp_Zassenhaus.Finite_Field")
+### theory "VectorSpace.RingModuleFacts"
+### 0.715s elapsed time, 2.829s cpu time, 0.277s GC time
+Loading theory "VectorSpace.MonoidSums" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root" via "Draft.Rank_Argument_General" via "Jordan_Normal_Form.DL_Rank" via "Jordan_Normal_Form.VS_Connect" via "Jordan_Normal_Form.Missing_VectorSpace" via "VectorSpace.VectorSpace")
+### theory "Polynomial_Interpolation.Ring_Hom"
+### 3.414s elapsed time, 13.552s cpu time, 1.556s GC time
+Loading theory "Jordan_Normal_Form.Matrix" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root" via "Draft.Matrix_Vector_Extras")
+locale abelian_monoid
+  fixes G :: "('a, 'b) ring_scheme"  (structure)
+  assumes "abelian_monoid G"
+### theory "VectorSpace.MonoidSums"
+### 0.338s elapsed time, 1.336s cpu time, 0.121s GC time
+Loading theory "Polynomial_Interpolation.Ring_Hom_Poly" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root" via "Draft.Vector_Matrix_Mod" via "Berlekamp_Zassenhaus.Finite_Field")
+Found termination order: "(%p. size (snd p)) <*mlex*> {}"
+locale residues
+  fixes m :: "int"
+    and R :: "int ring"  (structure)
+  assumes "residues m"
+  defines "R == residue_ring m"
+instantiation
+  rexp :: (linorder) linorder
+### theory "Regular-Sets.Regular_Exp"
+### 2.528s elapsed time, 10.035s cpu time, 0.960s GC time
+Loading theory "Regular-Sets.NDerivative" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root" via "Draft.Matrix_Vector_Extras" via "Groebner_Bases.Macaulay_Matrix" via "Groebner_Bases.More_MPoly_Type_Class" via "Polynomials.MPoly_Type_Class_Ordered" via "Polynomials.MPoly_Type_Class" via "Polynomials.Utils" via "Well_Quasi_Orders.Almost_Full_Relations" via "Well_Quasi_Orders.Minimal_Bad_Sequences" via "Well_Quasi_Orders.Almost_Full" via "Regular-Sets.Regexp_Method" via "Regular-Sets.Equivalence_Checking")
+locale residues
+  fixes m :: "int"
+    and R :: "int ring"  (structure)
+  assumes "residues m"
+  defines "R == residue_ring m"
+locale zero_hom
+  fixes hom :: "'a => 'b"
+  assumes "zero_hom hom"
+locale map_poly_zero_hom
+  fixes hom :: "'a => 'b"
+  assumes "map_poly_zero_hom hom"
+locale comm_monoid_add_hom
+  fixes hom :: "'a => 'b"
+  assumes "comm_monoid_add_hom hom"
+locale map_poly_comm_monoid_add_hom
+  fixes hom :: "'a => 'b"
+  assumes "map_poly_comm_monoid_add_hom hom"
+locale comm_semiring_hom
+  fixes hom :: "'a => 'b"
+  assumes "comm_semiring_hom hom"
+locale residues_prime
+  fixes p :: "nat"
+    and R :: "int ring"  (structure)
+  assumes "residues_prime p"
+  defines "R == residue_ring (int p)"
+locale map_poly_comm_semiring_hom
+  fixes hom :: "'a => 'b"
+  assumes "map_poly_comm_semiring_hom hom"
+locale map_poly_comm_ring_hom
+  fixes hom :: "'a => 'b"
+  assumes "map_poly_comm_ring_hom hom"
+locale map_poly_idom_hom
+  fixes hom :: "'a => 'b"
+  assumes "map_poly_idom_hom hom"
+locale map_poly_inj_zero_hom
+  fixes hom :: "'a => 'b"
+  assumes "map_poly_inj_zero_hom hom"
+locale map_poly_inj_comm_monoid_add_hom
+  fixes hom :: "'a => 'b"
+  assumes "map_poly_inj_comm_monoid_add_hom hom"
+locale map_poly_inj_comm_semiring_hom
+  fixes hom :: "'a => 'b"
+  assumes "map_poly_inj_comm_semiring_hom hom"
+locale map_poly_inj_comm_ring_hom
+  fixes hom :: "'a => 'b"
+  assumes "map_poly_inj_comm_ring_hom hom"
+locale residues_prime
+  fixes p :: "nat"
+    and R :: "int ring"  (structure)
+  assumes "residues_prime p"
+  defines "R == residue_ring (int p)"
+locale map_poly_inj_idom_hom
+  fixes hom :: "'a => 'b"
+  assumes "map_poly_inj_idom_hom hom"
+instantiation
+  vec :: (plus) plus
+  plus_vec == plus :: 'a vec => 'a vec => 'a vec
+instantiation
+  vec :: (minus) minus
+  minus_vec == minus :: 'a vec => 'a vec => 'a vec
+locale zero_hom_0
+  fixes hom :: "'a => 'b"
+  assumes "zero_hom_0 hom"
+locale comm_semiring_hom
+  fixes hom :: "'a => 'b"
+  assumes "comm_semiring_hom hom"
+Found termination order: "(%p. size (snd p)) <*mlex*> {}"
+locale comm_semiring_hom
+  fixes hom :: "'a => 'b"
+  assumes "comm_semiring_hom hom"
+locale comm_ring_hom
+  fixes hom :: "'a => 'b"
+  assumes "comm_ring_hom hom"
+Found termination order: "(%p. size (snd p)) <*mlex*> {}"
+instantiation
+  vec :: (uminus) uminus
+  uminus_vec == uminus :: 'a vec => 'a vec
+locale field_hom
+  fixes hom :: "'a => 'b"
+  assumes "field_hom hom"
+### theory "HOL-Number_Theory.Residues"
+### 1.847s elapsed time, 7.337s cpu time, 0.583s GC time
+Loading theory "Regular-Sets.Relation_Interpretation" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root" via "Draft.Matrix_Vector_Extras" via "Groebner_Bases.Macaulay_Matrix" via "Groebner_Bases.More_MPoly_Type_Class" via "Polynomials.MPoly_Type_Class_Ordered" via "Polynomials.MPoly_Type_Class" via "Polynomials.Utils" via "Well_Quasi_Orders.Almost_Full_Relations" via "Well_Quasi_Orders.Minimal_Bad_Sequences" via "Well_Quasi_Orders.Almost_Full" via "Regular-Sets.Regexp_Method")
+locale field_hom'
+  fixes hom :: "'a => 'b"
+  assumes "field_hom' hom"
+consts
+  rel :: "('a => ('b * 'b) set) => 'a rexp => ('b * 'b) set"
+consts
+  word_rel :: "('a => ('b * 'b) set) => 'a list => ('b * 'b) set"
+instantiation
+  vec :: (ord) ord
+  less_eq_vec == less_eq :: 'a vec => 'a vec => bool
+  less_vec == less :: 'a vec => 'a vec => bool
+### theory "Regular-Sets.Relation_Interpretation"
+### 0.065s elapsed time, 0.257s cpu time, 0.000s GC time
+Loading theory "VectorSpace.LinearCombinations" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root" via "Draft.Rank_Argument_General" via "Jordan_Normal_Form.DL_Rank" via "Jordan_Normal_Form.VS_Connect" via "Jordan_Normal_Form.Missing_VectorSpace" via "VectorSpace.VectorSpace")
+instantiation
+  vec :: (preorder) preorder
+instantiation
+  vec :: (order) order
+locale map_poly_inj_idom_divide_hom
+  fixes hom :: "'a => 'b"
+  assumes "map_poly_inj_idom_divide_hom hom"
+Found termination order: "{}"
+### theory "Polynomial_Interpolation.Ring_Hom_Poly"
+### 1.838s elapsed time, 7.313s cpu time, 0.462s GC time
+Loading theory "Berlekamp_Zassenhaus.Finite_Field" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root" via "Draft.Vector_Matrix_Mod")
+instantiation
+  mat :: (ord) ord
+  less_eq_mat == less_eq :: 'a mat => 'a mat => bool
+  less_mat == less :: 'a mat => 'a mat => bool
+instantiation
+  mat :: (preorder) preorder
+instantiation
+  mat :: (order) order
+instantiation
+  mat :: (plus) plus
+  plus_mat == plus :: 'a mat => 'a mat => 'a mat
+Found termination order:
+  "(%p. size (fst p)) <*mlex*> (%p. size (snd p)) <*mlex*> {}"
+instantiation
+  mat :: (uminus) uminus
+  uminus_mat == uminus :: 'a mat => 'a mat
+instantiation
+  mat :: (minus) minus
+  minus_mat == minus :: 'a mat => 'a mat => 'a mat
+instantiation
+  mat :: (semiring_0) times
+  times_mat == times :: 'a mat => 'a mat => 'a mat
+Found termination order: "(%p. size (snd p)) <*mlex*> {}"
+instantiation
+  mod_ring :: (finite) equal
+  equal_mod_ring == equal_class.equal :: 'a mod_ring => 'a mod_ring => bool
+Found termination order: "length <*mlex*> {}"
+instantiation
+  mod_ring :: (finite) comm_ring
+  uminus_mod_ring == uminus :: 'a mod_ring => 'a mod_ring
+  times_mod_ring == times :: 'a mod_ring => 'a mod_ring => 'a mod_ring
+  zero_mod_ring == zero_class.zero :: 'a mod_ring
+  minus_mod_ring == minus :: 'a mod_ring => 'a mod_ring => 'a mod_ring
+  plus_mod_ring == plus :: 'a mod_ring => 'a mod_ring => 'a mod_ring
+locale LinearCombinations.submodule
+  fixes R :: "('a, 'b) ring_scheme"
+    and N :: "'c set"
+    and M :: "('a, 'c, 'd) module_scheme"  (structure)
+  assumes "LinearCombinations.submodule R N M"
+### Additional type variable(s) in locale specification "nontriv": 'a
+Found termination order: "(%p. size (fst p)) <*mlex*> {}"
+locale semiring_hom
+  fixes hom :: "'a => 'b"
+  assumes "semiring_hom hom"
+class nontriv = type +
+  assumes "nontriv": "1 < CARD('a)"
+consts
+  norm :: "'a rexp => 'a rexp"
+consts
+  nderiv :: "'a => 'a rexp => 'a rexp"
+### theory "Regular-Sets.NDerivative"
+### 3.277s elapsed time, 13.036s cpu time, 1.015s GC time
+Loading theory "Regular-Sets.Equivalence_Checking" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root" via "Draft.Matrix_Vector_Extras" via "Groebner_Bases.Macaulay_Matrix" via "Groebner_Bases.More_MPoly_Type_Class" via "Polynomials.MPoly_Type_Class_Ordered" via "Polynomials.MPoly_Type_Class" via "Polynomials.Utils" via "Well_Quasi_Orders.Almost_Full_Relations" via "Well_Quasi_Orders.Minimal_Bad_Sequences" via "Well_Quasi_Orders.Almost_Full" via "Regular-Sets.Regexp_Method")
+Proofs for coinductive predicate(s) "bisimilar"
+  Proving monotonicity ...
+instantiation
+  mod_ring :: (nontriv) comm_ring_1
+  one_mod_ring == one_class.one :: 'a mod_ring
+consts
+  add_atoms :: "'a rexp => 'a list => 'a list"
+instantiation
+  vec :: (conjugate) conjugate
+  conjugate_vec == conjugate :: 'a vec => 'a vec
+### theory "Regular-Sets.Equivalence_Checking"
+### 0.250s elapsed time, 0.996s cpu time, 0.000s GC time
+Loading theory "Regular-Sets.Regexp_Method" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root" via "Draft.Matrix_Vector_Extras" via "Groebner_Bases.Macaulay_Matrix" via "Groebner_Bases.More_MPoly_Type_Class" via "Polynomials.MPoly_Type_Class_Ordered" via "Polynomials.MPoly_Type_Class" via "Polynomials.Utils" via "Well_Quasi_Orders.Almost_Full_Relations" via "Well_Quasi_Orders.Minimal_Bad_Sequences" via "Well_Quasi_Orders.Almost_Full")
+### Additional type variable(s) in locale specification "prime_card": 'a
+### theory "Jordan_Normal_Form.Matrix"
+### 3.781s elapsed time, 15.051s cpu time, 1.015s GC time
+Loading theory "Jordan_Normal_Form.Gauss_Jordan_Elimination" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root" via "Draft.Matrix_Vector_Extras" via "Groebner_Bases.Macaulay_Matrix")
+class prime_card = type +
+  assumes "prime_card": "prime CARD('a)"
+consts
+  rel_of_regexp :: "('a * 'a) set list => nat rexp => ('a * 'a) set"
+consts
+  rel_eq :: "nat rexp * nat rexp => ('a * 'a) set list => bool"
+locale mod_hom
+  fixes R :: "('a, 'b) ring_scheme"
+    and M :: "('a, 'c, 'd) module_scheme"
+    and N :: "('a, 'e, 'f) module_scheme"
+    and f :: "'c => 'e"
+  assumes "mod_hom R M N f"
+locale mod_hom
+  fixes R :: "('a, 'b) ring_scheme"
+    and M :: "('a, 'c, 'd) module_scheme"
+    and N :: "('a, 'e, 'f) module_scheme"
+    and f :: "'c => 'e"
+  assumes "mod_hom R M N f"
+Found termination order:
+  "(%p. size_list (%p. size (snd p)) (snd (snd p))) <*mlex*> {}"
+instantiation
+  mod_ring :: (prime_card) field
+  inverse_mod_ring == inverse :: 'a mod_ring => 'a mod_ring
+  divide_mod_ring == divide :: 'a mod_ring => 'a mod_ring => 'a mod_ring
+instantiation
+  mod_ring :: (prime_card) {normalization_euclidean_semiring,euclidean_ring}
+  normalize_mod_ring == normalize :: 'a mod_ring => 'a mod_ring
+  unit_factor_mod_ring == unit_factor :: 'a mod_ring => 'a mod_ring
+  euclidean_size_mod_ring == euclidean_size :: 'a mod_ring => nat
+  modulo_mod_ring == modulo :: 'a mod_ring => 'a mod_ring => 'a mod_ring
+instantiation
+  mod_ring :: (prime_card) euclidean_ring_gcd
+  Gcd_mod_ring == Gcd :: 'a mod_ring set => 'a mod_ring
+  Lcm_mod_ring == Lcm :: 'a mod_ring set => 'a mod_ring
+  gcd_mod_ring == gcd :: 'a mod_ring => 'a mod_ring => 'a mod_ring
+  lcm_mod_ring == lcm :: 'a mod_ring => 'a mod_ring => 'a mod_ring
+instantiation
+  mod_ring :: (prime_card) unique_euclidean_ring
+  division_segment_mod_ring == division_segment ::
+    'a mod_ring => 'a mod_ring
+### theory "Berlekamp_Zassenhaus.Finite_Field"
+### 2.448s elapsed time, 9.736s cpu time, 0.857s GC time
+Loading theory "Jordan_Normal_Form.Ring_Hom_Matrix" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root" via "Draft.Rank_Argument_General")
+val regexp_conv = fn: Proof.context -> conv
+### theory "Regular-Sets.Regexp_Method"
+### 0.699s elapsed time, 2.776s cpu time, 0.305s GC time
+Loading theory "Well_Quasi_Orders.Infinite_Sequences" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root" via "Draft.Matrix_Vector_Extras" via "Groebner_Bases.Macaulay_Matrix" via "Groebner_Bases.More_MPoly_Type_Class" via "Polynomials.MPoly_Type_Class_Ordered" via "Polynomials.MPoly_Type_Class" via "Polynomials.Utils" via "Well_Quasi_Orders.Almost_Full_Relations" via "Well_Quasi_Orders.Minimal_Bad_Sequences" via "Well_Quasi_Orders.Almost_Full")
+locale ord_ring_hom
+  fixes hom :: "'a => 'b"
+  assumes "ord_ring_hom hom"
+### theory "Well_Quasi_Orders.Infinite_Sequences"
+### 0.090s elapsed time, 0.366s cpu time, 0.000s GC time
+Loading theory "Well_Quasi_Orders.Minimal_Elements" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root" via "Draft.Matrix_Vector_Extras" via "Groebner_Bases.Macaulay_Matrix" via "Groebner_Bases.More_MPoly_Type_Class" via "Polynomials.MPoly_Type_Class_Ordered" via "Polynomials.MPoly_Type_Class" via "Polynomials.Utils" via "Well_Quasi_Orders.Almost_Full_Relations" via "Well_Quasi_Orders.Minimal_Bad_Sequences")
+locale minimal_element
+  fixes P :: "'a => 'a => bool"
+    and A :: "'a set"
+  assumes "minimal_element P A"
+Found termination order: "(%p. size (snd p)) <*mlex*> {}"
+### theory "Well_Quasi_Orders.Minimal_Elements"
+### 0.279s elapsed time, 1.105s cpu time, 0.184s GC time
+Loading theory "Well_Quasi_Orders.Least_Enum" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root" via "Draft.Matrix_Vector_Extras" via "Groebner_Bases.Macaulay_Matrix" via "Groebner_Bases.More_MPoly_Type_Class" via "Polynomials.MPoly_Type_Class_Ordered" via "Polynomials.MPoly_Type_Class" via "Polynomials.Utils" via "Well_Quasi_Orders.Almost_Full_Relations" via "Well_Quasi_Orders.Minimal_Bad_Sequences" via "Well_Quasi_Orders.Almost_Full")
+locale infinitely_many1
+  fixes P :: "'a => bool"
+  assumes "infinitely_many1 P"
+### Additional type variable(s) in specification of "enum_rel": 'a
+### Additional type variable(s) in specification of "enum_dom": 'a
+Found termination order: "size <*mlex*> {}"
+locale infinitely_many2
+  fixes P :: "'a => 'a => bool"
+    and N :: "'a"
+  assumes "infinitely_many2 P N"
+### Additional type variable(s) in specification of "enumchain_rel": 'a
+### Additional type variable(s) in specification of "enumchain_dom": 'a
+Found termination order: "size <*mlex*> {}"
+### theory "Well_Quasi_Orders.Least_Enum"
+### 0.164s elapsed time, 0.653s cpu time, 0.000s GC time
+Loading theory "Well_Quasi_Orders.Almost_Full" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root" via "Draft.Matrix_Vector_Extras" via "Groebner_Bases.Macaulay_Matrix" via "Groebner_Bases.More_MPoly_Type_Class" via "Polynomials.MPoly_Type_Class_Ordered" via "Polynomials.MPoly_Type_Class" via "Polynomials.Utils" via "Well_Quasi_Orders.Almost_Full_Relations" via "Well_Quasi_Orders.Minimal_Bad_Sequences")
+### theory "Jordan_Normal_Form.Gauss_Jordan_Elimination"
+### 1.243s elapsed time, 4.942s cpu time, 0.489s GC time
+Loading theory "Jordan_Normal_Form.Column_Operations" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root" via "Draft.Rank_Argument_General" via "Jordan_Normal_Form.Determinant")
+Found termination order: "(%p. size (snd p)) <*mlex*> {}"
+Found termination order: "(%p. size (snd p)) <*mlex*> {}"
+### theory "Jordan_Normal_Form.Column_Operations"
+### 0.443s elapsed time, 1.748s cpu time, 0.203s GC time
+Loading theory "Jordan_Normal_Form.Determinant" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root" via "Draft.Rank_Argument_General")
+### theory "VectorSpace.LinearCombinations"
+### 3.933s elapsed time, 15.645s cpu time, 1.244s GC time
+Loading theory "VectorSpace.SumSpaces" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root" via "Draft.Rank_Argument_General" via "Jordan_Normal_Form.DL_Rank" via "Jordan_Normal_Form.VS_Connect" via "Jordan_Normal_Form.Missing_VectorSpace" via "VectorSpace.VectorSpace")
+Proofs for inductive predicate(s) "af"
+  Proving monotonicity ...
+class real_embedding = linordered_idom +
+  fixes real_of :: "'a => real"
+  assumes "real_add": "!!x y. real_of (x + y) = real_of x + real_of y"
+    and "real_mult": "!!x y. real_of (x * y) = real_of x * real_of y"
+    and "real_zero": "real_of (0::'a) = 0"
+    and "real_one": "real_of (1::'a) = 1"
+    and "real_le": "!!x z. real_of x <= z ==> x <= of_int \<lceil>z\<rceil>"
+### theory "VectorSpace.SumSpaces"
+### 0.456s elapsed time, 1.812s cpu time, 0.145s GC time
+Loading theory "VectorSpace.VectorSpace" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root" via "Draft.Rank_Argument_General" via "Jordan_Normal_Form.DL_Rank" via "Jordan_Normal_Form.VS_Connect" via "Jordan_Normal_Form.Missing_VectorSpace")
+Found termination order: "(%p. size (snd (snd p))) <*mlex*> {}"
+instantiation
+  real :: real_embedding
+  real_of_real == real_of :: real => real
+instantiation
+  int :: real_embedding
+  real_of_int == real_of :: int => real
+instantiation
+  rat :: real_embedding
+  real_of_rat == real_of :: rat => real
+### theory "Jordan_Normal_Form.Ring_Hom_Matrix"
+### 1.653s elapsed time, 6.578s cpu time, 0.532s GC time
+MPoly (mapping_of ?x) = ?x
+?y : UNIV ==> mapping_of (MPoly ?y) = ?y
+(mapping_of ?x = mapping_of ?y) = (?x = ?y)
+[| ?x : UNIV; ?y : UNIV |] ==> (MPoly ?x = MPoly ?y) = (?x = ?y)
+[| ?y : UNIV; !!x. ?P (mapping_of x) |] ==> ?P ?y
+(!!y. y : UNIV ==> ?P (MPoly y)) ==> ?P ?x
+[| ?y : UNIV; !!x. ?y = mapping_of x ==> ?P |] ==> ?P
+(!!y. [| ?x = MPoly y; y : UNIV |] ==> ?P) ==> ?P
+### theory "Well_Quasi_Orders.Almost_Full"
+### 1.123s elapsed time, 4.518s cpu time, 0.348s GC time
+Loading theory "Well_Quasi_Orders.Minimal_Bad_Sequences" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root" via "Draft.Matrix_Vector_Extras" via "Groebner_Bases.Macaulay_Matrix" via "Groebner_Bases.More_MPoly_Type_Class" via "Polynomials.MPoly_Type_Class_Ordered" via "Polynomials.MPoly_Type_Class" via "Polynomials.Utils" via "Well_Quasi_Orders.Almost_Full_Relations")
+locale mbs
+  fixes A :: "'a set"
+locale vectorspace
+  fixes K :: "('a, 'b) ring_scheme"
+    and V :: "('a, 'c, 'd) module_scheme"
+  assumes "vectorspace K V"
+locale subspace
+  fixes K :: "('a, 'b) ring_scheme"
+    and W :: "'c set"
+    and V :: "('a, 'c, 'd) module_scheme"  (structure)
+  assumes "subspace K W V"
+### Cannot skip proof of schematic goal statement
+"(Gcd (coeffs
+        (M [1::'b, (1::'b) + (1::'b), (1::'b) + (1::'b) + (1::'b)] 4 +
+         M [(1::'b) + (1::'b), 0::'b,
+            (1::'b) + (1::'b) + ((1::'b) + (1::'b))]
+          6 +
+         M [(1::'b) + (1::'b), 0::'b,
+            (1::'b) + (1::'b) + ((1::'b) + (1::'b)) + (1::'b)]
+          8)),
+  sdiv
+   (Gcd (coeffs
+          (M [1::'b, (1::'b) + (1::'b), (1::'b) + (1::'b) + (1::'b)] 4 +
+           M [(1::'b) + (1::'b), 0::'b,
+              (1::'b) + (1::'b) + ((1::'b) + (1::'b))]
+            6 +
+           M [(1::'b) + (1::'b), 0::'b,
+              (1::'b) + (1::'b) + ((1::'b) + (1::'b)) + (1::'b)]
+            8)))
+   (M [1::'b, (1::'b) + (1::'b), (1::'b) + (1::'b) + (1::'b)] 4 +
+    M [(1::'b) + (1::'b), 0::'b, (1::'b) + (1::'b) + ((1::'b) + (1::'b))]
+     6 +
+    M [(1::'b) + (1::'b), 0::'b,
+       (1::'b) + (1::'b) + ((1::'b) + (1::'b)) + (1::'b)]
+     8))"
+  :: "'a * 'a mpoly"
+"(bij, bij_betw, permutation)"
+  :: "(('a => 'b) => bool) *
+      (('c => 'd) => 'c set => 'd set => bool) * (('e => 'e) => bool)"
+carrier (| carrier = ?carrier, ... = ?more |) = ?carrier
+partial_object.more (| carrier = ?carrier, ... = ?more |) = ?more
+carrier_update ?carrier' (| carrier = ?carrier, ... = ?more |) =
+(| carrier = ?carrier' ?carrier, ... = ?more |)
+partial_object.more_update ?more' (| carrier = ?carrier, ... = ?more |) =
+(| carrier = ?carrier, ... = ?more' ?more |)
+(\<otimes>\<^bsub>(| carrier = ?carrier, mult = ?mult, one = ?one, ... = ?more |)\<^esub>) =
+?mult
+\<one>\<^bsub>(| carrier = ?carrier, mult = ?mult, one = ?one, ... = ?more |)\<^esub> =
+?one
+monoid.more
+ (| carrier = ?carrier, mult = ?mult, one = ?one, ... = ?more |) =
+?more
+mult_update ?mult'
+ (| carrier = ?carrier, mult = ?mult, one = ?one, ... = ?more |) =
+(| carrier = ?carrier, mult = ?mult' ?mult, one = ?one, ... = ?more |)
+one_update ?one'
+ (| carrier = ?carrier, mult = ?mult, one = ?one, ... = ?more |) =
+(| carrier = ?carrier, mult = ?mult, one = ?one' ?one, ... = ?more |)
+monoid.more_update ?more'
+ (| carrier = ?carrier, mult = ?mult, one = ?one, ... = ?more |) =
+(| carrier = ?carrier, mult = ?mult, one = ?one, ... = ?more' ?more |)
+[| ?M <= carrier G; ?g : carrier G; ?h : carrier G |]
+==> ?M #>\<^bsub>add_monoid G\<^esub> ?g #>\<^bsub>add_monoid G\<^esub> ?h =
+    ?M #>\<^bsub>add_monoid G\<^esub> ?g \<oplus> ?h
+[| abelian_group ?G; ?M <= carrier ?G; ?g : carrier ?G; ?h : carrier ?G |]
+==> ?M +>\<^bsub>?G\<^esub> ?g +>\<^bsub>?G\<^esub> ?h =
+    ?M +>\<^bsub>?G\<^esub> ?g \<oplus>\<^bsub>?G\<^esub> ?h
+### theory "Well_Quasi_Orders.Minimal_Bad_Sequences"
+### 0.349s elapsed time, 1.457s cpu time, 0.192s GC time
+Loading theory "Well_Quasi_Orders.Almost_Full_Relations" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root" via "Draft.Matrix_Vector_Extras" via "Groebner_Bases.Macaulay_Matrix" via "Groebner_Bases.More_MPoly_Type_Class" via "Polynomials.MPoly_Type_Class_Ordered" via "Polynomials.MPoly_Type_Class" via "Polynomials.Utils")
+### Ignoring duplicate rewrite rule:
+### carrier (vs ?y) == ?y
+Found termination order: "{}"
+"{[4, 3, 2, 1], [3, 4, 2, 1], [4, 2, 3, 1], [2, 4, 3, 1], [3, 2, 4, 1],
+  [2, 3, 4, 1], [4, 3, 1, 2], [3, 4, 1, 2], [4, 1, 3, 2], [1, 4, 3, 2],
+  [3, 1, 4, 2], [1, 3, 4, 2], [4, 2, 1, 3], [2, 4, 1, 3], [4, 1, 2, 3],
+  [1, 4, 2, 3], [2, 1, 4, 3], [1, 2, 4, 3], [3, 2, 1, 4], [2, 3, 1, 4],
+  [3, 1, 2, 4], [1, 3, 2, 4], [2, 1, 3, 4], [1, 2, 3, 4]}"
+  :: "int list set"
+Found termination order: "{}"
+"{''dcba'', ''cdba'', ''dbca'', ''bdca'', ''cbda'', ''bcda'', ''dcab'',
+  ''cdab'', ''dacb'', ''adcb'', ''cadb'', ''acdb'', ''dbac'', ''bdac'',
+  ''dabc'', ''adbc'', ''badc'', ''abdc'', ''cbad'', ''bcad'', ''cabd'',
+  ''acbd'', ''bacd'', ''abcd''}"
+  :: "char list set"
+### theory "Well_Quasi_Orders.Almost_Full_Relations"
+### 0.462s elapsed time, 1.829s cpu time, 0.283s GC time
+Loading theory "Polynomials.Utils" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root" via "Draft.Matrix_Vector_Extras" via "Groebner_Bases.Macaulay_Matrix" via "Groebner_Bases.More_MPoly_Type_Class" via "Polynomials.MPoly_Type_Class_Ordered" via "Polynomials.MPoly_Type_Class")
+Loading theory "Well_Quasi_Orders.Well_Quasi_Orders" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root" via "Draft.Matrix_Vector_Extras" via "Groebner_Bases.Macaulay_Matrix" via "Groebner_Bases.More_MPoly_Type_Class" via "Polynomials.MPoly_Type_Class_Ordered" via "Polynomials.MPoly_Type_Class" via "Polynomials.Power_Products")
+class wqo = preorder +
+  assumes "good": "!!f. good (<=) f"
+locale linear_map
+  fixes K :: "('a, 'b) ring_scheme"
+    and V :: "('a, 'c, 'd) module_scheme"
+    and W :: "('a, 'e, 'f) module_scheme"
+    and T :: "'c => 'e"
+  assumes "linear_map K V W T"
+Found termination order:
+  "(%p. length (snd (snd p))) <*mlex*>
+   (%p. length (fst (snd p))) <*mlex*> {}"
+### theory "Jordan_Normal_Form.Determinant"
+### 1.663s elapsed time, 6.819s cpu time, 0.620s GC time
+### theory "Well_Quasi_Orders.Well_Quasi_Orders"
+### 0.264s elapsed time, 1.140s cpu time, 0.000s GC time
+### theory "Polynomials.Utils"
+### 0.325s elapsed time, 1.316s cpu time, 0.000s GC time
+Loading theory "Groebner_Bases.General" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root" via "Draft.Matrix_Vector_Extras" via "Groebner_Bases.Macaulay_Matrix" via "Groebner_Bases.More_MPoly_Type_Class")
+Loading theory "Polynomials.Power_Products" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root" via "Draft.Matrix_Vector_Extras" via "Groebner_Bases.Macaulay_Matrix" via "Groebner_Bases.More_MPoly_Type_Class" via "Polynomials.MPoly_Type_Class_Ordered" via "Polynomials.MPoly_Type_Class")
+### Missing patterns in function definition:
+### max_list [] = undefined
+locale linear_map
+  fixes K :: "('a, 'b) ring_scheme"
+    and V :: "('a, 'c, 'd) module_scheme"
+    and W :: "('a, 'e, 'f) module_scheme"
+    and T :: "'c => 'e"
+  assumes "linear_map K V W T"
+### Ignoring duplicate rewrite rule:
+### T \<zero>\<^bsub>V\<^esub> == \<zero>\<^bsub>W\<^esub>
+Found termination order: "length <*mlex*> {}"
+class linorder = order +
+  assumes "linear": "!!x y. x <= y | y <= x"
+consts
+  insort_wrt :: "('c => 'c => bool) => 'c => 'c list => 'c list"
+consts
+  remdups_wrt :: "('a => 'b) => 'a list => 'a list"
+consts
+  map_idx :: "('a => nat => 'b) => 'a list => nat => 'b list"
+consts
+  map_dup :: "('a => 'b) => ('a => 'b) => 'a list => 'b list"
+consts
+  filter_min_aux :: "'a list => 'a list => 'a list"
+### theory "Groebner_Bases.General"
+### 0.746s elapsed time, 2.961s cpu time, 0.556s GC time
+class plus = type +
+  fixes plus :: "'a => 'a => 'a"
+class comm_monoid_add = ab_semigroup_add + monoid_add +
+  assumes "add_0": "!!a. (0::'a) + a = a"
+class ninv_comm_monoid_add = comm_monoid_add +
+  assumes "plus_eq_zero": "!!s t. s + t = (0::'a) ==> s = (0::'a)"
+class canonically_ordered_monoid_add = ordered_comm_monoid_add +
+  assumes "le_iff_add": "!!a b. (a <= b) = (EX c. b = a + c)"
+class lcs_powerprod = comm_powerprod +
+  fixes lcs :: "'a => 'a => 'a"
+  assumes "adds_lcs": "!!s t. s adds lcs s t"
+  assumes "lcs_adds": "!!s u t. [| s adds u; t adds u |] ==> lcs s t adds u"
+  assumes "lcs_comm": "!!s t. lcs s t = lcs t s"
+### theory "VectorSpace.VectorSpace"
+### 3.628s elapsed time, 11.516s cpu time, 1.288s GC time
+Loading theory "Jordan_Normal_Form.Missing_VectorSpace" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root" via "Draft.Rank_Argument_General" via "Jordan_Normal_Form.DL_Rank" via "Jordan_Normal_Form.VS_Connect")
+locale Missing_VectorSpace.comp_fun_commute_on
+  fixes f :: "'a => 'a => 'a"
+    and A :: "'a set"
+  assumes "Missing_VectorSpace.comp_fun_commute_on f A"
+locale Missing_VectorSpace.comp_fun_commute_on
+  fixes f :: "'a => 'a => 'a"
+    and A :: "'a set"
+  assumes "Missing_VectorSpace.comp_fun_commute_on f A"
+locale abelian_group
+  fixes G :: "('a, 'b) ring_scheme"  (structure)
+  assumes "abelian_group G"
+class graded_dickson_powerprod = ulcs_powerprod +
+  assumes "ex_dgrad": "EX d. dickson_grading d"
+locale vectorspace
+  fixes K :: "('a, 'b) ring_scheme"
+    and V :: "('a, 'c, 'd) module_scheme"
+  assumes "vectorspace K V"
+class dickson_powerprod = ulcs_powerprod +
+  assumes "dickson": "almost_full_on (adds) UNIV"
+locale module
+  fixes R :: "('a, 'b) ring_scheme"  (structure)
+    and M :: "('a, 'c, 'd) module_scheme"  (structure)
+  assumes "module R M"
+locale linear_map
+  fixes K :: "('a, 'b) ring_scheme"
+    and V :: "('a, 'c, 'd) module_scheme"
+    and W :: "('a, 'e, 'f) module_scheme"
+    and T :: "'c => 'e"
+  assumes "linear_map K V W T"
+class semi_canonically_ordered_monoid_add = ordered_comm_monoid_add +
+  assumes "le_imp_add": "!!a b. a <= b ==> EX c. b = a + c"
+class canonically_ordered_monoid_add = ordered_comm_monoid_add +
+  ninv_comm_monoid_add +
+  assumes "le_iff_add": "!!a b. (a <= b) = (EX c. b = a + c)"
+locale abelian_monoid
+  fixes G :: "('a, 'b) ring_scheme"  (structure)
+  assumes "abelian_monoid G"
+locale module
+  fixes R :: "('a, 'b) ring_scheme"  (structure)
+    and M :: "('a, 'c, 'd) module_scheme"  (structure)
+  assumes "module R M"
+### theory "Jordan_Normal_Form.Missing_VectorSpace"
+### 1.750s elapsed time, 3.600s cpu time, 0.221s GC time
+Loading theory "Jordan_Normal_Form.VS_Connect" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root" via "Draft.Rank_Argument_General" via "Jordan_Normal_Form.DL_Rank")
+### Cannot skip proof of schematic goal statement
+### Cannot skip proof of schematic goal statement
+### Cannot skip proof of schematic goal statement
+class add_linorder_min = add_linorder +
+  assumes "zero_min": "!!x. (0::'a) <= x"
+### Cannot skip proof of schematic goal statement
+locale matrix_ring
+  fixes n :: "nat"
+    and field_type :: "'a itself"
+locale vec_module
+  fixes f_ty :: "'a itself"
+    and n :: "nat"
+### Cannot skip proof of schematic goal statement
+locale matrix_vs
+  fixes nr :: "nat"
+    and nc :: "nat"
+    and field_type :: "'a itself"
+### Cannot skip proof of schematic goal statement
+instantiation
+  nat :: add_linorder
+instantiation
+  nat :: add_linorder_min
+instantiation
+  nat :: add_wellorder
+locale vec_space
+  fixes f_ty :: "'a itself"
+    and n :: "nat"
+instantiation
+  int :: add_linorder_group
+instantiation
+  rat :: add_linorder_group
+instantiation
+  real :: add_linorder_group
+locale ordered_powerprod
+  fixes ord :: "'a => 'a => bool"  (infixl \<open>\<preceq>\<close> 50)
+    and ord_strict :: "'a => 'a => bool"  (infixl \<open>\<prec>\<close> 50)
+  assumes "ordered_powerprod (\<preceq>) (\<prec>)"
+locale gd_powerprod
+  fixes ord :: "'a => 'a => bool"  (infixl \<open>\<preceq>\<close> 50)
+    and ord_strict :: "'a => 'a => bool"  (infixl \<open>\<prec>\<close> 50)
+  assumes "gd_powerprod (\<preceq>) (\<prec>)"
+### Cannot skip proof of schematic goal statement
+locale od_powerprod
+  fixes ord :: "'a => 'a => bool"  (infixl \<open>\<preceq>\<close> 50)
+    and ord_strict :: "'a => 'a => bool"  (infixl \<open>\<prec>\<close> 50)
+  assumes "od_powerprod (\<preceq>) (\<prec>)"
+instantiation
+  fun :: (type, add_linorder) lcs_powerprod
+  lcs_fun == lcs :: ('a => 'b) => ('a => 'b) => 'a => 'b
+class wellorder = linorder +
+  assumes
+    "less_induct": "!!P a. (!!x. (!!y. y < x ==> P y) ==> P x) ==> P a"
+class linorder = order +
+  assumes "linear": "!!x y. x <= y | y <= x"
+class wellorder = linorder +
+  assumes
+    "less_induct": "!!P a. (!!x. (!!y. y < x ==> P y) ==> P x) ==> P a"
+locale mat_space
+  fixes f_ty :: "'a itself"
+    and nc :: "nat"
+    and nr :: "nat"
+locale vec_space
+  fixes f_ty :: "'a itself"
+    and n :: "nat"
+instantiation
+  poly_mapping :: (type, add_linorder) lcs_powerprod
+  lcs_poly_mapping == lcs ::
+    ('a \<Rightarrow>\<^sub>0 'b)
+    => ('a \<Rightarrow>\<^sub>0 'b) => 'a \<Rightarrow>\<^sub>0 'b
+class countable = type +
+  assumes "ex_inj": "EX to_nat. inj to_nat"
+class linorder = order +
+  assumes "linear": "!!x y. x <= y | y <= x"
+locale vec_module
+  fixes f_ty :: "'a itself"
+    and n :: "nat"
+### theory "Polynomials.Power_Products"
+### 8.657s elapsed time, 19.257s cpu time, 1.614s GC time
+Loading theory "Polynomials.MPoly_Type_Class" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root" via "Draft.Matrix_Vector_Extras" via "Groebner_Bases.Macaulay_Matrix" via "Groebner_Bases.More_MPoly_Type_Class" via "Polynomials.MPoly_Type_Class_Ordered")
+locale idom_vec
+  fixes n :: "nat"
+    and f_ty :: "'a itself"
+locale term_powerprod
+  fixes pair_of_term :: "'t => 'a * 'k"
+    and term_of_pair :: "'a * 'k => 't"
+  assumes "term_powerprod pair_of_term term_of_pair"
+locale vec_space
+  fixes f_ty :: "'a itself"
+    and n :: "nat"
+### Ambiguous input (line 1415 of "$AFP/Polynomials/MPoly_Type_Class.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" monomial)
+###       ("_cargs" ("_applC" ("_position" Sum_any) ("_position" f))
+###         ("_position" a)))
+###     ("\<^const>Series.suminf_binder" ("_position" c)
+###       ("_applC" ("_position" monomial)
+###         ("_cargs" ("_applC" ("_position" f) ("_position" c))
+###           ("_position" a))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" monomial)
+###       ("_cargs" ("_applC" ("_position" Sum_any) ("_position" f))
+###         ("_position" a)))
+###     ("_Sum_any" ("_position" c)
+###       ("_applC" ("_position" monomial)
+###         ("_cargs" ("_applC" ("_position" f) ("_position" c))
+###           ("_position" a))))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+locale term_powerprod
+  fixes pair_of_term :: "'t => 'a * 'k"
+    and term_of_pair :: "'a * 'k => 't"
+  assumes "term_powerprod pair_of_term term_of_pair"
+### Ambiguous input (line 1454 of "$AFP/Polynomials/MPoly_Type_Class.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" monom_mult)
+###       ("_cargs" ("_applC" ("_position" Sum_any) ("_position" f))
+###         ("_cargs" ("_position" t) ("_position" p))))
+###     ("\<^const>Series.suminf_binder" ("_position" c)
+###       ("_applC" ("_position" monom_mult)
+###         ("_cargs" ("_applC" ("_position" f) ("_position" c))
+###           ("_cargs" ("_position" t) ("_position" p)))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" monom_mult)
+###       ("_cargs" ("_applC" ("_position" Sum_any) ("_position" f))
+###         ("_cargs" ("_position" t) ("_position" p))))
+###     ("_Sum_any" ("_position" c)
+###       ("_applC" ("_position" monom_mult)
+###         ("_cargs" ("_applC" ("_position" f) ("_position" c))
+###           ("_cargs" ("_position" t) ("_position" p)))))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ambiguous input (line 1463 of "$AFP/Polynomials/MPoly_Type_Class.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" monom_mult)
+###       ("_cargs" ("_position" c)
+###         ("_cargs" ("_position" t)
+###           ("_applC" ("_position" Sum_any) ("_position" f)))))
+###     ("\<^const>Series.suminf_binder" ("_position" p)
+###       ("_applC" ("_position" monom_mult)
+###         ("_cargs" ("_position" c)
+###           ("_cargs" ("_position" t)
+###             ("_applC" ("_position" f) ("_position" p))))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" monom_mult)
+###       ("_cargs" ("_position" c)
+###         ("_cargs" ("_position" t)
+###           ("_applC" ("_position" Sum_any) ("_position" f)))))
+###     ("_Sum_any" ("_position" p)
+###       ("_applC" ("_position" monom_mult)
+###         ("_cargs" ("_position" c)
+###           ("_cargs" ("_position" t)
+###             ("_applC" ("_position" f) ("_position" p))))))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+locale term_powerprod
+  fixes pair_of_term :: "'t => 'a * 'k"
+    and term_of_pair :: "'a * 'k => 't"
+  assumes "term_powerprod pair_of_term term_of_pair"
+locale vec_module
+  fixes f_ty :: "'a itself"
+    and n :: "nat"
+locale term_powerprod
+  fixes pair_of_term :: "'t => 'a * 'k"
+    and term_of_pair :: "'a * 'k => 't"
+  assumes "term_powerprod pair_of_term term_of_pair"
+### theory "Polynomials.MPoly_Type_Class"
+### 1.727s elapsed time, 3.596s cpu time, 0.313s GC time
+Loading theory "Polynomials.MPoly_Type_Class_Ordered" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root" via "Draft.Matrix_Vector_Extras" via "Groebner_Bases.Macaulay_Matrix" via "Groebner_Bases.More_MPoly_Type_Class")
+locale vec_space
+  fixes f_ty :: "'a itself"
+    and n :: "nat"
+### theory "Jordan_Normal_Form.VS_Connect"
+### 6.528s elapsed time, 13.516s cpu time, 1.006s GC time
+Loading theory "Jordan_Normal_Form.DL_Rank" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root" via "Draft.Rank_Argument_General")
+class the_min = linorder +
+  fixes the_min :: "'a"
+  assumes "the_min_min": "!!x. the_min <= x"
+instantiation
+  nat :: the_min
+  the_min_nat == the_min :: nat
+instantiation
+  unit :: the_min
+  the_min_unit == the_min :: unit
+locale ordered_term
+  fixes pair_of_term :: "'t => 'a * 'k"
+    and term_of_pair :: "'a * 'k => 't"
+    and ord :: "'a => 'a => bool"  (infixl \<open>\<preceq>\<close> 50)
+    and ord_strict :: "'a => 'a => bool"  (infixl \<open>\<prec>\<close> 50)
+    and
+    ord_term :: "'t => 't => bool"
+      (infixl \<open>\<preceq>\<^sub>t\<close> 50)
+    and
+    ord_term_strict :: "'t => 't => bool"
+      (infixl \<open>\<prec>\<^sub>t\<close> 50)
+  assumes
+    "ordered_term pair_of_term term_of_pair (\<preceq>) (\<prec>)
+      (\<preceq>\<^sub>t) (\<prec>\<^sub>t)"
+locale ordered_powerprod
+  fixes ord :: "'a => 'a => bool"  (infixl \<open>\<preceq>\<close> 50)
+    and ord_strict :: "'a => 'a => bool"  (infixl \<open>\<prec>\<close> 50)
+  assumes "ordered_powerprod (\<preceq>) (\<prec>)"
+locale ordered_term
+  fixes pair_of_term :: "'t => 'a * 'k"
+    and term_of_pair :: "'a * 'k => 't"
+    and ord :: "'a => 'a => bool"  (infixl \<open>\<preceq>\<close> 50)
+    and ord_strict :: "'a => 'a => bool"  (infixl \<open>\<prec>\<close> 50)
+    and
+    ord_term :: "'t => 't => bool"
+      (infixl \<open>\<preceq>\<^sub>t\<close> 50)
+    and
+    ord_term_strict :: "'t => 't => bool"
+      (infixl \<open>\<prec>\<^sub>t\<close> 50)
+  assumes
+    "ordered_term pair_of_term term_of_pair (\<preceq>) (\<prec>)
+      (\<preceq>\<^sub>t) (\<prec>\<^sub>t)"
+locale ordered_powerprod
+  fixes ord :: "'a => 'a => bool"  (infixl \<open>\<preceq>\<close> 50)
+    and ord_strict :: "'a => 'a => bool"  (infixl \<open>\<prec>\<close> 50)
+  assumes "ordered_powerprod (\<preceq>) (\<prec>)"
+### theory "Jordan_Normal_Form.DL_Rank"
+### 4.057s elapsed time, 8.582s cpu time, 0.696s GC time
+Loading theory "BenOr_Kozen_Reif.More_Matrix" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root" via "Draft.Rank_Argument_General")
+instantiation
+  mat :: (conjugate) conjugate
+  conjugate_mat == conjugate :: 'a mat => 'a mat
+locale gd_term
+  fixes pair_of_term :: "'t => 'a * 'k"
+    and term_of_pair :: "'a * 'k => 't"
+    and ord :: "'a => 'a => bool"  (infixl \<open>\<preceq>\<close> 50)
+    and ord_strict :: "'a => 'a => bool"  (infixl \<open>\<prec>\<close> 50)
+    and
+    ord_term :: "'t => 't => bool"
+      (infixl \<open>\<preceq>\<^sub>t\<close> 50)
+    and
+    ord_term_strict :: "'t => 't => bool"
+      (infixl \<open>\<prec>\<^sub>t\<close> 50)
+  assumes
+    "gd_term pair_of_term term_of_pair (\<preceq>) (\<prec>)
+      (\<preceq>\<^sub>t) (\<prec>\<^sub>t)"
+locale vec_space
+  fixes f_ty :: "'a itself"
+    and n :: "nat"
+locale gd_powerprod
+  fixes ord :: "'a => 'a => bool"  (infixl \<open>\<preceq>\<close> 50)
+    and ord_strict :: "'a => 'a => bool"  (infixl \<open>\<prec>\<close> 50)
+  assumes "gd_powerprod (\<preceq>) (\<prec>)"
+locale conjugatable_vec_space
+  fixes f_ty :: "'a itself"
+    and n :: "nat"
+locale od_term
+  fixes pair_of_term :: "'t => 'a * 'k"
+    and term_of_pair :: "'a * 'k => 't"
+    and ord :: "'a => 'a => bool"  (infixl \<open>\<preceq>\<close> 50)
+    and ord_strict :: "'a => 'a => bool"  (infixl \<open>\<prec>\<close> 50)
+    and
+    ord_term :: "'t => 't => bool"
+      (infixl \<open>\<preceq>\<^sub>t\<close> 50)
+    and
+    ord_term_strict :: "'t => 't => bool"
+      (infixl \<open>\<prec>\<^sub>t\<close> 50)
+  assumes
+    "od_term pair_of_term term_of_pair (\<preceq>) (\<prec>)
+      (\<preceq>\<^sub>t) (\<prec>\<^sub>t)"
+locale conjugatable_vec_space
+  fixes f_ty :: "'a itself"
+    and n :: "nat"
+### theory "BenOr_Kozen_Reif.More_Matrix"
+### 2.072s elapsed time, 4.438s cpu time, 0.632s GC time
+### theory "Polynomials.MPoly_Type_Class_Ordered"
+### 6.380s elapsed time, 13.587s cpu time, 1.441s GC time
+Loading theory "Groebner_Bases.More_MPoly_Type_Class" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root" via "Draft.Matrix_Vector_Extras" via "Groebner_Bases.Macaulay_Matrix")
+locale module
+  fixes scale :: "'a => 'b => 'b"  (infixr \<open>*s\<close> 75)
+  assumes "module (*s)"
+locale ordered_term
+  fixes pair_of_term :: "'t => 'a * 'k"
+    and term_of_pair :: "'a * 'k => 't"
+    and ord :: "'a => 'a => bool"  (infixl \<open>\<preceq>\<close> 50)
+    and ord_strict :: "'a => 'a => bool"  (infixl \<open>\<prec>\<close> 50)
+    and
+    ord_term :: "'t => 't => bool"
+      (infixl \<open>\<preceq>\<^sub>t\<close> 50)
+    and
+    ord_term_strict :: "'t => 't => bool"
+      (infixl \<open>\<prec>\<^sub>t\<close> 50)
+  assumes
+    "ordered_term pair_of_term term_of_pair (\<preceq>) (\<prec>)
+      (\<preceq>\<^sub>t) (\<prec>\<^sub>t)"
+### theory "Groebner_Bases.More_MPoly_Type_Class"
+### 0.974s elapsed time, 1.219s cpu time, 0.140s GC time
+Loading theory "Groebner_Bases.Macaulay_Matrix" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root" via "Draft.Matrix_Vector_Extras")
+locale term_powerprod
+  fixes pair_of_term :: "'t => 'a * 'k"
+    and term_of_pair :: "'a * 'k => 't"
+  assumes "term_powerprod pair_of_term term_of_pair"
+[| Keys (set ?ps) <= set ?ts; ?v : carrier_vec (length ?ps) |]
+==> row_to_poly ?ts (?v \<^sub>v* polys_to_mat ?ts ?ps) =
+    sum_list (map2 (\<cdot>) (list_of_vec ?v) ?ps)
+locale ordered_term
+  fixes pair_of_term :: "'t => 'a * 'k"
+    and term_of_pair :: "'a * 'k => 't"
+    and ord :: "'a => 'a => bool"  (infixl \<open>\<preceq>\<close> 50)
+    and ord_strict :: "'a => 'a => bool"  (infixl \<open>\<prec>\<close> 50)
+    and
+    ord_term :: "'t => 't => bool"
+      (infixl \<open>\<preceq>\<^sub>t\<close> 50)
+    and
+    ord_term_strict :: "'t => 't => bool"
+      (infixl \<open>\<prec>\<^sub>t\<close> 50)
+  assumes
+    "ordered_term pair_of_term term_of_pair (\<preceq>) (\<prec>)
+      (\<preceq>\<^sub>t) (\<prec>\<^sub>t)"
+### theory "Groebner_Bases.Macaulay_Matrix"
+### 1.403s elapsed time, 1.612s cpu time, 0.279s GC time
+Loading theory "Draft.Matrix_Vector_Extras" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root")
+locale semiring_hom
+  fixes hom :: "'a => 'b"
+  assumes "semiring_hom hom"
+locale inj_zero_hom
+  fixes hom :: "'a => 'b"
+  assumes "inj_zero_hom hom"
+locale injective_lim
+  fixes A :: "'a set"
+    and f :: "'a => 'b"
+  assumes "injective_lim A f"
+locale injective_lim
+  fixes A :: "'a set"
+    and f :: "'a => 'b"
+  assumes "injective_lim A f"
+locale inj_on_01_hom
+  fixes hom :: "'a => 'b"
+  assumes "inj_on_01_hom hom"
+class zero_neq_one = one + zero +
+  assumes "zero_neq_one": "(0::'a) ~= (1::'a)"
+### theory "Draft.Matrix_Vector_Extras"
+### 0.953s elapsed time, 0.954s cpu time, 0.000s GC time
+Loading theory "Draft.Incidence_Matrices" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root")
+Loading theory "Draft.Vector_Matrix_Mod" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root")
+locale inj_zero_hom
+  fixes hom :: "'a => 'b"
+  assumes "inj_zero_hom hom"
+### Ignoring duplicate rewrite rule:
+### map_vec hom ?x1 = 0\<^sub>v ?n1 == ?x1 = 0\<^sub>v ?n1
+locale mat_mod
+  fixes m :: "int"
+  assumes "mat_mod m"
+### Ambiguous input (line 66 of "$AFP/Fishers_Inequality/Vector_Matrix_Mod.thy") produces 2 parse trees:
+### ("\<^const>Pure.eq" ("_applC" ("_position" vec_mod) ("_position" v))
+###   ("_applC" ("_position" map_vec)
+###     ("_cargs"
+###       ("_lambda" ("_position" x)
+###         ("\<^const>Rings.modulo_class.modulo" ("_position" x)
+###           ("_position" m)))
+###       ("_position" v))))
+### ("\<^const>Pure.eq" ("_applC" ("_position" vec_mod) ("_position" v))
+###   ("_applC" ("_position" map_vec)
+###     ("_cargs"
+###       ("_lambda" ("_position" x)
+###         ("\<^const>MPoly_Type.mod" ("_position" x) ("_position" m)))
+###       ("_position" v))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ambiguous input (line 74 of "$AFP/Fishers_Inequality/Vector_Matrix_Mod.thy") produces 2 parse trees:
+### ("\<^const>Pure.imp"
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^const>Orderings.ord_class.less" ("_position" i)
+###       ("_applC" ("_position" dim_vec) ("_position" v))))
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^const>HOL.eq"
+###       ("\<^const>Matrix.vec_index"
+###         ("_applC" ("_position" vec_mod) ("_position" v)) ("_position" i))
+###       ("\<^const>Rings.modulo_class.modulo"
+###         ("\<^const>Matrix.vec_index" ("_position" v) ("_position" i))
+###         ("_position" m)))))
+### ("\<^const>Pure.imp"
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^const>Orderings.ord_class.less" ("_position" i)
+###       ("_applC" ("_position" dim_vec) ("_position" v))))
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^const>HOL.eq"
+###       ("\<^const>Matrix.vec_index"
+###         ("_applC" ("_position" vec_mod) ("_position" v)) ("_position" i))
+###       ("\<^const>MPoly_Type.mod"
+###         ("\<^const>Matrix.vec_index" ("_position" v) ("_position" i))
+###         ("_position" m)))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ambiguous input (line 93 of "$AFP/Fishers_Inequality/Vector_Matrix_Mod.thy") produces 2 parse trees:
+### ("\<^const>Pure.eq" ("_applC" ("_position" mat_mod) ("_position" M))
+###   ("_applC" ("_position" map_mat)
+###     ("_cargs"
+###       ("_lambda" ("_position" x)
+###         ("\<^const>Rings.modulo_class.modulo" ("_position" x)
+###           ("_position" m)))
+###       ("_position" M))))
+### ("\<^const>Pure.eq" ("_applC" ("_position" mat_mod) ("_position" M))
+###   ("_applC" ("_position" map_mat)
+###     ("_cargs"
+###       ("_lambda" ("_position" x)
+###         ("\<^const>MPoly_Type.mod" ("_position" x) ("_position" m)))
+###       ("_position" M))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ambiguous input (line 98 of "$AFP/Fishers_Inequality/Vector_Matrix_Mod.thy") produces 2 parse trees:
+### ("\<^const>Pure.imp"
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^const>Orderings.ord_class.less" ("_position" i)
+###       ("_applC" ("_position" dim_row) ("_position" M))))
+###   ("\<^const>Pure.imp"
+###     ("\<^const>HOL.Trueprop"
+###       ("\<^const>Orderings.ord_class.less" ("_position" j)
+###         ("_applC" ("_position" dim_col) ("_position" M))))
+###     ("\<^const>HOL.Trueprop"
+###       ("\<^const>HOL.eq"
+###         ("\<^const>Matrix.index_mat"
+###           ("_applC" ("_position" mat_mod) ("_position" M))
+###           ("_tuple" ("_position" i) ("_tuple_arg" ("_position" j))))
+###         ("\<^const>Rings.modulo_class.modulo"
+###           ("\<^const>Matrix.index_mat" ("_position" M)
+###             ("_tuple" ("_position" i) ("_tuple_arg" ("_position" j))))
+###           ("_position" m))))))
+### ("\<^const>Pure.imp"
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^const>Orderings.ord_class.less" ("_position" i)
+###       ("_applC" ("_position" dim_row) ("_position" M))))
+###   ("\<^const>Pure.imp"
+###     ("\<^const>HOL.Trueprop"
+###       ("\<^const>Orderings.ord_class.less" ("_position" j)
+###         ("_applC" ("_position" dim_col) ("_position" M))))
+###     ("\<^const>HOL.Trueprop"
+###       ("\<^const>HOL.eq"
+###         ("\<^const>Matrix.index_mat"
+###           ("_applC" ("_position" mat_mod) ("_position" M))
+###           ("_tuple" ("_position" i) ("_tuple_arg" ("_position" j))))
+###         ("\<^const>MPoly_Type.mod"
+###           ("\<^const>Matrix.index_mat" ("_position" M)
+###             ("_tuple" ("_position" i) ("_tuple_arg" ("_position" j))))
+###           ("_position" m))))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ambiguous input (line 110 of "$AFP/Fishers_Inequality/Vector_Matrix_Mod.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>Set.member"
+###     ("\<^const>Rings.modulo_class.modulo" ("_position" x) ("_position" m))
+###     ("_applC" ("_position" elements_mat)
+###       ("_applC" ("_position" mat_mod) ("_position" M)))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>Set.member"
+###     ("\<^const>MPoly_Type.mod" ("_position" x) ("_position" m))
+###     ("_applC" ("_position" elements_mat)
+###       ("_applC" ("_position" mat_mod) ("_position" M)))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ambiguous input (line 120 of "$AFP/Fishers_Inequality/Vector_Matrix_Mod.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" elements_mat)
+###       ("_applC" ("_position" mat_mod) ("_position" M)))
+###     ("\<^const>Set.image"
+###       ("_lambda" ("_position" x)
+###         ("\<^const>MPoly_Type.mod" ("_position" x) ("_position" m)))
+###       ("_applC" ("_position" elements_mat) ("_position" M)))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" elements_mat)
+###       ("_applC" ("_position" mat_mod) ("_position" M)))
+###     ("\<^const>Set.image"
+###       ("_lambda" ("_position" x)
+###         ("\<^const>Rings.modulo_class.modulo" ("_position" x)
+###           ("_position" m)))
+###       ("_applC" ("_position" elements_mat) ("_position" M)))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+locale mod_type
+  fixes m :: "int"
+    and ty :: "'a itself"
+  assumes "mod_type TYPE('a) m"
+### Ambiguous input (line 194 of "$AFP/Fishers_Inequality/Vector_Matrix_Mod.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq" ("_applC" ("_position" M) ("_position" x))
+###     ("\<^const>Rings.modulo_class.modulo" ("_position" x) ("_position" m))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq" ("_applC" ("_position" M) ("_position" x))
+###     ("\<^const>MPoly_Type.mod" ("_position" x) ("_position" m))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+locale mat_mod_type
+  fixes m :: "int"
+    and ty :: "'a itself"
+  assumes "mat_mod_type TYPE('a) m"
+### Ambiguous input (line 281 of "$AFP/Fishers_Inequality/Vector_Matrix_Mod.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" to_int_mod_ring)
+###       ("\<^const>Groups.plus_class.plus"
+###         ("_constrain" ("_position" x)
+###           ("_tapp" ("_position_sort" 'a) ("_type_name" mod_ring)))
+###         ("_position" y)))
+###     ("\<^const>Rings.modulo_class.modulo"
+###       ("\<^const>Groups.plus_class.plus"
+###         ("_applC" ("_position" to_int_mod_ring) ("_position" x))
+###         ("_applC" ("_position" to_int_mod_ring) ("_position" y)))
+###       ("_position" m))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" to_int_mod_ring)
+###       ("\<^const>Groups.plus_class.plus"
+###         ("_constrain" ("_position" x)
+###           ("_tapp" ("_position_sort" 'a) ("_type_name" mod_ring)))
+###         ("_position" y)))
+###     ("\<^const>MPoly_Type.mod"
+###       ("\<^const>Groups.plus_class.plus"
+###         ("_applC" ("_position" to_int_mod_ring) ("_position" x))
+###         ("_applC" ("_position" to_int_mod_ring) ("_position" y)))
+###       ("_position" m))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ambiguous input (line 284 of "$AFP/Fishers_Inequality/Vector_Matrix_Mod.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" to_int_mod_ring)
+###       ("\<^const>Groups.times_class.times"
+###         ("_constrain" ("_position" x)
+###           ("_tapp" ("_position_sort" 'a) ("_type_name" mod_ring)))
+###         ("_position" y)))
+###     ("\<^const>Rings.modulo_class.modulo"
+###       ("\<^const>Groups.times_class.times"
+###         ("_applC" ("_position" to_int_mod_ring) ("_position" x))
+###         ("_applC" ("_position" to_int_mod_ring) ("_position" y)))
+###       ("_position" m))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" to_int_mod_ring)
+###       ("\<^const>Groups.times_class.times"
+###         ("_constrain" ("_position" x)
+###           ("_tapp" ("_position_sort" 'a) ("_type_name" mod_ring)))
+###         ("_position" y)))
+###     ("\<^const>MPoly_Type.mod"
+###       ("\<^const>Groups.times_class.times"
+###         ("_applC" ("_position" to_int_mod_ring) ("_position" x))
+###         ("_applC" ("_position" to_int_mod_ring) ("_position" y)))
+###       ("_position" m))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ambiguous input (line 340 of "$AFP/Fishers_Inequality/Vector_Matrix_Mod.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("\<^const>Rings.modulo_class.modulo"
+###       ("\<^const>Matrix.index_mat" ("_position" N)
+###         ("_tuple" ("_position" i) ("_tuple_arg" ("_position" j))))
+###       ("_position" m))
+###     ("_applC" ("_position" to_int_mod_ring)
+###       ("\<^const>Matrix.index_mat" ("_position" N')
+###         ("_tuple" ("_position" i) ("_tuple_arg" ("_position" j)))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("\<^const>MPoly_Type.mod"
+###       ("\<^const>Matrix.index_mat" ("_position" N)
+###         ("_tuple" ("_position" i) ("_tuple_arg" ("_position" j))))
+###       ("_position" m))
+###     ("_applC" ("_position" to_int_mod_ring)
+###       ("\<^const>Matrix.index_mat" ("_position" N')
+###         ("_tuple" ("_position" i) ("_tuple_arg" ("_position" j)))))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ambiguous input (line 374 of "$AFP/Fishers_Inequality/Vector_Matrix_Mod.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("\<^const>Rings.modulo_class.modulo"
+###       ("_applC" ("_position" to_int_mod_ring)
+###         ("_constrain" ("_position" x)
+###           ("_tapp" ("_position_sort" 'a) ("_type_name" mod_ring))))
+###       ("_position" m))
+###     ("_applC" ("_position" to_int_mod_ring) ("_position" x))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("\<^const>MPoly_Type.mod"
+###       ("_applC" ("_position" to_int_mod_ring)
+###         ("_constrain" ("_position" x)
+###           ("_tapp" ("_position_sort" 'a) ("_type_name" mod_ring))))
+###       ("_position" m))
+###     ("_applC" ("_position" to_int_mod_ring) ("_position" x))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ambiguous input (line 399 of "$AFP/Fishers_Inequality/Vector_Matrix_Mod.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" to_int_mod_ring)
+###       ("_constrain" ("_applC" ("_position" of_int) ("_position" x))
+###         ("_tapp" ("_position_sort" 'a) ("_type_name" mod_ring))))
+###     ("\<^const>Rings.modulo_class.modulo" ("_position" x) ("_position" m))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" to_int_mod_ring)
+###       ("_constrain" ("_applC" ("_position" of_int) ("_position" x))
+###         ("_tapp" ("_position_sort" 'a) ("_type_name" mod_ring))))
+###     ("\<^const>MPoly_Type.mod" ("_position" x) ("_position" m))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+locale zero_one_matrix
+  fixes matrix :: "'b mat"  (\<open>M\<close>)
+  assumes "zero_one_matrix M"
+### theory "Draft.Vector_Matrix_Mod"
+### 1.200s elapsed time, 2.576s cpu time, 0.352s GC time
+locale zero_one_matrix_ring_1
+  fixes M :: "'b mat"
+  assumes "zero_one_matrix_ring_1 M"
+locale ordered_incidence_system
+  fixes \<V>s :: "'a list"
+    and \<B>s :: "'a set list"
+  assumes "ordered_incidence_system \<V>s \<B>s"
+locale ordered_incidence_system
+  fixes \<V>s :: "'a list"
+    and \<B>s :: "'a set list"
+  assumes "ordered_incidence_system \<V>s \<B>s"
+locale ordered_design
+  fixes \<V>s :: "'a list"
+    and \<B>s :: "'a set list"
+  assumes "ordered_design \<V>s \<B>s"
+locale ordered_simple_design
+  fixes \<V>s :: "'a list"
+    and \<B>s :: "'a set list"
+  assumes "ordered_simple_design \<V>s \<B>s"
+locale ordered_proper_design
+  fixes \<V>s :: "'a list"
+    and \<B>s :: "'a set list"
+  assumes "ordered_proper_design \<V>s \<B>s"
+locale ordered_constant_rep
+  fixes \<V>s :: "'a list"
+    and \<B>s :: "'a set list"
+    and \<r> :: "nat"
+  assumes "ordered_constant_rep \<V>s \<B>s \<r>"
+locale ordered_block_design
+  fixes \<V>s :: "'a list"
+    and \<B>s :: "'a set list"
+    and \<k> :: "nat"
+  assumes "ordered_block_design \<V>s \<B>s \<k>"
+locale ordered_incomplete_design
+  fixes \<V>s :: "'a list"
+    and \<B>s :: "'a set list"
+    and \<k> :: "nat"
+  assumes "ordered_incomplete_design \<V>s \<B>s \<k>"
+locale ordered_t_wise_balance
+  fixes \<V>s :: "'a list"
+    and \<B>s :: "'a set list"
+    and \<t> :: "nat"
+    and \<Lambda>\<^sub>t :: "nat"
+  assumes "ordered_t_wise_balance \<V>s \<B>s \<t> \<Lambda>\<^sub>t"
+locale ordered_pairwise_balance
+  fixes \<V>s :: "'a list"
+    and \<B>s :: "'a set list"
+    and \<Lambda> :: "nat"
+  assumes "ordered_pairwise_balance \<V>s \<B>s \<Lambda>"
+locale pairwise_balance
+  fixes point_set :: "'a set"  (\<open>\<V>\<close>)
+    and block_collection :: "'a set multiset"  (\<open>\<B>\<close>)
+    and index :: "nat"  (\<open>\<Lambda>\<close>)
+  assumes "pairwise_balance \<V> \<B> \<Lambda>"
+locale ordered_regular_pairwise_balance
+  fixes \<V>s :: "'a list"
+    and \<B>s :: "'a set list"
+    and \<Lambda> :: "nat"
+    and \<r> :: "nat"
+  assumes "ordered_regular_pairwise_balance \<V>s \<B>s \<Lambda> \<r>"
+locale ordered_regular_pairwise_balance
+  fixes \<V>s :: "'a list"
+    and \<B>s :: "'a set list"
+    and \<Lambda> :: "nat"
+    and \<r> :: "nat"
+  assumes "ordered_regular_pairwise_balance \<V>s \<B>s \<Lambda> \<r>"
+locale ordered_bibd
+  fixes \<V>s :: "'a list"
+    and \<B>s :: "'a set list"
+    and \<k> :: "nat"
+    and \<Lambda> :: "nat"
+  assumes "ordered_bibd \<V>s \<B>s \<k> \<Lambda>"
+locale ordered_sym_bibd
+  fixes \<V>s :: "'a list"
+    and \<B>s :: "'a set list"
+    and \<k> :: "nat"
+    and \<Lambda> :: "nat"
+  assumes "ordered_sym_bibd \<V>s \<B>s \<k> \<Lambda>"
+locale ordered_const_intersect_design
+  fixes \<V>s :: "'a list"
+    and \<B>s :: "'a set list"
+    and \<m> :: "nat"
+  assumes "ordered_const_intersect_design \<V>s \<B>s \<m>"
+locale simp_ordered_const_intersect_design
+  fixes \<V>s :: "'a list"
+    and \<B>s :: "'a set list"
+    and \<m> :: "nat"
+  assumes "simp_ordered_const_intersect_design \<V>s \<B>s \<m>"
+locale zero_one_matrix
+  fixes matrix :: "'b mat"  (\<open>M\<close>)
+  assumes "zero_one_matrix M"
+locale zero_one_matrix_ring_1
+  fixes M :: "'b mat"
+  assumes "zero_one_matrix_ring_1 M"
+locale zero_one_matrix_int
+  fixes M :: "int mat"
+  assumes "zero_one_matrix_int M"
+locale two_ordered_sys
+  fixes \<V>s :: "'a list"
+    and \<B>s :: "'a set list"
+    and \<V>s' :: "'b list"
+    and \<B>s' :: "'b set list"
+  assumes "two_ordered_sys \<V>s \<B>s \<V>s' \<B>s'"
+locale incidence_system_isomorphism
+  fixes \<V> :: "'a set"
+    and \<B> :: "'a set multiset"
+    and \<V>' :: "'b set"
+    and \<B>' :: "'b set multiset"
+    and bij_map :: "'a => 'b"  (\<open>\<pi>\<close>)
+  assumes "incidence_system_isomorphism \<V> \<B> \<V>' \<B>' \<pi>"
+### theory "Draft.Incidence_Matrices"
+### 2.669s elapsed time, 4.172s cpu time, 0.558s GC time
+Loading theory "Draft.Dual_Systems" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root")
+Loading theory "Draft.Linear_Bound_Argument" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root")
+locale ordered_incidence_system
+  fixes \<V>s :: "'a list"
+    and \<B>s :: "'a set list"
+  assumes "ordered_incidence_system \<V>s \<B>s"
+locale ordered_design
+  fixes \<V>s :: "'a list"
+    and \<B>s :: "'a set list"
+  assumes "ordered_design \<V>s \<B>s"
+locale ordered_proper_design
+  fixes \<V>s :: "'a list"
+    and \<B>s :: "'a set list"
+  assumes "ordered_proper_design \<V>s \<B>s"
+locale ordered_block_design
+  fixes \<V>s :: "'a list"
+    and \<B>s :: "'a set list"
+    and \<k> :: "nat"
+  assumes "ordered_block_design \<V>s \<B>s \<k>"
+locale ordered_constant_rep
+  fixes \<V>s :: "'a list"
+    and \<B>s :: "'a set list"
+    and \<r> :: "nat"
+  assumes "ordered_constant_rep \<V>s \<B>s \<r>"
+locale ordered_pairwise_balance
+  fixes \<V>s :: "'a list"
+    and \<B>s :: "'a set list"
+    and \<Lambda> :: "nat"
+  assumes "ordered_pairwise_balance \<V>s \<B>s \<Lambda>"
+locale ordered_const_intersect_design
+  fixes \<V>s :: "'a list"
+    and \<B>s :: "'a set list"
+    and \<m> :: "nat"
+  assumes "ordered_const_intersect_design \<V>s \<B>s \<m>"
+locale ordered_sym_bibd
+  fixes \<V>s :: "'a list"
+    and \<B>s :: "'a set list"
+    and \<k> :: "nat"
+    and \<Lambda> :: "nat"
+  assumes "ordered_sym_bibd \<V>s \<B>s \<k> \<Lambda>"
+locale ordered_incidence_system
+  fixes \<V>s :: "'a list"
+    and \<B>s :: "'a set list"
+  assumes "ordered_incidence_system \<V>s \<B>s"
+### theory "Draft.Dual_Systems"
+### 0.774s elapsed time, 1.614s cpu time, 0.136s GC time
+Loading theory "Draft.Rank_Argument_General" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root")
+locale vec_space
+  fixes f_ty :: "'a itself"
+    and n :: "nat"
+### theory "Draft.Linear_Bound_Argument"
+### 1.280s elapsed time, 2.685s cpu time, 0.269s GC time
+Found termination order: "(%p. size_list size (fst (snd p))) <*mlex*> {}"
+Found termination order: "(%p. size_list size (fst (snd p))) <*mlex*> {}"
+Found termination order:
+  "(%p. size_list size (fst (snd (snd p)))) <*mlex*> {}"
+Found termination order:
+  "(%p. size_list size (fst (snd (snd p)))) <*mlex*> {}"
+### theory "Draft.Rank_Argument_General"
+### 1.246s elapsed time, 1.878s cpu time, 0.218s GC time
+Loading theory "Draft.Fishers_Inequality" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root")
+Loading theory "Draft.Fishers_Inequality_Variations" (required by "Draft.Fishers_Inequality_RootMoreTemplates" via "Draft.Fishers_Inequality_Root")
+locale ordered_bibd
+  fixes \<V>s :: "'a list"
+    and \<B>s :: "'a set list"
+    and \<k> :: "nat"
+    and \<Lambda> :: "nat"
+  assumes "ordered_bibd \<V>s \<B>s \<k> \<Lambda>"
+locale simp_ordered_const_intersect_design
+  fixes \<V>s :: "'a list"
+    and \<B>s :: "'a set list"
+    and \<m> :: "nat"
+  assumes "simp_ordered_const_intersect_design \<V>s \<B>s \<m>"
+locale ordered_pairwise_balance
+  fixes \<V>s :: "'a list"
+    and \<B>s :: "'a set list"
+    and \<Lambda> :: "nat"
+  assumes "ordered_pairwise_balance \<V>s \<B>s \<Lambda>"
+### theory "Draft.Fishers_Inequality"
+### 0.576s elapsed time, 1.216s cpu time, 0.151s GC time
+locale mat_mod
+  fixes m :: "int"
+  assumes "Vector_Matrix_Mod.mat_mod m"
+locale mat_mod_type
+  fixes m :: "int"
+    and ty :: "'a itself"
+  assumes "mat_mod_type TYPE('a) m"
+locale odd_town
+  fixes \<V>s :: "'a list"
+    and \<B>s :: "'a set list"
+  assumes "odd_town \<V>s \<B>s"
+locale odd_town
+  fixes \<V>s :: "'a list"
+    and \<B>s :: "'a set list"
+  assumes "odd_town \<V>s \<B>s"
+### theory "Draft.Fishers_Inequality_Variations"
+### 1.072s elapsed time, 1.727s cpu time, 0.151s GC time
+Loading theory "Draft.Fishers_Inequality_Root" (required by "Draft.Fishers_Inequality_RootMoreTemplates")
+### theory "Draft.Fishers_Inequality_Root"
+### 0.429s elapsed time, 0.520s cpu time, 0.124s GC time
+Loading theory "Draft.Fishers_Inequality_RootMoreTemplates"
+val templateLemmas = []: (string * thm * template) list
+### theory "Draft.Fishers_Inequality_RootMoreTemplates"
+### 1.220s elapsed time, 1.779s cpu time, 0.204s GC time
+val it = (): unit

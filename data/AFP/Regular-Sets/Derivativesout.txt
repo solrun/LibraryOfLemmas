@@ -1,0 +1,774 @@
+Loading theory "Draft.Regular_Set" (required by "Draft.DerivativesTemplates" via "Draft.Derivatives" via "Draft.Regular_Exp")
+Loading theory "Draft.Templates" (required by "Draft.DerivativesTemplates" via "Draft.ExtrEqs")
+overloading
+  lang_pow \<equiv> compow :: nat => 'a list set => 'a list set
+consts
+  lang_pow :: "nat => 'a list set => 'a list set"
+datatype template_term
+=
+     t_empty
+   | template_app of template_term * template_term
+   | template_hole of int
+   | template_var of int
+datatype sign
+= equals | greater_equals | greater_than | less_equals | less_than
+datatype template
+=
+     template_bimplication of template * template
+   | template_dunno
+   | template_equation of template_term * template_term
+   | template_implication of template list * template
+   | template_inequation of sign * template_term * template_term
+   | template_negation of template
+   | template_predicate of template_term
+constructor t_empty: template_term
+constructor template_app: template_term * template_term -> template_term
+constructor template_hole: int -> template_term
+constructor template_var: int -> template_term
+constructor equals: sign
+constructor greater_equals: sign
+constructor greater_than: sign
+constructor less_equals: sign
+constructor less_than: sign
+constructor template_bimplication: template * template -> template
+constructor template_dunno: template
+constructor template_equation: template_term * template_term -> template
+constructor template_implication: template list * template -> template
+constructor template_inequation:
+   sign * template_term * template_term -> template
+constructor template_negation: template -> template
+constructor template_predicate: template_term -> template
+val vfs = fn: term -> (indexname * typ) list * (string * typ) list
+val indexOf = fn: ''a list -> ''a -> int -> int
+val has_eq = fn: term -> bool
+val term2template = fn:
+   (indexname * typ) list -> (string * typ) list -> term -> template_term
+val lemma2predicate = fn: term -> term -> template
+val makeTemplatewithContext = fn: term -> term -> template
+val lemma2template = fn: term -> template
+val thm2template = fn: thm -> template
+val tterm2string = fn: template_term -> string
+val template2string = fn: template -> string
+val t = "height ?t <= size ?t": thm
+val th =
+   Const ("HOL.Trueprop", "bool => prop") $
+     (Const ("Orderings.ord_class.less_eq", "nat => nat => bool") $
+       (Const ("Tree.height_class.height", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree")) $
+       (Const ("Nat.size_class.size", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree"))):
+   term
+### theory "Draft.Templates"
+### 0.065s elapsed time, 0.158s cpu time, 0.000s GC time
+Loading theory "Draft.ExtrEqs" (required by "Draft.DerivativesTemplates")
+### theory "Draft.Regular_Set"
+### 0.209s elapsed time, 0.455s cpu time, 0.037s GC time
+Loading theory "Draft.Regular_Exp" (required by "Draft.DerivativesTemplates" via "Draft.Derivatives")
+val eqpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Var (("_dummy_", 2), "?'a"))
+       ):
+   term Find_Theorems.criterion
+val badeqpattern = Pattern (Const ("Pure.eq", "?'a => ?'a => prop")):
+   term Find_Theorems.criterion
+val undefpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Const ("HOL.undefined", "?'a"))
+       ):
+   term Find_Theorems.criterion
+val thmpattern =
+   Pattern
+    (Const ("HOL.Trueprop", "bool => prop") $ Var (("_dummy_", 1), "bool")):
+   term Find_Theorems.criterion
+val badnames =
+   ["*nitpick*", "*Nitpick*", "*full_exhaustive*", "*_def*", "Enum.finite*",
+    "*Quickcheck*", "ATP*", "*Nunchaku*", "*Code*", "*BNF*", "*SMT*",
+    "*.*.*"]:
+   string list
+val unwanted_names =
+   [(false, Name "*nitpick*"), (false, Name "*Nitpick*"),
+    (false, Name "*full_exhaustive*"), (false, Name "*_def*"),
+    (false, Name "Enum.finite*"), (false, Name "*Quickcheck*"),
+    (false, Name "ATP*"), (false, Name "*Nunchaku*"),
+    (false, Name "*Code*"), (false, Name "*BNF*"), (false, Name "*SMT*"),
+    (false, Name "*.*.*")]:
+   (bool * term Find_Theorems.criterion) list
+val has_vars = fn: term -> bool
+val get_all_eqs = fn: string -> Proof.context -> (string * thm) list
+val get_all_thms = fn: string -> Proof.context -> (string * thm) list
+val get_noneq_thms = fn: string -> Proof.context -> (string * thm) list
+val template_eqs = fn:
+   string -> Proof.context -> (string * thm * template) list
+val template_thms = fn:
+   string -> Proof.context -> (string * thm * template) list
+### theory "Draft.ExtrEqs"
+### 0.533s elapsed time, 1.105s cpu time, 0.119s GC time
+consts
+  lang :: "'a rexp => 'a list set"
+consts
+  nullable :: "'a rexp => bool"
+consts
+  rexp_empty :: "'a rexp => bool"
+instantiation
+  rexp :: (order) order
+  less_eq_rexp == less_eq :: 'a rexp => 'a rexp => bool
+  less_rexp == less :: 'a rexp => 'a rexp => bool
+Found termination order: "(%p. size (snd p)) <*mlex*> {}"
+instantiation
+  rexp :: (linorder) linorder
+### theory "Draft.Regular_Exp"
+### 1.553s elapsed time, 2.233s cpu time, 0.213s GC time
+Loading theory "Draft.Derivatives" (required by "Draft.DerivativesTemplates")
+consts
+  deriv :: "'a => 'a rexp => 'a rexp"
+consts
+  derivs :: "'a list => 'a rexp => 'a rexp"
+consts
+  pderiv :: "'a => 'a rexp => 'a rexp set"
+consts
+  pderivs :: "'a list => 'a rexp => 'a rexp set"
+Found termination order: "size <*mlex*> {}"
+### theory "Draft.Derivatives"
+### 0.233s elapsed time, 0.279s cpu time, 0.047s GC time
+Loading theory "Draft.DerivativesTemplates"
+val templateLemmas =
+   [("Derivatives.finite_pderivs_lang", "finite (pderivs_lang ?A ?r)",
+     template_predicate
+      (
+         template_app
+          (template_hole 1,
+           template_app
+            (template_app (template_hole 0, template_var 1),
+             template_var 0))
+         )),
+    ("Derivatives.finite_pderivs_lang_UNIV1",
+     "finite (pderivs_lang UNIV1 ?r)",
+     template_predicate
+      (
+         template_app
+          (template_hole 2,
+           template_app
+            (template_app (template_hole 1, template_hole 0),
+             template_var 0))
+         )),
+    ("Derivatives.finite_pderivs_lang_UNIV",
+     "finite (pderivs_lang UNIV ?r)",
+     template_predicate
+      (
+         template_app
+          (template_hole 2,
+           template_app
+            (template_app (template_hole 1, template_hole 0),
+             template_var 0))
+         )),
+    ("Derivatives.card_pderivs_lang_UNIV1_le_awidth",
+     "card (pderivs_lang UNIV1 ?r) <= awidth ?r",
+     template_inequation
+      (less_equals,
+       template_app
+        (template_hole 3,
+         template_app
+          (template_app (template_hole 2, template_hole 1),
+           template_var 0)),
+       template_app (template_hole 0, template_var 0))),
+    ("Derivatives.atoms_deriv_subset", "atoms (deriv ?x ?r) <= atoms ?r",
+     template_inequation
+      (less_equals,
+       template_app
+        (template_hole 1,
+         template_app
+          (template_app (template_hole 0, template_var 1), template_var 0)),
+       template_app (template_hole 1, template_var 0))),
+    ("Derivatives.atoms_derivs_subset", "atoms (derivs ?w ?r) <= atoms ?r",
+     template_inequation
+      (less_equals,
+       template_app
+        (template_hole 1,
+         template_app
+          (template_app (template_hole 0, template_var 1), template_var 0)),
+       template_app (template_hole 1, template_var 0))),
+    ("Derivatives.pderivs_lang_Atom",
+     "pderivs_lang UNIV1 (Atom ?c) = {One}",
+     template_equation
+      (template_app
+        (template_app (template_hole 5, template_hole 4),
+         template_app (template_hole 3, template_var 0)),
+       template_app
+        (template_app (template_hole 2, template_hole 1),
+         template_hole 0))),
+    ("Derivatives.matcher_correctness", "matcher ?r ?s = (?s : lang ?r)",
+     template_equation
+      (template_app
+        (template_app (template_hole 2, template_var 1), template_var 0),
+       template_app
+        (template_app (template_hole 1, template_var 0),
+         template_app (template_hole 0, template_var 1)))),
+    ("Derivatives.lang_deriv", "lang (deriv ?c ?r) = Deriv ?c (lang ?r)",
+     template_equation
+      (template_app
+        (template_hole 2,
+         template_app
+          (template_app (template_hole 1, template_var 1), template_var 0)),
+       template_app
+        (template_app (template_hole 0, template_var 1),
+         template_app (template_hole 2, template_var 0)))),
+    ("Derivatives.lang_derivs", "lang (derivs ?s ?r) = Derivs ?s (lang ?r)",
+     template_equation
+      (template_app
+        (template_hole 2,
+         template_app
+          (template_app (template_hole 1, template_var 1), template_var 0)),
+       template_app
+        (template_app (template_hole 0, template_var 1),
+         template_app (template_hole 2, template_var 0)))),
+    ("Derivatives.card_pderivs_lang_le_awidth",
+     "card (pderivs_lang ?A ?r) <= awidth ?r + 1",
+     template_inequation
+      (less_equals,
+       template_app
+        (template_hole 4,
+         template_app
+          (template_app (template_hole 3, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 2, template_app (template_hole 1, template_var 0)),
+         template_hole 0))),
+    ("Derivatives.card_pderivs_lang_UNIV_le_awidth",
+     "card (pderivs_lang UNIV ?r) <= awidth ?r + 1",
+     template_inequation
+      (less_equals,
+       template_app
+        (template_hole 5,
+         template_app
+          (template_app (template_hole 4, template_hole 3),
+           template_var 0)),
+       template_app
+        (template_app
+          (template_hole 2, template_app (template_hole 1, template_var 0)),
+         template_hole 0))),
+    ("Derivatives.Deriv_pderiv",
+     "Deriv ?c (lang ?r) = \<Union> (lang ` pderiv ?c ?r)",
+     template_equation
+      (template_app
+        (template_app (template_hole 4, template_var 1),
+         template_app (template_hole 3, template_var 0)),
+       template_app
+        (template_hole 2,
+         template_app
+          (template_app (template_hole 1, template_hole 3),
+           template_app
+            (template_app (template_hole 0, template_var 1),
+             template_var 0))))),
+    ("Derivatives.Derivs_pderivs",
+     "Derivs ?s (lang ?r) = \<Union> (lang ` pderivs ?s ?r)",
+     template_equation
+      (template_app
+        (template_app (template_hole 4, template_var 1),
+         template_app (template_hole 3, template_var 0)),
+       template_app
+        (template_hole 2,
+         template_app
+          (template_app (template_hole 1, template_hole 3),
+           template_app
+            (template_app (template_hole 0, template_var 1),
+             template_var 0))))),
+    ("Derivatives.deriv_pderiv",
+     "\<Union> (lang ` pderiv ?c ?r) = lang (deriv ?c ?r)",
+     template_equation
+      (template_app
+        (template_hole 4,
+         template_app
+          (template_app (template_hole 3, template_hole 2),
+           template_app
+            (template_app (template_hole 1, template_var 1),
+             template_var 0))),
+       template_app
+        (template_hole 2,
+         template_app
+          (template_app (template_hole 0, template_var 1),
+           template_var 0)))),
+    ("Derivatives.derivs_pderivs",
+     "\<Union> (lang ` pderivs ?s ?r) = lang (derivs ?s ?r)",
+     template_equation
+      (template_app
+        (template_hole 4,
+         template_app
+          (template_app (template_hole 3, template_hole 2),
+           template_app
+            (template_app (template_hole 1, template_var 1),
+             template_var 0))),
+       template_app
+        (template_hole 2,
+         template_app
+          (template_app (template_hole 0, template_var 1),
+           template_var 0)))),
+    ("Derivatives.pderivs_lang_UNIV",
+     "pderivs_lang UNIV ?r = pderivs [] ?r Un pderivs_lang UNIV1 ?r",
+     template_equation
+      (template_app
+        (template_app (template_hole 5, template_hole 4), template_var 0),
+       template_app
+        (template_app
+          (template_hole 3,
+           template_app
+            (template_app (template_hole 2, template_hole 1),
+             template_var 0)),
+         template_app
+          (template_app (template_hole 5, template_hole 0),
+           template_var 0)))),
+    ("Derivatives.pderivs_Atom", "pderivs ?s (Atom ?c) <= {Atom ?c, One}",
+     template_inequation
+      (less_equals,
+       template_app
+        (template_app (template_hole 4, template_var 1),
+         template_app (template_hole 3, template_var 0)),
+       template_app
+        (template_app
+          (template_hole 2, template_app (template_hole 3, template_var 0)),
+         template_app
+          (template_app (template_hole 2, template_hole 1),
+           template_hole 0)))),
+    ("Derivatives.pderivs_simps",
+     "pderivs ?s One = (if ?s = [] then {One} else {})",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 6, template_var 0),
+              template_hole 5)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_hole 4,
+                 template_app
+                  (template_app (template_hole 3, template_var 0),
+                   template_hole 2)),
+               template_app
+                (template_app (template_hole 1, template_hole 5),
+                 template_hole 0)),
+             template_hole 0)
+           ))),
+    ("Derivatives.pderivs_simps",
+     "pderivs ?s Zero = (if ?s = [] then {Zero} else {})",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 6, template_var 0),
+              template_hole 5)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_hole 4,
+                 template_app
+                  (template_app (template_hole 3, template_var 0),
+                   template_hole 2)),
+               template_app
+                (template_app (template_hole 1, template_hole 5),
+                 template_hole 0)),
+             template_hole 0)
+           ))),
+    ("Derivatives.pderivs_lang_subset",
+     "?A <= ?B ==> pderivs_lang ?A ?r <= pderivs_lang ?B ?r",
+     template_implication
+      ([template_inequation (less_equals, template_var 2, template_var 1)],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_app (template_hole 0, template_var 2), template_var 0),
+         template_app
+          (template_app (template_hole 0, template_var 1),
+           template_var 0)))),
+    ("Derivatives.pderivs_append",
+     "pderivs (?s1.0 @ ?s2.0) ?r = pderivs_set ?s2.0 (pderivs ?s1.0 ?r)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 3,
+           template_app
+            (template_app (template_hole 2, template_var 2),
+             template_var 1)),
+         template_var 0),
+       template_app
+        (template_hole 1,
+         template_app
+          (template_app
+            (template_hole 0,
+             template_app (template_hole 3, template_var 1)),
+           template_app
+            (template_app (template_hole 3, template_var 2),
+             template_var 0))))),
+    ("Derivatives.pderivs_lang_Plus",
+     "pderivs_lang UNIV1 (Plus ?r1.0 ?r2.0) =
+      pderivs_lang UNIV1 ?r1.0 Un pderivs_lang UNIV1 ?r2.0",
+     template_equation
+      (template_app
+        (template_app (template_hole 3, template_hole 2),
+         template_app
+          (template_app (template_hole 1, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 0,
+           template_app
+            (template_app (template_hole 3, template_hole 2),
+             template_var 1)),
+         template_app
+          (template_app (template_hole 3, template_hole 2),
+           template_var 0)))),
+    ("Derivatives.pderivs_lang_union",
+     "pderivs_lang (?A Un ?B) ?r =
+      pderivs_lang ?A ?r Un pderivs_lang ?B ?r",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 2,
+           template_app
+            (template_app (template_hole 1, template_var 2),
+             template_var 1)),
+         template_var 0),
+       template_app
+        (template_app
+          (template_hole 0,
+           template_app
+            (template_app (template_hole 2, template_var 2),
+             template_var 0)),
+         template_app
+          (template_app (template_hole 2, template_var 1),
+           template_var 0)))),
+    ("Derivatives.pderivs_lang_Times_aux1",
+     "?s : UNIV1 ==> pderivs_lang (PSuf ?s) ?r <= pderivs_lang UNIV1 ?r",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 4, template_var 1),
+              template_hole 3)
+            )],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_app
+            (template_hole 1,
+             template_app (template_hole 0, template_var 1)),
+           template_var 0),
+         template_app
+          (template_app (template_hole 1, template_hole 3),
+           template_var 0)))),
+    ("Derivatives.finite_Timess", "finite ?A ==> finite (Timess ?A ?r)",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 5, template_var 1))],
+       template_predicate
+        (
+           template_app
+            (template_hole 5,
+             template_app
+              (template_hole 4,
+               template_app
+                (template_app (template_hole 3, t_empty), template_var 1)))
+           ))),
+    ("Derivatives.pderivs_snoc",
+     "pderivs (?s @ [?c]) ?r = pderiv_set ?c (pderivs ?s ?r)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 6,
+           template_app
+            (template_app (template_hole 5, template_var 2),
+             template_app
+              (template_app (template_hole 4, template_var 1),
+               template_hole 3))),
+         template_var 0),
+       template_app
+        (template_hole 2,
+         template_app
+          (template_app
+            (template_hole 1,
+             template_app (template_hole 0, template_var 1)),
+           template_app
+            (template_app (template_hole 6, template_var 2),
+             template_var 0))))),
+    ("Derivatives.Timess_eq_image",
+     "Timess ?rs ?r = (%r'. Times r' ?r) ` ?rs",
+     template_equation
+      (template_app
+        (template_hole 5,
+         template_app
+          (template_app (template_hole 4, t_empty), template_var 0)),
+       template_app
+        (template_app (template_hole 0, t_empty), template_var 0))),
+    ("Derivatives.card_Timess_pderivs_lang_le",
+     "card (Timess (pderivs_lang ?A ?r) ?s) <= card (pderivs_lang ?A ?r)",
+     template_inequation
+      (less_equals,
+       template_app
+        (template_hole 6,
+         template_app
+          (template_hole 5,
+           template_app
+            (template_app (template_hole 4, t_empty),
+             template_app
+              (template_app (template_hole 0, template_var 1),
+               template_var 0)))),
+       template_app
+        (template_hole 6,
+         template_app
+          (template_app (template_hole 0, template_var 1),
+           template_var 0)))),
+    ("Derivatives.pderivs_lang_Star",
+     "pderivs_lang UNIV1 (Star ?r)
+      <= Timess (pderivs_lang UNIV1 ?r) (Star ?r)",
+     template_inequation
+      (less_equals,
+       template_app
+        (template_app (template_hole 7, template_hole 6),
+         template_app (template_hole 5, template_var 0)),
+       template_app
+        (template_hole 4,
+         template_app
+          (template_app (template_hole 3, t_empty),
+           template_app
+            (template_app (template_hole 7, template_hole 6),
+             template_var 0))))),
+    ("Derivatives.pderivs_lang_snoc",
+     "pderivs_lang (PSuf ?s @@ {[?c]}) ?r =
+      pderiv_set ?c (pderivs_lang (PSuf ?s) ?r)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 9,
+           template_app
+            (template_app
+              (template_hole 8,
+               template_app (template_hole 7, template_var 2)),
+             template_app
+              (template_app
+                (template_hole 6,
+                 template_app
+                  (template_app (template_hole 5, template_var 1),
+                   template_hole 4)),
+               template_hole 3))),
+         template_var 0),
+       template_app
+        (template_hole 2,
+         template_app
+          (template_app
+            (template_hole 1,
+             template_app (template_hole 0, template_var 1)),
+           template_app
+            (template_app
+              (template_hole 9,
+               template_app (template_hole 7, template_var 2)),
+             template_var 0))))),
+    ("Derivatives.pderivs_lang_subsetI",
+     "(!!s. s : ?A ==> pderivs s ?r <= ?C) ==> pderivs_lang ?A ?r <= ?C",
+     template_implication
+      ([template_predicate (template_app (template_hole 5, t_empty))],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_app (template_hole 0, template_var 2), template_var 1),
+         template_var 0))),
+    ("Derivatives.PSuf_snoc",
+     "PSuf (?s @ [?c]) = PSuf ?s @@ {[?c]} Un {[?c]}",
+     template_equation
+      (template_app
+        (template_hole 7,
+         template_app
+          (template_app (template_hole 6, template_var 1),
+           template_app
+            (template_app (template_hole 5, template_var 0),
+             template_hole 4))),
+       template_app
+        (template_app
+          (template_hole 3,
+           template_app
+            (template_app
+              (template_hole 2,
+               template_app (template_hole 7, template_var 1)),
+             template_app
+              (template_app
+                (template_hole 1,
+                 template_app
+                  (template_app (template_hole 5, template_var 0),
+                   template_hole 4)),
+               template_hole 0))),
+         template_app
+          (template_app
+            (template_hole 1,
+             template_app
+              (template_app (template_hole 5, template_var 0),
+               template_hole 4)),
+           template_hole 0)))),
+    ("Derivatives.pderivs_lang_Times",
+     "pderivs_lang UNIV1 (Times ?r1.0 ?r2.0)
+      <= Timess (pderivs_lang UNIV1 ?r1.0) ?r2.0 Un
+         pderivs_lang UNIV1 ?r2.0",
+     template_inequation
+      (less_equals,
+       template_app
+        (template_app (template_hole 7, template_hole 6),
+         template_app
+          (template_app (template_hole 5, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 4,
+           template_app
+            (template_hole 3,
+             template_app
+              (template_app (template_hole 2, t_empty),
+               template_app
+                (template_app (template_hole 7, template_hole 6),
+                 template_var 1)))),
+         template_app
+          (template_app (template_hole 7, template_hole 6),
+           template_var 0)))),
+    ("Derivatives.pderivs_simps",
+     "pderivs ?s (Plus ?r1.0 ?r2.0) =
+      (if ?s = [] then {Plus ?r1.0 ?r2.0}
+       else pderivs ?s ?r1.0 Un pderivs ?s ?r2.0)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 7, template_var 2),
+              template_app
+               (template_app (template_hole 6, template_var 1),
+                template_var 0))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_hole 5,
+                 template_app
+                  (template_app (template_hole 4, template_var 2),
+                   template_hole 3)),
+               template_app
+                (template_app
+                  (template_hole 2,
+                   template_app
+                    (template_app (template_hole 6, template_var 1),
+                     template_var 0)),
+                 template_hole 1)),
+             template_app
+              (template_app
+                (template_hole 0,
+                 template_app
+                  (template_app (template_hole 7, template_var 2),
+                   template_var 1)),
+               template_app
+                (template_app (template_hole 7, template_var 2),
+                 template_var 0)))
+           ))),
+    ("Derivatives.pderivs_Times",
+     "pderivs ?s (Times ?r1.0 ?r2.0)
+      <= Timess (pderivs ?s ?r1.0) ?r2.0 Un pderivs_lang (PSuf ?s) ?r2.0",
+     template_inequation
+      (less_equals,
+       template_app
+        (template_app (template_hole 8, template_var 2),
+         template_app
+          (template_app (template_hole 7, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 6,
+           template_app
+            (template_hole 5,
+             template_app
+              (template_app (template_hole 4, t_empty),
+               template_app
+                (template_app (template_hole 8, template_var 2),
+                 template_var 1)))),
+         template_app
+          (template_app
+            (template_hole 1,
+             template_app (template_hole 0, template_var 2)),
+           template_var 0)))),
+    ("Derivatives.pderivs_Star",
+     "?s ~= [] ==>
+      pderivs ?s (Star ?r) <= Timess (pderivs_lang (PSuf ?s) ?r) (Star ?r)",
+     template_implication
+      ([template_negation
+         (template_equation (template_var 1, template_hole 10))],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_app (template_hole 8, template_var 1),
+           template_app (template_hole 7, template_var 0)),
+         template_app
+          (template_hole 6,
+           template_app
+            (template_app (template_hole 5, t_empty),
+             template_app
+              (template_app
+                (template_hole 1,
+                 template_app (template_hole 0, template_var 1)),
+               template_var 0)))))),
+    ("Derivatives.PSuf_Union",
+     "\<Union> (?f ` (PSuf ?s @@ {[?c]})) = (UN v:PSuf ?s. ?f (v @ [?c]))",
+     template_equation
+      (template_app
+        (template_hole 8,
+         template_app
+          (template_app (template_hole 7, t_empty),
+           template_app
+            (template_app
+              (template_hole 6,
+               template_app (template_hole 5, template_var 1)),
+             template_app
+              (template_app
+                (template_hole 4,
+                 template_app
+                  (template_app (template_hole 3, template_var 0),
+                   template_hole 2)),
+               template_hole 1)))),
+       template_app
+        (template_hole 8,
+         template_app
+          (template_app (template_hole 7, t_empty),
+           template_app (template_hole 5, template_var 1))))),
+    ("Derivatives.pderivs_lang_Times_aux2",
+     "?s : UNIV1 ==>
+      Timess (pderivs ?s ?r1.0) ?r2.0
+      <= Timess (pderivs_lang UNIV1 ?r1.0) ?r2.0",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 9, template_var 2),
+              template_hole 8)
+            )],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_hole 6,
+           template_app
+            (template_app (template_hole 5, t_empty),
+             template_app
+              (template_app (template_hole 1, template_var 2),
+               template_var 0))),
+         template_app
+          (template_hole 6,
+           template_app
+            (template_app (template_hole 5, t_empty),
+             template_app
+              (template_app (template_hole 0, template_hole 8),
+               template_var 0))))))]:
+   (string * thm * template) list
+### theory "Draft.DerivativesTemplates"
+### 0.320s elapsed time, 0.423s cpu time, 0.000s GC time
+val it = (): unit

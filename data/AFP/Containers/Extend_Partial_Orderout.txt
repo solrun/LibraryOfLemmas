@@ -1,0 +1,469 @@
+Loading theory "Draft.Extend_Partial_Order" (required by "Draft.Extend_Partial_OrderTemplates")
+Loading theory "Draft.Templates" (required by "Draft.Extend_Partial_OrderTemplates" via "Draft.ExtrEqs")
+datatype template_term
+=
+     t_empty
+   | template_app of template_term * template_term
+   | template_hole of int
+   | template_var of int
+datatype sign
+= equals | greater_equals | greater_than | less_equals | less_than
+datatype template
+=
+     template_bimplication of template * template
+   | template_dunno
+   | template_equation of template_term * template_term
+   | template_implication of template list * template
+   | template_inequation of sign * template_term * template_term
+   | template_negation of template
+   | template_predicate of template_term
+constructor t_empty: template_term
+constructor template_app: template_term * template_term -> template_term
+constructor template_hole: int -> template_term
+constructor template_var: int -> template_term
+constructor equals: sign
+constructor greater_equals: sign
+constructor greater_than: sign
+constructor less_equals: sign
+constructor less_than: sign
+constructor template_bimplication: template * template -> template
+constructor template_dunno: template
+constructor template_equation: template_term * template_term -> template
+constructor template_implication: template list * template -> template
+constructor template_inequation:
+   sign * template_term * template_term -> template
+constructor template_negation: template -> template
+constructor template_predicate: template_term -> template
+val vfs = fn: term -> (indexname * typ) list * (string * typ) list
+val indexOf = fn: ''a list -> ''a -> int -> int
+val has_eq = fn: term -> bool
+val term2template = fn:
+   (indexname * typ) list -> (string * typ) list -> term -> template_term
+val lemma2predicate = fn: term -> term -> template
+val makeTemplatewithContext = fn: term -> term -> template
+val lemma2template = fn: term -> template
+val thm2template = fn: thm -> template
+val tterm2string = fn: template_term -> string
+val template2string = fn: template -> string
+val t = "height ?t <= size ?t": thm
+val th =
+   Const ("HOL.Trueprop", "bool => prop") $
+     (Const ("Orderings.ord_class.less_eq", "nat => nat => bool") $
+       (Const ("Tree.height_class.height", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree")) $
+       (Const ("Nat.size_class.size", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree"))):
+   term
+### theory "Draft.Templates"
+### 0.066s elapsed time, 0.158s cpu time, 0.000s GC time
+Loading theory "Draft.ExtrEqs" (required by "Draft.Extend_Partial_OrderTemplates")
+### theory "Draft.Extend_Partial_Order"
+### 0.148s elapsed time, 0.333s cpu time, 0.051s GC time
+val eqpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Var (("_dummy_", 2), "?'a"))
+       ):
+   term Find_Theorems.criterion
+val badeqpattern = Pattern (Const ("Pure.eq", "?'a => ?'a => prop")):
+   term Find_Theorems.criterion
+val undefpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Const ("HOL.undefined", "?'a"))
+       ):
+   term Find_Theorems.criterion
+val thmpattern =
+   Pattern
+    (Const ("HOL.Trueprop", "bool => prop") $ Var (("_dummy_", 1), "bool")):
+   term Find_Theorems.criterion
+val badnames =
+   ["*nitpick*", "*Nitpick*", "*full_exhaustive*", "*_def*", "Enum.finite*",
+    "*Quickcheck*", "ATP*", "*Nunchaku*", "*Code*", "*BNF*", "*SMT*",
+    "*.*.*"]:
+   string list
+val unwanted_names =
+   [(false, Name "*nitpick*"), (false, Name "*Nitpick*"),
+    (false, Name "*full_exhaustive*"), (false, Name "*_def*"),
+    (false, Name "Enum.finite*"), (false, Name "*Quickcheck*"),
+    (false, Name "ATP*"), (false, Name "*Nunchaku*"),
+    (false, Name "*Code*"), (false, Name "*BNF*"), (false, Name "*SMT*"),
+    (false, Name "*.*.*")]:
+   (bool * term Find_Theorems.criterion) list
+val has_vars = fn: term -> bool
+val get_all_eqs = fn: string -> Proof.context -> (string * thm) list
+val get_all_thms = fn: string -> Proof.context -> (string * thm) list
+val get_noneq_thms = fn: string -> Proof.context -> (string * thm) list
+val template_eqs = fn:
+   string -> Proof.context -> (string * thm * template) list
+val template_thms = fn:
+   string -> Proof.context -> (string * thm * template) list
+### theory "Draft.ExtrEqs"
+### 0.508s elapsed time, 0.613s cpu time, 0.051s GC time
+Loading theory "Draft.Extend_Partial_OrderTemplates"
+val templateLemmas =
+   [("Extend_Partial_Order.antisym_order_consistent_self",
+     "antisym ?r ==> order_consistent ?r ?r",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 1, template_var 0))],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 0, template_var 0), template_var 0)
+           ))),
+    ("Extend_Partial_Order.order_consistent_sym",
+     "order_consistent ?r ?s ==> order_consistent ?s ?r",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 0, template_var 1),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 0, template_var 0), template_var 1)
+           ))),
+    ("Extend_Partial_Order.refl_on_trancl",
+     "refl_on ?A ?r ==> refl_on ?A (?r^+)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 1, template_var 1),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 1, template_var 1),
+             template_app (template_hole 0, template_var 0))
+           ))),
+    ("Extend_Partial_Order.Chains_Field",
+     "[| ?C : Chains ?r; ?x : ?C |] ==> ?x : Field ?r",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 3, template_var 2),
+              template_app (template_hole 2, template_var 1))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 1, template_var 0),
+              template_var 2)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 1, template_var 0),
+             template_app (template_hole 0, template_var 1))
+           ))),
+    ("Extend_Partial_Order.porder_extend_to_linorder",
+     "[| partial_order_on ?A ?r;
+         !!s. [| linear_order_on ?A s; order_consistent ?r s |]
+              ==> ?thesis |]
+      ==> ?thesis",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 3, template_var 2),
+              template_var 1)
+            ),
+        template_predicate (template_app (template_hole 2, t_empty))],
+       template_predicate (template_var 0))),
+    ("Extend_Partial_Order.linear_order_imp_linorder",
+     "linear_order {(A, B). ?leq A B} ==>
+      class.linorder ?leq (%x y. ?leq x y & ~ ?leq y x)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 6, template_hole 5),
+              template_app
+               (template_hole 4, template_app (template_hole 3, t_empty)))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 2, template_var 0), t_empty)
+           ))),
+    ("Extend_Partial_Order.porder_on_consistent_linorder_on_trancl_antisym",
+     "[| partial_order_on ?A ?r; linear_order_on ?B ?s;
+         order_consistent ?r ?s; ?B <= ?A |]
+      ==> antisym ((?r Un ?s)^+)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 6, template_var 3),
+              template_var 2)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 5, template_var 1),
+              template_var 0)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 4, template_var 2),
+              template_var 0)
+            ),
+        template_inequation (less_equals, template_var 1, template_var 3)],
+       template_predicate
+        (
+           template_app
+            (template_hole 2,
+             template_app
+              (template_hole 1,
+               template_app
+                (template_app (template_hole 0, template_var 2),
+                 template_var 0)))
+           ))),
+    ("Extend_Partial_Order.porder_on_linorder_on_tranclp_porder_onI",
+     "[| partial_order_on ?A ?r; linear_order_on ?B ?s;
+         order_consistent ?r ?s; ?B <= ?A |]
+      ==> partial_order_on ?A ((?r Un ?s)^+)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 5, template_var 3),
+              template_var 2)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 4, template_var 1),
+              template_var 0)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 3, template_var 2),
+              template_var 0)
+            ),
+        template_inequation (less_equals, template_var 1, template_var 3)],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 5, template_var 3),
+             template_app
+              (template_hole 1,
+               template_app
+                (template_app (template_hole 0, template_var 2),
+                 template_var 0)))
+           ))),
+    ("Extend_Partial_Order.ChainsD",
+     "[| ?x : ?C; ?C : Chains ?r; ?y : ?C |]
+      ==> (?x, ?y) : ?r | (?y, ?x) : ?r",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 5, template_var 3),
+              template_var 2)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 4, template_var 2),
+              template_app (template_hole 3, template_var 1))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 5, template_var 0),
+              template_var 2)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 2,
+               template_app
+                (template_app
+                  (template_hole 1,
+                   template_app
+                    (template_app (template_hole 0, template_var 3),
+                     template_var 0)),
+                 template_var 1)),
+             template_app
+              (template_app
+                (template_hole 1,
+                 template_app
+                  (template_app (template_hole 0, template_var 0),
+                   template_var 3)),
+               template_var 1))
+           ))),
+    ("Extend_Partial_Order.total_onD",
+     "[| total_on ?A ?r; ?x : ?A; ?y : ?A |]
+      ==> (?x, ?y) : ?r | ?x = ?y | (?y, ?x) : ?r",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 5, template_var 3),
+              template_var 2)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 4, template_var 1),
+              template_var 3)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 4, template_var 0),
+              template_var 3)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 3,
+               template_app
+                (template_app
+                  (template_hole 2,
+                   template_app
+                    (template_app (template_hole 1, template_var 1),
+                     template_var 0)),
+                 template_var 2)),
+             template_app
+              (template_app
+                (template_hole 3,
+                 template_app
+                  (template_app (template_hole 0, template_var 1),
+                   template_var 0)),
+               template_app
+                (template_app
+                  (template_hole 2,
+                   template_app
+                    (template_app (template_hole 1, template_var 0),
+                     template_var 1)),
+                 template_var 2)))
+           ))),
+    ("Extend_Partial_Order.total_on_refl_on_consistent_into",
+     "[| total_on ?A ?r; refl_on ?A ?r; order_consistent ?r ?s; ?x : ?A;
+         ?y : ?A; (?x, ?y) : ?s |]
+      ==> (?x, ?y) : ?r",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 5, template_var 4),
+              template_var 3)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 4, template_var 4),
+              template_var 3)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 3, template_var 3),
+              template_var 2)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 2, template_var 1),
+              template_var 4)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 2, template_var 0),
+              template_var 4)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 1,
+                template_app
+                 (template_app (template_hole 0, template_var 1),
+                  template_var 0)),
+              template_var 2)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 1,
+               template_app
+                (template_app (template_hole 0, template_var 1),
+                 template_var 0)),
+             template_var 3)
+           ))),
+    ("Extend_Partial_Order.porder_linorder_tranclpE",
+     "[| partial_order_on ?A ?r; linear_order_on ?B ?s;
+         order_consistent ?r ?s; ?B <= ?A; (?x, ?y) : (?r Un ?s)^+;
+         (?x, ?y) : ?r ==> ?thesis;
+         !!u v. [| (?x, u) : ?r; (u, v) : ?s; (v, ?y) : ?r |] ==> ?thesis |]
+      ==> ?thesis",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 8, template_var 6),
+              template_var 5)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 7, template_var 4),
+              template_var 3)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 6, template_var 5),
+              template_var 3)
+            ),
+        template_inequation (less_equals, template_var 4, template_var 6),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 4,
+                template_app
+                 (template_app (template_hole 3, template_var 2),
+                  template_var 1)),
+              template_app
+               (template_hole 2,
+                template_app
+                 (template_app (template_hole 1, template_var 5),
+                  template_var 3)))
+            ),
+        template_implication
+         ([template_predicate
+            (
+               template_app
+                (template_app
+                  (template_hole 4,
+                   template_app
+                    (template_app (template_hole 3, template_var 2),
+                     template_var 1)),
+                 template_var 5)
+               )],
+          template_predicate (template_var 0)),
+        template_predicate (template_app (template_hole 0, t_empty))],
+       template_predicate (template_var 0)))]:
+   (string * thm * template) list
+### theory "Draft.Extend_Partial_OrderTemplates"
+### 0.317s elapsed time, 0.443s cpu time, 0.056s GC time
+val it = (): unit

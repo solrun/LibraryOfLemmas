@@ -1,0 +1,1820 @@
+Loading theory "Draft.Lucas_Lehmer_Auxiliary" (required by "Draft.Lucas_LehmerTemplates" via "Draft.Lucas_Lehmer")
+Loading theory "Draft.Templates" (required by "Draft.Lucas_LehmerTemplates" via "Draft.ExtrEqs")
+datatype template_term
+=
+     t_empty
+   | template_app of template_term * template_term
+   | template_hole of int
+   | template_var of int
+datatype sign
+= equals | greater_equals | greater_than | less_equals | less_than
+datatype template
+=
+     template_bimplication of template * template
+   | template_dunno
+   | template_equation of template_term * template_term
+   | template_implication of template list * template
+   | template_inequation of sign * template_term * template_term
+   | template_negation of template
+   | template_predicate of template_term
+constructor t_empty: template_term
+constructor template_app: template_term * template_term -> template_term
+constructor template_hole: int -> template_term
+constructor template_var: int -> template_term
+constructor equals: sign
+constructor greater_equals: sign
+constructor greater_than: sign
+constructor less_equals: sign
+constructor less_than: sign
+constructor template_bimplication: template * template -> template
+constructor template_dunno: template
+constructor template_equation: template_term * template_term -> template
+constructor template_implication: template list * template -> template
+constructor template_inequation:
+   sign * template_term * template_term -> template
+constructor template_negation: template -> template
+constructor template_predicate: template_term -> template
+val vfs = fn: term -> (indexname * typ) list * (string * typ) list
+val indexOf = fn: ''a list -> ''a -> int -> int
+val has_eq = fn: term -> bool
+val term2template = fn:
+   (indexname * typ) list -> (string * typ) list -> term -> template_term
+val lemma2predicate = fn: term -> term -> template
+val makeTemplatewithContext = fn: term -> term -> template
+val lemma2template = fn: term -> template
+val thm2template = fn: thm -> template
+val tterm2string = fn: template_term -> string
+val template2string = fn: template -> string
+val t = "height ?t <= size ?t": thm
+val th =
+   Const ("HOL.Trueprop", "bool => prop") $
+     (Const ("Orderings.ord_class.less_eq", "nat => nat => bool") $
+       (Const ("Tree.height_class.height", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree")) $
+       (Const ("Nat.size_class.size", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree"))):
+   term
+### theory "Draft.Templates"
+### 0.073s elapsed time, 0.183s cpu time, 0.000s GC time
+Loading theory "Draft.ExtrEqs" (required by "Draft.Lucas_LehmerTemplates")
+val eqpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Var (("_dummy_", 2), "?'a"))
+       ):
+   term Find_Theorems.criterion
+val badeqpattern = Pattern (Const ("Pure.eq", "?'a => ?'a => prop")):
+   term Find_Theorems.criterion
+val undefpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Const ("HOL.undefined", "?'a"))
+       ):
+   term Find_Theorems.criterion
+val thmpattern =
+   Pattern
+    (Const ("HOL.Trueprop", "bool => prop") $ Var (("_dummy_", 1), "bool")):
+   term Find_Theorems.criterion
+val badnames =
+   ["*nitpick*", "*Nitpick*", "*full_exhaustive*", "*_def*", "Enum.finite*",
+    "*Quickcheck*", "ATP*", "*Nunchaku*", "*Code*", "*BNF*", "*SMT*",
+    "*.*.*"]:
+   string list
+val unwanted_names =
+   [(false, Name "*nitpick*"), (false, Name "*Nitpick*"),
+    (false, Name "*full_exhaustive*"), (false, Name "*_def*"),
+    (false, Name "Enum.finite*"), (false, Name "*Quickcheck*"),
+    (false, Name "ATP*"), (false, Name "*Nunchaku*"),
+    (false, Name "*Code*"), (false, Name "*BNF*"), (false, Name "*SMT*"),
+    (false, Name "*.*.*")]:
+   (bool * term Find_Theorems.criterion) list
+val has_vars = fn: term -> bool
+val get_all_eqs = fn: string -> Proof.context -> (string * thm) list
+val get_all_thms = fn: string -> Proof.context -> (string * thm) list
+val get_noneq_thms = fn: string -> Proof.context -> (string * thm) list
+val template_eqs = fn:
+   string -> Proof.context -> (string * thm * template) list
+val template_thms = fn:
+   string -> Proof.context -> (string * thm * template) list
+### theory "Draft.ExtrEqs"
+### 0.547s elapsed time, 1.112s cpu time, 0.102s GC time
+### theory "Draft.Lucas_Lehmer_Auxiliary"
+### 0.882s elapsed time, 1.599s cpu time, 0.176s GC time
+Loading theory "Draft.Lucas_Lehmer" (required by "Draft.Lucas_LehmerTemplates")
+locale mersenne_prime
+  fixes p :: "nat"
+    and M :: "nat"
+  assumes "mersenne_prime p"
+  defines "M == 2 ^ p - 1"
+consts
+  gen_lucas_lehmer_sequence :: "int => nat => int"
+### Ambiguous input (line 591 of "$AFP/Mersenne_Primes/Lucas_Lehmer.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" lucas_lehmer_to_real)
+###       ("\<^const>Ideal_Product.ideal_prod_indexed" ("_list" ("_position" n))
+###         ("_index" ("_position" lucas_lehmer_ring)) ("_position" x)))
+###     ("\<^const>Groups.times_class.times"
+###       ("_applC" ("_position" of_nat) ("_position" n))
+###       ("_applC" ("_position" lucas_lehmer_to_real) ("_position" x)))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" lucas_lehmer_to_real)
+###       ("\<^const>Ring.add_pow_indexed" ("_position" n)
+###         ("_index" ("_position" lucas_lehmer_ring)) ("_position" x)))
+###     ("\<^const>Groups.times_class.times"
+###       ("_applC" ("_position" of_nat) ("_position" n))
+###       ("_applC" ("_position" lucas_lehmer_to_real) ("_position" x)))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ambiguous input (line 595 of "$AFP/Mersenne_Primes/Lucas_Lehmer.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" lucas_lehmer_to_real)
+###       ("\<^const>Ideal_Product.ideal_prod_indexed" ("_list" ("_position" n))
+###         ("_index" ("_position" lucas_lehmer_ring)) ("_position" x)))
+###     ("\<^const>Groups.times_class.times"
+###       ("_applC" ("_position" of_int) ("_position" n))
+###       ("_applC" ("_position" lucas_lehmer_to_real) ("_position" x)))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" lucas_lehmer_to_real)
+###       ("\<^const>Ring.add_pow_indexed" ("_position" n)
+###         ("_index" ("_position" lucas_lehmer_ring)) ("_position" x)))
+###     ("\<^const>Groups.times_class.times"
+###       ("_applC" ("_position" of_int) ("_position" n))
+###       ("_applC" ("_position" lucas_lehmer_to_real) ("_position" x)))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+consts
+  gen_lucas_lehmer_sequence' :: "int => int => nat => int"
+### theory "Draft.Lucas_Lehmer"
+### 1.138s elapsed time, 1.220s cpu time, 0.139s GC time
+Loading theory "Draft.Lucas_LehmerTemplates"
+val templateLemmas =
+   [("Lucas_Lehmer.gen_lucas_lehmer_code",
+     "gen_lucas_lehmer_sequence ?a 0 = ?a",
+     template_equation
+      (template_app
+        (template_app (template_hole 1, template_var 0), template_hole 0),
+       template_var 0)),
+    ("Lucas_Lehmer.mersenne_prime_code",
+     "mersenne_prime ?p = (prime ?p & lucas_lehmer_test ?p)",
+     template_equation
+      (template_app (template_hole 3, template_var 0),
+       template_app
+        (template_app
+          (template_hole 2, template_app (template_hole 1, template_var 0)),
+         template_app (template_hole 0, template_var 0)))),
+    ("Lucas_Lehmer.lucas_lehmer_to_real_simps",
+     "lucas_lehmer_to_real (\<ominus>\<^bsub>lucas_lehmer_ring\<^esub> ?x) =
+      - lucas_lehmer_to_real ?x",
+     template_equation
+      (template_app
+        (template_hole 3,
+         template_app
+          (template_app (template_hole 2, template_hole 1),
+           template_var 0)),
+       template_app
+        (template_hole 0, template_app (template_hole 3, template_var 0)))),
+    ("Lucas_Lehmer.cring_lucas_lehmer_ring_mod",
+     "1 < ?m ==> cring (lucas_lehmer_ring_mod ?m)",
+     template_implication
+      ([template_inequation (less_than, template_hole 2, template_var 0)],
+       template_predicate
+        (
+           template_app
+            (template_hole 1,
+             template_app (template_hole 0, template_var 0))
+           ))),
+    ("Lucas_Lehmer.lucas_lehmer_add_commute",
+     "lucas_lehmer_add ?m ?x ?y = lucas_lehmer_add ?m ?y ?x",
+     template_equation
+      (template_app
+        (template_app
+          (template_app (template_hole 0, template_var 2), template_var 1),
+         template_var 0),
+       template_app
+        (template_app
+          (template_app (template_hole 0, template_var 2), template_var 0),
+         template_var 1))),
+    ("Lucas_Lehmer.lucas_lehmer_mult_commute",
+     "lucas_lehmer_mult ?m ?x ?y = lucas_lehmer_mult ?m ?y ?x",
+     template_equation
+      (template_app
+        (template_app
+          (template_app (template_hole 0, template_var 2), template_var 1),
+         template_var 0),
+       template_app
+        (template_app
+          (template_app (template_hole 0, template_var 2), template_var 0),
+         template_var 1))),
+    ("Lucas_Lehmer.lucas_lehmer_to_real_power",
+     "lucas_lehmer_to_real (?x [^]\<^bsub>lucas_lehmer_ring\<^esub> ?n) =
+      lucas_lehmer_to_real ?x ^ ?n",
+     template_equation
+      (template_app
+        (template_hole 3,
+         template_app
+          (template_app
+            (template_app (template_hole 2, template_hole 1),
+             template_var 1),
+           template_var 0)),
+       template_app
+        (template_app
+          (template_hole 0, template_app (template_hole 3, template_var 1)),
+         template_var 0))),
+    ("Lucas_Lehmer.lucas_lehmer_to_real_simps",
+     "lucas_lehmer_to_real
+       (?x \<otimes>\<^bsub>lucas_lehmer_ring\<^esub> ?y) =
+      lucas_lehmer_to_real ?x * lucas_lehmer_to_real ?y",
+     template_equation
+      (template_app
+        (template_hole 3,
+         template_app
+          (template_app
+            (template_app (template_hole 2, template_hole 1),
+             template_var 1),
+           template_var 0)),
+       template_app
+        (template_app
+          (template_hole 0, template_app (template_hole 3, template_var 1)),
+         template_app (template_hole 3, template_var 0)))),
+    ("Lucas_Lehmer.lucas_lehmer_to_add_pow_int",
+     "lucas_lehmer_to_real
+       ([?n] \<cdot>\<^bsub>lucas_lehmer_ring\<^esub> ?x) =
+      real_of_int ?n * lucas_lehmer_to_real ?x",
+     template_equation
+      (template_app
+        (template_hole 4,
+         template_app
+          (template_app
+            (template_app (template_hole 3, template_hole 2),
+             template_var 1),
+           template_var 0)),
+       template_app
+        (template_app
+          (template_hole 1, template_app (template_hole 0, template_var 1)),
+         template_app (template_hole 4, template_var 0)))),
+    ("Lucas_Lehmer.lucas_lehmer_to_add_pow_nat",
+     "lucas_lehmer_to_real
+       ([?n] \<cdot>\<^bsub>lucas_lehmer_ring\<^esub> ?x) =
+      real ?n * lucas_lehmer_to_real ?x",
+     template_equation
+      (template_app
+        (template_hole 4,
+         template_app
+          (template_app
+            (template_app (template_hole 3, template_hole 2),
+             template_var 1),
+           template_var 0)),
+       template_app
+        (template_app
+          (template_hole 1, template_app (template_hole 0, template_var 1)),
+         template_app (template_hole 4, template_var 0)))),
+    ("Lucas_Lehmer.lucas_lehmer_to_real_simps",
+     "lucas_lehmer_to_real
+       (?x \<oplus>\<^bsub>lucas_lehmer_ring\<^esub> ?y) =
+      lucas_lehmer_to_real ?x + lucas_lehmer_to_real ?y",
+     template_equation
+      (template_app
+        (template_hole 3,
+         template_app
+          (template_app
+            (template_app (template_hole 2, template_hole 1),
+             template_var 1),
+           template_var 0)),
+       template_app
+        (template_app
+          (template_hole 0, template_app (template_hole 3, template_var 1)),
+         template_app (template_hole 3, template_var 0)))),
+    ("Lucas_Lehmer.lucas_lehmer_add_cong",
+     "[fst (lucas_lehmer_add ?m ?x ?y) = fst ?x + fst ?y] (mod ?m)",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_app
+              (template_hole 3,
+               template_app
+                (template_hole 2,
+                 template_app
+                  (template_app
+                    (template_app (template_hole 1, template_var 2),
+                     template_var 1),
+                   template_var 0))),
+             template_app
+              (template_app
+                (template_hole 0,
+                 template_app (template_hole 2, template_var 1)),
+               template_app (template_hole 2, template_var 0))),
+           template_var 2)
+         )),
+    ("Lucas_Lehmer.lucas_lehmer_add_cong",
+     "[snd (lucas_lehmer_add ?m ?x ?y) = snd ?x + snd ?y] (mod ?m)",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_app
+              (template_hole 3,
+               template_app
+                (template_hole 2,
+                 template_app
+                  (template_app
+                    (template_app (template_hole 1, template_var 2),
+                     template_var 1),
+                   template_var 0))),
+             template_app
+              (template_app
+                (template_hole 0,
+                 template_app (template_hole 2, template_var 1)),
+               template_app (template_hole 2, template_var 0))),
+           template_var 2)
+         )),
+    ("Lucas_Lehmer.ring_hom_lucas_lehmer_hom",
+     "1 < ?m ==>
+      lucas_lehmer_hom ?m
+      : ring_hom lucas_lehmer_ring (lucas_lehmer_ring_mod ?m)",
+     template_implication
+      ([template_inequation (less_than, template_hole 5, template_var 0)],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 4,
+               template_app (template_hole 3, template_var 0)),
+             template_app
+              (template_app (template_hole 2, template_hole 1),
+               template_app (template_hole 0, template_var 0)))
+           ))),
+    ("Lucas_Lehmer.minus_lucas_lehmer_ring",
+     "\<ominus>\<^bsub>lucas_lehmer_ring\<^esub> ?x =
+      (case ?x of (a, b) => (- a, - b))",
+     template_equation
+      (template_app
+        (template_app (template_hole 4, template_hole 3), template_var 0),
+       template_app
+        (template_app (template_hole 2, t_empty), template_var 0))),
+    ("Lucas_Lehmer_Auxiliary.congD",
+     "[?a = ?b] (mod ?n) ==> ?a mod ?n = ?b mod ?n",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 2, template_var 2),
+                template_var 1),
+              template_var 0)
+            )],
+       template_equation
+        (template_app
+          (template_app (template_hole 0, template_var 2), template_var 0),
+         template_app
+          (template_app (template_hole 0, template_var 1),
+           template_var 0)))),
+    ("Lucas_Lehmer.lucas_lehmer_hom_1",
+     "1 < ?m ==> lucas_lehmer_hom ?m (1, 0) = (1, 0)",
+     template_implication
+      ([template_inequation (less_than, template_hole 7, template_var 0)],
+       template_equation
+        (template_app
+          (template_app (template_hole 5, template_var 0),
+           template_app
+            (template_app (template_hole 4, template_hole 3),
+             template_hole 2)),
+         template_app
+          (template_app (template_hole 1, template_hole 7),
+           template_hole 0)))),
+    ("Lucas_Lehmer.lucas_lehmer_to_real_simps",
+     "lucas_lehmer_to_real (?a, ?b) =
+      real_of_int ?a + real_of_int ?b * sqrt 3",
+     template_equation
+      (template_app
+        (template_hole 8,
+         template_app
+          (template_app (template_hole 7, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 6, template_app (template_hole 5, template_var 1)),
+         template_app
+          (template_app
+            (template_hole 4,
+             template_app (template_hole 5, template_var 0)),
+           template_app
+            (template_hole 3,
+             template_app
+              (template_hole 2,
+               template_app (template_hole 1, template_hole 0))))))),
+    ("Lucas_Lehmer.card_lucas_lehmer_Units",
+     "1 < ?m ==> card (Units (lucas_lehmer_ring_mod ?m)) < ?m\<^sup>2",
+     template_implication
+      ([template_inequation (less_than, template_hole 7, template_var 0)],
+       template_inequation
+        (less_than,
+         template_app
+          (template_hole 6,
+           template_app
+            (template_hole 5,
+             template_app (template_hole 4, template_var 0))),
+         template_app
+          (template_app (template_hole 3, template_var 0),
+           template_app
+            (template_hole 2,
+             template_app (template_hole 1, template_hole 0)))))),
+    ("Lucas_Lehmer.lucas_lehmer_hom_in_carrier",
+     "1 < ?m ==> lucas_lehmer_hom ?m ?x : {..<?m} \<times> {..<?m}",
+     template_implication
+      ([template_inequation (less_than, template_hole 4, template_var 1)],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 3,
+               template_app
+                (template_app (template_hole 2, template_var 1),
+                 template_var 0)),
+             template_app
+              (template_app
+                (template_hole 1,
+                 template_app (template_hole 0, template_var 1)),
+               t_empty))
+           ))),
+    ("Lucas_Lehmer_Auxiliary.eval_coprime",
+     "?b ~= (0::?'a) ==> coprime ?a ?b = coprime ?b (?a mod ?b)",
+     template_implication
+      ([template_negation
+         (template_equation (template_var 1, template_hole 3))],
+       template_equation
+        (template_app
+          (template_app (template_hole 1, template_var 0), template_var 1),
+         template_app
+          (template_app (template_hole 1, template_var 1),
+           template_app
+            (template_app (template_hole 0, template_var 0),
+             template_var 1))))),
+    ("Lucas_Lehmer.gen_lucas_lehmer_sequence_Suc'",
+     "gen_lucas_lehmer_sequence ?a (Suc ?n) =
+      gen_lucas_lehmer_sequence (?a\<^sup>2 - 2) ?n",
+     template_equation
+      (template_app
+        (template_app (template_hole 7, template_var 1),
+         template_app (template_hole 6, template_var 0)),
+       template_app
+        (template_app
+          (template_hole 7,
+           template_app
+            (template_app
+              (template_hole 5,
+               template_app
+                (template_app (template_hole 4, template_var 1),
+                 template_app
+                  (template_hole 3,
+                   template_app (template_hole 2, template_hole 1)))),
+             template_app
+              (template_hole 0,
+               template_app (template_hole 2, template_hole 1)))),
+         template_var 0))),
+    ("Lucas_Lehmer.lucas_lehmer_add_in_carrier",
+     "0 < ?m ==> lucas_lehmer_add ?m ?x ?y : {..<?m} \<times> {..<?m}",
+     template_implication
+      ([template_inequation (less_than, template_hole 4, template_var 2)],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 3,
+               template_app
+                (template_app
+                  (template_app (template_hole 2, template_var 2),
+                   template_var 1),
+                 template_var 0)),
+             template_app
+              (template_app
+                (template_hole 1,
+                 template_app (template_hole 0, template_var 2)),
+               t_empty))
+           ))),
+    ("Lucas_Lehmer.lucas_lehmer_mult_in_carrier",
+     "0 < ?m ==> lucas_lehmer_mult ?m ?x ?y : {..<?m} \<times> {..<?m}",
+     template_implication
+      ([template_inequation (less_than, template_hole 4, template_var 2)],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 3,
+               template_app
+                (template_app
+                  (template_app (template_hole 2, template_var 2),
+                   template_var 1),
+                 template_var 0)),
+             template_app
+              (template_app
+                (template_hole 1,
+                 template_app (template_hole 0, template_var 2)),
+               t_empty))
+           ))),
+    ("Lucas_Lehmer_Auxiliary.prime_natD",
+     "[| prime ?p; ?a dvd ?p |] ==> ?a = 1 | ?a = ?p",
+     template_implication
+      ([template_predicate (template_app (template_hole 4, template_var 1)),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 3, template_var 0),
+              template_var 1)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 2,
+               template_app
+                (template_app (template_hole 1, template_var 0),
+                 template_hole 0)),
+             template_app
+              (template_app (template_hole 1, template_var 0),
+               template_var 1))
+           ))),
+    ("Lucas_Lehmer_Auxiliary.little_Fermat_nat",
+     "[| prime ?p; ~ ?p dvd ?a |] ==> [?a ^ ?p = ?a] (mod ?p)",
+     template_implication
+      ([template_predicate (template_app (template_hole 4, template_var 1)),
+        template_negation
+         (
+            template_predicate
+             (
+                template_app
+                 (template_app (template_hole 2, template_var 1),
+                  template_var 0)
+                )
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_hole 1,
+                 template_app
+                  (template_app (template_hole 0, template_var 0),
+                   template_var 1)),
+               template_var 0),
+             template_var 1)
+           ))),
+    ("Lucas_Lehmer.mersenne_prime_iff",
+     "mersenne_prime ?p = (2 < ?p & prime (2 ^ ?p - 1))",
+     template_equation
+      (template_app (template_hole 9, template_var 0),
+       template_app
+        (template_app
+          (template_hole 8,
+           template_app
+            (template_app
+              (template_hole 7,
+               template_app
+                (template_hole 6,
+                 template_app (template_hole 5, template_hole 4))),
+             template_var 0)),
+         template_app
+          (template_hole 3,
+           template_app
+            (template_app
+              (template_hole 2,
+               template_app
+                (template_app
+                  (template_hole 1,
+                   template_app
+                    (template_hole 6,
+                     template_app (template_hole 5, template_hole 4))),
+                 template_var 0)),
+             template_hole 0))))),
+    ("Lucas_Lehmer.gen_lucas_lehmer_sequence'_correct",
+     "?a : {0..<?m} ==>
+      gen_lucas_lehmer_sequence' ?m ?a ?n =
+      gen_lucas_lehmer_sequence ?a ?n mod ?m",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 6, template_var 2),
+              template_app
+               (template_app (template_hole 5, template_hole 4),
+                template_var 1))
+            )],
+       template_equation
+        (template_app
+          (template_app
+            (template_app (template_hole 2, template_var 1),
+             template_var 2),
+           template_var 0),
+         template_app
+          (template_app
+            (template_hole 1,
+             template_app
+              (template_app (template_hole 0, template_var 2),
+               template_var 0)),
+           template_var 1)))),
+    ("Lucas_Lehmer.prime_power_minus_oneD",
+     "prime (?a ^ ?n - 1) ==> ?n = 1 | ?a = 2",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_hole 8,
+              template_app
+               (template_app
+                 (template_hole 7,
+                  template_app
+                   (template_app (template_hole 6, template_var 1),
+                    template_var 0)),
+                template_hole 5))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 4,
+               template_app
+                (template_app (template_hole 3, template_var 0),
+                 template_hole 5)),
+             template_app
+              (template_app (template_hole 3, template_var 1),
+               template_app
+                (template_hole 2,
+                 template_app (template_hole 1, template_hole 0))))
+           ))),
+    ("Lucas_Lehmer.lucas_lehmer_mult_cong",
+     "[snd (lucas_lehmer_mult ?m ?x
+             ?y) = fst ?x * snd ?y + snd ?x * fst ?y] (mod ?m)",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_app
+              (template_hole 5,
+               template_app
+                (template_hole 4,
+                 template_app
+                  (template_app
+                    (template_app (template_hole 3, template_var 2),
+                     template_var 1),
+                   template_var 0))),
+             template_app
+              (template_app
+                (template_hole 2,
+                 template_app
+                  (template_app
+                    (template_hole 1,
+                     template_app (template_hole 0, template_var 1)),
+                   template_app (template_hole 4, template_var 0))),
+               template_app
+                (template_app
+                  (template_hole 1,
+                   template_app (template_hole 4, template_var 1)),
+                 template_app (template_hole 0, template_var 0)))),
+           template_var 2)
+         )),
+    ("Lucas_Lehmer_Auxiliary.little_Fermat_int",
+     "[| prime ?p; ~ int ?p dvd ?a |] ==> [?a ^ ?p = ?a] (mod int ?p)",
+     template_implication
+      ([template_predicate (template_app (template_hole 5, template_var 1)),
+        template_negation
+         (
+            template_predicate
+             (
+                template_app
+                 (template_app
+                   (template_hole 3,
+                    template_app (template_hole 2, template_var 1)),
+                  template_var 0)
+                )
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_hole 1,
+                 template_app
+                  (template_app (template_hole 0, template_var 0),
+                   template_var 1)),
+               template_var 0),
+             template_app (template_hole 2, template_var 1))
+           ))),
+    ("Lucas_Lehmer.lucas_lehmer_hom_add",
+     "1 < ?m ==>
+      lucas_lehmer_hom ?m (lucas_lehmer_add' ?x ?y) =
+      lucas_lehmer_add ?m (lucas_lehmer_hom ?m ?x)
+       (lucas_lehmer_hom ?m ?y)",
+     template_implication
+      ([template_inequation (less_than, template_hole 4, template_var 2)],
+       template_equation
+        (template_app
+          (template_app (template_hole 2, template_var 2),
+           template_app
+            (template_app (template_hole 1, template_var 1),
+             template_var 0)),
+         template_app
+          (template_app
+            (template_app (template_hole 0, template_var 2),
+             template_app
+              (template_app (template_hole 2, template_var 2),
+               template_var 1)),
+           template_app
+            (template_app (template_hole 2, template_var 2),
+             template_var 0))))),
+    ("Lucas_Lehmer.lucas_lehmer_hom_mult",
+     "1 < ?m ==>
+      lucas_lehmer_hom ?m (lucas_lehmer_mult' ?x ?y) =
+      lucas_lehmer_mult ?m (lucas_lehmer_hom ?m ?x)
+       (lucas_lehmer_hom ?m ?y)",
+     template_implication
+      ([template_inequation (less_than, template_hole 4, template_var 2)],
+       template_equation
+        (template_app
+          (template_app (template_hole 2, template_var 2),
+           template_app
+            (template_app (template_hole 1, template_var 1),
+             template_var 0)),
+         template_app
+          (template_app
+            (template_app (template_hole 0, template_var 2),
+             template_app
+              (template_app (template_hole 2, template_var 2),
+               template_var 1)),
+           template_app
+            (template_app (template_hole 2, template_var 2),
+             template_var 0))))),
+    ("Lucas_Lehmer_Auxiliary.prime_dvd_choose",
+     "[| 0 < ?k; ?k < ?p; prime ?p |] ==> ?p dvd ?p choose ?k",
+     template_implication
+      ([template_inequation (less_than, template_hole 3, template_var 1),
+        template_inequation (less_than, template_var 1, template_var 0),
+        template_predicate
+         (template_app (template_hole 2, template_var 0))],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 1, template_var 0),
+             template_app
+              (template_app (template_hole 0, template_var 0),
+               template_var 1))
+           ))),
+    ("Lucas_Lehmer.gen_lucas_lehmer_sequence'_Suc'",
+     "gen_lucas_lehmer_sequence' ?m ?a (Suc ?n) =
+      ((gen_lucas_lehmer_sequence' ?m ?a ?n)\<^sup>2 - 2) mod ?m",
+     template_equation
+      (template_app
+        (template_app
+          (template_app (template_hole 8, template_var 2), template_var 1),
+         template_app (template_hole 7, template_var 0)),
+       template_app
+        (template_app
+          (template_hole 6,
+           template_app
+            (template_app
+              (template_hole 5,
+               template_app
+                (template_app
+                  (template_hole 4,
+                   template_app
+                    (template_app
+                      (template_app (template_hole 8, template_var 2),
+                       template_var 1),
+                     template_var 0)),
+                 template_app
+                  (template_hole 3,
+                   template_app (template_hole 2, template_hole 1)))),
+             template_app
+              (template_hole 0,
+               template_app (template_hole 2, template_hole 1)))),
+         template_var 2))),
+    ("Lucas_Lehmer.lucas_lehmer_correct'",
+     "prime (2 ^ ?p - 1) = (prime ?p & (?p = 2 | lucas_lehmer_test ?p))",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_hole 10,
+              template_app
+               (template_app
+                 (template_hole 9,
+                  template_app
+                   (template_app
+                     (template_hole 8,
+                      template_app
+                       (template_hole 7,
+                        template_app (template_hole 6, template_hole 5))),
+                    template_var 0)),
+                template_hole 4))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 3,
+               template_app (template_hole 10, template_var 0)),
+             template_app
+              (template_app
+                (template_hole 2,
+                 template_app
+                  (template_app (template_hole 1, template_var 0),
+                   template_app
+                    (template_hole 7,
+                     template_app (template_hole 6, template_hole 5)))),
+               template_app (template_hole 0, template_var 0)))
+           ))),
+    ("Lucas_Lehmer.lucas_lehmer_add_assoc",
+     "0 < ?m ==>
+      lucas_lehmer_add ?m ?x (lucas_lehmer_add ?m ?y ?z) =
+      lucas_lehmer_add ?m (lucas_lehmer_add ?m ?x ?y) ?z",
+     template_implication
+      ([template_inequation (less_than, template_hole 2, template_var 3)],
+       template_equation
+        (template_app
+          (template_app
+            (template_app (template_hole 0, template_var 3),
+             template_var 2),
+           template_app
+            (template_app
+              (template_app (template_hole 0, template_var 3),
+               template_var 1),
+             template_var 0)),
+         template_app
+          (template_app
+            (template_app (template_hole 0, template_var 3),
+             template_app
+              (template_app
+                (template_app (template_hole 0, template_var 3),
+                 template_var 2),
+               template_var 1)),
+           template_var 0)))),
+    ("Lucas_Lehmer.lucas_lehmer_mult_assoc",
+     "0 < ?m ==>
+      lucas_lehmer_mult ?m ?x (lucas_lehmer_mult ?m ?y ?z) =
+      lucas_lehmer_mult ?m (lucas_lehmer_mult ?m ?x ?y) ?z",
+     template_implication
+      ([template_inequation (less_than, template_hole 2, template_var 3)],
+       template_equation
+        (template_app
+          (template_app
+            (template_app (template_hole 0, template_var 3),
+             template_var 2),
+           template_app
+            (template_app
+              (template_app (template_hole 0, template_var 3),
+               template_var 1),
+             template_var 0)),
+         template_app
+          (template_app
+            (template_app (template_hole 0, template_var 3),
+             template_app
+              (template_app
+                (template_app (template_hole 0, template_var 3),
+                 template_var 2),
+               template_var 1)),
+           template_var 0)))),
+    ("Lucas_Lehmer.lucas_lehmer_add_neutral",
+     "[| fst ?x < ?m; snd ?x < ?m |]
+      ==> lucas_lehmer_add ?m ?x (0, 0) = ?x",
+     template_implication
+      ([template_inequation
+         (less_than, template_app (template_hole 5, template_var 1),
+          template_var 0),
+        template_inequation
+         (less_than, template_app (template_hole 4, template_var 1),
+          template_var 0)],
+       template_equation
+        (template_app
+          (template_app
+            (template_app (template_hole 2, template_var 0),
+             template_var 1),
+           template_app
+            (template_app (template_hole 1, template_hole 0),
+             template_hole 0)),
+         template_var 1))),
+    ("Lucas_Lehmer.lucas_lehmer_add_neutral",
+     "[| fst ?x < ?m; snd ?x < ?m |]
+      ==> lucas_lehmer_add ?m (0, 0) ?x = ?x",
+     template_implication
+      ([template_inequation
+         (less_than, template_app (template_hole 5, template_var 1),
+          template_var 0),
+        template_inequation
+         (less_than, template_app (template_hole 4, template_var 1),
+          template_var 0)],
+       template_equation
+        (template_app
+          (template_app
+            (template_app (template_hole 2, template_var 0),
+             template_app
+              (template_app (template_hole 1, template_hole 0),
+               template_hole 0)),
+           template_var 1),
+         template_var 1))),
+    ("Lucas_Lehmer.lucas_lehmer_mult_neutral",
+     "[| fst ?x < ?m; snd ?x < ?m |]
+      ==> lucas_lehmer_mult ?m ?x (Suc 0, 0) = ?x",
+     template_implication
+      ([template_inequation
+         (less_than, template_app (template_hole 6, template_var 1),
+          template_var 0),
+        template_inequation
+         (less_than, template_app (template_hole 5, template_var 1),
+          template_var 0)],
+       template_equation
+        (template_app
+          (template_app
+            (template_app (template_hole 3, template_var 0),
+             template_var 1),
+           template_app
+            (template_app
+              (template_hole 2,
+               template_app (template_hole 1, template_hole 0)),
+             template_hole 0)),
+         template_var 1))),
+    ("Lucas_Lehmer.lucas_lehmer_mult_neutral",
+     "[| fst ?x < ?m; snd ?x < ?m |]
+      ==> lucas_lehmer_mult ?m (Suc 0, 0) ?x = ?x",
+     template_implication
+      ([template_inequation
+         (less_than, template_app (template_hole 6, template_var 1),
+          template_var 0),
+        template_inequation
+         (less_than, template_app (template_hole 5, template_var 1),
+          template_var 0)],
+       template_equation
+        (template_app
+          (template_app
+            (template_app (template_hole 3, template_var 0),
+             template_app
+              (template_app
+                (template_hole 2,
+                 template_app (template_hole 1, template_hole 0)),
+               template_hole 0)),
+           template_var 1),
+         template_var 1))),
+    ("Lucas_Lehmer.int_in_Units_lucas_lehmer_ring_mod",
+     "[| prime ?p; 0 < ?x; ?x < ?p |]
+      ==> (?x, 0) : Units (lucas_lehmer_ring_mod ?p)",
+     template_implication
+      ([template_predicate (template_app (template_hole 6, template_var 1)),
+        template_inequation (less_than, template_hole 4, template_var 0),
+        template_inequation (less_than, template_var 0, template_var 1)],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 3,
+               template_app
+                (template_app (template_hole 2, template_var 0),
+                 template_hole 4)),
+             template_app
+              (template_hole 1,
+               template_app (template_hole 0, template_var 1)))
+           ))),
+    ("Lucas_Lehmer.lucas_lehmer_mult_cong",
+     "[fst (lucas_lehmer_mult ?m ?x
+             ?y) = fst ?x * fst ?y + 3 * snd ?x * snd ?y] (mod ?m)",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_app
+              (template_hole 8,
+               template_app
+                (template_hole 7,
+                 template_app
+                  (template_app
+                    (template_app (template_hole 6, template_var 2),
+                     template_var 1),
+                   template_var 0))),
+             template_app
+              (template_app
+                (template_hole 5,
+                 template_app
+                  (template_app
+                    (template_hole 4,
+                     template_app (template_hole 7, template_var 1)),
+                   template_app (template_hole 7, template_var 0))),
+               template_app
+                (template_app
+                  (template_hole 4,
+                   template_app
+                    (template_app
+                      (template_hole 4,
+                       template_app
+                        (template_hole 3,
+                         template_app (template_hole 2, template_hole 1))),
+                     template_app (template_hole 0, template_var 1))),
+                 template_app (template_hole 0, template_var 0)))),
+           template_var 2)
+         )),
+    ("Lucas_Lehmer.gen_lucas_lehmer_sequence_4_closed_form3",
+     "gen_lucas_lehmer_sequence 4 ?n =
+      \<lceil>(2 + sqrt 3) ^ 2 ^ ?n\<rceil>",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 11,
+           template_app
+            (template_hole 10,
+             template_app
+              (template_hole 9,
+               template_app (template_hole 9, template_hole 8)))),
+         template_var 0),
+       template_app
+        (template_hole 7,
+         template_app
+          (template_app
+            (template_hole 6,
+             template_app
+              (template_app
+                (template_hole 5,
+                 template_app
+                  (template_hole 4,
+                   template_app (template_hole 9, template_hole 8))),
+               template_app
+                (template_hole 3,
+                 template_app
+                  (template_hole 4,
+                   template_app (template_hole 2, template_hole 8))))),
+           template_app
+            (template_app
+              (template_hole 1,
+               template_app
+                (template_hole 0,
+                 template_app (template_hole 9, template_hole 8))),
+             template_var 0))))),
+    ("Lucas_Lehmer.gen_lucas_lehmer_sequence_4_closed_form2",
+     "gen_lucas_lehmer_sequence 4 ?n = round ((2 + sqrt 3) ^ 2 ^ ?n)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 11,
+           template_app
+            (template_hole 10,
+             template_app
+              (template_hole 9,
+               template_app (template_hole 9, template_hole 8)))),
+         template_var 0),
+       template_app
+        (template_hole 7,
+         template_app
+          (template_app
+            (template_hole 6,
+             template_app
+              (template_app
+                (template_hole 5,
+                 template_app
+                  (template_hole 4,
+                   template_app (template_hole 9, template_hole 8))),
+               template_app
+                (template_hole 3,
+                 template_app
+                  (template_hole 4,
+                   template_app (template_hole 2, template_hole 8))))),
+           template_app
+            (template_app
+              (template_hole 1,
+               template_app
+                (template_hole 0,
+                 template_app (template_hole 9, template_hole 8))),
+             template_var 0))))),
+    ("Lucas_Lehmer.lucas_lehmer_distrib_left",
+     "1 < ?m ==>
+      lucas_lehmer_mult ?m ?z (lucas_lehmer_add ?m ?x ?y) =
+      lucas_lehmer_add ?m (lucas_lehmer_mult ?m ?z ?x)
+       (lucas_lehmer_mult ?m ?z ?y)",
+     template_implication
+      ([template_inequation (less_than, template_hole 3, template_var 3)],
+       template_equation
+        (template_app
+          (template_app
+            (template_app (template_hole 1, template_var 3),
+             template_var 2),
+           template_app
+            (template_app
+              (template_app (template_hole 0, template_var 3),
+               template_var 1),
+             template_var 0)),
+         template_app
+          (template_app
+            (template_app (template_hole 0, template_var 3),
+             template_app
+              (template_app
+                (template_app (template_hole 1, template_var 3),
+                 template_var 2),
+               template_var 1)),
+           template_app
+            (template_app
+              (template_app (template_hole 1, template_var 3),
+               template_var 2),
+             template_var 0))))),
+    ("Lucas_Lehmer.lucas_lehmer_distrib_right",
+     "1 < ?m ==>
+      lucas_lehmer_mult ?m (lucas_lehmer_add ?m ?x ?y) ?z =
+      lucas_lehmer_add ?m (lucas_lehmer_mult ?m ?x ?z)
+       (lucas_lehmer_mult ?m ?y ?z)",
+     template_implication
+      ([template_inequation (less_than, template_hole 3, template_var 3)],
+       template_equation
+        (template_app
+          (template_app
+            (template_app (template_hole 1, template_var 3),
+             template_app
+              (template_app
+                (template_app (template_hole 0, template_var 3),
+                 template_var 2),
+               template_var 1)),
+           template_var 0),
+         template_app
+          (template_app
+            (template_app (template_hole 0, template_var 3),
+             template_app
+              (template_app
+                (template_app (template_hole 1, template_var 3),
+                 template_var 2),
+               template_var 0)),
+           template_app
+            (template_app
+              (template_app (template_hole 1, template_var 3),
+               template_var 1),
+             template_var 0))))),
+    ("Lucas_Lehmer.lucas_lehmer_hom_cong'",
+     "[| [?a = ?b] (mod int ?m); [?c = ?d] (mod int ?m) |]
+      ==> lucas_lehmer_hom ?m (?a, ?c) = lucas_lehmer_hom ?m (?b, ?d)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 4, template_var 4),
+                template_var 3),
+              template_app (template_hole 3, template_var 2))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 4, template_var 1),
+                template_var 0),
+              template_app (template_hole 3, template_var 2))
+            )],
+       template_equation
+        (template_app
+          (template_app (template_hole 1, template_var 2),
+           template_app
+            (template_app (template_hole 0, template_var 4),
+             template_var 1)),
+         template_app
+          (template_app (template_hole 1, template_var 2),
+           template_app
+            (template_app (template_hole 0, template_var 3),
+             template_var 0))))),
+    ("Lucas_Lehmer.lucas_lehmer_hom_cong",
+     "[| [fst ?x = fst ?y] (mod int ?m); [snd ?x = snd ?y] (mod int ?m) |]
+      ==> lucas_lehmer_hom ?m ?x = lucas_lehmer_hom ?m ?y",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_hole 5,
+                  template_app (template_hole 4, template_var 2)),
+                template_app (template_hole 4, template_var 1)),
+              template_app (template_hole 3, template_var 0))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_hole 5,
+                  template_app (template_hole 2, template_var 2)),
+                template_app (template_hole 2, template_var 1)),
+              template_app (template_hole 3, template_var 0))
+            )],
+       template_equation
+        (template_app
+          (template_app (template_hole 0, template_var 0), template_var 2),
+         template_app
+          (template_app (template_hole 0, template_var 0),
+           template_var 1)))),
+    ("Lucas_Lehmer.lucas_lehmer_test_code_arithmetic",
+     "lucas_lehmer_test ?p =
+      (2 < ?p & gen_lucas_lehmer_sequence' (2 ^ ?p - 1) 4 (?p - 2) = 0)",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 13, template_var 0))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 12,
+               template_app
+                (template_app
+                  (template_hole 11,
+                   template_app
+                    (template_hole 10,
+                     template_app (template_hole 9, template_hole 8))),
+                 template_var 0)),
+             template_app
+              (template_app
+                (template_hole 7,
+                 template_app
+                  (template_app
+                    (template_app
+                      (template_hole 6,
+                       template_app
+                        (template_app
+                          (template_hole 5,
+                           template_app
+                            (template_app
+                              (template_hole 4,
+                               template_app
+                                (template_hole 3,
+                                 template_app
+                                  (template_hole 9, template_hole 8))),
+                             template_var 0)),
+                         template_hole 2)),
+                     template_app
+                      (template_hole 3,
+                       template_app
+                        (template_hole 9,
+                         template_app (template_hole 9, template_hole 8)))),
+                   template_app
+                    (template_app (template_hole 1, template_var 0),
+                     template_app
+                      (template_hole 10,
+                       template_app (template_hole 9, template_hole 8))))),
+               template_hole 0))
+           ))),
+    ("Lucas_Lehmer_Auxiliary.two_power_odd_mod_12",
+     "[| odd ?n; 1 < ?n |] ==> [2 ^ ?n = 8] (mod 12)",
+     template_implication
+      ([template_negation
+         (
+            template_predicate
+             (
+                template_app
+                 (template_app
+                   (template_hole 8,
+                    template_app
+                     (template_hole 7,
+                      template_app (template_hole 6, template_hole 5))),
+                  template_var 0)
+                )
+            ),
+        template_inequation (less_than, template_hole 3, template_var 0)],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_hole 2,
+                 template_app
+                  (template_app
+                    (template_hole 1,
+                     template_app
+                      (template_hole 7,
+                       template_app (template_hole 6, template_hole 5))),
+                   template_var 0)),
+               template_app
+                (template_hole 7,
+                 template_app
+                  (template_hole 6,
+                   template_app
+                    (template_hole 6,
+                     template_app (template_hole 6, template_hole 5))))),
+             template_app
+              (template_hole 7,
+               template_app
+                (template_hole 6,
+                 template_app
+                  (template_hole 6,
+                   template_app (template_hole 0, template_hole 5)))))
+           ))),
+    ("Lucas_Lehmer_Auxiliary.not_prime_imp_ex_prod_nat",
+     "[| 1 < ?m; ~ prime ?m |]
+      ==> EX n k. ?m = n * k & 1 < n & n < ?m & 1 < k & k < ?m",
+     template_implication
+      ([template_inequation (less_than, template_hole 6, template_var 0),
+        template_negation
+         (
+            template_predicate
+             (template_app (template_hole 4, template_var 0))
+            )],
+       template_predicate (template_app (template_hole 3, t_empty)))),
+    ("Lucas_Lehmer.prime_dvd_mersenneD",
+     "[| prime ?p; ?p ~= 2; prime ?q; ?q dvd 2 ^ ?p - 1 |]
+      ==> [?q = 1] (mod 2 * ?p)",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 11, template_var 1)),
+        template_negation
+         (
+            template_equation
+             (template_var 1,
+              template_app
+               (template_hole 8,
+                template_app (template_hole 7, template_hole 6)))
+            ),
+        template_predicate
+         (template_app (template_hole 11, template_var 0)),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 5, template_var 0),
+              template_app
+               (template_app
+                 (template_hole 4,
+                  template_app
+                   (template_app
+                     (template_hole 3,
+                      template_app
+                       (template_hole 8,
+                        template_app (template_hole 7, template_hole 6))),
+                    template_var 1)),
+                template_hole 2))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app (template_hole 1, template_var 0),
+               template_hole 2),
+             template_app
+              (template_app
+                (template_hole 0,
+                 template_app
+                  (template_hole 8,
+                   template_app (template_hole 7, template_hole 6))),
+               template_var 1))
+           ))),
+    ("Lucas_Lehmer.lucas_lehmer_correct",
+     "prime (2 ^ ?p - 1) =
+      (prime ?p &
+       (?p = 2 | 2 ^ ?p - 1 dvd gen_lucas_lehmer_sequence 4 (?p - 2)))",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_hole 15,
+              template_app
+               (template_app
+                 (template_hole 14,
+                  template_app
+                   (template_app
+                     (template_hole 13,
+                      template_app
+                       (template_hole 12,
+                        template_app (template_hole 11, template_hole 10))),
+                    template_var 0)),
+                template_hole 9))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 8,
+               template_app (template_hole 15, template_var 0)),
+             template_app
+              (template_app
+                (template_hole 7,
+                 template_app
+                  (template_app (template_hole 6, template_var 0),
+                   template_app
+                    (template_hole 12,
+                     template_app (template_hole 11, template_hole 10)))),
+               template_app
+                (template_app
+                  (template_hole 5,
+                   template_app
+                    (template_app
+                      (template_hole 4,
+                       template_app
+                        (template_app
+                          (template_hole 3,
+                           template_app
+                            (template_hole 2,
+                             template_app
+                              (template_hole 11, template_hole 10))),
+                         template_var 0)),
+                     template_hole 1)),
+                 template_app
+                  (template_app
+                    (template_hole 0,
+                     template_app
+                      (template_hole 2,
+                       template_app
+                        (template_hole 11,
+                         template_app
+                          (template_hole 11, template_hole 10)))),
+                   template_app
+                    (template_app (template_hole 14, template_var 0),
+                     template_app
+                      (template_hole 12,
+                       template_app
+                        (template_hole 11, template_hole 10)))))))
+           ))),
+    ("Lucas_Lehmer.gen_lucas_lehmer_sequence_4_closed_form1",
+     "real_of_int (gen_lucas_lehmer_sequence 4 ?n) =
+      (2 + sqrt 3) ^ 2 ^ ?n + (2 - sqrt 3) ^ 2 ^ ?n",
+     template_equation
+      (template_app
+        (template_hole 12,
+         template_app
+          (template_app
+            (template_hole 11,
+             template_app
+              (template_hole 10,
+               template_app
+                (template_hole 9,
+                 template_app (template_hole 9, template_hole 8)))),
+           template_var 0)),
+       template_app
+        (template_app
+          (template_hole 7,
+           template_app
+            (template_app
+              (template_hole 6,
+               template_app
+                (template_app
+                  (template_hole 7,
+                   template_app
+                    (template_hole 5,
+                     template_app (template_hole 9, template_hole 8))),
+                 template_app
+                  (template_hole 4,
+                   template_app
+                    (template_hole 5,
+                     template_app (template_hole 3, template_hole 8))))),
+             template_app
+              (template_app
+                (template_hole 2,
+                 template_app
+                  (template_hole 1,
+                   template_app (template_hole 9, template_hole 8))),
+               template_var 0))),
+         template_app
+          (template_app
+            (template_hole 6,
+             template_app
+              (template_app
+                (template_hole 0,
+                 template_app
+                  (template_hole 5,
+                   template_app (template_hole 9, template_hole 8))),
+               template_app
+                (template_hole 4,
+                 template_app
+                  (template_hole 5,
+                   template_app (template_hole 3, template_hole 8))))),
+           template_app
+            (template_app
+              (template_hole 2,
+               template_app
+                (template_hole 1,
+                 template_app (template_hole 9, template_hole 8))),
+             template_var 0))))),
+    ("Lucas_Lehmer_Auxiliary.Legendre_3_right",
+     "[| prime ?p; 3 < ?p |]
+      ==> Legendre (int ?p) 3 = (if ?p mod 12 : {1, 7} then 1 else - 1)",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 17, template_var 0)),
+        template_inequation
+         (less_than,
+          template_app
+           (template_hole 15,
+            template_app (template_hole 14, template_hole 13)),
+          template_var 0)],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 11,
+             template_app (template_hole 10, template_var 0)),
+           template_app
+            (template_hole 9,
+             template_app (template_hole 14, template_hole 13))),
+         template_app
+          (template_app
+            (template_app
+              (template_hole 8,
+               template_app
+                (template_app
+                  (template_hole 7,
+                   template_app
+                    (template_app (template_hole 6, template_var 0),
+                     template_app
+                      (template_hole 15,
+                       template_app
+                        (template_hole 5,
+                         template_app
+                          (template_hole 5,
+                           template_app
+                            (template_hole 14, template_hole 13)))))),
+                 template_app
+                  (template_app (template_hole 4, template_hole 3),
+                   template_app
+                    (template_app
+                      (template_hole 4,
+                       template_app
+                        (template_hole 15,
+                         template_app
+                          (template_hole 14,
+                           template_app
+                            (template_hole 14, template_hole 13)))),
+                     template_hole 2)))),
+             template_hole 1),
+           template_app (template_hole 0, template_hole 1))))),
+    ("Lucas_Lehmer_Auxiliary.Legendre_3_right",
+     "[| prime ?p; 3 < ?p |] ==> ?p mod 12 : {1, 5, 7, 11}",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 10, template_var 0)),
+        template_inequation
+         (less_than,
+          template_app
+           (template_hole 8,
+            template_app (template_hole 7, template_hole 6)),
+          template_var 0)],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 5,
+               template_app
+                (template_app (template_hole 4, template_var 0),
+                 template_app
+                  (template_hole 8,
+                   template_app
+                    (template_hole 3,
+                     template_app
+                      (template_hole 3,
+                       template_app (template_hole 7, template_hole 6)))))),
+             template_app
+              (template_app (template_hole 2, template_hole 1),
+               template_app
+                (template_app
+                  (template_hole 2,
+                   template_app
+                    (template_hole 8,
+                     template_app
+                      (template_hole 7,
+                       template_app (template_hole 3, template_hole 6)))),
+                 template_app
+                  (template_app
+                    (template_hole 2,
+                     template_app
+                      (template_hole 8,
+                       template_app
+                        (template_hole 7,
+                         template_app (template_hole 7, template_hole 6)))),
+                   template_app
+                    (template_app
+                      (template_hole 2,
+                       template_app
+                        (template_hole 8,
+                         template_app
+                          (template_hole 7,
+                           template_app
+                            (template_hole 7,
+                             template_app
+                              (template_hole 3, template_hole 6))))),
+                     template_hole 0)))))
+           ))),
+    ("Lucas_Lehmer_Auxiliary.Legendre_3_left",
+     "[| prime ?p; 3 < ?p |]
+      ==> Legendre 3 (int ?p) = (if ?p mod 12 : {1, 11} then 1 else - 1)",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 17, template_var 0)),
+        template_inequation
+         (less_than,
+          template_app
+           (template_hole 15,
+            template_app (template_hole 14, template_hole 13)),
+          template_var 0)],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 11,
+             template_app
+              (template_hole 10,
+               template_app (template_hole 14, template_hole 13))),
+           template_app (template_hole 9, template_var 0)),
+         template_app
+          (template_app
+            (template_app
+              (template_hole 8,
+               template_app
+                (template_app
+                  (template_hole 7,
+                   template_app
+                    (template_app (template_hole 6, template_var 0),
+                     template_app
+                      (template_hole 15,
+                       template_app
+                        (template_hole 5,
+                         template_app
+                          (template_hole 5,
+                           template_app
+                            (template_hole 14, template_hole 13)))))),
+                 template_app
+                  (template_app (template_hole 4, template_hole 3),
+                   template_app
+                    (template_app
+                      (template_hole 4,
+                       template_app
+                        (template_hole 15,
+                         template_app
+                          (template_hole 14,
+                           template_app
+                            (template_hole 14,
+                             template_app
+                              (template_hole 5, template_hole 13))))),
+                     template_hole 2)))),
+             template_hole 1),
+           template_app (template_hole 0, template_hole 1))))),
+    ("Lucas_Lehmer.lucas_lehmer_sufficient",
+     "[| prime ?p; odd ?p;
+         2 ^ ?p - 1 dvd gen_lucas_lehmer_sequence 4 (?p - 2) |]
+      ==> prime (2 ^ ?p - 1)",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 14, template_var 0)),
+        template_negation
+         (
+            template_predicate
+             (
+                template_app
+                 (template_app
+                   (template_hole 12,
+                    template_app
+                     (template_hole 11,
+                      template_app (template_hole 10, template_hole 9))),
+                  template_var 0)
+                )
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 8,
+                template_app
+                 (template_app
+                   (template_hole 7,
+                    template_app
+                     (template_app
+                       (template_hole 6,
+                        template_app
+                         (template_hole 5,
+                          template_app
+                           (template_hole 10, template_hole 9))),
+                      template_var 0)),
+                  template_hole 4)),
+              template_app
+               (template_app
+                 (template_hole 3,
+                  template_app
+                   (template_hole 5,
+                    template_app
+                     (template_hole 10,
+                      template_app (template_hole 10, template_hole 9)))),
+                template_app
+                 (template_app (template_hole 2, template_var 0),
+                  template_app
+                   (template_hole 11,
+                    template_app (template_hole 10, template_hole 9)))))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_hole 14,
+             template_app
+              (template_app
+                (template_hole 2,
+                 template_app
+                  (template_app
+                    (template_hole 1,
+                     template_app
+                      (template_hole 11,
+                       template_app (template_hole 10, template_hole 9))),
+                   template_var 0)),
+               template_hole 0))
+           ))),
+    ("Lucas_Lehmer_Auxiliary.supplement2_Legendre'",
+     "[| prime ?p; ?p ~= 2 |]
+      ==> Legendre 2 ?p = (if ?p mod 8 = 1 | ?p mod 8 = 7 then 1 else - 1)",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 12, template_var 0)),
+        template_negation
+         (
+            template_equation
+             (template_var 0,
+              template_app
+               (template_hole 9,
+                template_app (template_hole 8, template_hole 7)))
+            )],
+       template_implication
+        ([template_predicate
+           (
+              template_app
+               (template_app
+                 (template_hole 6,
+                  template_app
+                   (template_hole 9,
+                    template_app (template_hole 8, template_hole 7))),
+                template_var 0)
+              )],
+         template_predicate
+          (
+             template_app
+              (template_app
+                (template_app
+                  (template_hole 5,
+                   template_app
+                    (template_app
+                      (template_hole 4,
+                       template_app
+                        (template_app
+                          (template_hole 10,
+                           template_app
+                            (template_app (template_hole 3, template_var 0),
+                             template_app
+                              (template_hole 9,
+                               template_app
+                                (template_hole 8,
+                                 template_app
+                                  (template_hole 8,
+                                   template_app
+                                    (template_hole 8, template_hole 7)))))),
+                         template_hole 2)),
+                     template_app
+                      (template_app
+                        (template_hole 10,
+                         template_app
+                          (template_app (template_hole 3, template_var 0),
+                           template_app
+                            (template_hole 9,
+                             template_app
+                              (template_hole 8,
+                               template_app
+                                (template_hole 8,
+                                 template_app
+                                  (template_hole 8, template_hole 7)))))),
+                       template_app
+                        (template_hole 9,
+                         template_app
+                          (template_hole 1,
+                           template_app
+                            (template_hole 1, template_hole 7)))))),
+                 template_hole 2),
+               template_app (template_hole 0, template_hole 2))
+             )))),
+    ("Lucas_Lehmer.prime_dvd_mersenneD'",
+     "[| prime ?p; ?p ~= 2; prime ?q; ?q dvd 2 ^ ?p - 1 |]
+      ==> EX k>0. ?q = 1 + 2 * k * ?p",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 15, template_var 1)),
+        template_negation
+         (
+            template_equation
+             (template_var 1,
+              template_app
+               (template_hole 12,
+                template_app (template_hole 11, template_hole 10)))
+            ),
+        template_predicate
+         (template_app (template_hole 15, template_var 0)),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 9, template_var 0),
+              template_app
+               (template_app
+                 (template_hole 8,
+                  template_app
+                   (template_app
+                     (template_hole 7,
+                      template_app
+                       (template_hole 12,
+                        template_app (template_hole 11, template_hole 10))),
+                    template_var 1)),
+                template_hole 6))
+            )],
+       template_predicate (template_app (template_hole 5, t_empty))))]:
+   (string * thm * template) list
+### theory "Draft.Lucas_LehmerTemplates"
+### 1.000s elapsed time, 1.521s cpu time, 0.475s GC time
+val it = (): unit

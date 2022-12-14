@@ -1,0 +1,1263 @@
+Loading theory "Draft.Stream_Fusion" (required by "Draft.Stream_Fusion_ExamplesMoreTemplates" via "Draft.Stream_Fusion_Examples" via "Draft.Stream_Fusion_LList" via "Draft.Stream_Fusion_List")
+Loading theory "HOL-Library.Case_Converter" (required by "Draft.Stream_Fusion_ExamplesMoreTemplates" via "Draft.Stream_Fusion_Examples" via "Draft.Stream_Fusion_LList" via "Coinductive.Coinductive_List" via "HOL-Library.Simps_Case_Conv")
+Loading theory "HOL-Library.Complete_Partial_Order2" (required by "Draft.Stream_Fusion_ExamplesMoreTemplates" via "Draft.Stream_Fusion_Examples" via "Draft.Stream_Fusion_LList" via "Coinductive.Coinductive_List" via "Coinductive.Coinductive_Nat")
+Loading theory "HOL-Library.Function_Algebras" (required by "Draft.Stream_Fusion_ExamplesMoreTemplates" via "Draft.ExtrEqs" via "HOL-Library.BigO")
+instantiation
+  fun :: (type, plus) plus
+  plus_fun == plus :: ('a => 'b) => ('a => 'b) => 'a => 'b
+instantiation
+  fun :: (type, zero) zero
+  zero_fun == zero_class.zero :: 'a => 'b
+instantiation
+  fun :: (type, times) times
+  times_fun == times :: ('a => 'b) => ('a => 'b) => 'a => 'b
+instantiation
+  fun :: (type, one) one
+  one_fun == one_class.one :: 'a => 'b
+signature STREAM_FUSION =
+  sig
+    val add_fusion_rule: thm -> Context.generic -> Context.generic
+    val add_unstream: string -> Context.generic -> Context.generic
+    val del_fusion_rule: thm -> Context.generic -> Context.generic
+    val del_unstream: string -> Context.generic -> Context.generic
+    val fusion_add: attribute
+    val fusion_conv: Proof.context -> conv
+    val fusion_del: attribute
+    val fusion_simproc: Proof.context -> cterm -> thm option
+    val get_conspats: Proof.context -> (term * thm) list
+    val get_rules: Proof.context -> thm list
+    val get_unstream: Proof.context -> string list
+    val match_consumer: Proof.context -> term -> bool
+    val trace: bool Config.T
+  end
+structure Stream_Fusion: STREAM_FUSION
+class ccpo = Sup + order +
+  assumes
+    "ccpo_Sup_upper":
+      "!!A x.
+          [| Complete_Partial_Order.chain (<=) A; x : A |]
+          ==> x <= \<Squnion> A"
+  assumes
+    "ccpo_Sup_least":
+      "!!A z.
+          [| Complete_Partial_Order.chain (<=) A; !!x. x : A ==> x <= z |]
+          ==> \<Squnion> A <= z"
+### theory "Draft.Stream_Fusion"
+### 0.130s elapsed time, 0.545s cpu time, 0.041s GC time
+Loading theory "Draft.Stream_Fusion_List" (required by "Draft.Stream_Fusion_ExamplesMoreTemplates" via "Draft.Stream_Fusion_Examples" via "Draft.Stream_Fusion_LList")
+### theory "HOL-Library.Function_Algebras"
+### 0.151s elapsed time, 0.629s cpu time, 0.041s GC time
+Loading theory "HOL-Library.Infinite_Set" (required by "Draft.Stream_Fusion_ExamplesMoreTemplates" via "Draft.Stream_Fusion_Examples" via "Draft.Stream_Fusion_LList" via "Coinductive.Coinductive_List")
+signature CASE_CONVERTER =
+  sig
+    type elimination_strategy
+    val keep_constructor_context: elimination_strategy
+    val replace_by_type:
+       (Proof.context -> string * string -> bool) -> elimination_strategy
+    val to_case:
+       Proof.context ->
+         elimination_strategy ->
+           (string * typ -> int) -> thm list -> thm list option
+  end
+structure Case_Converter: CASE_CONVERTER
+### theory "HOL-Library.Case_Converter"
+### 0.188s elapsed time, 0.779s cpu time, 0.041s GC time
+Loading theory "HOL-Library.Simps_Case_Conv" (required by "Draft.Stream_Fusion_ExamplesMoreTemplates" via "Draft.Stream_Fusion_Examples" via "Draft.Stream_Fusion_LList" via "Coinductive.Coinductive_List")
+signature SIMPS_CASE_CONV =
+  sig
+    val gen_to_simps: Proof.context -> thm list -> thm -> thm list
+    val to_case: Proof.context -> thm list -> thm
+    val to_simps: Proof.context -> thm -> thm list
+  end
+structure Simps_Case_Conv: SIMPS_CASE_CONV
+### theory "HOL-Library.Simps_Case_Conv"
+### 0.083s elapsed time, 0.310s cpu time, 0.062s GC time
+Loading theory "HOL-Library.Nat_Bijection" (required by "Draft.Stream_Fusion_ExamplesMoreTemplates" via "Draft.ExtrEqs" via "HOL-Library.Stream")
+consts
+  enumerate :: "'a set => nat => 'a"
+val cont_intro_tac = fn: Proof.context -> int -> tactic
+val cont_intro_simproc = fn: Proof.context -> cterm -> thm option
+Found termination order: "(%p. size (snd p)) <*mlex*> {}"
+class preorder = ord +
+  assumes "less_le_not_le": "!!x y. (x < y) = (x <= y & ~ y <= x)"
+    and "order_refl": "!!x. x <= x"
+    and "order_trans": "!!x y z. [| x <= y; y <= z |] ==> x <= z"
+locale partial_function_definitions
+  fixes leq :: "'a => 'a => bool"
+    and lub :: "'a set => 'a"
+  assumes "partial_function_definitions leq lub"
+### theory "HOL-Library.Infinite_Set"
+### 0.297s elapsed time, 1.156s cpu time, 0.150s GC time
+Loading theory "HOL-Library.Old_Datatype" (required by "Draft.Stream_Fusion_ExamplesMoreTemplates" via "Draft.Stream_Fusion_Examples" via "Draft.Stream_Fusion_LList" via "Coinductive.Coinductive_List" via "Coinductive.Coinductive_Nat" via "HOL-Library.Extended_Nat" via "HOL-Library.Countable")
+Found termination order: "size_list size <*mlex*> {}"
+class ccpo = Sup + order +
+  assumes
+    "ccpo_Sup_upper":
+      "!!A x.
+          [| Complete_Partial_Order.chain (<=) A; x : A |]
+          ==> x <= \<Squnion> A"
+  assumes
+    "ccpo_Sup_least":
+      "!!A z.
+          [| Complete_Partial_Order.chain (<=) A; !!x. x : A ==> x <= z |]
+          ==> \<Squnion> A <= z"
+### theory "HOL-Library.Nat_Bijection"
+### 0.331s elapsed time, 1.301s cpu time, 0.176s GC time
+Loading theory "HOL-Library.Stream" (required by "Draft.Stream_Fusion_ExamplesMoreTemplates" via "Draft.ExtrEqs")
+locale partial_function_definitions
+  fixes leq :: "'a => 'a => bool"
+    and lub :: "'a set => 'a"
+  assumes "partial_function_definitions leq lub"
+class ccpo = Sup + order +
+  assumes
+    "ccpo_Sup_upper":
+      "!!A x.
+          [| Complete_Partial_Order.chain (<=) A; x : A |]
+          ==> x <= \<Squnion> A"
+  assumes
+    "ccpo_Sup_least":
+      "!!A z.
+          [| Complete_Partial_Order.chain (<=) A; !!x. x : A ==> x <= z |]
+          ==> \<Squnion> A <= z"
+signature OLD_DATATYPE =
+  sig
+    val check_specs: spec list -> theory -> spec list * Proof.context
+    type config = {quiet: bool, strict: bool}
+    val default_config: config
+    type descr =
+       (int * (string * dtyp list * (string * dtyp list) list)) list
+    val distinct_lemma: thm
+    datatype dtyp
+    = DtRec of int | DtTFree of string * sort | DtType of string * dtyp list
+    type info =
+       {case_cong: thm,
+        case_cong_weak: thm,
+        case_name: string,
+        case_rewrites: thm list,
+        descr: descr,
+        distinct: thm list,
+        exhaust: thm,
+        index: int,
+        induct: thm,
+        inducts: thm list,
+        inject: thm list,
+        nchotomy: thm,
+        rec_names: string list,
+        rec_rewrites: thm list, split: thm, split_asm: thm}
+    val read_specs: spec_cmd list -> theory -> spec list * Proof.context
+    type spec =
+       (binding * (string * sort) list * mixfix) *
+       (binding * typ list * mixfix) list
+    type spec_cmd =
+       (binding * (string * string option) list * mixfix) *
+       (binding * string list * mixfix) list
+  end
+structure Old_Datatype: OLD_DATATYPE
+### theory "HOL-Library.Old_Datatype"
+### 0.600s elapsed time, 2.206s cpu time, 0.678s GC time
+Loading theory "HOL-Library.Set_Algebras" (required by "Draft.Stream_Fusion_ExamplesMoreTemplates" via "Draft.ExtrEqs" via "HOL-Library.BigO")
+instantiation
+  set :: (plus) plus
+  plus_set == plus :: 'a set => 'a set => 'a set
+instantiation
+  set :: (times) times
+  times_set == times :: 'a set => 'a set => 'a set
+class ccpo = Sup + order +
+  assumes
+    "ccpo_Sup_upper":
+      "!!A x.
+          [| Complete_Partial_Order.chain (<=) A; x : A |]
+          ==> x <= \<Squnion> A"
+  assumes
+    "ccpo_Sup_least":
+      "!!A z.
+          [| Complete_Partial_Order.chain (<=) A; !!x. x : A ==> x <= z |]
+          ==> \<Squnion> A <= z"
+instantiation
+  set :: (zero) zero
+  zero_set == zero_class.zero :: 'a set
+instantiation
+  set :: (one) one
+  one_set == one_class.one :: 'a set
+locale partial_function_definitions
+  fixes leq :: "'a => 'a => bool"
+    and lub :: "'a set => 'a"
+  assumes "partial_function_definitions leq lub"
+Proofs for inductive predicate(s) "compact"
+Proofs for inductive predicate(s) "terminates_onp"
+  Proving monotonicity ...
+  Proving monotonicity ...
+class ccpo = Sup + order +
+  assumes
+    "ccpo_Sup_upper":
+      "!!A x.
+          [| Complete_Partial_Order.chain (<=) A; x : A |]
+          ==> x <= \<Squnion> A"
+  assumes
+    "ccpo_Sup_least":
+      "!!A z.
+          [| Complete_Partial_Order.chain (<=) A; !!x. x : A ==> x <= z |]
+          ==> \<Squnion> A <= z"
+locale partial_function_definitions
+  fixes leq :: "'a => 'a => bool"
+    and lub :: "'a set => 'a"
+  assumes "partial_function_definitions leq lub"
+consts
+  shift :: "'a list => 'a stream => 'a stream"
+Proofs for coinductive predicate(s) "streamsp"
+  Proving monotonicity ...
+class ccpo = Sup + order +
+  assumes
+    "ccpo_Sup_upper":
+      "!!A x.
+          [| Complete_Partial_Order.chain (<=) A; x : A |]
+          ==> x <= \<Squnion> A"
+  assumes
+    "ccpo_Sup_least":
+      "!!A z.
+          [| Complete_Partial_Order.chain (<=) A; !!x. x : A ==> x <= z |]
+          ==> \<Squnion> A <= z"
+locale partial_function_definitions
+  fixes leq :: "'a => 'a => bool"
+    and lub :: "'a set => 'a"
+  assumes "partial_function_definitions leq lub"
+### theory "HOL-Library.Set_Algebras"
+### 0.260s elapsed time, 1.016s cpu time, 0.108s GC time
+Loading theory "HOL-Library.Sublist" (required by "Draft.Stream_Fusion_ExamplesMoreTemplates" via "Draft.Stream_Fusion_Examples" via "Draft.Stream_Fusion_LList" via "Coinductive.Coinductive_List")
+consts
+  snth :: "'a stream => nat => 'a"
+consts
+  stake :: "nat => 'a stream => 'a list"
+consts
+  sdrop :: "nat => 'a stream => 'a stream"
+consts
+  sfilter :: "('a => bool) => 'a stream => 'a stream"
+consts
+  cycle :: "'a list => 'a stream"
+consts
+  siterate :: "('a => 'a) => 'a => 'a stream"
+class ccpo = Sup + order +
+  assumes
+    "ccpo_Sup_upper":
+      "!!A x.
+          [| Complete_Partial_Order.chain (<=) A; x : A |]
+          ==> x <= \<Squnion> A"
+  assumes
+    "ccpo_Sup_least":
+      "!!A z.
+          [| Complete_Partial_Order.chain (<=) A; !!x. x : A ==> x <= z |]
+          ==> \<Squnion> A <= z"
+Found termination order: "{}"
+consts
+  flat :: "'a list stream => 'a stream"
+locale partial_function_definitions
+  fixes leq :: "'a => 'a => bool"
+    and lub :: "'a set => 'a"
+  assumes "partial_function_definitions leq lub"
+Found termination order: "{}"
+consts
+  sinterleave :: "'a stream => 'a stream => 'a stream"
+consts
+  prefixes :: "'a list => 'a list list"
+consts
+  szip :: "'a stream => 'b stream => ('a * 'b) stream"
+consts
+  smap2 :: "('a => 'b => 'c) => 'a stream => 'b stream => 'c stream"
+class complete_lattice = ccpo + conditionally_complete_lattice +
+  bounded_lattice +
+  assumes "Inf_lower": "!!x A. x : A ==> \<Sqinter> A <= x"
+    and
+    "Inf_greatest": "!!A z. (!!x. x : A ==> z <= x) ==> z <= \<Sqinter> A"
+    and "Sup_upper": "!!x A. x : A ==> x <= \<Squnion> A"
+    and "Sup_least": "!!A z. (!!x. x : A ==> x <= z) ==> \<Squnion> A <= z"
+    and "Inf_empty": "\<Sqinter> {} = \<top>"
+    and "Sup_empty": "\<Squnion> {} = \<bottom>"
+### theory "HOL-Library.Stream"
+### 1.141s elapsed time, 4.327s cpu time, 0.875s GC time
+Loading theory "HOL-Library.Tree" (required by "Draft.Stream_Fusion_ExamplesMoreTemplates" via "Draft.ExtrEqs" via "Draft.Templates")
+Found termination order: "(%p. length (snd p)) <*mlex*> {}"
+class complete_distrib_lattice = complete_lattice + distrib_lattice +
+  assumes
+    "Inf_Sup_le":
+      "!!A. \<Sqinter> (Sup ` A)
+            <= \<Squnion> (Inf ` {f ` A |f. ALL Y:A. f Y : Y})"
+class ord = type +
+  fixes less_eq :: "'a => 'a => bool"
+    and less :: "'a => 'a => bool"
+Found termination order: "{}"
+class complete_lattice = ccpo + conditionally_complete_lattice +
+  bounded_lattice +
+  assumes "Inf_lower": "!!x A. x : A ==> \<Sqinter> A <= x"
+    and
+    "Inf_greatest": "!!A z. (!!x. x : A ==> z <= x) ==> z <= \<Sqinter> A"
+    and "Sup_upper": "!!x A. x : A ==> x <= \<Squnion> A"
+    and "Sup_least": "!!A z. (!!x. x : A ==> x <= z) ==> \<Squnion> A <= z"
+    and "Inf_empty": "\<Sqinter> {} = \<top>"
+    and "Sup_empty": "\<Squnion> {} = \<bottom>"
+consts
+  suffixes :: "'a list => 'a list list"
+Proofs for inductive predicate(s) "list_emb"
+  Proving monotonicity ...
+Found termination order: "{}"
+Found termination order: "{}"
+consts
+  left :: "'a tree => 'a tree"
+consts
+  right :: "'a tree => 'a tree"
+Found termination order: "size <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+Found termination order: "{}"
+Found termination order: "size <*mlex*> {}"
+class height = type +
+  fixes height :: "'a => nat"
+instantiation
+  tree :: (type) height
+  height_tree == height :: 'a tree => nat
+locale partial_function_definitions
+  fixes leq :: "'a => 'a => bool"
+    and lub :: "'a set => 'a"
+  assumes "partial_function_definitions leq lub"
+### theory "HOL-Library.Complete_Partial_Order2"
+### 2.934s elapsed time, 11.162s cpu time, 2.433s GC time
+Loading theory "HOL-Library.Countable" (required by "Draft.Stream_Fusion_ExamplesMoreTemplates" via "Draft.Stream_Fusion_Examples" via "Draft.Stream_Fusion_LList" via "Coinductive.Coinductive_List" via "Coinductive.Coinductive_Nat" via "HOL-Library.Extended_Nat")
+Found termination order: "size <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+consts
+  sublists :: "'a list => 'a list list"
+Found termination order: "{}"
+Found termination order: "size <*mlex*> {}"
+### theory "HOL-Library.Sublist"
+### 1.799s elapsed time, 6.864s cpu time, 1.542s GC time
+Loading theory "HOL-Library.BigO" (required by "Draft.Stream_Fusion_ExamplesMoreTemplates" via "Draft.ExtrEqs")
+Found termination order: "{}"
+Found termination order: "size <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+Found termination order: "{}"
+Found termination order: "size <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+### Additional type variable(s) in locale specification "countable": 'a
+Found termination order: "{}"
+class countable = type +
+  assumes "ex_inj": "EX to_nat. inj to_nat"
+Found termination order: "(%p. size (fst p)) <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+Proofs for inductive predicate(s) "finite_item"
+Found termination order: "(%p. size (snd p)) <*mlex*> {}"
+  Proving monotonicity ...
+val old_countable_datatype_tac = fn: Proof.context -> int -> tactic
+### ML warning (line 93 of "~~/src/HOL/Tools/BNF/bnf_lfp_countable.ML"):
+### Pattern is not exhaustive.
+### ML warning (line 139 of "~~/src/HOL/Tools/BNF/bnf_lfp_countable.ML"):
+### Pattern is not exhaustive.
+### ML warning (line 143 of "~~/src/HOL/Tools/BNF/bnf_lfp_countable.ML"):
+### Matches are not exhaustive.
+### ML warning (line 145 of "~~/src/HOL/Tools/BNF/bnf_lfp_countable.ML"):
+### Matches are not exhaustive.
+### ML warning (line 156 of "~~/src/HOL/Tools/BNF/bnf_lfp_countable.ML"):
+### Pattern is not exhaustive.
+signature BNF_LFP_COUNTABLE =
+  sig
+    val countable_datatype_tac: Proof.context -> tactic
+    val derive_encode_injectives_thms:
+       Proof.context -> string list -> thm list
+  end
+structure BNF_LFP_Countable: BNF_LFP_COUNTABLE
+val countable_datatype_tac = fn: Proof.context -> thm -> thm Seq.seq
+val countable_tac = fn: Proof.context -> int -> tactic
+Found termination order: "size <*mlex*> {}"
+### theory "HOL-Library.BigO"
+### 1.216s elapsed time, 4.587s cpu time, 1.508s GC time
+### theory "HOL-Library.Tree"
+### 2.707s elapsed time, 10.155s cpu time, 2.873s GC time
+Loading theory "Draft.Templates" (required by "Draft.Stream_Fusion_ExamplesMoreTemplates" via "Draft.ExtrEqs")
+### theory "HOL-Library.Countable"
+### 1.549s elapsed time, 5.762s cpu time, 1.593s GC time
+Loading theory "HOL-Library.Countable_Set" (required by "Draft.Stream_Fusion_ExamplesMoreTemplates" via "Draft.Stream_Fusion_Examples" via "Draft.Stream_Fusion_LList" via "Coinductive.Coinductive_List" via "Coinductive.Coinductive_Nat" via "HOL-Library.Extended_Nat" via "HOL-Library.Order_Continuity" via "HOL-Library.Countable_Complete_Lattices")
+datatype template_term
+=
+     t_empty
+   | template_app of template_term * template_term
+   | template_hole of int
+   | template_var of int
+datatype sign
+= equals | greater_equals | greater_than | less_equals | less_than
+datatype template
+=
+     template_bimplication of template * template
+   | template_dunno
+   | template_equation of template_term * template_term
+   | template_implication of template list * template
+   | template_inequation of sign * template_term * template_term
+   | template_negation of template
+   | template_predicate of template_term
+constructor t_empty: template_term
+constructor template_app: template_term * template_term -> template_term
+constructor template_hole: int -> template_term
+constructor template_var: int -> template_term
+constructor equals: sign
+constructor greater_equals: sign
+constructor greater_than: sign
+constructor less_equals: sign
+constructor less_than: sign
+constructor template_bimplication: template * template -> template
+constructor template_dunno: template
+constructor template_equation: template_term * template_term -> template
+constructor template_implication: template list * template -> template
+constructor template_inequation:
+   sign * template_term * template_term -> template
+constructor template_negation: template -> template
+constructor template_predicate: template_term -> template
+val vfs = fn: term -> (indexname * typ) list * (string * typ) list
+val indexOf = fn: ''a list -> ''a -> int -> int
+val has_eq = fn: term -> bool
+val term2template = fn:
+   (indexname * typ) list -> (string * typ) list -> term -> template_term
+val lemma2predicate = fn: term -> term -> template
+val makeTemplatewithContext = fn: term -> term -> template
+val lemma2template = fn: term -> template
+val thm2template = fn: thm -> template
+val tterm2string = fn: template_term -> string
+val template2string = fn: template -> string
+val t = "height ?t <= size ?t": thm
+val th =
+   Const ("HOL.Trueprop", "bool => prop") $
+     (Const ("Orderings.ord_class.less_eq", "nat => nat => bool") $
+       (Const ("Tree.height_class.height", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree")) $
+       (Const ("Nat.size_class.size", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree"))):
+   term
+### theory "Draft.Templates"
+### 0.099s elapsed time, 0.301s cpu time, 0.065s GC time
+Loading theory "Draft.ExtrEqs" (required by "Draft.Stream_Fusion_ExamplesMoreTemplates")
+locale comm_monoid_set
+  fixes f :: "'a => 'a => 'a"  (infixl \<open>\<^bold>*\<close> 70)
+    and z :: "'a"  (\<open>\<^bold>1\<close>)
+  assumes "comm_monoid_set (\<^bold>*) \<^bold>1"
+Found termination order: "{}"
+### theory "HOL-Library.Countable_Set"
+### 0.423s elapsed time, 1.295s cpu time, 0.135s GC time
+Loading theory "HOL-Library.Countable_Complete_Lattices" (required by "Draft.Stream_Fusion_ExamplesMoreTemplates" via "Draft.Stream_Fusion_Examples" via "Draft.Stream_Fusion_LList" via "Coinductive.Coinductive_List" via "Coinductive.Coinductive_Nat" via "HOL-Library.Extended_Nat" via "HOL-Library.Order_Continuity")
+Found termination order: "{}"
+Found termination order: "{}"
+val eqpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Var (("_dummy_", 2), "?'a"))
+       ):
+   term Find_Theorems.criterion
+val badeqpattern = Pattern (Const ("Pure.eq", "?'a => ?'a => prop")):
+   term Find_Theorems.criterion
+val undefpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Const ("HOL.undefined", "?'a"))
+       ):
+   term Find_Theorems.criterion
+val thmpattern =
+   Pattern
+    (Const ("HOL.Trueprop", "bool => prop") $ Var (("_dummy_", 1), "bool")):
+   term Find_Theorems.criterion
+val badnames =
+   ["*nitpick*", "*Nitpick*", "*full_exhaustive*", "*_def*", "Enum.finite*",
+    "*Quickcheck*", "ATP*", "*Nunchaku*", "*Code*", "*BNF*", "*SMT*",
+    "*.*.*"]:
+   string list
+val unwanted_names =
+   [(false, Name "*nitpick*"), (false, Name "*Nitpick*"),
+    (false, Name "*full_exhaustive*"), (false, Name "*_def*"),
+    (false, Name "Enum.finite*"), (false, Name "*Quickcheck*"),
+    (false, Name "ATP*"), (false, Name "*Nunchaku*"),
+    (false, Name "*Code*"), (false, Name "*BNF*"), (false, Name "*SMT*"),
+    (false, Name "*.*.*")]:
+   (bool * term Find_Theorems.criterion) list
+val has_vars = fn: term -> bool
+val get_all_eqs = fn: string -> Proof.context -> (string * thm) list
+val get_all_thms = fn: string -> Proof.context -> (string * thm) list
+val get_noneq_thms = fn: string -> Proof.context -> (string * thm) list
+val template_eqs = fn:
+   string -> Proof.context -> (string * thm * template) list
+val template_thms = fn:
+   string -> Proof.context -> (string * thm * template) list
+### theory "Draft.ExtrEqs"
+### 0.620s elapsed time, 1.891s cpu time, 0.137s GC time
+Found termination order: "{}"
+class countable_complete_lattice = Inf + Sup + lattice + bot + top +
+  assumes "ccInf_lower": "!!A x. [| countable A; x : A |] ==> Inf A <= x"
+  assumes
+    "ccInf_greatest":
+      "!!A z. [| countable A; !!x. x : A ==> z <= x |] ==> z <= Inf A"
+  assumes "ccSup_upper": "!!A x. [| countable A; x : A |] ==> x <= Sup A"
+  assumes
+    "ccSup_least":
+      "!!A z. [| countable A; !!x. x : A ==> x <= z |] ==> Sup A <= z"
+  assumes "ccInf_empty": "Inf {} = top"
+  assumes "ccSup_empty": "Sup {} = bot"
+Found termination order: "{}"
+Found termination order: "{}"
+Found termination order: "{}"
+Found termination order: "{}"
+### theory "Draft.Stream_Fusion_List"
+### 5.533s elapsed time, 19.540s cpu time, 4.244s GC time
+class countable_complete_distrib_lattice = countable_complete_lattice +
+  assumes
+    "sup_ccInf": "!!B a. countable B ==> sup a (Inf B) = Inf (sup a ` B)"
+  assumes
+    "inf_ccSup": "!!B a. countable B ==> inf a (Sup B) = Sup (inf a ` B)"
+### theory "HOL-Library.Countable_Complete_Lattices"
+### 1.609s elapsed time, 2.854s cpu time, 0.199s GC time
+Loading theory "HOL-Library.Order_Continuity" (required by "Draft.Stream_Fusion_ExamplesMoreTemplates" via "Draft.Stream_Fusion_Examples" via "Draft.Stream_Fusion_LList" via "Coinductive.Coinductive_List" via "Coinductive.Coinductive_Nat" via "HOL-Library.Extended_Nat")
+### theory "HOL-Library.Order_Continuity"
+### 0.384s elapsed time, 0.426s cpu time, 0.036s GC time
+Loading theory "HOL-Library.Extended_Nat" (required by "Draft.Stream_Fusion_ExamplesMoreTemplates" via "Draft.Stream_Fusion_Examples" via "Draft.Stream_Fusion_LList" via "Coinductive.Coinductive_List" via "Coinductive.Coinductive_Nat")
+class infinity = type +
+  fixes infinity :: "'a"
+instantiation
+  enat :: infinity
+  infinity_enat == infinity :: enat
+Proofs for inductive predicate(s) "rec_set_enat"
+### No equation for constructor "Extended_Nat.infinity_class.infinity"
+### in definition of function "the_enat"
+consts
+  the_enat :: "enat => nat"
+instantiation
+  enat :: zero_neq_one
+  one_enat == one_class.one :: enat
+  zero_enat == zero_class.zero :: enat
+instantiation
+  enat :: comm_monoid_add
+  plus_enat == plus :: enat => enat => enat
+instantiation
+  enat :: {comm_semiring_1,semiring_no_zero_divisors}
+  times_enat == times :: enat => enat => enat
+instantiation
+  enat :: minus
+  minus_enat == minus :: enat => enat => enat
+instantiation
+  enat :: linordered_ab_semigroup_add
+  less_eq_enat == less_eq :: enat => enat => bool
+  less_enat == less :: enat => enat => bool
+instantiation
+  enat :: {order_bot,order_top}
+  top_enat == top :: enat
+  bot_enat == bot :: enat
+structure Cancel_Enat_Common:
+  sig
+    val dest_sum: term -> term list
+    val dest_summing: term * term list -> term list
+    val find_first: term -> term list -> term list
+    val find_first_t: term list -> term -> term list -> term list
+    val mk_eq: term * term -> term
+    val mk_sum: typ -> term list -> term
+    val norm_ss: simpset
+    val norm_tac: Proof.context -> tactic
+    val simplify_meta_eq: Proof.context -> thm -> thm -> thm
+    val trans_tac: Proof.context -> thm option -> tactic
+  end
+structure Eq_Enat_Cancel:
+  sig val proc: Proof.context -> term -> thm option end
+structure Le_Enat_Cancel:
+  sig val proc: Proof.context -> term -> thm option end
+structure Less_Enat_Cancel:
+  sig val proc: Proof.context -> term -> thm option end
+instantiation
+  enat :: complete_lattice
+  Inf_enat == Inf :: enat set => enat
+  Sup_enat == Sup :: enat set => enat
+  sup_enat == sup :: enat => enat => enat
+  inf_enat == inf :: enat => enat => enat
+### theory "HOL-Library.Extended_Nat"
+### 0.461s elapsed time, 0.509s cpu time, 0.066s GC time
+Loading theory "Coinductive.Coinductive_Nat" (required by "Draft.Stream_Fusion_ExamplesMoreTemplates" via "Draft.Stream_Fusion_Examples" via "Draft.Stream_Fusion_LList" via "Coinductive.Coinductive_List")
+Proofs for coinductive predicate(s) "enat_setp"
+  Proving monotonicity ...
+locale co
+Proofs for coinductive predicate(s) "Le_enatp"
+  Proving monotonicity ...
+### theory "Coinductive.Coinductive_Nat"
+### 0.483s elapsed time, 0.526s cpu time, 0.060s GC time
+Loading theory "Coinductive.Coinductive_List" (required by "Draft.Stream_Fusion_ExamplesMoreTemplates" via "Draft.Stream_Fusion_Examples" via "Draft.Stream_Fusion_LList")
+consts
+  unfold_llist ::
+    "('a => bool) => ('a => 'b) => ('a => 'a) => 'a => 'b llist"
+Proofs for inductive predicate(s) "lsetp"
+  Proving monotonicity ...
+Proofs for inductive predicate(s) "lfinite"
+  Proving monotonicity ...
+consts
+  lappend :: "'a llist => 'a llist => 'a llist"
+### Ignoring duplicate rewrite rule:
+### lnull (lappend ?xs1 ?ys1) == lnull ?xs1 & lnull ?ys1
+Proofs for coinductive predicate(s) "lprefix"
+  Proving monotonicity ...
+consts
+  lSup :: "'a llist set => 'a llist"
+### Cannot skip proof of schematic goal statement
+### Cannot skip proof of schematic goal statement
+consts
+  iterates :: "('a => 'a) => 'a => 'a llist"
+consts
+  llist_of :: "'a list => 'a llist"
+consts
+  ltake :: "enat => 'a llist => 'a llist"
+### Ambiguous input (line 1019 of "$AFP/Coinductive/Coinductive_List.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" ldrop)
+###       ("_cargs" ("_position" n) ("_position" xs)))
+###     ("_case_syntax" ("_position" n)
+###       ("_case2"
+###         ("_case1" ("\<^const>Groups.zero_class.zero") ("_position" xs))
+###         ("_case1" ("_applC" ("_position" eSuc) ("_position" n'))
+###           ("_case_syntax" ("_position" xs)
+###             ("_case2" ("_case1" ("_position" LNil) ("_position" LNil))
+###               ("_case1"
+###                 ("_applC" ("_position" LCons)
+###                   ("_cargs" ("_position" x) ("_position" xs')))
+###                 ("_applC" ("_position" ldrop)
+###                   ("_cargs" ("_position" n') ("_position" xs')))))))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" ldrop)
+###       ("_cargs" ("_position" n) ("_position" xs)))
+###     ("_case_syntax" ("_position" n)
+###       ("_case2"
+###         ("_case1" ("\<^const>Groups.zero_class.zero") ("_position" xs))
+###         ("_case2"
+###           ("_case1" ("_applC" ("_position" eSuc) ("_position" n'))
+###             ("_case_syntax" ("_position" xs)
+###               ("_case1" ("_position" LNil) ("_position" LNil))))
+###           ("_case1"
+###             ("_applC" ("_position" LCons)
+###               ("_cargs" ("_position" x) ("_position" xs')))
+###             ("_applC" ("_position" ldrop)
+###               ("_cargs" ("_position" n') ("_position" xs')))))))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+consts
+  ltakeWhile :: "('a => bool) => 'a llist => 'a llist"
+consts
+  lnth :: "'a llist => nat => 'a"
+consts
+  lzip :: "'a llist => 'b llist => ('a * 'b) llist"
+Proofs for coinductive predicate(s) "ldistinct"
+  Proving monotonicity ...
+Proofs for coinductive predicate(s) "llexord"
+  Proving monotonicity ...
+### Ambiguous input (line 1508 of "$AFP/Coinductive/Coinductive_List.thy") produces 2 parse trees:
+### ("\<^const>Pure.eq" ("_position" F)
+###   ("_lambda"
+###     ("_pttrns" ("_position" ltake)
+###       ("_pttrns" ("_position" n) ("_position" xs)))
+###     ("_case_syntax" ("_position" xs)
+###       ("_case2" ("_case1" ("_position" LNil) ("_position" LNil))
+###         ("_case2"
+###           ("_case1"
+###             ("_applC" ("_position" LCons)
+###               ("_cargs" ("_position" x) ("_position" xs)))
+###             ("_case_syntax" ("_position" n)
+###               ("_case1" ("\<^const>Groups.zero_class.zero")
+###                 ("_position" LNil))))
+###           ("_case1" ("_applC" ("_position" eSuc) ("_position" n))
+###             ("_applC" ("_position" LCons)
+###               ("_cargs" ("_position" x)
+###                 ("_applC" ("_position" ltake)
+###                   ("_cargs" ("_position" n) ("_position" xs)))))))))))
+### ("\<^const>Pure.eq" ("_position" F)
+###   ("_lambda"
+###     ("_pttrns" ("_position" ltake)
+###       ("_pttrns" ("_position" n) ("_position" xs)))
+###     ("_case_syntax" ("_position" xs)
+###       ("_case2" ("_case1" ("_position" LNil) ("_position" LNil))
+###         ("_case1"
+###           ("_applC" ("_position" LCons)
+###             ("_cargs" ("_position" x) ("_position" xs)))
+###           ("_case_syntax" ("_position" n)
+###             ("_case2"
+###               ("_case1" ("\<^const>Groups.zero_class.zero")
+###                 ("_position" LNil))
+###               ("_case1" ("_applC" ("_position" eSuc) ("_position" n))
+###                 ("_applC" ("_position" LCons)
+###                   ("_cargs" ("_position" x)
+###                     ("_applC" ("_position" ltake)
+###                       ("_cargs" ("_position" n) ("_position" xs)))))))))))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ignoring duplicate rewrite rule:
+### lnull (lzip ?xs1 ?ys1) == lnull ?xs1 | lnull ?ys1
+### Ambiguous input (line 2485 of "$AFP/Coinductive/Coinductive_List.thy") produces 2 parse trees:
+### ("\<^const>Pure.eq" ("_position" F)
+###   ("_lambda"
+###     ("_pttrns" ("_position" lzip)
+###       ("_pattern" ("_position" xs) ("_position" ys)))
+###     ("_case_syntax" ("_position" xs)
+###       ("_case2" ("_case1" ("_position" LNil) ("_position" LNil))
+###         ("_case2"
+###           ("_case1"
+###             ("_applC" ("_position" LCons)
+###               ("_cargs" ("_position" x) ("_position" xs')))
+###             ("_case_syntax" ("_position" ys)
+###               ("_case1" ("_position" LNil) ("_position" LNil))))
+###           ("_case1"
+###             ("_applC" ("_position" LCons)
+###               ("_cargs" ("_position" y) ("_position" ys')))
+###             ("_applC" ("_position" LCons)
+###               ("_cargs"
+###                 ("_tuple" ("_position" x) ("_tuple_arg" ("_position" y)))
+###                 ("_applC" ("_position" curry)
+###                   ("_cargs" ("_position" lzip)
+###                     ("_cargs" ("_position" xs') ("_position" ys'))))))))))))
+### ("\<^const>Pure.eq" ("_position" F)
+###   ("_lambda"
+###     ("_pttrns" ("_position" lzip)
+###       ("_pattern" ("_position" xs) ("_position" ys)))
+###     ("_case_syntax" ("_position" xs)
+###       ("_case2" ("_case1" ("_position" LNil) ("_position" LNil))
+###         ("_case1"
+###           ("_applC" ("_position" LCons)
+###             ("_cargs" ("_position" x) ("_position" xs')))
+###           ("_case_syntax" ("_position" ys)
+###             ("_case2" ("_case1" ("_position" LNil) ("_position" LNil))
+###               ("_case1"
+###                 ("_applC" ("_position" LCons)
+###                   ("_cargs" ("_position" y) ("_position" ys')))
+###                 ("_applC" ("_position" LCons)
+###                   ("_cargs"
+###                     ("_tuple" ("_position" x)
+###                       ("_tuple_arg" ("_position" y)))
+###                     ("_applC" ("_position" curry)
+###                       ("_cargs" ("_position" lzip)
+###                         ("_cargs" ("_position" xs')
+###                           ("_position" ys'))))))))))))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+class ord = type +
+  fixes less_eq :: "'a => 'a => bool"
+    and less :: "'a => 'a => bool"
+Proofs for coinductive predicate(s) "lsorted"
+  Proving monotonicity ...
+### Partially applied constant "Sublist.list_emb" on left hand side of equation, in theorem:
+### subseq_order.lsorted LNil == True
+### Partially applied constant "Sublist.list_emb" on left hand side of equation, in theorem:
+### subseq_order.lsorted (LCons ?x LNil) == True
+### Partially applied constant "Sublist.list_emb" on left hand side of equation, in theorem:
+### subseq_order.lsorted (LCons ?x (LCons ?y ?xs)) ==
+### subseq ?x ?y & subseq_order.lsorted (LCons ?y ?xs)
+### Partially applied constant "Sublist.sublist" on left hand side of equation, in theorem:
+### sublist_order.lsorted LNil == True
+### Partially applied constant "Sublist.sublist" on left hand side of equation, in theorem:
+### sublist_order.lsorted (LCons ?x LNil) == True
+### Partially applied constant "Sublist.sublist" on left hand side of equation, in theorem:
+### sublist_order.lsorted (LCons ?x (LCons ?y ?xs)) ==
+### sublist ?x ?y & sublist_order.lsorted (LCons ?y ?xs)
+### Partially applied constant "Sublist.suffix" on left hand side of equation, in theorem:
+### suffix_order.lsorted LNil == True
+### Partially applied constant "Sublist.suffix" on left hand side of equation, in theorem:
+### suffix_order.lsorted (LCons ?x LNil) == True
+### Partially applied constant "Sublist.suffix" on left hand side of equation, in theorem:
+### suffix_order.lsorted (LCons ?x (LCons ?y ?xs)) ==
+### suffix ?x ?y & suffix_order.lsorted (LCons ?y ?xs)
+### Partially applied constant "Sublist.prefix" on left hand side of equation, in theorem:
+### prefix_order.lsorted LNil == True
+### Partially applied constant "Sublist.prefix" on left hand side of equation, in theorem:
+### prefix_order.lsorted (LCons ?x LNil) == True
+### Partially applied constant "Sublist.prefix" on left hand side of equation, in theorem:
+### prefix_order.lsorted (LCons ?x (LCons ?y ?xs)) ==
+### prefix ?x ?y & prefix_order.lsorted (LCons ?y ?xs)
+class preorder = ord +
+  assumes "less_le_not_le": "!!x y. (x < y) = (x <= y & ~ y <= x)"
+    and "order_refl": "!!x. x <= x"
+    and "order_trans": "!!x y z. [| x <= y; y <= z |] ==> x <= z"
+class linorder = order +
+  assumes "linear": "!!x y. x <= y | y <= x"
+### Introduced fixed type variable(s): 'a in "P__" or "xs__"
+### Introduced fixed type variable(s): 'a in "P__" or "xs__"
+### Introduced fixed type variable(s): 'a in "P__" or "Q__"
+### Introduced fixed type variable(s): 'a in "xs__"
+class preorder = ord +
+  assumes "less_le_not_le": "!!x y. (x < y) = (x <= y & ~ y <= x)"
+    and "order_refl": "!!x. x <= x"
+    and "order_trans": "!!x y z. [| x <= y; y <= z |] ==> x <= z"
+class monoid_add = semigroup_add + zero +
+  assumes "add_0_left": "!!a. (0::'a) + a = a"
+    and "add_0_right": "!!a. a + (0::'a) = a"
+### theory "Coinductive.Coinductive_List"
+### 2.887s elapsed time, 3.309s cpu time, 0.579s GC time
+Loading theory "Draft.Stream_Fusion_LList" (required by "Draft.Stream_Fusion_ExamplesMoreTemplates" via "Draft.Stream_Fusion_Examples")
+Proofs for inductive predicate(s) "productive_onp"
+  Proving monotonicity ...
+Found termination order: "{}"
+Found termination order: "{}"
+Found termination order: "{}"
+### theory "Draft.Stream_Fusion_LList"
+### 0.996s elapsed time, 1.113s cpu time, 0.121s GC time
+Loading theory "Draft.Stream_Fusion_Examples" (required by "Draft.Stream_Fusion_ExamplesMoreTemplates")
+### theory "Draft.Stream_Fusion_Examples"
+### 0.065s elapsed time, 0.104s cpu time, 0.000s GC time
+Loading theory "Draft.Stream_Fusion_ExamplesMoreTemplates"
+If
+  if False then ?x else ?y == ?y
+  if True then ?x else ?y == ?x
+case_step
+  case Yield ?x31.0 ?x32.0 of Done => ?f1.0 | Skip x => ?f2.0 x
+  | Yield x xa => ?f3.0 x xa ==
+  ?f3.0 ?x31.0 ?x32.0
+  case Skip ?x2.0 of Done => ?f1.0 | Skip x => ?f2.0 x
+  | Yield x xa => ?f3.0 x xa ==
+  ?f2.0 ?x2.0
+  case Done of Done => ?f1.0 | Skip x => ?f2.0 x
+  | Yield x xa => ?f3.0 x xa ==
+  ?f1.0
+comp
+  ?f o ?g == %x. ?f (?g x)
+fix_gen
+  generator (fix_gen ?xa) == fix_gen_raw (generator o ?xa o id)
+fix_gen_raw
+  fix_gen_raw ?g (?a, ?s) == fix_step ?a (?g ?a ?s)
+fix_step
+  fix_step ?a Done == Done
+  fix_step ?a (Skip ?s) == Skip (?a, ?s)
+  fix_step ?a (Yield ?x ?s) == Yield ?x (?a, ?s)
+flatten
+  generator (flatten ?xc ?xd ?xe) ==
+  flatten_raw ?xc (generator ?xd) (generator ?xe)
+flatten_raw
+  flatten_raw ?f ?ga ?g (?s, None) ==
+  case ?g ?s of Done => Done | Skip s' => Skip (s', None)
+  | Yield x s' => Skip (s', Some (?f x))
+  flatten_raw ?f ?ga ?g (?sa, Some ?s) ==
+  case ?ga ?s of Done => Skip (?sa, None) | Skip s' => Skip (?sa, Some s')
+  | Yield x s' => Yield x (?sa, Some s')
+foldl_cons
+  foldl_cons ?g ?f ?z ?s ==
+  case generator ?g ?s of Done => ?z | Skip x => foldl_cons ?g ?f ?z x
+  | Yield a x => foldl_cons ?g ?f (?f ?z a) x
+generator
+  generator (Generator ?x) == ?x
+id
+  id == %x. x
+less [nat]
+  ?m < Suc ?n == ?m <= ?n
+  ?n < 0 == False
+less_eq [nat]
+  Suc ?m <= ?n == ?m < ?n
+  0 <= ?n == True
+one_class.one [nat]
+  1 == Suc 0
+plus [nat]
+  Suc ?m + ?n == ?m + Suc ?n
+  0 + ?n == ?n
+test_enum
+  test_enum ?n ==
+  foldl_cons
+   (flatten (%s. (s, 1)) (fix_gen (%x. upt_prod (id x))) (upt_prod ?n)) (+)
+   0 (1, None)
+upt_prod
+  generator (upt_prod ?xa) == upt_raw ?xa
+upt_raw
+  upt_raw ?n ?m == if ?n <= ?m then Done else Yield ?m (Suc ?m)
+If
+  if False then ?x else ?y == ?y
+  if True then ?x else ?y == ?x
+case_step
+  case Yield ?x31.0 ?x32.0 of Done => ?f1.0 | Skip x => ?f2.0 x
+  | Yield x xa => ?f3.0 x xa ==
+  ?f3.0 ?x31.0 ?x32.0
+  case Skip ?x2.0 of Done => ?f1.0 | Skip x => ?f2.0 x
+  | Yield x xa => ?f3.0 x xa ==
+  ?f2.0 ?x2.0
+  case Done of Done => ?f1.0 | Skip x => ?f2.0 x
+  | Yield x xa => ?f3.0 x xa ==
+  ?f1.0
+comp
+  ?f o ?g == %x. ?f (?g x)
+fix_gen
+  generator (fix_gen ?xa) == fix_gen_raw (generator o ?xa o id)
+fix_gen_raw
+  fix_gen_raw ?g (?a, ?s) == fix_step ?a (?g ?a ?s)
+fix_step
+  fix_step ?a Done == Done
+  fix_step ?a (Skip ?s) == Skip (?a, ?s)
+  fix_step ?a (Yield ?x ?s) == Yield ?x (?a, ?s)
+flatten
+  generator (flatten ?xc ?xd ?xe) ==
+  flatten_raw ?xc (generator ?xd) (generator ?xe)
+flatten_raw
+  flatten_raw ?f ?ga ?g (?s, None) ==
+  case ?g ?s of Done => Done | Skip s' => Skip (s', None)
+  | Yield x s' => Skip (s', Some (?f x))
+  flatten_raw ?f ?ga ?g (?sa, Some ?s) ==
+  case ?ga ?s of Done => Skip (?sa, None) | Skip s' => Skip (?sa, Some s')
+  | Yield x s' => Yield x (?sa, Some s')
+foldl_cons
+  foldl_cons ?g ?f ?z ?s ==
+  case generator ?g ?s of Done => ?z | Skip x => foldl_cons ?g ?f ?z x
+  | Yield a x => foldl_cons ?g ?f (?f ?z a) x
+generator
+  generator (Generator ?x) == ?x
+id
+  id == %x. x
+less [nat]
+  ?m < Suc ?n == ?m <= ?n
+  ?n < 0 == False
+less_eq [nat]
+  Suc ?m <= ?n == ?m < ?n
+  0 <= ?n == True
+one_class.one [nat]
+  1 == Suc 0
+plus [nat]
+  Suc ?m + ?n == ?m + Suc ?n
+  0 + ?n == ?n
+test_nested
+  test_nested ?n ==
+  foldl_cons
+   (flatten (%s. (s, 1, None))
+     (fix_gen (%x. flatten (%s'. s') (upt_prod x) (upt_prod x)))
+     (upt_prod ?n))
+   (+) 0 (1, None)
+upt_prod
+  generator (upt_prod ?xa) == upt_raw ?xa
+upt_raw
+  upt_raw ?n ?m == if ?n <= ?m then Done else Yield ?m (Suc ?m)
+Code_Numeral.divmod_abs
+  Code_Numeral.divmod_abs 0 ?j == (0, 0)
+  Code_Numeral.divmod_abs ?j 0 == (0, \<bar>?j\<bar>)
+  Code_Numeral.divmod_abs (Code_Numeral.Pos ?k) (Code_Numeral.Neg ?l) ==
+  divmod ?k ?l
+  Code_Numeral.divmod_abs (Code_Numeral.Neg ?k) (Code_Numeral.Pos ?l) ==
+  divmod ?k ?l
+  Code_Numeral.divmod_abs (Code_Numeral.Neg ?k) (Code_Numeral.Neg ?l) ==
+  divmod ?k ?l
+  Code_Numeral.divmod_abs (Code_Numeral.Pos ?k) (Code_Numeral.Pos ?l) ==
+  divmod ?k ?l
+Code_Numeral.dup
+  Code_Numeral.dup (Code_Numeral.Neg ?n) == Code_Numeral.Neg (num.Bit0 ?n)
+  Code_Numeral.dup (Code_Numeral.Pos ?n) == Code_Numeral.Pos (num.Bit0 ?n)
+  Code_Numeral.dup 0 == 0
+Code_Numeral.sub
+  Code_Numeral.sub (num.Bit0 ?m) (num.Bit1 ?n) ==
+  Code_Numeral.dup (Code_Numeral.sub ?m ?n) - Code_Numeral.Pos num.One
+  Code_Numeral.sub (num.Bit1 ?m) (num.Bit0 ?n) ==
+  Code_Numeral.dup (Code_Numeral.sub ?m ?n) + Code_Numeral.Pos num.One
+  Code_Numeral.sub (num.Bit1 ?m) (num.Bit1 ?n) ==
+  Code_Numeral.dup (Code_Numeral.sub ?m ?n)
+  Code_Numeral.sub (num.Bit0 ?m) (num.Bit0 ?n) ==
+  Code_Numeral.dup (Code_Numeral.sub ?m ?n)
+  Code_Numeral.sub num.One (num.Bit1 ?n) == Code_Numeral.Neg (num.Bit0 ?n)
+  Code_Numeral.sub num.One (num.Bit0 ?n) == Code_Numeral.Neg (Num.BitM ?n)
+  Code_Numeral.sub (num.Bit1 ?m) num.One == Code_Numeral.Pos (num.Bit0 ?m)
+  Code_Numeral.sub (num.Bit0 ?m) num.One == Code_Numeral.Pos (Num.BitM ?m)
+  Code_Numeral.sub num.One num.One == 0
+HOL.eq
+  ?x = ?x == True
+  ?a = ?b == equal_class.equal ?a ?b
+If
+  if False then ?x else ?y == ?y
+  if True then ?x else ?y == ?x
+Let
+  Let ?s ?f == ?f ?s
+Num.BitM
+  Num.BitM num.One == num.One
+  Num.BitM (num.Bit0 ?n) == num.Bit1 (Num.BitM ?n)
+  Num.BitM (num.Bit1 ?n) == num.Bit1 (num.Bit0 ?n)
+abs [integer]
+  \<bar>?k\<bar> == if ?k < 0 then - ?k else ?k
+apsnd
+  apsnd ?f (?x, ?y) == (?x, ?f ?y)
+case_prod
+  case (?a, ?b) of (x, xa) => ?f x xa == ?f ?a ?b
+case_step
+  case Yield ?x31.0 ?x32.0 of Done => ?f1.0 | Skip x => ?f2.0 x
+  | Yield x xa => ?f3.0 x xa ==
+  ?f3.0 ?x31.0 ?x32.0
+  case Skip ?x2.0 of Done => ?f1.0 | Skip x => ?f2.0 x
+  | Yield x xa => ?f3.0 x xa ==
+  ?f2.0 ?x2.0
+  case Done of Done => ?f1.0 | Skip x => ?f2.0 x
+  | Yield x xa => ?f3.0 x xa ==
+  ?f1.0
+comp
+  ?f o ?g == %x. ?f (?g x)
+disj
+  ?p | True == True
+  ?p | False == ?p
+  True | ?p == True
+  False | ?p == ?p
+divide [nat]
+  ?m div ?n == fst (divmod_nat ?m ?n)
+divmod [integer]
+  divmod (num.Bit1 ?m) (num.Bit1 ?n) ==
+  if ?m < ?n then (0, integer_of_num (num.Bit1 ?m))
+  else divmod_step (num.Bit1 ?n)
+        (divmod (num.Bit1 ?m) (num.Bit0 (num.Bit1 ?n)))
+  divmod (num.Bit0 ?m) (num.Bit1 ?n) ==
+  if ?m <= ?n then (0, integer_of_num (num.Bit0 ?m))
+  else divmod_step (num.Bit1 ?n)
+        (divmod (num.Bit0 ?m) (num.Bit0 (num.Bit1 ?n)))
+  divmod (num.Bit1 ?m) (num.Bit0 ?n) ==
+  case divmod ?m ?n of
+  (q, r) =>
+    (q, Code_Numeral.Pos (num.Bit0 num.One) * r + Code_Numeral.Pos num.One)
+  divmod (num.Bit0 ?m) (num.Bit0 ?n) ==
+  case divmod ?m ?n of
+  (q, r) => (q, Code_Numeral.Pos (num.Bit0 num.One) * r)
+  divmod num.One (num.Bit1 ?n) == (0, Code_Numeral.Pos num.One)
+  divmod num.One (num.Bit0 ?n) == (0, Code_Numeral.Pos num.One)
+  divmod ?m num.One == (integer_of_num ?m, 0)
+divmod_integer
+  divmod_integer ?k ?l ==
+  if equal_class.equal ?k 0 then (0, 0)
+  else if 0 < ?l
+       then if 0 < ?k then Code_Numeral.divmod_abs ?k ?l
+            else case Code_Numeral.divmod_abs ?k ?l of
+                 (r, s) =>
+                   if equal_class.equal s 0 then (- r, 0)
+                   else (- r - Code_Numeral.Pos num.One, ?l - s)
+       else if equal_class.equal ?l 0 then (0, ?k)
+            else apsnd uminus
+                  (if ?k < 0 then Code_Numeral.divmod_abs ?k ?l
+                   else case Code_Numeral.divmod_abs ?k ?l of
+                        (r, s) =>
+                          if equal_class.equal s 0 then (- r, 0)
+                          else (- r - Code_Numeral.Pos num.One, - ?l - s))
+divmod_nat
+  divmod_nat ?m ?n ==
+  if equal_class.equal ?n 0 | ?m < ?n then (0, ?m)
+  else let (q, y) = divmod_nat (?m - ?n) ?n in (Suc q, y)
+divmod_step [integer]
+  divmod_step ?l (?q, ?r) ==
+  if integer_of_num ?l <= ?r
+  then (Code_Numeral.Pos (num.Bit0 num.One) * ?q + Code_Numeral.Pos num.One,
+        ?r - integer_of_num ?l)
+  else (Code_Numeral.Pos (num.Bit0 num.One) * ?q, ?r)
+dvd
+  ?a dvd ?b == ?b mod ?a = (0::?'a)
+equal_class.equal [integer]
+  equal_class.equal ?k ?k == True
+  equal_class.equal (Code_Numeral.Neg ?k) (Code_Numeral.Neg ?l) ==
+  equal_class.equal ?k ?l
+  equal_class.equal (Code_Numeral.Neg ?k) (Code_Numeral.Pos ?l) == False
+  equal_class.equal (Code_Numeral.Neg ?k) 0 == False
+  equal_class.equal (Code_Numeral.Pos ?k) (Code_Numeral.Neg ?l) == False
+  equal_class.equal (Code_Numeral.Pos ?k) (Code_Numeral.Pos ?l) ==
+  equal_class.equal ?k ?l
+  equal_class.equal (Code_Numeral.Pos ?k) 0 == False
+  equal_class.equal 0 (Code_Numeral.Neg ?l) == False
+  equal_class.equal 0 (Code_Numeral.Pos ?l) == False
+  equal_class.equal 0 0 == True
+equal_class.equal [nat]
+  equal_class.equal ?x ?x == True
+  equal_class.equal 0 (Suc ?x2.0) == False
+  equal_class.equal (Suc ?x2.0) 0 == False
+  equal_class.equal (Suc ?x2.0) (Suc ?y2.0) == equal_class.equal ?x2.0 ?y2.0
+  equal_class.equal 0 0 == True
+equal_class.equal [num]
+  equal_class.equal ?x ?x == True
+  equal_class.equal (num.Bit0 ?x2.0) (num.Bit1 ?x3.0) == False
+  equal_class.equal (num.Bit1 ?x3.0) (num.Bit0 ?x2.0) == False
+  equal_class.equal num.One (num.Bit1 ?x3.0) == False
+  equal_class.equal (num.Bit1 ?x3.0) num.One == False
+  equal_class.equal num.One (num.Bit0 ?x2.0) == False
+  equal_class.equal (num.Bit0 ?x2.0) num.One == False
+  equal_class.equal (num.Bit1 ?x3.0) (num.Bit1 ?y3.0) ==
+  equal_class.equal ?x3.0 ?y3.0
+  equal_class.equal (num.Bit0 ?x2.0) (num.Bit0 ?y2.0) ==
+  equal_class.equal ?x2.0 ?y2.0
+  equal_class.equal num.One num.One == True
+fix_gen
+  generator (fix_gen ?xa) == fix_gen_raw (generator o ?xa o id)
+fix_gen_raw
+  fix_gen_raw ?g (?a, ?s) == fix_step ?a (?g ?a ?s)
+fix_step
+  fix_step ?a Done == Done
+  fix_step ?a (Skip ?s) == Skip (?a, ?s)
+  fix_step ?a (Yield ?x ?s) == Yield ?x (?a, ?s)
+flatten
+  generator (flatten ?xc ?xd ?xe) ==
+  flatten_raw ?xc (generator ?xd) (generator ?xe)
+flatten_raw
+  flatten_raw ?f ?ga ?g (?s, None) ==
+  case ?g ?s of Done => Done | Skip s' => Skip (s', None)
+  | Yield x s' => Skip (s', Some (?f x))
+  flatten_raw ?f ?ga ?g (?sa, Some ?s) ==
+  case ?ga ?s of Done => Skip (?sa, None) | Skip s' => Skip (?sa, Some s')
+  | Yield x s' => Yield x (?sa, Some s')
+foldl_cons
+  foldl_cons ?g ?f ?z ?s ==
+  case generator ?g ?s of Done => ?z | Skip x => foldl_cons ?g ?f ?z x
+  | Yield a x => foldl_cons ?g ?f (?f ?z a) x
+fst
+  fst (?x1.0, ?x2.0) == ?x1.0
+generator
+  generator (Generator ?x) == ?x
+id
+  id == %x. x
+integer_of_num
+  integer_of_num (num.Bit1 ?n) ==
+  let k = integer_of_num ?n in k + k + Code_Numeral.Pos num.One
+  integer_of_num (num.Bit0 ?n) == let k = integer_of_num ?n in k + k
+  integer_of_num num.One == Code_Numeral.Pos num.One
+less [integer]
+  Code_Numeral.Neg ?k < Code_Numeral.Neg ?l == ?l < ?k
+  Code_Numeral.Neg ?k < Code_Numeral.Pos ?l == True
+  Code_Numeral.Neg ?k < 0 == True
+  Code_Numeral.Pos ?k < Code_Numeral.Neg ?l == False
+  Code_Numeral.Pos ?k < Code_Numeral.Pos ?l == ?k < ?l
+  Code_Numeral.Pos ?k < 0 == False
+  0 < Code_Numeral.Neg ?l == False
+  0 < Code_Numeral.Pos ?l == True
+  0 < 0 == False
+less [nat]
+  ?m < Suc ?n == ?m <= ?n
+  ?n < 0 == False
+less [num]
+  num.Bit1 ?m < num.Bit0 ?n == ?m < ?n
+  num.Bit1 ?m < num.Bit1 ?n == ?m < ?n
+  num.Bit0 ?m < num.Bit1 ?n == ?m <= ?n
+  num.Bit0 ?m < num.Bit0 ?n == ?m < ?n
+  num.One < num.Bit1 ?n == True
+  num.One < num.Bit0 ?n == True
+  ?m < num.One == False
+less_eq [integer]
+  Code_Numeral.Neg ?k <= Code_Numeral.Neg ?l == ?l <= ?k
+  Code_Numeral.Neg ?k <= Code_Numeral.Pos ?l == True
+  Code_Numeral.Neg ?k <= 0 == True
+  Code_Numeral.Pos ?k <= Code_Numeral.Neg ?l == False
+  Code_Numeral.Pos ?k <= Code_Numeral.Pos ?l == ?k <= ?l
+  Code_Numeral.Pos ?k <= 0 == False
+  0 <= Code_Numeral.Neg ?l == False
+  0 <= Code_Numeral.Pos ?l == True
+  0 <= 0 == True
+less_eq [nat]
+  Suc ?m <= ?n == ?m < ?n
+  0 <= ?n == True
+less_eq [num]
+  num.Bit1 ?m <= num.Bit0 ?n == ?m < ?n
+  num.Bit1 ?m <= num.Bit1 ?n == ?m <= ?n
+  num.Bit0 ?m <= num.Bit1 ?n == ?m <= ?n
+  num.Bit0 ?m <= num.Bit0 ?n == ?m <= ?n
+  num.Bit1 ?m <= num.One == False
+  num.Bit0 ?m <= num.One == False
+  num.One <= ?n == True
+minus [integer]
+  Code_Numeral.Neg ?m - Code_Numeral.Neg ?n == Code_Numeral.sub ?n ?m
+  Code_Numeral.Neg ?m - Code_Numeral.Pos ?n == Code_Numeral.Neg (?m + ?n)
+  Code_Numeral.Pos ?m - Code_Numeral.Neg ?n == Code_Numeral.Pos (?m + ?n)
+  Code_Numeral.Pos ?m - Code_Numeral.Pos ?n == Code_Numeral.sub ?m ?n
+  0 - ?l == - ?l
+  ?k - 0 == ?k
+minus [nat]
+  Suc ?m - Suc ?n == ?m - ?n
+  0 - ?n == 0
+  ?m - 0 == ?m
+modulo [nat]
+  ?m mod ?n == snd (divmod_nat ?m ?n)
+nat_of_integer
+  nat_of_integer ?k ==
+  if ?k <= 0 then 0
+  else let (l, j) = divmod_integer ?k (Code_Numeral.Pos (num.Bit0 num.One));
+           l' = nat_of_integer l; l'' = l' + l'
+       in if equal_class.equal j 0 then l'' else l'' + 1
+nat_of_num
+  nat_of_num (num.Bit1 ?n) == let m = nat_of_num ?n in Suc (m + m)
+  nat_of_num (num.Bit0 ?n) == let m = nat_of_num ?n in m + m
+  nat_of_num num.One == 1
+one_class.one [nat]
+  1 == Suc 0
+plus [integer]
+  Code_Numeral.Neg ?m + Code_Numeral.Neg ?n == Code_Numeral.Neg (?m + ?n)
+  Code_Numeral.Neg ?m + Code_Numeral.Pos ?n == Code_Numeral.sub ?n ?m
+  Code_Numeral.Pos ?m + Code_Numeral.Neg ?n == Code_Numeral.sub ?m ?n
+  Code_Numeral.Pos ?m + Code_Numeral.Pos ?n == Code_Numeral.Pos (?m + ?n)
+  0 + ?l == ?l
+  ?k + 0 == ?k
+plus [nat]
+  Suc ?m + ?n == ?m + Suc ?n
+  0 + ?n == ?n
+plus [num]
+  num.Bit1 ?m + num.Bit1 ?n == num.Bit0 (?m + ?n + num.One)
+  num.Bit1 ?m + num.Bit0 ?n == num.Bit1 (?m + ?n)
+  num.Bit1 ?m + num.One == num.Bit0 (?m + num.One)
+  num.Bit0 ?m + num.Bit1 ?n == num.Bit1 (?m + ?n)
+  num.Bit0 ?m + num.Bit0 ?n == num.Bit0 (?m + ?n)
+  num.Bit0 ?m + num.One == num.Bit1 ?m
+  num.One + num.Bit1 ?n == num.Bit0 (?n + num.One)
+  num.One + num.Bit0 ?n == num.Bit1 ?n
+  num.One + num.One == num.Bit0 num.One
+snd
+  snd (?x1.0, ?x2.0) == ?x2.0
+test_merge
+  test_merge ?n ==
+  foldl_cons
+   (flatten
+     (%s. (s, if nat_of_num (num.Bit0 num.One) dvd s then 1
+              else nat_of_num (num.Bit0 num.One)))
+     (fix_gen upt_prod) (upt_prod (nat_of_integer ?n)))
+   (+) 0 (1, None)
+times [integer]
+  Code_Numeral.Neg ?m * Code_Numeral.Neg ?n == Code_Numeral.Pos (?m * ?n)
+  Code_Numeral.Neg ?m * Code_Numeral.Pos ?n == Code_Numeral.Neg (?m * ?n)
+  Code_Numeral.Pos ?m * Code_Numeral.Neg ?n == Code_Numeral.Neg (?m * ?n)
+  Code_Numeral.Pos ?m * Code_Numeral.Pos ?n == Code_Numeral.Pos (?m * ?n)
+  0 * ?l == 0
+  ?k * 0 == 0
+times [nat]
+  0 * ?n == 0
+  Suc ?m * ?n == ?n + ?m * ?n
+times [num]
+  num.Bit1 ?m * num.Bit1 ?n == num.Bit1 (?m + ?n + num.Bit0 (?m * ?n))
+  num.Bit1 ?m * num.Bit0 ?n == num.Bit0 (num.Bit1 ?m * ?n)
+  num.Bit0 ?m * num.Bit1 ?n == num.Bit0 (?m * num.Bit1 ?n)
+  num.Bit0 ?m * num.Bit0 ?n == num.Bit0 (num.Bit0 (?m * ?n))
+  num.One * ?n == ?n
+  ?m * num.One == ?m
+uminus [integer]
+  - Code_Numeral.Neg ?m == Code_Numeral.Pos ?m
+  - Code_Numeral.Pos ?m == Code_Numeral.Neg ?m
+  - 0 == 0
+upt_prod
+  generator (upt_prod ?xa) == upt_raw ?xa
+upt_raw
+  upt_raw ?n ?m == if ?n <= ?m then Done else Yield ?m (Suc ?m)
+val templateLemmas =
+   [("Stream_Fusion_Examples.if_same", "(if ?b then ?x else ?x) = ?x",
+     template_equation
+      (template_app
+        (template_app
+          (template_app (template_hole 0, template_var 1), template_var 0),
+         template_var 0),
+       template_var 0)),
+    ("Stream_Fusion_Examples.unstream_if",
+     "unstream (if ?b then ?g else ?g') (if ?b then ?s else ?s') =
+      (if ?b then unstream ?g ?s else unstream ?g' ?s')",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 3,
+           template_app
+            (template_app
+              (template_app (template_hole 2, template_var 4),
+               template_var 3),
+             template_var 2)),
+         template_app
+          (template_app
+            (template_app (template_hole 1, template_var 4),
+             template_var 1),
+           template_var 0)),
+       template_app
+        (template_app
+          (template_app (template_hole 0, template_var 4),
+           template_app
+            (template_app (template_hole 3, template_var 3),
+             template_var 1)),
+         template_app
+          (template_app (template_hole 3, template_var 2),
+           template_var 0))))]:
+   (string * thm * template) list
+### theory "Draft.Stream_Fusion_ExamplesMoreTemplates"
+### 0.514s elapsed time, 1.385s cpu time, 0.091s GC time
+val it = (): unit

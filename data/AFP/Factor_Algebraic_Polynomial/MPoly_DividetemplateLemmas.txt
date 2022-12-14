@@ -1,0 +1,187 @@
+   [("MPoly_Divide.normalize_mpoly_Const",
+     "normalize (Const ?c) = Const (normalize ?c)",
+     template_equation
+      (template_app
+        (template_hole 2, template_app (template_hole 1, template_var 0)),
+       template_app
+        (template_hole 1, template_app (template_hole 0, template_var 0)))),
+    ("MPoly_Divide.unit_factor_mpoly_Const",
+     "unit_factor (Const ?c) = Const (unit_factor ?c)",
+     template_equation
+      (template_app
+        (template_hole 2, template_app (template_hole 1, template_var 0)),
+       template_app
+        (template_hole 1, template_app (template_hole 0, template_var 0)))),
+    ("MPoly_Divide.divide_mpoly_code",
+     "?p div ?q =
+      (case divide_option_mpoly ?p ?q of None => 0 | Some r => r)",
+     template_equation
+      (template_app
+        (template_app (template_hole 3, template_var 1), template_var 0),
+       template_app
+        (template_app
+          (template_app (template_hole 2, template_hole 1), t_empty),
+         template_app
+          (template_app (template_hole 0, template_var 1),
+           template_var 0)))),
+    ("MPoly_Divide.poly_lead_coeff_dvd_lead_coeff",
+     "?p dvd ?q ==> Polynomial.lead_coeff ?p dvd Polynomial.lead_coeff ?q",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 3, template_var 1),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 2,
+               template_app
+                (template_app (template_hole 1, template_var 1),
+                 template_app (template_hole 0, template_var 1))),
+             template_app
+              (template_app (template_hole 1, template_var 0),
+               template_app (template_hole 0, template_var 0)))
+           ))),
+    ("MPoly_Divide.divide_option_mpoly_poly",
+     "?p div? ?q =
+      (if ?p = 0 then Some 0
+       else if ?q = 0 then None
+            else let dp = Polynomial.degree ?p; dq = Polynomial.degree ?q
+                 in if dp < dq then None
+                    else case Polynomial.lead_coeff ?p div?
+                              Polynomial.lead_coeff ?q of
+                         None => None
+                         | Some c =>
+                             case (?p -
+                                   Polynomial.monom c (dp - dq) * ?q) div?
+                                  ?q of
+                             None => None
+                             | Some r =>
+                                 Some (Polynomial.monom c (dp - dq) + r))",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 17, template_var 1),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_hole 16,
+                 template_app
+                  (template_app (template_hole 15, template_var 1),
+                   template_hole 14)),
+               template_app (template_hole 13, template_hole 14)),
+             template_app
+              (template_app
+                (template_app
+                  (template_hole 16,
+                   template_app
+                    (template_app (template_hole 15, template_var 0),
+                     template_hole 14)),
+                 template_hole 12),
+               template_app
+                (template_app
+                  (template_hole 11,
+                   template_app (template_hole 10, template_var 1)),
+                 t_empty)))
+           ))),
+    ("MPoly_Divide.divide_option_mpoly_poly_code",
+     "divide_option_mpoly_poly ?p ?q =
+      (if ?p = 0 then Some 0
+       else if ?q = 0 then None
+            else let dp = Polynomial.degree ?p; dq = Polynomial.degree ?q
+                 in if dp < dq then None
+                    else case divide_option_mpoly (Polynomial.lead_coeff ?p)
+                               (Polynomial.lead_coeff ?q) of
+                         None => None
+                         | Some c =>
+                             case divide_option_mpoly_poly
+                                   (?p - Polynomial.monom c (dp - dq) * ?q)
+                                   ?q of
+                             None => None
+                             | Some r =>
+                                 Some (Polynomial.monom c (dp - dq) + r))",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 17, template_var 1),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_hole 16,
+                 template_app
+                  (template_app (template_hole 15, template_var 1),
+                   template_hole 14)),
+               template_app (template_hole 13, template_hole 14)),
+             template_app
+              (template_app
+                (template_app
+                  (template_hole 16,
+                   template_app
+                    (template_app (template_hole 15, template_var 0),
+                     template_hole 14)),
+                 template_hole 12),
+               template_app
+                (template_app
+                  (template_hole 11,
+                   template_app (template_hole 10, template_var 1)),
+                 t_empty)))
+           ))),
+    ("MPoly_Divide.divide_option_mpoly",
+     "?p div? ?q =
+      (let V = vars ?p Un vars ?q
+       in if V = {}
+          then let a = MPoly_Type.coeff ?p 0; b = MPoly_Type.coeff ?q 0;
+                   c = a div b
+               in if b * c = a then Some (Const c) else None
+          else let x = Max V; p' = mpoly_to_mpoly_poly x ?p;
+                   q' = mpoly_to_mpoly_poly x ?q
+               in case p' div? q' of None => None
+                  | Some r => Some (poly r (Var x)))",
+     template_equation
+      (template_app
+        (template_app (template_hole 23, template_var 1), template_var 0),
+       template_app
+        (template_app
+          (template_hole 22,
+           template_app
+            (template_app
+              (template_hole 21,
+               template_app (template_hole 20, template_var 1)),
+             template_app (template_hole 20, template_var 0))),
+         t_empty))),
+    ("MPoly_Divide.divide_option_mpoly_code",
+     "divide_option_mpoly ?p ?q =
+      (let V = vars ?p Un vars ?q
+       in if V = {}
+          then let a = MPoly_Type.coeff ?p 0; b = MPoly_Type.coeff ?q 0;
+                   c = a div b
+               in if b * c = a then Some (Const c) else None
+          else let x = Max V; p' = mpoly_to_mpoly_poly x ?p;
+                   q' = mpoly_to_mpoly_poly x ?q
+               in case divide_option_mpoly_poly p' q' of None => None
+                  | Some r => Some (poly r (Var x)))",
+     template_equation
+      (template_app
+        (template_app (template_hole 23, template_var 1), template_var 0),
+       template_app
+        (template_app
+          (template_hole 22,
+           template_app
+            (template_app
+              (template_hole 21,
+               template_app (template_hole 20, template_var 1)),
+             template_app (template_hole 20, template_var 0))),
+         t_empty)))]

@@ -1,0 +1,980 @@
+Loading theory "Draft.Auxiliary" (required by "Draft.AnnotateTemplates" via "Draft.Annotate" via "Draft.WellType" via "Draft.Syntax" via "Draft.Exceptions" via "Draft.Objects" via "Draft.SubObj" via "Draft.ClassRel" via "Draft.Decl" via "Draft.Expr" via "Draft.Value" via "Draft.Type")
+Loading theory "Draft.Templates" (required by "Draft.AnnotateTemplates" via "Draft.ExtrEqs")
+datatype template_term
+=
+     t_empty
+   | template_app of template_term * template_term
+   | template_hole of int
+   | template_var of int
+datatype sign
+= equals | greater_equals | greater_than | less_equals | less_than
+datatype template
+=
+     template_bimplication of template * template
+   | template_dunno
+   | template_equation of template_term * template_term
+   | template_implication of template list * template
+   | template_inequation of sign * template_term * template_term
+   | template_negation of template
+   | template_predicate of template_term
+constructor t_empty: template_term
+constructor template_app: template_term * template_term -> template_term
+constructor template_hole: int -> template_term
+constructor template_var: int -> template_term
+constructor equals: sign
+constructor greater_equals: sign
+constructor greater_than: sign
+constructor less_equals: sign
+constructor less_than: sign
+constructor template_bimplication: template * template -> template
+constructor template_dunno: template
+constructor template_equation: template_term * template_term -> template
+constructor template_implication: template list * template -> template
+constructor template_inequation:
+   sign * template_term * template_term -> template
+constructor template_negation: template -> template
+constructor template_predicate: template_term -> template
+val vfs = fn: term -> (indexname * typ) list * (string * typ) list
+val indexOf = fn: ''a list -> ''a -> int -> int
+val has_eq = fn: term -> bool
+val term2template = fn:
+   (indexname * typ) list -> (string * typ) list -> term -> template_term
+val lemma2predicate = fn: term -> term -> template
+val makeTemplatewithContext = fn: term -> term -> template
+val lemma2template = fn: term -> template
+val thm2template = fn: thm -> template
+val tterm2string = fn: template_term -> string
+val template2string = fn: template -> string
+val t = "height ?t <= size ?t": thm
+val th =
+   Const ("HOL.Trueprop", "bool => prop") $
+     (Const ("Orderings.ord_class.less_eq", "nat => nat => bool") $
+       (Const ("Tree.height_class.height", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree")) $
+       (Const ("Nat.size_class.size", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree"))):
+   term
+### theory "Draft.Templates"
+### 0.072s elapsed time, 0.173s cpu time, 0.000s GC time
+Loading theory "Draft.ExtrEqs" (required by "Draft.AnnotateTemplates")
+### Ignoring duplicate safe elimination (elim!)
+### [| ?x # ?xs = map ?f ?ys;
+###    EX z zs. ?ys = z # zs & ?x = ?f z & ?xs = map ?f zs ==> PROP ?W |]
+### ==> PROP ?W
+### Ignoring duplicate safe elimination (elim!)
+### [| ?x # ?xs = map ?f ?ys;
+###    EX z zs. ?ys = z # zs & ?x = ?f z & ?xs = map ?f zs ==> PROP ?W |]
+### ==> PROP ?W
+### theory "Draft.Auxiliary"
+### 0.287s elapsed time, 0.611s cpu time, 0.030s GC time
+Loading theory "Draft.Type" (required by "Draft.AnnotateTemplates" via "Draft.Annotate" via "Draft.WellType" via "Draft.Syntax" via "Draft.Exceptions" via "Draft.Objects" via "Draft.SubObj" via "Draft.ClassRel" via "Draft.Decl" via "Draft.Expr" via "Draft.Value")
+val eqpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Var (("_dummy_", 2), "?'a"))
+       ):
+   term Find_Theorems.criterion
+val badeqpattern = Pattern (Const ("Pure.eq", "?'a => ?'a => prop")):
+   term Find_Theorems.criterion
+val undefpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Const ("HOL.undefined", "?'a"))
+       ):
+   term Find_Theorems.criterion
+val thmpattern =
+   Pattern
+    (Const ("HOL.Trueprop", "bool => prop") $ Var (("_dummy_", 1), "bool")):
+   term Find_Theorems.criterion
+val badnames =
+   ["*nitpick*", "*Nitpick*", "*full_exhaustive*", "*_def*", "Enum.finite*",
+    "*Quickcheck*", "ATP*", "*Nunchaku*", "*Code*", "*BNF*", "*SMT*",
+    "*.*.*"]:
+   string list
+val unwanted_names =
+   [(false, Name "*nitpick*"), (false, Name "*Nitpick*"),
+    (false, Name "*full_exhaustive*"), (false, Name "*_def*"),
+    (false, Name "Enum.finite*"), (false, Name "*Quickcheck*"),
+    (false, Name "ATP*"), (false, Name "*Nunchaku*"),
+    (false, Name "*Code*"), (false, Name "*BNF*"), (false, Name "*SMT*"),
+    (false, Name "*.*.*")]:
+   (bool * term Find_Theorems.criterion) list
+val has_vars = fn: term -> bool
+val get_all_eqs = fn: string -> Proof.context -> (string * thm) list
+val get_all_thms = fn: string -> Proof.context -> (string * thm) list
+val get_noneq_thms = fn: string -> Proof.context -> (string * thm) list
+val template_eqs = fn:
+   string -> Proof.context -> (string * thm * template) list
+val template_thms = fn:
+   string -> Proof.context -> (string * thm * template) list
+### theory "Draft.ExtrEqs"
+### 0.545s elapsed time, 1.120s cpu time, 0.089s GC time
+consts
+  getbase :: "base => char list"
+consts
+  isRepBase :: "base => bool"
+consts
+  isShBase :: "base => bool"
+### theory "Draft.Type"
+### 0.627s elapsed time, 0.983s cpu time, 0.060s GC time
+Loading theory "Draft.Value" (required by "Draft.AnnotateTemplates" via "Draft.Annotate" via "Draft.WellType" via "Draft.Syntax" via "Draft.Exceptions" via "Draft.Objects" via "Draft.SubObj" via "Draft.ClassRel" via "Draft.Decl" via "Draft.Expr")
+### No equation for constructor "Unit"
+### No equation for constructor "Null"
+### No equation for constructor "Bool"
+### No equation for constructor "Ref"
+consts
+  the_Intg :: "val => int"
+### No equation for constructor "Unit"
+### No equation for constructor "Null"
+### No equation for constructor "Bool"
+### No equation for constructor "Intg"
+consts
+  the_addr :: "val => nat"
+### No equation for constructor "Unit"
+### No equation for constructor "Null"
+### No equation for constructor "Bool"
+### No equation for constructor "Intg"
+consts
+  the_path :: "val => char list list"
+consts
+  default_val :: "ty => val"
+consts
+  typeof :: "val => ty option"
+### theory "Draft.Value"
+### 0.404s elapsed time, 0.434s cpu time, 0.040s GC time
+Loading theory "Draft.Expr" (required by "Draft.AnnotateTemplates" via "Draft.Annotate" via "Draft.WellType" via "Draft.Syntax" via "Draft.Exceptions" via "Draft.Objects" via "Draft.SubObj" via "Draft.ClassRel" via "Draft.Decl")
+Found termination order: "{}"
+### Ambiguous input (line 80 of "$AFP/CoreC++/Expr.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_Update" ("_position" fv)
+###       ("_updbind" ("_position" V) ("_position" e)))
+###     ("\<^const>Set.union" ("_Finset" ("_position" V))
+###       ("_applC" ("_position" fv) ("_position" e)))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" fv)
+###       ("\<^const>Expr.expr.LAss" ("_position" V) ("_position" e)))
+###     ("\<^const>Set.union" ("_Finset" ("_position" V))
+###       ("_applC" ("_position" fv) ("_position" e)))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ambiguous input (line 82 of "$AFP/CoreC++/Expr.thy") produces 3 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_Update" ("_position" fv)
+###       ("_updbind"
+###         ("\<^const>Expr.expr.FAcc" ("_position" e\<^sub>1) ("_position" F)
+###           ("_position" Cs))
+###         ("_position" e\<^sub>2)))
+###     ("\<^const>Set.union"
+###       ("_applC" ("_position" fv) ("_position" e\<^sub>1))
+###       ("_applC" ("_position" fv) ("_position" e\<^sub>2)))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" fv)
+###       ("\<^const>Expr.expr.LAss"
+###         ("\<^const>Expr.expr.FAcc" ("_position" e\<^sub>1) ("_position" F)
+###           ("_position" Cs))
+###         ("_position" e\<^sub>2)))
+###     ("\<^const>Set.union"
+###       ("_applC" ("_position" fv) ("_position" e\<^sub>1))
+###       ("_applC" ("_position" fv) ("_position" e\<^sub>2)))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" fv)
+###       ("\<^const>Expr.expr.FAss" ("_position" e\<^sub>1) ("_position" F)
+###         ("_position" Cs) ("_position" e\<^sub>2)))
+###     ("\<^const>Set.union"
+###       ("_applC" ("_position" fv) ("_position" e\<^sub>1))
+###       ("_applC" ("_position" fv) ("_position" e\<^sub>2)))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+consts
+  fv :: "expr => char list set"
+  fvs :: "expr list => char list set"
+### theory "Draft.Expr"
+### 2.252s elapsed time, 2.649s cpu time, 0.559s GC time
+Loading theory "Draft.Decl" (required by "Draft.AnnotateTemplates" via "Draft.Annotate" via "Draft.WellType" via "Draft.Syntax" via "Draft.Exceptions" via "Draft.Objects" via "Draft.SubObj" via "Draft.ClassRel")
+### theory "Draft.Decl"
+### 0.096s elapsed time, 0.139s cpu time, 0.046s GC time
+Loading theory "Draft.ClassRel" (required by "Draft.AnnotateTemplates" via "Draft.Annotate" via "Draft.WellType" via "Draft.Syntax" via "Draft.Exceptions" via "Draft.Objects" via "Draft.SubObj")
+Proofs for inductive predicate(s) "subclsRp"
+  Proving monotonicity ...
+Proofs for inductive predicate(s) "subclsSp"
+  Proving monotonicity ...
+Proofs for inductive predicate(s) "subcls1p"
+  Proving monotonicity ...
+### theory "Draft.ClassRel"
+### 0.170s elapsed time, 0.170s cpu time, 0.000s GC time
+Loading theory "Draft.SubObj" (required by "Draft.AnnotateTemplates" via "Draft.Annotate" via "Draft.WellType" via "Draft.Syntax" via "Draft.Exceptions" via "Draft.Objects")
+Found termination order: "(%p. length (snd (snd p))) <*mlex*> {}"
+Proofs for inductive predicate(s) "Subobjs\<^sub>R"
+  Proving monotonicity ...
+Proofs for inductive predicate(s) "Subobjs"
+  Proving monotonicity ...
+Proofs for inductive predicate(s) "casts_to"
+  Proving monotonicity ...
+Proofs for inductive predicate(s) "Casts_to"
+  Proving monotonicity ...
+Proofs for inductive predicate(s) "leq_path1p"
+  Proving monotonicity ...
+### Ambiguous input (line 720 of "$AFP/CoreC++/SubObj.thy") produces 3 parse trees:
+### ("\<^const>Pure.eq"
+###   ("_applC" ("_position" MinimalMethodDefs)
+###     ("_cargs" ("_position" P) ("_cargs" ("_position" C) ("_position" M))))
+###   ("_Coll" ("_pattern" ("_position" Cs) ("_position" mthd))
+###     ("\<^const>HOL.conj"
+###       ("\<^const>Set.member"
+###         ("_tuple" ("_position" Cs) ("_tuple_arg" ("_position" mthd)))
+###         ("_applC" ("_position" MethodDefs)
+###           ("_cargs" ("_position" P)
+###             ("_cargs" ("_position" C) ("_position" M)))))
+###       ("_Ball" ("_pattern" ("_position" Cs') ("_position" mthd'))
+###         ("_applC" ("_position" MethodDefs)
+###           ("_cargs" ("_position" P)
+###             ("_cargs" ("_position" C) ("_position" M))))
+###         ("\<^const>HOL.eq"
+###           ("\<^const>SubObj.leq_path" ("_position" P) ("_position" C)
+###             ("_position" Cs')
+###             ("\<^const>HOL.implies" ("_position" Cs) ("_position" Cs')))
+###           ("_position" Cs))))))
+### ("\<^const>Pure.eq"
+###   ("_applC" ("_position" MinimalMethodDefs)
+###     ("_cargs" ("_position" P) ("_cargs" ("_position" C) ("_position" M))))
+###   ("_Coll" ("_pattern" ("_position" Cs) ("_position" mthd))
+###     ("\<^const>HOL.conj"
+###       ("\<^const>Set.member"
+###         ("_tuple" ("_position" Cs) ("_tuple_arg" ("_position" mthd)))
+###         ("_applC" ("_position" MethodDefs)
+###           ("_cargs" ("_position" P)
+###             ("_cargs" ("_position" C) ("_position" M)))))
+###       ("_Ball" ("_pattern" ("_position" Cs') ("_position" mthd'))
+###         ("_applC" ("_position" MethodDefs)
+###           ("_cargs" ("_position" P)
+###             ("_cargs" ("_position" C) ("_position" M))))
+###         ("\<^const>SubObj.leq_path" ("_position" P) ("_position" C)
+###           ("_position" Cs')
+###           ("\<^const>HOL.implies" ("_position" Cs)
+###             ("\<^const>HOL.eq" ("_position" Cs') ("_position" Cs))))))))
+### ("\<^const>Pure.eq"
+###   ("_applC" ("_position" MinimalMethodDefs)
+###     ("_cargs" ("_position" P) ("_cargs" ("_position" C) ("_position" M))))
+###   ("_Coll" ("_pattern" ("_position" Cs) ("_position" mthd))
+###     ("\<^const>HOL.conj"
+###       ("\<^const>Set.member"
+###         ("_tuple" ("_position" Cs) ("_tuple_arg" ("_position" mthd)))
+###         ("_applC" ("_position" MethodDefs)
+###           ("_cargs" ("_position" P)
+###             ("_cargs" ("_position" C) ("_position" M)))))
+###       ("_Ball" ("_pattern" ("_position" Cs') ("_position" mthd'))
+###         ("_applC" ("_position" MethodDefs)
+###           ("_cargs" ("_position" P)
+###             ("_cargs" ("_position" C) ("_position" M))))
+###         ("\<^const>HOL.implies"
+###           ("\<^const>SubObj.leq_path" ("_position" P) ("_position" C)
+###             ("_position" Cs') ("_position" Cs))
+###           ("\<^const>HOL.eq" ("_position" Cs') ("_position" Cs)))))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ambiguous input (line 725 of "$AFP/CoreC++/SubObj.thy") produces 2 parse trees:
+### ("\<^const>Pure.eq"
+###   ("_applC" ("_position" OverriderMethodDefs)
+###     ("_cargs" ("_position" P) ("_cargs" ("_position" R) ("_position" M))))
+###   ("_Coll" ("_pattern" ("_position" Cs) ("_position" mthd))
+###     ("\<^const>HOL.Ex_binder"
+###       ("_idts" ("_position" Cs') ("_position" mthd'))
+###       ("\<^const>HOL.conj"
+###         ("\<^const>SubObj.LeastMethodDef" ("_position" P)
+###           ("_applC" ("_position" ldc) ("_position" R)) ("_position" M)
+###           ("_position" mthd') ("_position" Cs'))
+###         ("\<^const>HOL.conj"
+###           ("\<^const>Set.member"
+###             ("_tuple" ("_position" Cs) ("_tuple_arg" ("_position" mthd)))
+###             ("_applC" ("_position" MinimalMethodDefs)
+###               ("_cargs" ("_position" P)
+###                 ("_cargs" ("_applC" ("_position" mdc) ("_position" R))
+###                   ("_position" M)))))
+###           ("\<^const>SubObj.appendPath"
+###             ("\<^const>SubObj.leq_path" ("_position" P)
+###               ("_applC" ("_position" mdc) ("_position" R)) ("_position" Cs)
+###               ("_applC" ("_position" snd) ("_position" R)))
+###             ("_position" Cs')))))))
+### ("\<^const>Pure.eq"
+###   ("_applC" ("_position" OverriderMethodDefs)
+###     ("_cargs" ("_position" P) ("_cargs" ("_position" R) ("_position" M))))
+###   ("_Coll" ("_pattern" ("_position" Cs) ("_position" mthd))
+###     ("\<^const>HOL.Ex_binder"
+###       ("_idts" ("_position" Cs') ("_position" mthd'))
+###       ("\<^const>HOL.conj"
+###         ("\<^const>SubObj.LeastMethodDef" ("_position" P)
+###           ("_applC" ("_position" ldc) ("_position" R)) ("_position" M)
+###           ("_position" mthd') ("_position" Cs'))
+###         ("\<^const>HOL.conj"
+###           ("\<^const>Set.member"
+###             ("_tuple" ("_position" Cs) ("_tuple_arg" ("_position" mthd)))
+###             ("_applC" ("_position" MinimalMethodDefs)
+###               ("_cargs" ("_position" P)
+###                 ("_cargs" ("_applC" ("_position" mdc) ("_position" R))
+###                   ("_position" M)))))
+###           ("\<^const>SubObj.leq_path" ("_position" P)
+###             ("_applC" ("_position" mdc) ("_position" R)) ("_position" Cs)
+###             ("\<^const>SubObj.appendPath"
+###               ("_applC" ("_position" snd) ("_position" R))
+###               ("_position" Cs'))))))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+Proofs for inductive predicate(s) "SelectMethodDef"
+  Proving monotonicity ...
+### theory "Draft.SubObj"
+### 0.845s elapsed time, 0.902s cpu time, 0.073s GC time
+Loading theory "Draft.Objects" (required by "Draft.AnnotateTemplates" via "Draft.Annotate" via "Draft.WellType" via "Draft.Syntax" via "Draft.Exceptions")
+Loading theory "Draft.TypeRel" (required by "Draft.AnnotateTemplates" via "Draft.Annotate" via "Draft.WellType")
+Proofs for inductive predicate(s) "widen"
+  Proving monotonicity ...
+Proofs for inductive predicate(s) "init_obj"
+  Proving monotonicity ...
+### theory "Draft.TypeRel"
+### 0.076s elapsed time, 0.165s cpu time, 0.043s GC time
+### theory "Draft.Objects"
+### 0.087s elapsed time, 0.179s cpu time, 0.043s GC time
+Loading theory "Draft.Exceptions" (required by "Draft.AnnotateTemplates" via "Draft.Annotate" via "Draft.WellType" via "Draft.Syntax")
+### theory "Draft.Exceptions"
+### 0.084s elapsed time, 0.084s cpu time, 0.000s GC time
+Loading theory "Draft.Syntax" (required by "Draft.AnnotateTemplates" via "Draft.Annotate" via "Draft.WellType")
+### theory "Draft.Syntax"
+### 0.031s elapsed time, 0.032s cpu time, 0.000s GC time
+Loading theory "Draft.WellType" (required by "Draft.AnnotateTemplates" via "Draft.Annotate")
+### Ambiguous input (line 62 of "$AFP/CoreC++/WellType.thy") produces 2 parse trees:
+### ("_bigimpl"
+###   ("_asms"
+###     ("\<^const>HOL.Trueprop"
+###       ("\<^fixed>WT" ("_position" P) ("_position" E) ("_position" e\<^sub>1)
+###         ("_applC" ("_position" Class) ("_position" C))))
+###     ("_asms"
+###       ("\<^const>HOL.Trueprop"
+###         ("\<^const>SubObj.LeastFieldDecl" ("_position" P) ("_position" C)
+###           ("_position" F) ("_position" T) ("_position" Cs)))
+###       ("_asms"
+###         ("\<^const>HOL.Trueprop"
+###           ("\<^fixed>WT" ("_position" P) ("_position" E)
+###             ("_position" e\<^sub>2) ("_position" T')))
+###         ("_asm"
+###           ("\<^const>HOL.Trueprop"
+###             ("\<^const>TypeRel.widen" ("_position" P) ("_position" T')
+###               ("_position" T)))))))
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^fixed>WT" ("_position" P) ("_position" E)
+###       ("\<^const>Expr.expr.LAss"
+###         ("\<^const>Expr.expr.FAcc" ("_position" e\<^sub>1) ("_position" F)
+###           ("_position" Cs))
+###         ("_position" e\<^sub>2))
+###       ("_position" T))))
+### ("_bigimpl"
+###   ("_asms"
+###     ("\<^const>HOL.Trueprop"
+###       ("\<^fixed>WT" ("_position" P) ("_position" E) ("_position" e\<^sub>1)
+###         ("_applC" ("_position" Class) ("_position" C))))
+###     ("_asms"
+###       ("\<^const>HOL.Trueprop"
+###         ("\<^const>SubObj.LeastFieldDecl" ("_position" P) ("_position" C)
+###           ("_position" F) ("_position" T) ("_position" Cs)))
+###       ("_asms"
+###         ("\<^const>HOL.Trueprop"
+###           ("\<^fixed>WT" ("_position" P) ("_position" E)
+###             ("_position" e\<^sub>2) ("_position" T')))
+###         ("_asm"
+###           ("\<^const>HOL.Trueprop"
+###             ("\<^const>TypeRel.widen" ("_position" P) ("_position" T')
+###               ("_position" T)))))))
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^fixed>WT" ("_position" P) ("_position" E)
+###       ("\<^const>Expr.expr.FAss" ("_position" e\<^sub>1) ("_position" F)
+###         ("_position" Cs) ("_position" e\<^sub>2))
+###       ("_position" T))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+Proofs for inductive predicate(s) "WT", "WTs"
+  Proving monotonicity ...
+### Ignoring duplicate safe introduction (intro!)
+### ?P,?E \<turnstile> [] [::] []
+### Ignoring duplicate safe introduction (intro!)
+### ?P,?E \<turnstile> [] [::] []
+### Ambiguous input (line 122 of "$AFP/CoreC++/WellType.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("\<^const>WellType.WTs" ("_position" P) ("_position" E)
+###       ("\<^const>List.list.Cons" ("_position" e) ("_position" es))
+###       ("\<^const>List.list.Cons" ("_position" T) ("_position" Ts)))
+###     ("\<^const>WellType.WT" ("_position" P) ("_position" E) ("_position" e)
+###       ("\<^const>HOL.conj" ("_position" T)
+###         ("\<^const>WellType.WTs" ("_position" P) ("_position" E)
+###           ("_position" es) ("_position" Ts))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("\<^const>WellType.WTs" ("_position" P) ("_position" E)
+###       ("\<^const>List.list.Cons" ("_position" e) ("_position" es))
+###       ("\<^const>List.list.Cons" ("_position" T) ("_position" Ts)))
+###     ("\<^const>HOL.conj"
+###       ("\<^const>WellType.WT" ("_position" P) ("_position" E)
+###         ("_position" e) ("_position" T))
+###       ("\<^const>WellType.WTs" ("_position" P) ("_position" E)
+###         ("_position" es) ("_position" Ts)))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ambiguous input (line 129 of "$AFP/CoreC++/WellType.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("\<^const>WellType.WTs" ("_position" P) ("_position" E)
+###       ("\<^const>List.list.Cons" ("_position" e) ("_position" es))
+###       ("_position" Ts))
+###     ("\<^const>HOL.Ex_binder" ("_idts" ("_position" U) ("_position" Us))
+###       ("\<^const>HOL.conj"
+###         ("\<^const>HOL.eq" ("_position" Ts)
+###           ("\<^const>List.list.Cons" ("_position" U) ("_position" Us)))
+###         ("\<^const>HOL.conj"
+###           ("\<^const>WellType.WT" ("_position" P) ("_position" E)
+###             ("_position" e) ("_position" U))
+###           ("\<^const>WellType.WTs" ("_position" P) ("_position" E)
+###             ("_position" es) ("_position" Us)))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("\<^const>WellType.WTs" ("_position" P) ("_position" E)
+###       ("\<^const>List.list.Cons" ("_position" e) ("_position" es))
+###       ("_position" Ts))
+###     ("\<^const>HOL.Ex_binder" ("_idts" ("_position" U) ("_position" Us))
+###       ("\<^const>HOL.conj"
+###         ("\<^const>HOL.eq" ("_position" Ts)
+###           ("\<^const>List.list.Cons" ("_position" U) ("_position" Us)))
+###         ("\<^const>WellType.WT" ("_position" P) ("_position" E)
+###           ("_position" e)
+###           ("\<^const>HOL.conj" ("_position" U)
+###             ("\<^const>WellType.WTs" ("_position" P) ("_position" E)
+###               ("_position" es) ("_position" Us))))))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ambiguous input (line 137 of "$AFP/CoreC++/WellType.thy") produces 2 parse trees:
+### ("\<^const>Pure.all_binder" ("_position" Ts)
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^const>HOL.eq"
+###       ("\<^const>WellType.WTs" ("_position" P) ("_position" E)
+###         ("\<^const>List.append" ("_position" es\<^sub>1)
+###           ("_position" es\<^sub>2))
+###         ("_position" Ts))
+###       ("\<^const>HOL.Ex_binder"
+###         ("_idts" ("_position" Ts\<^sub>1) ("_position" Ts\<^sub>2))
+###         ("\<^const>HOL.conj"
+###           ("\<^const>HOL.eq" ("_position" Ts)
+###             ("\<^const>List.append" ("_position" Ts\<^sub>1)
+###               ("_position" Ts\<^sub>2)))
+###           ("\<^const>HOL.conj"
+###             ("\<^const>WellType.WTs" ("_position" P) ("_position" E)
+###               ("_position" es\<^sub>1) ("_position" Ts\<^sub>1))
+###             ("\<^const>WellType.WTs" ("_position" P) ("_position" E)
+###               ("_position" es\<^sub>2) ("_position" Ts\<^sub>2))))))))
+### ("\<^const>Pure.all_binder" ("_position" Ts)
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^const>HOL.eq"
+###       ("\<^const>WellType.WTs" ("_position" P) ("_position" E)
+###         ("\<^const>List.append" ("_position" es\<^sub>1)
+###           ("_position" es\<^sub>2))
+###         ("_position" Ts))
+###       ("\<^const>HOL.Ex_binder"
+###         ("_idts" ("_position" Ts\<^sub>1) ("_position" Ts\<^sub>2))
+###         ("\<^const>HOL.conj"
+###           ("\<^const>HOL.eq" ("_position" Ts)
+###             ("\<^const>List.append" ("_position" Ts\<^sub>1)
+###               ("_position" Ts\<^sub>2)))
+###           ("\<^const>WellType.WTs" ("_position" P) ("_position" E)
+###             ("_position" es\<^sub>1)
+###             ("\<^const>HOL.conj" ("_position" Ts\<^sub>1)
+###               ("\<^const>WellType.WTs" ("_position" P) ("_position" E)
+###                 ("_position" es\<^sub>2) ("_position" Ts\<^sub>2)))))))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ambiguous input (line 154 of "$AFP/CoreC++/WellType.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("\<^const>WellType.WT" ("_position" P) ("_position" E)
+###       ("_applC" ("_position" Val) ("_position" v)) ("_position" T))
+###     ("\<^const>HOL.eq" ("_applC" ("_position" typeof) ("_position" v))
+###       ("_applC" ("_position" Some) ("_position" T)))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>WellType.WT" ("_position" P) ("_position" E)
+###     ("_applC" ("_position" Val) ("_position" v))
+###     ("\<^const>HOL.eq" ("_position" T)
+###       ("\<^const>HOL.eq" ("_applC" ("_position" typeof) ("_position" v))
+###         ("_applC" ("_position" Some) ("_position" T))))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ignoring duplicate safe introduction (intro!)
+### typeof ?v = \<lfloor>?T\<rfloor> ==> ?P,?E \<turnstile> Val ?v :: ?T
+### Ignoring duplicate safe introduction (intro!)
+### typeof ?v = \<lfloor>?T\<rfloor> ==> ?P,?E \<turnstile> Val ?v :: ?T
+### Ambiguous input (line 161 of "$AFP/CoreC++/WellType.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("\<^const>WellType.WT" ("_position" P) ("_position" E)
+###       ("_applC" ("_position" Var) ("_position" V)) ("_position" T))
+###     ("\<^const>HOL.eq" ("_applC" ("_position" E) ("_position" V))
+###       ("_applC" ("_position" Some) ("_position" T)))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>WellType.WT" ("_position" P) ("_position" E)
+###     ("_applC" ("_position" Var) ("_position" V))
+###     ("\<^const>HOL.eq" ("_position" T)
+###       ("\<^const>HOL.eq" ("_applC" ("_position" E) ("_position" V))
+###         ("_applC" ("_position" Some) ("_position" T))))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ignoring duplicate safe introduction (intro!)
+### ?E ?V = \<lfloor>?T\<rfloor> ==> ?P,?E \<turnstile> Var ?V :: ?T
+### Ignoring duplicate safe introduction (intro!)
+### ?E ?V = \<lfloor>?T\<rfloor> ==> ?P,?E \<turnstile> Var ?V :: ?T
+### Ambiguous input (line 168 of "$AFP/CoreC++/WellType.thy") produces 4 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("\<^const>WellType.WT" ("_position" P) ("_position" E)
+###       ("\<^const>Expr.expr.Seq" ("_position" e\<^sub>1)
+###         ("_position" e\<^sub>2))
+###       ("_position" T\<^sub>2))
+###     ("\<^const>HOL.Ex_binder" ("_position" T\<^sub>1)
+###       ("\<^const>HOL.conj"
+###         ("\<^const>WellType.WT" ("_position" P) ("_position" E)
+###           ("_position" e\<^sub>1) ("_position" T\<^sub>1))
+###         ("\<^const>WellType.WT" ("_position" P) ("_position" E)
+###           ("_position" e\<^sub>2) ("_position" T\<^sub>2))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>WellType.WT" ("_position" P) ("_position" E)
+###     ("\<^const>Expr.expr.Seq" ("_position" e\<^sub>1)
+###       ("_position" e\<^sub>2))
+###     ("\<^const>HOL.eq" ("_position" T\<^sub>2)
+###       ("\<^const>HOL.Ex_binder" ("_position" T\<^sub>1)
+###         ("\<^const>HOL.conj"
+###           ("\<^const>WellType.WT" ("_position" P) ("_position" E)
+###             ("_position" e\<^sub>1) ("_position" T\<^sub>1))
+###           ("\<^const>WellType.WT" ("_position" P) ("_position" E)
+###             ("_position" e\<^sub>2) ("_position" T\<^sub>2)))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("\<^const>WellType.WT" ("_position" P) ("_position" E)
+###       ("\<^const>Expr.expr.Seq" ("_position" e\<^sub>1)
+###         ("_position" e\<^sub>2))
+###       ("_position" T\<^sub>2))
+###     ("\<^const>HOL.Ex_binder" ("_position" T\<^sub>1)
+###       ("\<^const>WellType.WT" ("_position" P) ("_position" E)
+###         ("_position" e\<^sub>1)
+###         ("\<^const>HOL.conj" ("_position" T\<^sub>1)
+###           ("\<^const>WellType.WT" ("_position" P) ("_position" E)
+###             ("_position" e\<^sub>2) ("_position" T\<^sub>2)))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>WellType.WT" ("_position" P) ("_position" E)
+###     ("\<^const>Expr.expr.Seq" ("_position" e\<^sub>1)
+###       ("_position" e\<^sub>2))
+###     ("\<^const>HOL.eq" ("_position" T\<^sub>2)
+###       ("\<^const>HOL.Ex_binder" ("_position" T\<^sub>1)
+###         ("\<^const>WellType.WT" ("_position" P) ("_position" E)
+###           ("_position" e\<^sub>1)
+###           ("\<^const>HOL.conj" ("_position" T\<^sub>1)
+###             ("\<^const>WellType.WT" ("_position" P) ("_position" E)
+###               ("_position" e\<^sub>2) ("_position" T\<^sub>2))))))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ambiguous input (line 190 of "$AFP/CoreC++/WellType.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>WellType.WT" ("_position" P) ("_position" E)
+###     ("\<^const>Expr.expr.LAss"
+###       ("\<^const>Expr.expr.FAcc" ("_position" e) ("_position" F)
+###         ("_position" Cs))
+###       ("_position" v))
+###     ("_position" T)))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>WellType.WT" ("_position" P) ("_position" E)
+###     ("\<^const>Expr.expr.FAss" ("_position" e) ("_position" F)
+###       ("_position" Cs) ("_position" v))
+###     ("_position" T)))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### theory "Draft.WellType"
+### 0.591s elapsed time, 0.670s cpu time, 0.072s GC time
+Loading theory "Draft.Annotate" (required by "Draft.AnnotateTemplates")
+### Ambiguous input (line 32 of "$AFP/CoreC++/Annotate.thy") produces 2 parse trees:
+### ("\<^const>Pure.imp"
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^const>HOL.eq" ("_applC" ("_position" E) ("_position" V))
+###       ("\<^const>Archimedean_Field.floor_ceiling_class.floor"
+###         ("_position" T))))
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^fixed>Anno" ("_position" P) ("_position" E)
+###       ("_applC" ("_position" Var) ("_position" V))
+###       ("_applC" ("_position" Var) ("_position" V)))))
+### ("\<^const>Pure.imp"
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^const>HOL.eq" ("_applC" ("_position" E) ("_position" V))
+###       ("\<^const>Option.option.Some" ("_position" T))))
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^fixed>Anno" ("_position" P) ("_position" E)
+###       ("_applC" ("_position" Var) ("_position" V))
+###       ("_applC" ("_position" Var) ("_position" V)))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ambiguous input (line 33 of "$AFP/CoreC++/Annotate.thy") produces 4 parse trees:
+### ("_bigimpl"
+###   ("_asms"
+###     ("\<^const>HOL.Trueprop"
+###       ("\<^const>HOL.eq" ("_applC" ("_position" E) ("_position" V))
+###         ("_position" None)))
+###     ("_asms"
+###       ("\<^const>HOL.Trueprop"
+###         ("\<^const>HOL.eq" ("_applC" ("_position" E) ("_position" this))
+###           ("\<^const>Option.option.Some"
+###             ("_applC" ("_position" Class) ("_position" C)))))
+###       ("_asm"
+###         ("\<^const>HOL.Trueprop"
+###           ("\<^const>SubObj.LeastFieldDecl" ("_position" P) ("_position" C)
+###             ("_position" V) ("_position" T) ("_position" Cs))))))
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^fixed>Anno" ("_position" P) ("_position" E)
+###       ("_applC" ("_position" Var) ("_position" V))
+###       ("\<^const>Expr.expr.FAcc"
+###         ("_applC" ("_position" Var) ("_position" this)) ("_position" V)
+###         ("_position" Cs)))))
+### ("_bigimpl"
+###   ("_asms"
+###     ("\<^const>HOL.Trueprop"
+###       ("\<^const>HOL.eq" ("_applC" ("_position" E) ("_position" V))
+###         ("_position" None)))
+###     ("_asms"
+###       ("\<^const>HOL.Trueprop"
+###         ("\<^const>HOL.eq" ("_applC" ("_position" E) ("_position" this))
+###           ("\<^const>Archimedean_Field.floor_ceiling_class.floor"
+###             ("_applC" ("_position" Class) ("_position" C)))))
+###       ("_asm"
+###         ("\<^const>HOL.Trueprop"
+###           ("\<^const>SubObj.LeastFieldDecl" ("_position" P) ("_position" C)
+###             ("_position" V) ("_position" T) ("_position" Cs))))))
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^fixed>Anno" ("_position" P) ("_position" E)
+###       ("_applC" ("_position" Var) ("_position" V))
+###       ("\<^const>Expr.expr.FAcc"
+###         ("_applC" ("_position" Var) ("_position" this)) ("_position" V)
+###         ("_position" Cs)))))
+### ("_bigimpl"
+###   ("_asms"
+###     ("\<^const>HOL.Trueprop"
+###       ("\<^const>HOL.eq" ("_applC" ("_position" E) ("_position" V))
+###         ("_position" None)))
+###     ("_asms"
+###       ("\<^const>HOL.Trueprop"
+###         ("\<^const>HOL.eq" ("_applC" ("_position" E) ("_position" this))
+###           ("\<^const>Option.option.Some"
+###             ("_applC" ("_position" Class) ("_position" C)))))
+###       ("_asm"
+###         ("\<^const>HOL.Trueprop"
+###           ("\<^const>SubObj.LeastFieldDecl" ("_position" P) ("_position" C)
+###             ("_position" V) ("_position" T) ("_position" Cs))))))
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^const>Expr.expr.FAcc"
+###       ("\<^fixed>Anno" ("_position" P) ("_position" E)
+###         ("_applC" ("_position" Var) ("_position" V))
+###         ("_applC" ("_position" Var) ("_position" this)))
+###       ("_position" V) ("_position" Cs))))
+### ("_bigimpl"
+###   ("_asms"
+###     ("\<^const>HOL.Trueprop"
+###       ("\<^const>HOL.eq" ("_applC" ("_position" E) ("_position" V))
+###         ("_position" None)))
+###     ("_asms"
+###       ("\<^const>HOL.Trueprop"
+###         ("\<^const>HOL.eq" ("_applC" ("_position" E) ("_position" this))
+###           ("\<^const>Archimedean_Field.floor_ceiling_class.floor"
+###             ("_applC" ("_position" Class) ("_position" C)))))
+###       ("_asm"
+###         ("\<^const>HOL.Trueprop"
+###           ("\<^const>SubObj.LeastFieldDecl" ("_position" P) ("_position" C)
+###             ("_position" V) ("_position" T) ("_position" Cs))))))
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^const>Expr.expr.FAcc"
+###       ("\<^fixed>Anno" ("_position" P) ("_position" E)
+###         ("_applC" ("_position" Var) ("_position" V))
+###         ("_applC" ("_position" Var) ("_position" this)))
+###       ("_position" V) ("_position" Cs))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ambiguous input (line 41 of "$AFP/CoreC++/Annotate.thy") produces 2 parse trees:
+### ("_bigimpl"
+###   ("_asms"
+###     ("\<^const>HOL.Trueprop"
+###       ("\<^fixed>Anno" ("_position" P) ("_position" E) ("_position" e)
+###         ("_position" e')))
+###     ("_asms"
+###       ("\<^const>HOL.Trueprop"
+###         ("\<^const>WellType.WT" ("_position" P) ("_position" E)
+###           ("_position" e') ("_applC" ("_position" Class) ("_position" C))))
+###       ("_asm"
+###         ("\<^const>HOL.Trueprop"
+###           ("\<^const>SubObj.LeastFieldDecl" ("_position" P) ("_position" C)
+###             ("_position" F) ("_position" T) ("_position" Cs))))))
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^fixed>Anno" ("_position" P) ("_position" E)
+###       ("\<^const>Expr.expr.FAcc" ("_position" e) ("_position" F)
+###         ("\<^const>List.list.Nil"))
+###       ("\<^const>Expr.expr.FAcc" ("_position" e') ("_position" F)
+###         ("_position" Cs)))))
+### ("_bigimpl"
+###   ("_asms"
+###     ("\<^const>HOL.Trueprop"
+###       ("\<^fixed>Anno" ("_position" P) ("_position" E) ("_position" e)
+###         ("_position" e')))
+###     ("_asms"
+###       ("\<^const>HOL.Trueprop"
+###         ("\<^const>WellType.WT" ("_position" P) ("_position" E)
+###           ("_position" e') ("_applC" ("_position" Class) ("_position" C))))
+###       ("_asm"
+###         ("\<^const>HOL.Trueprop"
+###           ("\<^const>SubObj.LeastFieldDecl" ("_position" P) ("_position" C)
+###             ("_position" F) ("_position" T) ("_position" Cs))))))
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^const>Expr.expr.FAcc"
+###       ("\<^fixed>Anno" ("_position" P) ("_position" E)
+###         ("\<^const>Expr.expr.FAcc" ("_position" e) ("_position" F)
+###           ("\<^const>List.list.Nil"))
+###         ("_position" e'))
+###       ("_position" F) ("_position" Cs))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ambiguous input (line 43 of "$AFP/CoreC++/Annotate.thy") produces 8 parse trees:
+### ("_bigimpl"
+###   ("_asms"
+###     ("\<^const>HOL.Trueprop"
+###       ("\<^fixed>Anno" ("_position" P) ("_position" E) ("_position" e1)
+###         ("_position" e1')))
+###     ("_asms"
+###       ("\<^const>HOL.Trueprop"
+###         ("\<^fixed>Anno" ("_position" P) ("_position" E) ("_position" e2)
+###           ("_position" e2')))
+###       ("_asms"
+###         ("\<^const>HOL.Trueprop"
+###           ("\<^const>WellType.WT" ("_position" P) ("_position" E)
+###             ("_position" e1')
+###             ("_applC" ("_position" Class) ("_position" C))))
+###         ("_asm"
+###           ("\<^const>HOL.Trueprop"
+###             ("\<^const>SubObj.LeastFieldDecl" ("_position" P)
+###               ("_position" C) ("_position" F) ("_position" T)
+###               ("_position" Cs)))))))
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^const>Expr.expr.FAss"
+###       ("\<^fixed>Anno" ("_position" P) ("_position" E)
+###         ("\<^const>Expr.expr.FAss" ("_position" e1) ("_position" F)
+###           ("\<^const>List.list.Nil") ("_position" e2))
+###         ("_position" e1'))
+###       ("_position" F) ("_position" Cs) ("_position" e2'))))
+### ("_bigimpl"
+###   ("_asms"
+###     ("\<^const>HOL.Trueprop"
+###       ("\<^fixed>Anno" ("_position" P) ("_position" E) ("_position" e1)
+###         ("_position" e1')))
+###     ("_asms"
+###       ("\<^const>HOL.Trueprop"
+###         ("\<^fixed>Anno" ("_position" P) ("_position" E) ("_position" e2)
+###           ("_position" e2')))
+###       ("_asms"
+###         ("\<^const>HOL.Trueprop"
+###           ("\<^const>WellType.WT" ("_position" P) ("_position" E)
+###             ("_position" e1')
+###             ("_applC" ("_position" Class) ("_position" C))))
+###         ("_asm"
+###           ("\<^const>HOL.Trueprop"
+###             ("\<^const>SubObj.LeastFieldDecl" ("_position" P)
+###               ("_position" C) ("_position" F) ("_position" T)
+###               ("_position" Cs)))))))
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^const>Expr.expr.LAss"
+###       ("\<^const>Expr.expr.FAcc"
+###         ("\<^fixed>Anno" ("_position" P) ("_position" E)
+###           ("\<^const>Expr.expr.FAss" ("_position" e1) ("_position" F)
+###             ("\<^const>List.list.Nil") ("_position" e2))
+###           ("_position" e1'))
+###         ("_position" F) ("_position" Cs))
+###       ("_position" e2'))))
+### ("_bigimpl"
+###   ("_asms"
+###     ("\<^const>HOL.Trueprop"
+###       ("\<^fixed>Anno" ("_position" P) ("_position" E) ("_position" e1)
+###         ("_position" e1')))
+###     ("_asms"
+###       ("\<^const>HOL.Trueprop"
+###         ("\<^fixed>Anno" ("_position" P) ("_position" E) ("_position" e2)
+###           ("_position" e2')))
+###       ("_asms"
+###         ("\<^const>HOL.Trueprop"
+###           ("\<^const>WellType.WT" ("_position" P) ("_position" E)
+###             ("_position" e1')
+###             ("_applC" ("_position" Class) ("_position" C))))
+###         ("_asm"
+###           ("\<^const>HOL.Trueprop"
+###             ("\<^const>SubObj.LeastFieldDecl" ("_position" P)
+###               ("_position" C) ("_position" F) ("_position" T)
+###               ("_position" Cs)))))))
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^fixed>Anno" ("_position" P) ("_position" E)
+###       ("\<^const>Expr.expr.LAss"
+###         ("\<^const>Expr.expr.FAcc" ("_position" e1) ("_position" F)
+###           ("\<^const>List.list.Nil"))
+###         ("_position" e2))
+###       ("\<^const>Expr.expr.FAss" ("_position" e1') ("_position" F)
+###         ("_position" Cs) ("_position" e2')))))
+### ("_bigimpl"
+###   ("_asms"
+###     ("\<^const>HOL.Trueprop"
+###       ("\<^fixed>Anno" ("_position" P) ("_position" E) ("_position" e1)
+###         ("_position" e1')))
+###     ("_asms"
+###       ("\<^const>HOL.Trueprop"
+###         ("\<^fixed>Anno" ("_position" P) ("_position" E) ("_position" e2)
+###           ("_position" e2')))
+###       ("_asms"
+###         ("\<^const>HOL.Trueprop"
+###           ("\<^const>WellType.WT" ("_position" P) ("_position" E)
+###             ("_position" e1')
+###             ("_applC" ("_position" Class) ("_position" C))))
+###         ("_asm"
+###           ("\<^const>HOL.Trueprop"
+###             ("\<^const>SubObj.LeastFieldDecl" ("_position" P)
+###               ("_position" C) ("_position" F) ("_position" T)
+###               ("_position" Cs)))))))
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^fixed>Anno" ("_position" P) ("_position" E)
+###       ("\<^const>Expr.expr.FAss" ("_position" e1) ("_position" F)
+###         ("\<^const>List.list.Nil") ("_position" e2))
+###       ("\<^const>Expr.expr.FAss" ("_position" e1') ("_position" F)
+###         ("_position" Cs) ("_position" e2')))))
+### ("_bigimpl"
+###   ("_asms"
+###     ("\<^const>HOL.Trueprop"
+###       ("\<^fixed>Anno" ("_position" P) ("_position" E) ("_position" e1)
+###         ("_position" e1')))
+###     ("_asms"
+###       ("\<^const>HOL.Trueprop"
+###         ("\<^fixed>Anno" ("_position" P) ("_position" E) ("_position" e2)
+###           ("_position" e2')))
+###       ("_asms"
+###         ("\<^const>HOL.Trueprop"
+###           ("\<^const>WellType.WT" ("_position" P) ("_position" E)
+###             ("_position" e1')
+###             ("_applC" ("_position" Class) ("_position" C))))
+###         ("_asm"
+###           ("\<^const>HOL.Trueprop"
+###             ("\<^const>SubObj.LeastFieldDecl" ("_position" P)
+###               ("_position" C) ("_position" F) ("_position" T)
+###               ("_position" Cs)))))))
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^fixed>Anno" ("_position" P) ("_position" E)
+###       ("\<^const>Expr.expr.LAss"
+###         ("\<^const>Expr.expr.FAcc" ("_position" e1) ("_position" F)
+###           ("\<^const>List.list.Nil"))
+###         ("_position" e2))
+###       ("\<^const>Expr.expr.LAss"
+###         ("\<^const>Expr.expr.FAcc" ("_position" e1') ("_position" F)
+###           ("_position" Cs))
+###         ("_position" e2')))))
+### ("_bigimpl"
+###   ("_asms"
+###     ("\<^const>HOL.Trueprop"
+###       ("\<^fixed>Anno" ("_position" P) ("_position" E) ("_position" e1)
+###         ("_position" e1')))
+###     ("_asms"
+###       ("\<^const>HOL.Trueprop"
+###         ("\<^fixed>Anno" ("_position" P) ("_position" E) ("_position" e2)
+###           ("_position" e2')))
+###       ("_asms"
+###         ("\<^const>HOL.Trueprop"
+###           ("\<^const>WellType.WT" ("_position" P) ("_position" E)
+###             ("_position" e1')
+###             ("_applC" ("_position" Class) ("_position" C))))
+###         ("_asm"
+###           ("\<^const>HOL.Trueprop"
+###             ("\<^const>SubObj.LeastFieldDecl" ("_position" P)
+###               ("_position" C) ("_position" F) ("_position" T)
+###               ("_position" Cs)))))))
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^fixed>Anno" ("_position" P) ("_position" E)
+###       ("\<^const>Expr.expr.FAss" ("_position" e1) ("_position" F)
+###         ("\<^const>List.list.Nil") ("_position" e2))
+###       ("\<^const>Expr.expr.LAss"
+###         ("\<^const>Expr.expr.FAcc" ("_position" e1') ("_position" F)
+###           ("_position" Cs))
+###         ("_position" e2')))))
+### ("_bigimpl"
+###   ("_asms"
+###     ("\<^const>HOL.Trueprop"
+###       ("\<^fixed>Anno" ("_position" P) ("_position" E) ("_position" e1)
+###         ("_position" e1')))
+###     ("_asms"
+###       ("\<^const>HOL.Trueprop"
+###         ("\<^fixed>Anno" ("_position" P) ("_position" E) ("_position" e2)
+###           ("_position" e2')))
+###       ("_asms"
+###         ("\<^const>HOL.Trueprop"
+###           ("\<^const>WellType.WT" ("_position" P) ("_position" E)
+###             ("_position" e1')
+###             ("_applC" ("_position" Class) ("_position" C))))
+###         ("_asm"
+###           ("\<^const>HOL.Trueprop"
+###             ("\<^const>SubObj.LeastFieldDecl" ("_position" P)
+###               ("_position" C) ("_position" F) ("_position" T)
+###               ("_position" Cs)))))))
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^const>Expr.expr.FAss"
+###       ("\<^fixed>Anno" ("_position" P) ("_position" E)
+###         ("\<^const>Expr.expr.LAss"
+###           ("\<^const>Expr.expr.FAcc" ("_position" e1) ("_position" F)
+###             ("\<^const>List.list.Nil"))
+###           ("_position" e2))
+###         ("_position" e1'))
+###       ("_position" F) ("_position" Cs) ("_position" e2'))))
+### ("_bigimpl"
+###   ("_asms"
+###     ("\<^const>HOL.Trueprop"
+###       ("\<^fixed>Anno" ("_position" P) ("_position" E) ("_position" e1)
+###         ("_position" e1')))
+###     ("_asms"
+###       ("\<^const>HOL.Trueprop"
+###         ("\<^fixed>Anno" ("_position" P) ("_position" E) ("_position" e2)
+###           ("_position" e2')))
+###       ("_asms"
+###         ("\<^const>HOL.Trueprop"
+###           ("\<^const>WellType.WT" ("_position" P) ("_position" E)
+###             ("_position" e1')
+###             ("_applC" ("_position" Class) ("_position" C))))
+###         ("_asm"
+###           ("\<^const>HOL.Trueprop"
+###             ("\<^const>SubObj.LeastFieldDecl" ("_position" P)
+###               ("_position" C) ("_position" F) ("_position" T)
+###               ("_position" Cs)))))))
+###   ("\<^const>HOL.Trueprop"
+###     ("\<^const>Expr.expr.LAss"
+###       ("\<^const>Expr.expr.FAcc"
+###         ("\<^fixed>Anno" ("_position" P) ("_position" E)
+###           ("\<^const>Expr.expr.LAss"
+###             ("\<^const>Expr.expr.FAcc" ("_position" e1) ("_position" F)
+###               ("\<^const>List.list.Nil"))
+###             ("_position" e2))
+###           ("_position" e1'))
+###         ("_position" F) ("_position" Cs))
+###       ("_position" e2'))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+Proofs for inductive predicate(s) "Anno", "Annos"
+  Proving monotonicity ...
+### theory "Draft.Annotate"
+### 0.176s elapsed time, 0.183s cpu time, 0.000s GC time
+Loading theory "Draft.AnnotateTemplates"
+val templateLemmas = []: (string * thm * template) list
+### theory "Draft.AnnotateTemplates"
+### 0.372s elapsed time, 0.509s cpu time, 0.051s GC time
+val it = (): unit

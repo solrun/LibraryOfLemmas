@@ -1,0 +1,1326 @@
+Loading theory "Draft.On_Off" (required by "Draft.Partial_Cost_ModelTemplates" via "Draft.Partial_Cost_Model" via "Draft.Move_to_Front")
+Loading theory "HOL-Library.Function_Algebras" (required by "Draft.Partial_Cost_ModelTemplates" via "Draft.ExtrEqs" via "HOL-Library.BigO")
+Loading theory "Draft.Prob_Theory" (required by "Draft.Partial_Cost_ModelTemplates" via "Draft.Partial_Cost_Model" via "Draft.Move_to_Front" via "Draft.Competitive_Analysis")
+Loading theory "Draft.Templates" (required by "Draft.Partial_Cost_ModelTemplates" via "Draft.ExtrEqs")
+instantiation
+  fun :: (type, plus) plus
+  plus_fun == plus :: ('a => 'b) => ('a => 'b) => 'a => 'b
+instantiation
+  fun :: (type, zero) zero
+  zero_fun == zero_class.zero :: 'a => 'b
+locale On_Off
+  fixes step :: "'state => 'request => 'answer => 'state"
+    and t :: "'state => 'request => 'answer => nat"
+    and wf :: "'state => 'request list => bool"
+### Missing patterns in function definition:
+### !!a v va. T a (v # va) [] = undefined
+### !!a v va. T a [] (v # va) = undefined
+instantiation
+  fun :: (type, times) times
+  times_fun == times :: ('a => 'b) => ('a => 'b) => 'a => 'b
+instantiation
+  fun :: (type, one) one
+  one_fun == one_class.one :: 'a => 'b
+datatype template_term
+=
+     t_empty
+   | template_app of template_term * template_term
+   | template_hole of int
+   | template_var of int
+datatype sign
+= equals | greater_equals | greater_than | less_equals | less_than
+datatype template
+=
+     template_bimplication of template * template
+   | template_dunno
+   | template_equation of template_term * template_term
+   | template_implication of template list * template
+   | template_inequation of sign * template_term * template_term
+   | template_negation of template
+   | template_predicate of template_term
+constructor t_empty: template_term
+constructor template_app: template_term * template_term -> template_term
+constructor template_hole: int -> template_term
+constructor template_var: int -> template_term
+constructor equals: sign
+constructor greater_equals: sign
+constructor greater_than: sign
+constructor less_equals: sign
+constructor less_than: sign
+constructor template_bimplication: template * template -> template
+constructor template_dunno: template
+constructor template_equation: template_term * template_term -> template
+constructor template_implication: template list * template -> template
+constructor template_inequation:
+   sign * template_term * template_term -> template
+constructor template_negation: template -> template
+constructor template_predicate: template_term -> template
+val vfs = fn: term -> (indexname * typ) list * (string * typ) list
+val indexOf = fn: ''a list -> ''a -> int -> int
+val has_eq = fn: term -> bool
+val term2template = fn:
+   (indexname * typ) list -> (string * typ) list -> term -> template_term
+val lemma2predicate = fn: term -> term -> template
+val makeTemplatewithContext = fn: term -> term -> template
+val lemma2template = fn: term -> template
+val thm2template = fn: thm -> template
+val tterm2string = fn: template_term -> string
+val template2string = fn: template -> string
+val t = "height ?t <= size ?t": thm
+val th =
+   Const ("HOL.Trueprop", "bool => prop") $
+     (Const ("Orderings.ord_class.less_eq", "nat => nat => bool") $
+       (Const ("Tree.height_class.height", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree")) $
+       (Const ("Nat.size_class.size", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree"))):
+   term
+### theory "Draft.Templates"
+### 0.096s elapsed time, 0.416s cpu time, 0.000s GC time
+Loading theory "Draft.Inversion" (required by "Draft.Partial_Cost_ModelTemplates" via "Draft.Partial_Cost_Model" via "Draft.Move_to_Front" via "Draft.Swaps")
+### theory "HOL-Library.Function_Algebras"
+### 0.158s elapsed time, 0.636s cpu time, 0.039s GC time
+Loading theory "HOL-Library.BigO" (required by "Draft.Partial_Cost_ModelTemplates" via "Draft.ExtrEqs")
+### theory "Draft.Inversion"
+### 0.085s elapsed time, 0.329s cpu time, 0.039s GC time
+Loading theory "Draft.Swaps" (required by "Draft.Partial_Cost_ModelTemplates" via "Draft.Partial_Cost_Model" via "Draft.Move_to_Front")
+Found termination order: "(%p. length (snd (snd p))) <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+### theory "Draft.Swaps"
+### 0.087s elapsed time, 0.351s cpu time, 0.000s GC time
+Found termination order: "(%p. length (snd (snd p))) <*mlex*> {}"
+Found termination order: "(%p. length (snd p)) <*mlex*> {}"
+[| finite ?A; !!a. [| a : set_pmf ?M; ?f a ~= (0::?'b) |] ==> a : ?A |]
+==> measure_pmf.expectation ?M ?f = (SUM a:?A. pmf ?M a *\<^sub>R ?f a)
+set_pmf ?p Int ?s ~= {} ==>
+pmf (cond_pmf ?p ?s) ?x =
+(if ?x : ?s then pmf ?p ?x / measure_pmf.prob ?p ?s else 0)
+[| 0 < ?p1; ?p1 < 1 |]
+==> pmf (cond_pmf
+          (bernoulli_pmf ?p1 >>=
+           (%b. if b then map_pmf Inl ?Da1 else map_pmf Inr ?Db1))
+          {f. EX e. Inl e = f})
+     ?x =
+    (if ?x : {f. EX e. Inl e = f}
+     then pmf (bernoulli_pmf ?p1 >>=
+               (%b. if b then map_pmf Inl ?Da1 else map_pmf Inr ?Db1))
+           ?x /
+          measure_pmf.prob
+           (bernoulli_pmf ?p1 >>=
+            (%b. if b then map_pmf Inl ?Da1 else map_pmf Inr ?Db1))
+           {f. EX e. Inl e = f}
+     else 0)
+Found termination order: "(%p. length (snd (snd p))) <*mlex*> {}"
+"%a. case a of Inl e => Inl (fa e) | Inr e => Inr (fb e)"
+  :: "'a + 'b => 'c + 'd"
+"(>>=)"
+  :: "'a pmf => ('a => 'b pmf) => 'b pmf"
+### theory "Draft.Prob_Theory"
+### 0.535s elapsed time, 1.900s cpu time, 0.116s GC time
+Found termination order: "(%p. length (snd (snd p))) <*mlex*> {}"
+### theory "Draft.On_Off"
+### 0.693s elapsed time, 2.258s cpu time, 0.188s GC time
+Loading theory "Draft.Competitive_Analysis" (required by "Draft.Partial_Cost_ModelTemplates" via "Draft.Partial_Cost_Model" via "Draft.Move_to_Front")
+### theory "HOL-Library.BigO"
+### 0.720s elapsed time, 1.995s cpu time, 0.227s GC time
+Loading theory "Draft.ExtrEqs" (required by "Draft.Partial_Cost_ModelTemplates")
+locale On_Off
+  fixes step :: "'state => 'request => 'answer => 'state"
+    and t :: "'state => 'request => 'answer => nat"
+    and wf :: "'state => 'request list => bool"
+### Missing patterns in function definition:
+### !!a v va. steps a (v # va) [] = undefined
+### !!a v va. steps a [] (v # va) = undefined
+Found termination order: "(%p. length (snd (snd p))) <*mlex*> {}"
+Found termination order: "(%p. length (snd (snd p))) <*mlex*> {}"
+val eqpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Var (("_dummy_", 2), "?'a"))
+       ):
+   term Find_Theorems.criterion
+val badeqpattern = Pattern (Const ("Pure.eq", "?'a => ?'a => prop")):
+   term Find_Theorems.criterion
+val undefpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Const ("HOL.undefined", "?'a"))
+       ):
+   term Find_Theorems.criterion
+val thmpattern =
+   Pattern
+    (Const ("HOL.Trueprop", "bool => prop") $ Var (("_dummy_", 1), "bool")):
+   term Find_Theorems.criterion
+val badnames =
+   ["*nitpick*", "*Nitpick*", "*full_exhaustive*", "*_def*", "Enum.finite*",
+    "*Quickcheck*", "ATP*", "*Nunchaku*", "*Code*", "*BNF*", "*SMT*",
+    "*.*.*"]:
+   string list
+val unwanted_names =
+   [(false, Name "*nitpick*"), (false, Name "*Nitpick*"),
+    (false, Name "*full_exhaustive*"), (false, Name "*_def*"),
+    (false, Name "Enum.finite*"), (false, Name "*Quickcheck*"),
+    (false, Name "ATP*"), (false, Name "*Nunchaku*"),
+    (false, Name "*Code*"), (false, Name "*BNF*"), (false, Name "*SMT*"),
+    (false, Name "*.*.*")]:
+   (bool * term Find_Theorems.criterion) list
+val has_vars = fn: term -> bool
+val get_all_eqs = fn: string -> Proof.context -> (string * thm) list
+val get_all_thms = fn: string -> Proof.context -> (string * thm) list
+val get_noneq_thms = fn: string -> Proof.context -> (string * thm) list
+val template_eqs = fn:
+   string -> Proof.context -> (string * thm * template) list
+val template_thms = fn:
+   string -> Proof.context -> (string * thm * template) list
+### theory "Draft.ExtrEqs"
+### 0.515s elapsed time, 1.062s cpu time, 0.068s GC time
+Found termination order: "(%p. length (snd (snd p))) <*mlex*> {}"
+Found termination order: "{}"
+### theory "Draft.Competitive_Analysis"
+### 1.144s elapsed time, 2.275s cpu time, 0.615s GC time
+Loading theory "Draft.Move_to_Front" (required by "Draft.Partial_Cost_ModelTemplates" via "Draft.Partial_Cost_Model")
+?A Int set ?xs = set (filter (%x. x : ?A) ?xs)
+locale MTF_Off
+  fixes as :: "(nat * nat list) list"
+    and rs :: "'a list"
+    and s0 :: "'a list"
+  assumes "MTF_Off as rs s0"
+Found termination order: "size <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+Found termination order: "(%p. length (snd (snd p))) <*mlex*> {}"
+Found termination order: "(%p. length (snd p)) <*mlex*> {}"
+Found termination order: "(%p. size (snd (snd p))) <*mlex*> {}"
+### theory "Draft.Move_to_Front"
+### 2.562s elapsed time, 2.891s cpu time, 0.467s GC time
+Loading theory "Draft.Partial_Cost_Model" (required by "Draft.Partial_Cost_ModelTemplates")
+### theory "Draft.Partial_Cost_Model"
+### 0.806s elapsed time, 1.416s cpu time, 0.842s GC time
+Loading theory "Draft.Partial_Cost_ModelTemplates"
+val templateLemmas =
+   [("Partial_Cost_Model.T_on_rand'_nn",
+     "0 <= T\<^sub>p_on_rand' ?A ?s ?qs",
+     template_inequation
+      (less_equals, template_hole 3,
+       template_app
+        (template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 2, template_hole 1),
+               template_hole 0),
+             template_var 2),
+           template_var 1),
+         template_var 0))),
+    ("Partial_Cost_Model.length_off",
+     "length (Partial_Cost_Model.off2 ?A ?s ?rs) = length ?rs",
+     template_equation
+      (template_app
+        (template_hole 3,
+         template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 2, template_hole 1),
+               template_var 2),
+             template_var 1),
+           template_var 0)),
+       template_app (template_hole 0, template_var 0))),
+    ("Partial_Cost_Model.t\<^sub>pt", "t\<^sub>p ?s ?q ?a + 1 = t ?s ?q ?a",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 3,
+           template_app
+            (template_app
+              (template_app (template_hole 2, template_var 2),
+               template_var 1),
+             template_var 0)),
+         template_hole 1),
+       template_app
+        (template_app
+          (template_app (template_hole 0, template_var 2), template_var 1),
+         template_var 0))),
+    ("Partial_Cost_Model.config'_embed",
+     "Partial_Cost_Model.config'_rand (Partial_Cost_Model.embed ?A)
+       (return_pmf ?s0.0) ?qs =
+      return_pmf (Partial_Cost_Model.config' ?A ?s0.0 ?qs)",
+     template_equation
+      (template_app
+        (template_app
+          (template_app
+            (template_app (template_hole 4, template_hole 3),
+             template_app (template_hole 2, template_var 2)),
+           template_app (template_hole 1, template_var 1)),
+         template_var 0),
+       template_app
+        (template_hole 1,
+         template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 0, template_hole 3),
+               template_var 2),
+             template_var 1),
+           template_var 0)))),
+    ("Partial_Cost_Model.compet_embed",
+     "compet\<^sub>p ?A ?c ?S0.0 =
+      Partial_Cost_Model.compet_rand (Partial_Cost_Model.embed ?A) ?c
+       ?S0.0",
+     template_equation
+      (template_app
+        (template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 5, template_hole 4),
+                 template_hole 3),
+               template_hole 2),
+             template_var 2),
+           template_var 1),
+         template_var 0),
+       template_app
+        (template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 1, template_hole 4),
+                 template_hole 3),
+               template_hole 2),
+             template_app (template_hole 0, template_var 2)),
+           template_var 1),
+         template_var 0))),
+    ("Partial_Cost_Model.config'_append2",
+     "Partial_Cost_Model.config' ?A ?s (?xs @ ?ys) =
+      Partial_Cost_Model.config' ?A (Partial_Cost_Model.config' ?A ?s ?xs)
+       ?ys",
+     template_equation
+      (template_app
+        (template_app
+          (template_app
+            (template_app (template_hole 2, template_hole 1),
+             template_var 3),
+           template_var 2),
+         template_app
+          (template_app (template_hole 0, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_app
+            (template_app (template_hole 2, template_hole 1),
+             template_var 3),
+           template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 2, template_hole 1),
+                 template_var 3),
+               template_var 2),
+             template_var 1)),
+         template_var 0))),
+    ("Partial_Cost_Model.config'_rand_append",
+     "Partial_Cost_Model.config'_rand ?A ?s (?xs @ ?ys) =
+      Partial_Cost_Model.config'_rand ?A
+       (Partial_Cost_Model.config'_rand ?A ?s ?xs) ?ys",
+     template_equation
+      (template_app
+        (template_app
+          (template_app
+            (template_app (template_hole 2, template_hole 1),
+             template_var 3),
+           template_var 2),
+         template_app
+          (template_app (template_hole 0, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_app
+            (template_app (template_hole 2, template_hole 1),
+             template_var 3),
+           template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 2, template_hole 1),
+                 template_var 3),
+               template_var 2),
+             template_var 1)),
+         template_var 0))),
+    ("Partial_Cost_Model.config'_snoc",
+     "Partial_Cost_Model.config' ?A ?s (?rs @ [?r]) =
+      Partial_Cost_Model.Step ?A (Partial_Cost_Model.config' ?A ?s ?rs) ?r",
+     template_equation
+      (template_app
+        (template_app
+          (template_app
+            (template_app (template_hole 5, template_hole 4),
+             template_var 3),
+           template_var 2),
+         template_app
+          (template_app (template_hole 3, template_var 1),
+           template_app
+            (template_app (template_hole 2, template_var 0),
+             template_hole 1))),
+       template_app
+        (template_app
+          (template_app
+            (template_app (template_hole 0, template_hole 4),
+             template_var 3),
+           template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 5, template_hole 4),
+                 template_var 3),
+               template_var 2),
+             template_var 1)),
+         template_var 0))),
+    ("Partial_Cost_Model.T_on'_embed",
+     "real (Partial_Cost_Model.T_on' ?A (?s0.0, ?x) ?qs) =
+      T\<^sub>p_on_rand' (Partial_Cost_Model.embed ?A)
+       (return_pmf (?s0.0, ?x)) ?qs",
+     template_equation
+      (template_app
+        (template_hole 7,
+         template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 6, template_hole 5),
+                 template_hole 4),
+               template_var 3),
+             template_app
+              (template_app (template_hole 3, template_var 2),
+               template_var 1)),
+           template_var 0)),
+       template_app
+        (template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 2, template_hole 5),
+               template_hole 4),
+             template_app (template_hole 1, template_var 3)),
+           template_app
+            (template_hole 0,
+             template_app
+              (template_app (template_hole 3, template_var 2),
+               template_var 1))),
+         template_var 0))),
+    ("Partial_Cost_Model.T_on_rand_nn",
+     "0 <= T\<^sub>p_on_rand' (?I, ?S)
+            (fst (?I, ?S) ?s0.0 >>= (%is. return_pmf (?s0.0, is))) ?qs",
+     template_inequation
+      (less_equals, template_hole 8,
+       template_app
+        (template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 7, template_hole 6),
+               template_hole 5),
+             template_app
+              (template_app (template_hole 4, template_var 3),
+               template_var 2)),
+           template_app
+            (template_app
+              (template_hole 3,
+               template_app
+                (template_app
+                  (template_hole 2,
+                   template_app
+                    (template_app (template_hole 4, template_var 3),
+                     template_var 2)),
+                 template_var 1)),
+             t_empty)),
+         template_var 0))),
+    ("Partial_Cost_Model.T_on_on'",
+     "T\<^sub>p ?s0.0 ?qs (Partial_Cost_Model.off2 ?A (?s0.0, ?x) ?qs) =
+      Partial_Cost_Model.T_on' ?A (?s0.0, ?x) ?qs",
+     template_equation
+      (template_app
+        (template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 5, template_hole 4),
+               template_hole 3),
+             template_var 3),
+           template_var 2),
+         template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 2, template_hole 4),
+               template_var 1),
+             template_app
+              (template_app (template_hole 1, template_var 3),
+               template_var 0)),
+           template_var 2)),
+       template_app
+        (template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 0, template_hole 4),
+               template_hole 3),
+             template_var 1),
+           template_app
+            (template_app (template_hole 1, template_var 3),
+             template_var 0)),
+         template_var 2))),
+    ("Partial_Cost_Model.compet_mono",
+     "[| compet\<^sub>p ?A ?c ?S0.0; ?c <= ?c' |]
+      ==> compet\<^sub>p ?A ?c' ?S0.0",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app
+                     (template_app (template_hole 4, template_hole 3),
+                      template_hole 2),
+                    template_hole 1),
+                  template_var 3),
+                template_var 2),
+              template_var 1)
+            ),
+        template_inequation (less_equals, template_var 2, template_var 0)],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_app
+                    (template_app (template_hole 4, template_hole 3),
+                     template_hole 2),
+                   template_hole 1),
+                 template_var 3),
+               template_var 0),
+             template_var 1)
+           ))),
+    ("Partial_Cost_Model.T_deter_rand",
+     "real
+       (T\<^sub>p ?s0.0 ?qs (Partial_Cost_Model.off2 ?A (?s0.0, ?x) ?qs)) =
+      T\<^sub>p_on_rand' (Partial_Cost_Model.embed ?A)
+       (return_pmf (?s0.0, ?x)) ?qs",
+     template_equation
+      (template_app
+        (template_hole 8,
+         template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 7, template_hole 6),
+                 template_hole 5),
+               template_var 3),
+             template_var 2),
+           template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 4, template_hole 6),
+                 template_var 1),
+               template_app
+                (template_app (template_hole 3, template_var 3),
+                 template_var 0)),
+             template_var 2))),
+       template_app
+        (template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 2, template_hole 6),
+               template_hole 5),
+             template_app (template_hole 1, template_var 1)),
+           template_app
+            (template_hole 0,
+             template_app
+              (template_app (template_hole 3, template_var 3),
+               template_var 0))),
+         template_var 2))),
+    ("Partial_Cost_Model.T_on_on''",
+     "T\<^sub>p_on ?A ?s0.0 ?qs = Partial_Cost_Model.T_on'' ?A ?s0.0 ?qs",
+     template_equation
+      (template_app
+        (template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 6, template_hole 5),
+               template_hole 4),
+             template_var 2),
+           template_var 1),
+         template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 3, template_hole 5),
+               template_var 0),
+             template_app
+              (template_app (template_hole 2, template_var 2),
+               template_app
+                (template_app (template_hole 1, template_var 0),
+                 template_var 2))),
+           template_var 1)),
+       template_app
+        (template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 0, template_hole 5),
+               template_hole 4),
+             template_var 0),
+           template_app
+            (template_app (template_hole 2, template_var 2),
+             template_app
+              (template_app (template_hole 1, template_var 0),
+               template_var 2))),
+         template_var 1))),
+    ("Partial_Cost_Model.config_append",
+     "config\<^sub>p ?A ?s (?xs @ ?ys) =
+      Partial_Cost_Model.config' ?A (config\<^sub>p ?A ?s ?xs) ?ys",
+     template_equation
+      (template_app
+        (template_app
+          (template_app
+            (template_app (template_hole 4, template_hole 3),
+             template_var 3),
+           template_app
+            (template_app (template_hole 2, template_var 2),
+             template_app
+              (template_app (template_hole 1, template_var 3),
+               template_var 2))),
+         template_app
+          (template_app (template_hole 0, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_app
+            (template_app (template_hole 4, template_hole 3),
+             template_var 3),
+           template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 4, template_hole 3),
+                 template_var 3),
+               template_app
+                (template_app (template_hole 2, template_var 2),
+                 template_app
+                  (template_app (template_hole 1, template_var 3),
+                   template_var 2))),
+             template_var 1)),
+         template_var 0))),
+    ("Partial_Cost_Model.T_on'_append",
+     "Partial_Cost_Model.T_on' ?A ?s (?xs @ ?ys) =
+      Partial_Cost_Model.T_on' ?A ?s ?xs +
+      Partial_Cost_Model.T_on' ?A (Partial_Cost_Model.config' ?A ?s ?xs)
+       ?ys",
+     template_equation
+      (template_app
+        (template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 5, template_hole 4),
+               template_hole 3),
+             template_var 3),
+           template_var 2),
+         template_app
+          (template_app (template_hole 2, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 1,
+           template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_app (template_hole 5, template_hole 4),
+                   template_hole 3),
+                 template_var 3),
+               template_var 2),
+             template_var 1)),
+         template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 5, template_hole 4),
+                 template_hole 3),
+               template_var 3),
+             template_app
+              (template_app
+                (template_app
+                  (template_app (template_hole 0, template_hole 4),
+                   template_var 3),
+                 template_var 2),
+               template_var 1)),
+           template_var 0)))),
+    ("Partial_Cost_Model.T_on_rand'_append",
+     "T\<^sub>p_on_rand' ?A ?s (?xs @ ?ys) =
+      T\<^sub>p_on_rand' ?A ?s ?xs +
+      T\<^sub>p_on_rand' ?A (Partial_Cost_Model.config'_rand ?A ?s ?xs)
+       ?ys",
+     template_equation
+      (template_app
+        (template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 5, template_hole 4),
+               template_hole 3),
+             template_var 3),
+           template_var 2),
+         template_app
+          (template_app (template_hole 2, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 1,
+           template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_app (template_hole 5, template_hole 4),
+                   template_hole 3),
+                 template_var 3),
+               template_var 2),
+             template_var 1)),
+         template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 5, template_hole 4),
+                 template_hole 3),
+               template_var 3),
+             template_app
+              (template_app
+                (template_app
+                  (template_app (template_hole 0, template_hole 4),
+                   template_var 3),
+                 template_var 2),
+               template_var 1)),
+           template_var 0)))),
+    ("Partial_Cost_Model.config_embed",
+     "Partial_Cost_Model.config'_rand (Partial_Cost_Model.embed ?A)
+       (fst (Partial_Cost_Model.embed ?A) ?s0.0 >>=
+        (%is. return_pmf (?s0.0, is)))
+       ?qs =
+      return_pmf (config\<^sub>p ?A ?s0.0 ?qs)",
+     template_equation
+      (template_app
+        (template_app
+          (template_app
+            (template_app (template_hole 8, template_hole 7),
+             template_app (template_hole 6, template_var 2)),
+           template_app
+            (template_app
+              (template_hole 5,
+               template_app
+                (template_app
+                  (template_hole 4,
+                   template_app (template_hole 6, template_var 2)),
+                 template_var 1)),
+             t_empty)),
+         template_var 0),
+       template_app
+        (template_hole 3,
+         template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 1, template_hole 7),
+               template_var 2),
+             template_app
+              (template_app (template_hole 2, template_var 1),
+               template_app
+                (template_app (template_hole 0, template_var 2),
+                 template_var 1))),
+           template_var 0)))),
+    ("Partial_Cost_Model.steps_append",
+     "length ?qs = length ?as ==>
+      Partial_Cost_Model.steps ?s (?qs @ ?qs') (?as @ ?as') =
+      Partial_Cost_Model.steps (Partial_Cost_Model.steps ?s ?qs ?as) ?qs'
+       ?as'",
+     template_implication
+      ([template_equation
+         (template_app (template_hole 6, template_var 4),
+          template_app (template_hole 5, template_var 3))],
+       template_equation
+        (template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 3, template_hole 2),
+               template_var 2),
+             template_app
+              (template_app (template_hole 1, template_var 4),
+               template_var 1)),
+           template_app
+            (template_app (template_hole 0, template_var 3),
+             template_var 0)),
+         template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 3, template_hole 2),
+               template_app
+                (template_app
+                  (template_app
+                    (template_app (template_hole 3, template_hole 2),
+                     template_var 2),
+                   template_var 4),
+                 template_var 3)),
+             template_var 1),
+           template_var 0)))),
+    ("Partial_Cost_Model.config_snoc",
+     "config\<^sub>p ?A ?s (?rs @ [?r]) =
+      Partial_Cost_Model.Step ?A (config\<^sub>p ?A ?s ?rs) ?r",
+     template_equation
+      (template_app
+        (template_app
+          (template_app
+            (template_app (template_hole 7, template_hole 6),
+             template_var 3),
+           template_app
+            (template_app (template_hole 5, template_var 2),
+             template_app
+              (template_app (template_hole 4, template_var 3),
+               template_var 2))),
+         template_app
+          (template_app (template_hole 3, template_var 1),
+           template_app
+            (template_app (template_hole 2, template_var 0),
+             template_hole 1))),
+       template_app
+        (template_app
+          (template_app
+            (template_app (template_hole 0, template_hole 6),
+             template_var 3),
+           template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 7, template_hole 6),
+                 template_var 3),
+               template_app
+                (template_app (template_hole 5, template_var 2),
+                 template_app
+                  (template_app (template_hole 4, template_var 3),
+                   template_var 2))),
+             template_var 1)),
+         template_var 0))),
+    ("Partial_Cost_Model.T_on_rand'_as_sum",
+     "T\<^sub>p_on_rand' ?A ?s0.0 ?rs =
+      sum (Partial_Cost_Model.T_on_rand'_n ?A ?s0.0 ?rs) {..<length ?rs}",
+     template_equation
+      (template_app
+        (template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 10, template_hole 9),
+               template_hole 8),
+             template_var 2),
+           template_var 1),
+         template_var 0),
+       template_app
+        (template_app (template_hole 7, t_empty),
+         template_app
+          (template_hole 1,
+           template_app (template_hole 0, template_var 0))))),
+    ("Partial_Cost_Model.config'_induct",
+     "[| ?P (fst ?init); !!s q a. ?P s ==> ?P (step s q a) |]
+      ==> ?P (fst (Partial_Cost_Model.config' ?A ?init ?rs))",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_var 3,
+              template_app (template_hole 5, template_var 2))
+            ),
+        template_predicate (template_app (template_hole 4, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_var 3,
+             template_app
+              (template_hole 5,
+               template_app
+                (template_app
+                  (template_app
+                    (template_app (template_hole 0, template_hole 1),
+                     template_var 1),
+                   template_var 2),
+                 template_var 0)))
+           ))),
+    ("Partial_Cost_Model.T_on_embed",
+     "real (T\<^sub>p_on ?A ?s0.0 ?qs) =
+      T\<^sub>p_on_rand' (Partial_Cost_Model.embed ?A)
+       (fst (Partial_Cost_Model.embed ?A) ?s0.0 >>=
+        (%is. return_pmf (?s0.0, is)))
+       ?qs",
+     template_equation
+      (template_app
+        (template_hole 11,
+         template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 10, template_hole 9),
+                 template_hole 8),
+               template_var 2),
+             template_var 1),
+           template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 7, template_hole 9),
+                 template_var 0),
+               template_app
+                (template_app (template_hole 6, template_var 2),
+                 template_app
+                  (template_app (template_hole 5, template_var 0),
+                   template_var 2))),
+             template_var 1))),
+       template_app
+        (template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 4, template_hole 9),
+               template_hole 8),
+             template_app (template_hole 3, template_var 0)),
+           template_app
+            (template_app
+              (template_hole 2,
+               template_app
+                (template_app
+                  (template_hole 1,
+                   template_app (template_hole 3, template_var 0)),
+                 template_var 2)),
+             t_empty)),
+         template_var 1))),
+    ("Partial_Cost_Model.config_induct",
+     "[| ?P ?s0.0; !!s q a. ?P s ==> ?P (step s q a) |]
+      ==> ?P (fst (config\<^sub>p ?A ?s0.0 ?qs))",
+     template_implication
+      ([template_predicate (template_app (template_var 3, template_var 2)),
+        template_predicate (template_app (template_hole 7, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_var 3,
+             template_app
+              (template_hole 3,
+               template_app
+                (template_app
+                  (template_app
+                    (template_app (template_hole 2, template_hole 4),
+                     template_var 1),
+                   template_app
+                    (template_app (template_hole 1, template_var 2),
+                     template_app
+                      (template_app (template_hole 0, template_var 1),
+                       template_var 2))),
+                 template_var 0)))
+           ))),
+    ("Partial_Cost_Model.config'_rand_snoc",
+     "Partial_Cost_Model.config'_rand ?A ?s (?rs @ [?r]) =
+      Partial_Cost_Model.config'_rand ?A ?s ?rs >>=
+      (%s. snd ?A s ?r >>=
+           (%(a, is'). return_pmf (step (fst s) ?r a, is')))",
+     template_equation
+      (template_app
+        (template_app
+          (template_app
+            (template_app (template_hole 11, template_hole 10),
+             template_var 3),
+           template_var 2),
+         template_app
+          (template_app (template_hole 9, template_var 1),
+           template_app
+            (template_app (template_hole 8, template_var 0),
+             template_hole 7))),
+       template_app
+        (template_app
+          (template_hole 6,
+           template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 11, template_hole 10),
+                 template_var 3),
+               template_var 2),
+             template_var 1)),
+         t_empty))),
+    ("Partial_Cost_Model.T_append2",
+     "length ?qs = length ?as ==>
+      T\<^sub>p ?s (?qs @ ?qs') (?as @ ?as') =
+      T\<^sub>p ?s ?qs ?as +
+      T\<^sub>p (Partial_Cost_Model.steps ?s ?qs ?as) ?qs' ?as'",
+     template_implication
+      ([template_equation
+         (template_app (template_hole 8, template_var 4),
+          template_app (template_hole 7, template_var 3))],
+       template_equation
+        (template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 6, template_hole 5),
+                 template_hole 4),
+               template_var 2),
+             template_app
+              (template_app (template_hole 3, template_var 4),
+               template_var 1)),
+           template_app
+            (template_app (template_hole 2, template_var 3),
+             template_var 0)),
+         template_app
+          (template_app
+            (template_hole 1,
+             template_app
+              (template_app
+                (template_app
+                  (template_app
+                    (template_app (template_hole 6, template_hole 5),
+                     template_hole 4),
+                   template_var 2),
+                 template_var 4),
+               template_var 3)),
+           template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_app (template_hole 6, template_hole 5),
+                   template_hole 4),
+                 template_app
+                  (template_app
+                    (template_app
+                      (template_app (template_hole 0, template_hole 5),
+                       template_var 2),
+                     template_var 4),
+                   template_var 3)),
+               template_var 1),
+             template_var 0))))),
+    ("Partial_Cost_Model.T_on__as_sum",
+     "Partial_Cost_Model.T_on'' ?A ?s0.0 ?rs =
+      sum (T\<^sub>p_on_n ?A ?s0.0 ?rs) {..<length ?rs}",
+     template_equation
+      (template_app
+        (template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 12, template_hole 11),
+               template_hole 10),
+             template_var 2),
+           template_app
+            (template_app (template_hole 9, template_var 1),
+             template_app
+              (template_app (template_hole 8, template_var 2),
+               template_var 1))),
+         template_var 0),
+       template_app
+        (template_app (template_hole 7, t_empty),
+         template_app
+          (template_hole 1,
+           template_app (template_hole 0, template_var 0))))),
+    ("Partial_Cost_Model.T_append",
+     "length ?qs = length ?as ==>
+      T\<^sub>p ?s (?qs @ [?q]) (?as @ [?a]) =
+      T\<^sub>p ?s ?qs ?as +
+      t\<^sub>p (Partial_Cost_Model.steps ?s ?qs ?as) ?q ?a",
+     template_implication
+      ([template_equation
+         (template_app (template_hole 12, template_var 4),
+          template_app (template_hole 11, template_var 3))],
+       template_equation
+        (template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 10, template_hole 9),
+                 template_hole 8),
+               template_var 2),
+             template_app
+              (template_app (template_hole 7, template_var 4),
+               template_app
+                (template_app (template_hole 6, template_var 1),
+                 template_hole 5))),
+           template_app
+            (template_app (template_hole 4, template_var 3),
+             template_app
+              (template_app (template_hole 3, template_var 0),
+               template_hole 2))),
+         template_app
+          (template_app
+            (template_hole 1,
+             template_app
+              (template_app
+                (template_app
+                  (template_app
+                    (template_app (template_hole 10, template_hole 9),
+                     template_hole 8),
+                   template_var 2),
+                 template_var 4),
+               template_var 3)),
+           template_app
+            (template_app
+              (template_app
+                (template_hole 8,
+                 template_app
+                  (template_app
+                    (template_app
+                      (template_app (template_hole 0, template_hole 9),
+                       template_var 2),
+                     template_var 4),
+                   template_var 3)),
+               template_var 1),
+             template_var 0))))),
+    ("Partial_Cost_Model.config'_rand_induct",
+     "[| ALL x:set_pmf ?init. ?P (fst x);
+         !!s q a. ?P s ==> ?P (step s q a) |]
+      ==> ALL x:set_pmf (Partial_Cost_Model.config'_rand ?A ?init ?qs).
+             ?P (fst x)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 7,
+                template_app (template_hole 6, template_var 3)),
+              t_empty)
+            ),
+        template_predicate (template_app (template_hole 4, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 7,
+               template_app
+                (template_hole 6,
+                 template_app
+                  (template_app
+                    (template_app
+                      (template_app (template_hole 0, template_hole 1),
+                       template_var 1),
+                     template_var 3),
+                   template_var 0))),
+             t_empty)
+           ))),
+    ("Partial_Cost_Model.T_on_append",
+     "Partial_Cost_Model.T_on'' ?A ?s (?xs @ ?ys) =
+      Partial_Cost_Model.T_on'' ?A ?s ?xs +
+      Partial_Cost_Model.T_on' ?A (config\<^sub>p ?A ?s ?xs) ?ys",
+     template_equation
+      (template_app
+        (template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 7, template_hole 6),
+               template_hole 5),
+             template_var 3),
+           template_app
+            (template_app (template_hole 4, template_var 2),
+             template_app
+              (template_app (template_hole 3, template_var 3),
+               template_var 2))),
+         template_app
+          (template_app (template_hole 2, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 1,
+           template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_app (template_hole 7, template_hole 6),
+                   template_hole 5),
+                 template_var 3),
+               template_app
+                (template_app (template_hole 4, template_var 2),
+                 template_app
+                  (template_app (template_hole 3, template_var 3),
+                   template_var 2))),
+             template_var 1)),
+         template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 7, template_hole 6),
+                 template_hole 5),
+               template_var 3),
+             template_app
+              (template_app
+                (template_app
+                  (template_app (template_hole 0, template_hole 6),
+                   template_var 3),
+                 template_app
+                  (template_app (template_hole 4, template_var 2),
+                   template_app
+                    (template_app (template_hole 3, template_var 3),
+                     template_var 2))),
+               template_var 1)),
+           template_var 0)))),
+    ("Partial_Cost_Model.T_on_as_sum",
+     "T\<^sub>p_on ?A ?s0.0 ?rs =
+      sum (T\<^sub>p_on_n ?A ?s0.0 ?rs) {..<length ?rs}",
+     template_equation
+      (template_app
+        (template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 14, template_hole 13),
+               template_hole 12),
+             template_var 2),
+           template_var 1),
+         template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 11, template_hole 13),
+               template_var 0),
+             template_app
+              (template_app (template_hole 10, template_var 2),
+               template_app
+                (template_app (template_hole 9, template_var 0),
+                 template_var 2))),
+           template_var 1)),
+       template_app
+        (template_app (template_hole 8, t_empty),
+         template_app
+          (template_hole 1,
+           template_app (template_hole 0, template_var 1))))),
+    ("Partial_Cost_Model.config_rand_induct",
+     "[| ?P ?s0.0; !!s q a. ?P s ==> ?P (step s q a) |]
+      ==> ALL x:set_pmf
+                 (Partial_Cost_Model.config'_rand ?A
+                   (fst ?A ?s0.0 >>= (%is. return_pmf (?s0.0, is))) ?qs).
+             ?P (fst x)",
+     template_implication
+      ([template_predicate (template_app (template_var 3, template_var 2)),
+        template_predicate (template_app (template_hole 11, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 7,
+               template_app
+                (template_hole 6,
+                 template_app
+                  (template_app
+                    (template_app
+                      (template_app (template_hole 5, template_hole 8),
+                       template_var 1),
+                     template_app
+                      (template_app
+                        (template_hole 4,
+                         template_app
+                          (template_app (template_hole 3, template_var 1),
+                           template_var 2)),
+                       t_empty)),
+                   template_var 0))),
+             t_empty)
+           ))),
+    ("Partial_Cost_Model.T_on_rand_as_sum",
+     "T\<^sub>p_on_rand' ?A (fst ?A ?s0.0 >>= (%is. return_pmf (?s0.0, is)))
+       ?rs =
+      sum (Partial_Cost_Model.T_on_rand'_n ?A
+            (fst ?A ?s0.0 >>= (%is. return_pmf (?s0.0, is))) ?rs)
+       {..<length ?rs}",
+     template_equation
+      (template_app
+        (template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 14, template_hole 13),
+               template_hole 12),
+             template_var 2),
+           template_app
+            (template_app
+              (template_hole 11,
+               template_app
+                (template_app (template_hole 10, template_var 2),
+                 template_var 1)),
+             t_empty)),
+         template_var 0),
+       template_app
+        (template_app (template_hole 7, t_empty),
+         template_app
+          (template_hole 1,
+           template_app (template_hole 0, template_var 0))))),
+    ("Partial_Cost_Model.T_on_rand_append",
+     "T\<^sub>p_on_rand' ?A (fst ?A ?s >>= (%is. return_pmf (?s, is)))
+       (?xs @ ?ys) =
+      T\<^sub>p_on_rand' ?A (fst ?A ?s >>= (%is. return_pmf (?s, is))) ?xs +
+      T\<^sub>p_on_rand' ?A
+       (Partial_Cost_Model.config'_rand ?A
+         (fst ?A ?s >>= (%is. return_pmf (?s, is))) ?xs)
+       ?ys",
+     template_equation
+      (template_app
+        (template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 9, template_hole 8),
+               template_hole 7),
+             template_var 3),
+           template_app
+            (template_app
+              (template_hole 6,
+               template_app
+                (template_app (template_hole 5, template_var 3),
+                 template_var 2)),
+             t_empty)),
+         template_app
+          (template_app (template_hole 2, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 1,
+           template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_app (template_hole 9, template_hole 8),
+                   template_hole 7),
+                 template_var 3),
+               template_app
+                (template_app
+                  (template_hole 6,
+                   template_app
+                    (template_app (template_hole 5, template_var 3),
+                     template_var 2)),
+                 t_empty)),
+             template_var 1)),
+         template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 9, template_hole 8),
+                 template_hole 7),
+               template_var 3),
+             template_app
+              (template_app
+                (template_app
+                  (template_app (template_hole 0, template_hole 8),
+                   template_var 3),
+                 template_app
+                  (template_app
+                    (template_hole 6,
+                     template_app
+                      (template_app (template_hole 5, template_var 3),
+                       template_var 2)),
+                   t_empty)),
+               template_var 1)),
+           template_var 0)))),
+    ("Partial_Cost_Model.competE",
+     "[| compet\<^sub>p ?A ?c ?S0.0; 0 <= ?c;
+         ALL s0 rs. length (?aoff s0 rs) = length rs; ?s0.0 : ?S0.0 |]
+      ==> EX b>=0.
+             ALL rs.
+                static ?s0.0 rs -->
+                real (T\<^sub>p_on ?A ?s0.0 rs)
+                <= ?c * real (Partial_Cost_Model.T_off ?aoff ?s0.0 rs) + b",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app
+                     (template_app (template_hole 20, template_hole 19),
+                      template_hole 18),
+                    template_hole 17),
+                  template_var 4),
+                template_var 3),
+              template_var 2)
+            ),
+        template_inequation (less_equals, template_hole 15, template_var 3),
+        template_predicate (template_app (template_hole 14, t_empty)),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 10, template_var 0),
+              template_var 2)
+            )],
+       template_predicate (template_app (template_hole 9, t_empty))))]:
+   (string * thm * template) list
+### theory "Draft.Partial_Cost_ModelTemplates"
+### 1.218s elapsed time, 1.547s cpu time, 0.173s GC time
+val it = (): unit

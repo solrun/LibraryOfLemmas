@@ -1,0 +1,903 @@
+Loading theory "Draft.C_Lexer_Language" (required by "Draft.C_Lexer_AnnotationTemplates" via "Draft.C_Lexer_Annotation")
+Loading theory "HOL-Library.Function_Algebras" (required by "Draft.C_Lexer_AnnotationTemplates" via "Draft.ExtrEqs" via "HOL-Library.BigO")
+Loading theory "HOL-Library.Nat_Bijection" (required by "Draft.C_Lexer_AnnotationTemplates" via "Draft.ExtrEqs" via "HOL-Library.Stream")
+Loading theory "HOL-Library.Set_Algebras" (required by "Draft.C_Lexer_AnnotationTemplates" via "Draft.ExtrEqs" via "HOL-Library.BigO")
+instantiation
+  fun :: (type, plus) plus
+  plus_fun == plus :: ('a => 'b) => ('a => 'b) => 'a => 'b
+instantiation
+  set :: (plus) plus
+  plus_set == plus :: 'a set => 'a set => 'a set
+instantiation
+  fun :: (type, zero) zero
+  zero_fun == zero_class.zero :: 'a => 'b
+instantiation
+  fun :: (type, times) times
+  times_fun == times :: ('a => 'b) => ('a => 'b) => 'a => 'b
+instantiation
+  set :: (times) times
+  times_set == times :: 'a set => 'a set => 'a set
+structure C_Scan:
+  sig
+    datatype ('a, 'b) either = Left of 'a | Right of 'b
+    val opt: ('a -> 'b list * 'a) -> 'a -> 'b list * 'a
+  end
+instantiation
+  fun :: (type, one) one
+  one_fun == one_class.one :: 'a => 'b
+structure C_Symbol:
+  sig
+    val is_ascii_blank_no_line: string -> bool
+    val is_ascii_digit1: string -> bool
+    val is_ascii_identifier: string -> bool
+    val is_ascii_letdig: string -> bool
+    val is_ascii_oct: string -> bool
+    val is_ascii_quasi: string -> bool
+    val is_identletter: string -> bool
+  end
+instantiation
+  set :: (zero) zero
+  zero_set == zero_class.zero :: 'a set
+structure C_Position: sig type reports_text = Position.report_text list end
+instantiation
+  set :: (one) one
+  one_set == one_class.one :: 'a set
+Found termination order: "(%p. size (snd p)) <*mlex*> {}"
+### theory "HOL-Library.Function_Algebras"
+### 0.118s elapsed time, 0.488s cpu time, 0.031s GC time
+Loading theory "HOL-Library.Tree" (required by "Draft.C_Lexer_AnnotationTemplates" via "Draft.ExtrEqs" via "Draft.Templates")
+structure C_Basic_Symbol_Pos:
+  sig
+    val $$ : string -> Symbol_Pos.T Symbol_Pos.scanner
+    val $$$ : string -> Symbol_Pos.T list Symbol_Pos.scanner
+    val many:
+       (string -> bool) ->
+         Symbol_Pos.T list -> Symbol_Pos.T list * Symbol_Pos.T list
+    val many1:
+       (string -> bool) ->
+         Symbol_Pos.T list -> Symbol_Pos.T list * Symbol_Pos.T list
+    val newline: Symbol_Pos.T list -> Symbol_Pos.T list * Symbol_Pos.T list
+    val one:
+       (string -> bool) ->
+         Symbol_Pos.T list -> Symbol_Pos.T * Symbol_Pos.T list
+    val one':
+       (string -> bool) ->
+         Symbol_Pos.T list -> Symbol_Pos.T list * Symbol_Pos.T list
+    val one_not_eof: Symbol_Pos.T list -> Symbol_Pos.T * Symbol_Pos.T list
+    val repeats_one_not_eof:
+       (Symbol_Pos.T list -> Symbol_Pos.T list * Symbol_Pos.T list) ->
+         Symbol_Pos.T list -> Symbol_Pos.T list * Symbol_Pos.T list
+    val repeats_until_nl:
+       Symbol_Pos.T list -> Symbol_Pos.T list * Symbol_Pos.T list
+    val scan_full:
+       ('a ->
+          ('b -> 'c) ->
+            Symbol_Pos.T list -> Symbol_Pos.T list * Symbol_Pos.T list)
+         ->
+         (string -> bool) ->
+           'a ->
+             ('d -> 'e * Symbol_Pos.T list) -> 'd -> 'e * Symbol_Pos.T list
+    val this_string:
+       string -> Symbol_Pos.T list -> Symbol_Pos.T list * Symbol_Pos.T list
+    val unless_eof:
+       (Symbol_Pos.T list -> 'a * Symbol_Pos.T list) ->
+         Symbol_Pos.T list -> Symbol_Pos.T list * Symbol_Pos.T list
+    val ~$$ : string -> Symbol_Pos.T Symbol_Pos.scanner
+    val ~$$$ : string -> Symbol_Pos.T list Symbol_Pos.scanner
+  end
+structure C_Symbol_Pos:
+  sig
+    val !!! : message -> 'a Symbol_Pos.scanner -> 'a Symbol_Pos.scanner
+    val !!!! :
+       (unit -> string) ->
+         ('a * (string * Position.T) list -> 'b) ->
+           'a * (string * Position.T) list -> 'b
+    val $$ : string -> Symbol_Pos.T Symbol_Pos.scanner
+    val $$$ : string -> Symbol_Pos.T list Symbol_Pos.scanner
+    val recover_comment:
+       Symbol_Pos.T list -> Symbol_Pos.T list * Symbol_Pos.T list
+    val scan_cartouche:
+       string ->
+         string ->
+           ((string * Position.T) list -> 'a * (string * Position.T) list)
+             -> Symbol_Pos.T list -> Symbol_Pos.T list * Symbol_Pos.T list
+    val scan_cartouche_depth:
+       ((string * Position.T) list -> 'a * (string * Position.T) list) ->
+         int option * Symbol_Pos.T list ->
+           Symbol_Pos.T list * (int option * Symbol_Pos.T list)
+    val scan_cartouche_inline:
+       string -> Symbol_Pos.T list -> Symbol_Pos.T list * Symbol_Pos.T list
+    val scan_cartouche_multi:
+       string ->
+         ((string * Position.T) list -> 'a * (string * Position.T) list) ->
+           Symbol_Pos.T list -> Symbol_Pos.T list * Symbol_Pos.T list
+    val scan_comment:
+       string -> Symbol_Pos.T list -> Symbol_Pos.T list * Symbol_Pos.T list
+    val scan_comment_no_nest:
+       string -> Symbol_Pos.T list -> Symbol_Pos.T list * Symbol_Pos.T list
+    val scan_string_bq_inline:
+       string ->
+         Symbol_Pos.T list ->
+           (Position.T * (Symbol_Pos.T list * Position.T)) *
+           Symbol_Pos.T list
+    val scan_string_bq_multi:
+       string ->
+         ((string * Position.T) list -> 'a * (string * Position.T) list) ->
+           Symbol_Pos.T list ->
+             (Position.T * (Symbol_Pos.T list * Position.T)) *
+             Symbol_Pos.T list
+    val scan_string_qq_inline:
+       string ->
+         Symbol_Pos.T list ->
+           (Position.T * (Symbol_Pos.T list * Position.T)) *
+           Symbol_Pos.T list
+    val scan_string_qq_multi:
+       string ->
+         ((string * Position.T) list -> 'a * (string * Position.T) list) ->
+           Symbol_Pos.T list ->
+             (Position.T * (Symbol_Pos.T list * Position.T)) *
+             Symbol_Pos.T list
+    val ~$$$ : string -> Symbol_Pos.T list Symbol_Pos.scanner
+  end
+### ML warning (line 323 of "$AFP/Isabelle_C/C11-FrontEnd/src/C_Lexer_Language.thy"):
+### Matches are not exhaustive.
+structure C_Antiquote:
+  sig
+    val $$ : string -> Symbol_Pos.T Symbol_Pos.scanner
+    val $$$ : string -> Symbol_Pos.T list Symbol_Pos.scanner
+    type antiq =
+       {body: Symbol_Pos.T list,
+        body_begin: Symbol_Pos.T list,
+        body_end: Symbol_Pos.T list,
+        explicit: bool,
+        range: Position.range, start: Position.T, stop: Position.T option}
+    val many:
+       (string -> bool) ->
+         Symbol_Pos.T list -> Symbol_Pos.T list * Symbol_Pos.T list
+    val many1:
+       (string -> bool) ->
+         Symbol_Pos.T list -> Symbol_Pos.T list * Symbol_Pos.T list
+    val newline: Symbol_Pos.T list -> Symbol_Pos.T list * Symbol_Pos.T list
+    val one:
+       (string -> bool) ->
+         Symbol_Pos.T list -> Symbol_Pos.T * Symbol_Pos.T list
+    val one':
+       (string -> bool) ->
+         Symbol_Pos.T list -> Symbol_Pos.T list * Symbol_Pos.T list
+    val one_not_eof: Symbol_Pos.T list -> Symbol_Pos.T * Symbol_Pos.T list
+    val repeats_one_not_eof:
+       (Symbol_Pos.T list -> Symbol_Pos.T list * Symbol_Pos.T list) ->
+         Symbol_Pos.T list -> Symbol_Pos.T list * Symbol_Pos.T list
+    val repeats_until_nl:
+       Symbol_Pos.T list -> Symbol_Pos.T list * Symbol_Pos.T list
+    val scan_antiq:
+       Symbol_Pos.T list ->
+         {body: Symbol_Pos.T list,
+          body_begin: Symbol_Pos.T list,
+          body_end: Symbol_Pos.T list,
+          explicit: bool,
+          range: Position.range, start: Position.T, stop: Position.T option}
+         *
+         Symbol_Pos.T list
+    val scan_antiq_recover: Symbol_Pos.T list -> bool * Symbol_Pos.T list
+    val scan_control:
+       Symbol_Pos.T list ->
+         {body: (string * Position.T) list,
+          name: string * Position.T, range: Position.range}
+         *
+         Symbol_Pos.T list
+    val scan_full:
+       ('a ->
+          ('b -> 'c) ->
+            Symbol_Pos.T list -> Symbol_Pos.T list * Symbol_Pos.T list)
+         ->
+         (string -> bool) ->
+           'a ->
+             ('d -> 'e * Symbol_Pos.T list) -> 'd -> 'e * Symbol_Pos.T list
+    val this_string:
+       string -> Symbol_Pos.T list -> Symbol_Pos.T list * Symbol_Pos.T list
+    val unless_eof:
+       (Symbol_Pos.T list -> 'a * Symbol_Pos.T list) ->
+         Symbol_Pos.T list -> Symbol_Pos.T list * Symbol_Pos.T list
+    val ~$$ : string -> Symbol_Pos.T Symbol_Pos.scanner
+    val ~$$$ : string -> Symbol_Pos.T list Symbol_Pos.scanner
+  end
+structure C_Options:
+  sig
+    val ML_verbose: bool Config.T
+    val lexer_trace: bool Config.T
+    val parser_trace: bool Config.T
+    val starting_env: string Config.T
+    val starting_rule: string Config.T
+  end
+Found termination order: "size_list size <*mlex*> {}"
+### theory "HOL-Library.Set_Algebras"
+### 0.280s elapsed time, 1.106s cpu time, 0.132s GC time
+Loading theory "HOL-Library.BigO" (required by "Draft.C_Lexer_AnnotationTemplates" via "Draft.ExtrEqs")
+### theory "HOL-Library.Nat_Bijection"
+### 0.343s elapsed time, 1.361s cpu time, 0.132s GC time
+Loading theory "HOL-Library.Stream" (required by "Draft.C_Lexer_AnnotationTemplates" via "Draft.ExtrEqs")
+structure C_Lex:
+  sig
+    val !!! : string -> 'a Symbol_Pos.scanner -> 'a Symbol_Pos.scanner
+    val !!!! :
+       string ->
+         ('a * (string * Position.T) list -> 'b) ->
+           'a * (string * Position.T) list -> 'b
+    val $$ : string -> Symbol_Pos.T Symbol_Pos.scanner
+    val $$$ : string -> Symbol_Pos.T list Symbol_Pos.scanner
+    val @@ :
+       ('a list * ('b -> 'c)) * ('a list * ('c -> 'd)) ->
+         'a list * ('b -> 'd)
+    val check: token list -> string list -> string list
+    val check_error: token -> string list
+    val content_of: token -> string
+    val directive_cmds: token_kind_directive -> token list
+    datatype ('a, 'b) either = Left of 'a | Right of 'b
+    val end_pos_of: token -> Position.T
+    val eof: token
+    val err_prefix: string
+    val group_list_of: token_kind_directive -> token_group list
+    val is_delimiter: token -> bool
+    val is_eof: token -> bool
+    val is_ident: token -> bool
+    val is_integer: token -> bool
+    val is_keyword: token -> bool
+    val keywords: string list
+    val keywords2: string list
+    val keywords3: string list
+    val keywords_ident: string list
+    val kind_of: token -> token_kind
+    val lexicon: Scan.lexicon
+    val many:
+       (string -> bool) ->
+         Symbol_Pos.T list -> Symbol_Pos.T list * Symbol_Pos.T list
+    val many1:
+       (string -> bool) ->
+         Symbol_Pos.T list -> Symbol_Pos.T list * Symbol_Pos.T list
+    val many1_blanks_no_line:
+       Symbol_Pos.T list -> Symbol_Pos.T list * Symbol_Pos.T list
+    val merge_blank:
+       token list ->
+         token list ->
+           token list ->
+             (Position.range * token list) * (Position.range * token list)
+    val mk_eof: Position.T -> token
+    val newline: Symbol_Pos.T list -> Symbol_Pos.T list * Symbol_Pos.T list
+    val one:
+       (string -> bool) ->
+         Symbol_Pos.T list -> Symbol_Pos.T * Symbol_Pos.T list
+    val one':
+       (string -> bool) ->
+         Symbol_Pos.T list -> Symbol_Pos.T list * Symbol_Pos.T list
+    val one_not_eof: token list -> token * token list
+    val opt: ('a -> 'b list * 'a) -> 'a -> 'b list * 'a
+    val pos_of: token -> Position.T
+    val range_list_of: token list -> Position.range * token list
+    val range_list_of': token list -> 'a -> Position.range * 'a
+    val range_list_of0: token list -> Position.range
+    val range_of: token -> Position.range
+    val read: string -> token list * (string list -> string list)
+    val read_bin: string list -> int
+    val read_dec: string list -> int
+    val read_hex: string list -> int
+    val read_init: 'a list * ('b -> 'b)
+    val read_oct: string list -> int
+    val read_source:
+       Input.source -> token list * (string list -> string list)
+    val read_source':
+       {language: bool -> Markup.T, symbols: bool} ->
+         (bool * (string * Position.T) list ->
+            token * (bool * (string * Position.T) list))
+           -> Input.source -> token list * (string list -> string list)
+    val recover_char:
+       Symbol_Pos.T list -> Symbol_Pos.T list * Symbol_Pos.T list
+    val recover_int:
+       Symbol_Pos.T list -> Symbol_Pos.T list * Symbol_Pos.T list
+    val recover_string:
+       Symbol_Pos.T list -> Symbol_Pos.T list * Symbol_Pos.T list
+    val repeats_one_not_eof:
+       (Symbol_Pos.T list -> Symbol_Pos.T list * Symbol_Pos.T list) ->
+         Symbol_Pos.T list -> Symbol_Pos.T list * Symbol_Pos.T list
+    val repeats_until_nl:
+       Symbol_Pos.T list -> Symbol_Pos.T list * Symbol_Pos.T list
+    val scan_blanks1:
+       Symbol_Pos.T list -> Symbol_Pos.T list * Symbol_Pos.T list
+    val scan_char:
+       Symbol_Pos.T list ->
+         (token_kind_encoding * (string, Position.range * int) either list)
+         *
+         Symbol_Pos.T list
+    val scan_clangversion:
+       Symbol_Pos.T list -> Symbol_Pos.T list * Symbol_Pos.T list
+    val scan_file: Symbol_Pos.T list -> token_kind * Symbol_Pos.T list
+    val scan_float:
+       Symbol_Pos.T list -> Symbol_Pos.T list * Symbol_Pos.T list
+    val scan_full:
+       ('a ->
+          ('b -> 'c) ->
+            Symbol_Pos.T list -> Symbol_Pos.T list * Symbol_Pos.T list)
+         ->
+         (string -> bool) ->
+           'a ->
+             ('d -> 'e * Symbol_Pos.T list) -> 'd -> 'e * Symbol_Pos.T list
+    val scan_ident:
+       Symbol_Pos.T list -> Symbol_Pos.T list * Symbol_Pos.T list
+    val scan_ident_sym:
+       Symbol_Pos.T list -> Symbol_Pos.T list * Symbol_Pos.T list
+    val scan_int:
+       Symbol_Pos.T list ->
+         (int * token_kind_int_repr * token_kind_int_flag list) *
+         Symbol_Pos.T list
+    val scan_string:
+       Symbol_Pos.T list ->
+         (token_kind_encoding * (string, Position.range * int) either list)
+         *
+         Symbol_Pos.T list
+    val scan_string': Symbol_Pos.T list -> string option
+    val set_range: Position.range -> token -> token
+    val stopper: token Scan.stopper
+    val this_string:
+       string -> Symbol_Pos.T list -> Symbol_Pos.T list * Symbol_Pos.T list
+    datatype token = Token of Position.range * (token_kind * string)
+    datatype token_group
+    =
+         Group1 of token list * token list
+       | Group2 of token list * token list * token list
+       | Group3 of
+           (Position.range * token list * token list * token list) *
+           (Position.range * token list)
+    datatype token_kind
+    =
+         Char of token_kind_string
+       | ClangC
+       | Comment of token_kind_comment
+       | Directive of token_kind_directive
+       | EOF
+       | Error of string * token_group
+       | File of token_kind_string
+       | Float of Symbol_Pos.T list
+       | GnuC
+       | Ident
+       | Integer of int * token_kind_int_repr * token_kind_int_flag list
+       | Keyword
+       | Sharp of int
+       | Space
+       | String of token_kind_string
+       | Type_ident
+       | Unknown
+    datatype token_kind_comment
+    =
+         Comment_formal of C_Antiquote.antiq
+       | Comment_suspicious of
+           (bool * string * ((Position.T * Markup.T) * string) list) option
+    datatype token_kind_directive
+    =
+         Conditional of
+             token_group * token_group list * token_group option *
+             token_group
+       | Cpp of token_group
+       | Define of
+           token_group * token_group * token_group option * token_group
+       | Include of token_group
+       | Inline of token_group
+       | Undef of token_group
+    datatype token_kind_encoding
+    = Encoding_L | Encoding_default | Encoding_file of string option
+    datatype token_kind_int_flag
+    = Flag_imag | Flag_long | Flag_long_long | Flag_unsigned
+    datatype token_kind_int_repr
+    = Repr_decimal | Repr_hexadecimal | Repr_octal
+    type token_kind_string =
+       token_kind_encoding * (string, Position.range * int) either list
+    val token_leq: token * token -> bool
+    val token_list_of: token_kind_directive -> token list
+    val token_report: token -> ((Position.T * Markup.T) * string) list
+    val unless_eof:
+       (Symbol_Pos.T list -> 'a * Symbol_Pos.T list) ->
+         Symbol_Pos.T list -> Symbol_Pos.T list * Symbol_Pos.T list
+    val warn: token -> unit
+    val ~$$ : string -> Symbol_Pos.T Symbol_Pos.scanner
+    val ~$$$ : string -> Symbol_Pos.T list Symbol_Pos.scanner
+  end
+### theory "Draft.C_Lexer_Language"
+### 0.593s elapsed time, 2.325s cpu time, 0.260s GC time
+Loading theory "Draft.C_Lexer_Annotation" (required by "Draft.C_Lexer_AnnotationTemplates")
+consts
+  left :: "'a tree => 'a tree"
+structure C_Keyword:
+  sig
+    val add_keywords:
+       ((string * Position.T) * ((string * string list) * string list)) list
+         -> keywords -> keywords
+    val add_keywords0:
+       ((string * Position.T) * bool *
+        ((string * string list) * string list)
+       )
+       list
+         -> keywords -> keywords
+    val add_keywords_minor:
+       ((string * Position.T) * ((string * string list) * string list)) list
+         -> keywords -> keywords
+    val check_spec:
+       Position.T -> (string * string list) * string list -> entry
+    val command_category: Symtab.key list -> keywords -> Symtab.key -> bool
+    val command_files: keywords -> Symtab.key -> Path.T -> Path.T list
+    val command_kinds: string list
+    val command_markup: keywords -> Symtab.key -> Markup.T option
+    val dest_commands: keywords -> Symtab.key list
+    val empty_keywords: keywords
+    val empty_keywords': Scan.lexicon -> keywords
+    type entry =
+       {files: string list,
+        id: serial, kind: string, pos: Position.T, tags: string list}
+    val is_command: keywords -> Symtab.key -> bool
+    val is_improper: keywords -> Symtab.key -> bool
+    val is_proof_asm: keywords -> Symtab.key -> bool
+    val is_theory_end: keywords -> Symtab.key -> bool
+    datatype keywords
+    =
+         Keywords of
+             {commands: entry Symtab.table,
+              major: Scan.lexicon, minor: Scan.lexicon}
+    val lookup_command: keywords -> Symtab.key -> entry option
+    val major_keywords: keywords -> Scan.lexicon
+    val make_keywords:
+       Scan.lexicon * Scan.lexicon * entry Symtab.table -> keywords
+    val map_keywords:
+       (Scan.lexicon * Scan.lexicon * entry Symtab.table ->
+          Scan.lexicon * Scan.lexicon * entry Symtab.table)
+         -> keywords -> keywords
+    val merge_keywords: keywords * keywords -> keywords
+    val minor_keywords: keywords -> Scan.lexicon
+  end
+consts
+  right :: "'a tree => 'a tree"
+Found termination order: "size <*mlex*> {}"
+consts
+  shift :: "'a list => 'a stream => 'a stream"
+Proofs for coinductive predicate(s) "streamsp"
+  Proving monotonicity ...
+Found termination order: "size <*mlex*> {}"
+### ML warning (line 374 of "$AFP/Isabelle_C/C11-FrontEnd/src/C_Lexer_Annotation.thy"):
+### Value identifier (Space) has not been referenced.
+### ML warning (line 375 of "$AFP/Isabelle_C/C11-FrontEnd/src/C_Lexer_Annotation.thy"):
+### Pattern 2 is redundant.
+### ML warning (line 377 of "$AFP/Isabelle_C/C11-FrontEnd/src/C_Lexer_Annotation.thy"):
+### Value identifier (Space) has not been referenced.
+### ML warning (line 378 of "$AFP/Isabelle_C/C11-FrontEnd/src/C_Lexer_Annotation.thy"):
+### Pattern 2 is redundant.
+### ML warning (line 380 of "$AFP/Isabelle_C/C11-FrontEnd/src/C_Lexer_Annotation.thy"):
+### Value identifier (Space) has not been referenced.
+### ML warning (line 381 of "$AFP/Isabelle_C/C11-FrontEnd/src/C_Lexer_Annotation.thy"):
+### Pattern 2 is redundant.
+structure C_Token:
+  sig
+    val !!! : string -> 'a Symbol_Pos.scanner -> 'a Symbol_Pos.scanner
+    val $$ : string -> Symbol_Pos.T Symbol_Pos.scanner
+    val $$$ : string -> Symbol_Pos.T list Symbol_Pos.scanner
+    datatype T
+    = Token of (string * Position.range) * (Token.kind * string) * slot
+    val adjust_offsets: (int -> int option) -> T -> T
+    val assign: value option -> T -> T
+    val closure: T -> T
+    val completion_report: T -> ((Position.T * Markup.T) * string) list
+    val content_of: T -> string
+    val content_of': T -> (string * Position.T) list
+    type 'a context_parser =
+       Context.generic * T list -> 'a * (Context.generic * T list)
+    val core_range_of: T list -> Position.range
+    val delimited_kind: Token.kind -> bool
+    val end_pos_of: T -> Position.T
+    val eof: T
+    val err_prefix: string
+    val evaluate: ('a -> value) -> (T -> 'a) -> T -> 'a
+    val explode: C_Keyword.keywords -> Position.T -> string -> T list
+    val explode0: C_Keyword.keywords -> string -> T list
+    val file_source: Token.file -> Input.source
+    val get_files: T -> Token.file Exn.result list
+    val ident_or_symbolic: string -> bool
+    val ident_with: (string -> bool) -> T -> bool
+    val immediate_kinds': Token.kind -> int
+    val init_assignable: T -> T
+    val inner_syntax_of: T -> string
+    val input_of: T -> Input.source
+    val is_begin_ignore: T -> bool
+    val is_blank: T -> bool
+    val is_command: T -> bool
+    val is_command_modifier: T -> bool
+    val is_comment: T -> bool
+    val is_document_marker: T -> bool
+    val is_end_ignore: T -> bool
+    val is_eof: T -> bool
+    val is_error: T -> bool
+    val is_error': T -> string option
+    val is_formal_comment: T -> bool
+    val is_ignored: T -> bool
+    val is_informal_comment: T -> bool
+    val is_kind: Token.kind -> T -> bool
+    val is_newline: T -> bool
+    val is_proper: T -> bool
+    val is_space: T -> bool
+    val is_stack1: T -> bool
+    val is_stack2: T -> bool
+    val is_stack3: T -> bool
+    val is_symid: string -> bool
+    val keyword_with: (string -> bool) -> T -> bool
+    val kind_of: T -> Token.kind
+    val make_source:
+       C_Keyword.keywords ->
+         {strict: bool} ->
+           (Symbol_Pos.T, 'a) Source.source ->
+             (T, (Symbol_Pos.T, 'a) Source.source) Source.source
+    val markups: C_Keyword.keywords -> T -> Markup.T list
+    val mk_eof: Position.T -> T
+    val not_eof: T -> bool
+    type 'a parser = T list -> 'a * T list
+    val pos_of: T -> Position.T
+    val put_files: Token.file Exn.result list -> T -> T
+    val range_of: T list -> Position.range
+    val read_antiq':
+       C_Keyword.keywords ->
+         (T list -> 'a * T list) ->
+           Symbol_Pos.T list ->
+             ('a, string * ((Position.T * Markup.T) * string) list * T)
+             C_Scan.either
+             list
+    val read_with_commands':
+       C_Keyword.keywords ->
+         (T list ->
+            ('a, string * ((Position.T * Markup.T) * string) list * T)
+            C_Scan.either
+            *
+            T list)
+           ->
+           Symbol_Pos.T list ->
+             ('a, string * ((Position.T * Markup.T) * string) list * T)
+             C_Scan.either
+             list
+    val read_with_commands'0:
+       C_Keyword.keywords -> Symbol_Pos.T list -> T list
+    val recover_verbatim:
+       Symbol_Pos.T list -> Symbol_Pos.T list * Symbol_Pos.T list
+    val reports:
+       C_Keyword.keywords -> T -> ((Position.T * Markup.T) * string) list
+    val scan_cartouche:
+       Symbol_Pos.T list ->
+         (Position.T * (Symbol_Pos.T list * Position.T)) * Symbol_Pos.T list
+    val scan_comment:
+       Symbol_Pos.T list ->
+         (Position.T * (Symbol_Pos.T list * Position.T)) * Symbol_Pos.T list
+    val scan_space:
+       (string * Position.T) list ->
+         (string * Position.T) list * Symbol_Pos.T list
+    val scan_stack:
+       (T -> bool) -> T list -> (string * Position.T) list * T list
+    val scan_symid:
+       Symbol_Pos.T list -> Symbol_Pos.T list * Symbol_Pos.T list
+    val scan_verb:
+       Symbol_Pos.T list -> Symbol_Pos.T list * Symbol_Pos.T list
+    val scan_verbatim:
+       Symbol_Pos.T list ->
+         (Position.T * (Symbol_Pos.T list * Position.T)) * Symbol_Pos.T list
+    datatype slot
+    = Assignable of value option ref | Slot | Value of value option
+    val source_of: T -> string
+    val space_symbol: string * 'a -> bool
+    type src = T list
+    val stopper: T Scan.stopper
+    val syntax':
+       (Token.T list -> 'a * Token.T list) -> T list -> 'a * T list
+    val text_of: T -> string * string
+    val tokenize:
+       C_Keyword.keywords -> {strict: bool} -> Symbol_Pos.T list -> T list
+    val unparse': T -> string
+    datatype value
+    =
+         Attribute of morphism -> attribute
+       | Declaration of declaration
+       | Fact of string option * thm list
+       | Files of Token.file Exn.result list
+       | Literal of bool * Markup.T
+       | Name of Token.name_value * morphism
+       | Source of T list
+       | Term of term
+       | Typ of typ
+    val ~$$ : string -> Symbol_Pos.T Symbol_Pos.scanner
+    val ~$$$ : string -> Symbol_Pos.T list Symbol_Pos.scanner
+  end
+type 'a c_parser = 'a C_Token.parser
+type 'a c_context_parser = 'a C_Token.context_parser
+consts
+  snth :: "'a stream => nat => 'a"
+Found termination order: "size <*mlex*> {}"
+consts
+  stake :: "nat => 'a stream => 'a list"
+consts
+  sdrop :: "nat => 'a stream => 'a stream"
+class height = type +
+  fixes height :: "'a => nat"
+instantiation
+  tree :: (type) height
+  height_tree == height :: 'a tree => nat
+consts
+  sfilter :: "('a => bool) => 'a stream => 'a stream"
+Found termination order: "size <*mlex*> {}"
+signature C_PARSE =
+  sig
+    val !!! : (T list -> 'a) -> T list -> 'a
+    val !!!! : (T list -> 'a) -> T list -> 'a
+    val $$$ : string -> string parser
+    val C_source: Input.source parser
+    val ML_source: Input.source parser
+    type T
+    val alt_string: string parser
+    val and_list: 'a parser -> 'a list parser
+    val and_list': 'a context_parser -> 'a list context_parser
+    val and_list1: 'a parser -> 'a list parser
+    val and_list1': 'a context_parser -> 'a list context_parser
+    val args: T list parser
+    val args1: (string -> bool) -> T list parser
+    val arity: (string * string list * string) parser
+    val attribs: src list parser
+    val begin: string parser
+    val binding: binding parser
+    val cartouche: string parser
+    val class: string parser
+    val command: string parser
+    val command_name: string -> string parser
+    val const: string parser
+    val const_binding: (binding * string * mixfix) parser
+    val const_decl: (string * string * mixfix) parser
+    type 'a context_parser =
+       Context.generic * T list -> 'a * (Context.generic * T list)
+    val document_marker: Input.source parser
+    val document_source: Input.source parser
+    val dots: string parser
+    val embedded: string parser
+    val embedded_input: Input.source parser
+    val embedded_position: (string * Position.T) parser
+    val enum: string -> 'a parser -> 'a list parser
+    val enum': string -> 'a context_parser -> 'a list context_parser
+    val enum1: string -> 'a parser -> 'a list parser
+    val enum1': string -> 'a context_parser -> 'a list context_parser
+    val enum1_positions:
+       string -> 'a parser -> ('a list * Position.T list) parser
+    val enum_positions:
+       string -> 'a parser -> ('a list * Position.T list) parser
+    val eof: string parser
+    val float_number: string parser
+    val for_fixes: (binding * string option * mixfix) list parser
+    val group: (unit -> string) -> (T list -> 'a) -> T list -> 'a
+    val inner_syntax: 'a parser -> string parser
+    val input: 'a parser -> Input.source parser
+    val int: int parser
+    val keyword: string parser
+    val keyword_improper: string -> string parser
+    val keyword_markup: bool * Markup.T -> string -> string parser
+    val keyword_with: (string -> bool) -> string parser
+    val liberal_name: string parser
+    val list: 'a parser -> 'a list parser
+    val list1: 'a parser -> 'a list parser
+    val literal_fact: string parser
+    val long_ident: string parser
+    val maybe: 'a parser -> 'a option parser
+    val maybe_position:
+       ('a * Position.T) parser -> ('a option * Position.T) parser
+    val minus: string parser
+    val mixfix: mixfix parser
+    val mixfix': mixfix parser
+    val multi_arity: (string list * string list * string) parser
+    val name: string parser
+    val name_position: (string * Position.T) parser
+    val name_range: (string * Position.range) parser
+    val nat: int parser
+    val not_eof: T parser
+    val number: string parser
+    val opt_attribs: src list parser
+    val opt_bang: bool parser
+    val opt_begin: bool parser
+    val opt_keyword: string -> bool parser
+    val opt_mixfix: mixfix parser
+    val opt_mixfix': mixfix parser
+    val opt_target: (string * Position.T) option parser
+    val options: ((string * Position.T) * (string * Position.T)) list parser
+    val params: (binding * string option * mixfix) list parser
+    val parbinding: binding parser
+    val parname: string parser
+    type 'a parser = T list -> 'a * T list
+    val path: string parser
+    val path_binding: (string * Position.T) parser
+    val position: 'a parser -> ('a * Position.T) parser
+    val private: Position.T parser
+    val prop: string parser
+    val propp: (string * string list) parser
+    val qualified: Position.T parser
+    val range: 'a parser -> ('a * Position.range) parser
+    val real: real parser
+    val reserved: string -> string parser
+    val session_name: (string * Position.T) parser
+    val short_ident: string parser
+    val sort: string parser
+    type src = T list
+    val star: string parser
+    val string: string parser
+    val string_position: (string * Position.T) parser
+    val sym_ident: string parser
+    val syntax_mode: Syntax.mode parser
+    val target: (string * Position.T) parser
+    val term: string parser
+    val term_var: string parser
+    val termp: (string * string list) parser
+    val text: string parser
+    val theory_name: (string * Position.T) parser
+    val thm: (Facts.ref * src list) parser
+    val thm_sel: Facts.interval list parser
+    val thms1: (Facts.ref * src list) list parser
+    val token: 'a parser -> T parser
+    val typ: string parser
+    val type_args: string list parser
+    val type_args_constrained: (string * string option) list parser
+    val type_const: string parser
+    val type_ident: string parser
+    val type_var: string parser
+    val underscore: string parser
+    val vars: (binding * string option * mixfix) list parser
+    val verbatim: string parser
+    val where_: string parser
+  end
+structure C_Parse: C_PARSE
+structure C_Parse_Native: C_PARSE
+consts
+  cycle :: "'a list => 'a stream"
+### ML warning (line 1409 of "$AFP/Isabelle_C/C11-FrontEnd/src/C_Lexer_Annotation.thy"):
+### Value identifier (extend) has not been referenced.
+structure C_Thy_Header:
+  sig
+    structure Data: THEORY_DATA
+    val add_keywords:
+       ((string * Position.T) * ((string * string list) * string list)) list
+         -> theory -> theory
+    val add_keywords_minor:
+       ((string * Position.T) * ((string * string list) * string list)) list
+         -> theory -> theory
+    val bootstrap_keywords: C_Keyword.keywords
+    val get_keywords: theory -> Data.T
+    val get_keywords': Proof.context -> Data.T
+  end
+### theory "Draft.C_Lexer_Annotation"
+### 0.551s elapsed time, 2.033s cpu time, 0.605s GC time
+Found termination order: "size <*mlex*> {}"
+consts
+  siterate :: "('a => 'a) => 'a => 'a stream"
+### theory "HOL-Library.BigO"
+### 1.004s elapsed time, 3.706s cpu time, 0.798s GC time
+consts
+  flat :: "'a list stream => 'a stream"
+Found termination order: "size <*mlex*> {}"
+consts
+  sinterleave :: "'a stream => 'a stream => 'a stream"
+consts
+  szip :: "'a stream => 'b stream => ('a * 'b) stream"
+Found termination order: "size <*mlex*> {}"
+consts
+  smap2 :: "('a => 'b => 'c) => 'a stream => 'b stream => 'c stream"
+### theory "HOL-Library.Stream"
+### 1.072s elapsed time, 3.727s cpu time, 0.798s GC time
+Found termination order: "size <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+Found termination order: "(%p. size (fst p)) <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+Found termination order: "(%p. size (snd p)) <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+### theory "HOL-Library.Tree"
+### 1.928s elapsed time, 5.333s cpu time, 1.003s GC time
+Loading theory "Draft.Templates" (required by "Draft.C_Lexer_AnnotationTemplates" via "Draft.ExtrEqs")
+datatype template_term
+=
+     t_empty
+   | template_app of template_term * template_term
+   | template_hole of int
+   | template_var of int
+datatype sign
+= equals | greater_equals | greater_than | less_equals | less_than
+datatype template
+=
+     template_bimplication of template * template
+   | template_dunno
+   | template_equation of template_term * template_term
+   | template_implication of template list * template
+   | template_inequation of sign * template_term * template_term
+   | template_negation of template
+   | template_predicate of template_term
+constructor t_empty: template_term
+constructor template_app: template_term * template_term -> template_term
+constructor template_hole: int -> template_term
+constructor template_var: int -> template_term
+constructor equals: sign
+constructor greater_equals: sign
+constructor greater_than: sign
+constructor less_equals: sign
+constructor less_than: sign
+constructor template_bimplication: template * template -> template
+constructor template_dunno: template
+constructor template_equation: template_term * template_term -> template
+constructor template_implication: template list * template -> template
+constructor template_inequation:
+   sign * template_term * template_term -> template
+constructor template_negation: template -> template
+constructor template_predicate: template_term -> template
+val vfs = fn: term -> (indexname * typ) list * (string * typ) list
+val indexOf = fn: ''a list -> ''a -> int -> int
+val has_eq = fn: term -> bool
+val term2template = fn:
+   (indexname * typ) list -> (string * typ) list -> term -> template_term
+val lemma2predicate = fn: term -> term -> template
+val makeTemplatewithContext = fn: term -> term -> template
+val lemma2template = fn: term -> template
+val thm2template = fn: thm -> template
+val tterm2string = fn: template_term -> string
+val template2string = fn: template -> string
+val t = "height ?t <= size ?t": thm
+val th =
+   Const ("HOL.Trueprop", "bool => prop") $
+     (Const ("Orderings.ord_class.less_eq", "nat => nat => bool") $
+       (Const ("Tree.height_class.height", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree")) $
+       (Const ("Nat.size_class.size", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree"))):
+   term
+### theory "Draft.Templates"
+### 0.050s elapsed time, 0.068s cpu time, 0.000s GC time
+Loading theory "Draft.ExtrEqs" (required by "Draft.C_Lexer_AnnotationTemplates")
+val eqpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Var (("_dummy_", 2), "?'a"))
+       ):
+   term Find_Theorems.criterion
+val badeqpattern = Pattern (Const ("Pure.eq", "?'a => ?'a => prop")):
+   term Find_Theorems.criterion
+val undefpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Const ("HOL.undefined", "?'a"))
+       ):
+   term Find_Theorems.criterion
+val thmpattern =
+   Pattern
+    (Const ("HOL.Trueprop", "bool => prop") $ Var (("_dummy_", 1), "bool")):
+   term Find_Theorems.criterion
+val badnames =
+   ["*nitpick*", "*Nitpick*", "*full_exhaustive*", "*_def*", "Enum.finite*",
+    "*Quickcheck*", "ATP*", "*Nunchaku*", "*Code*", "*BNF*", "*SMT*",
+    "*.*.*"]:
+   string list
+val unwanted_names =
+   [(false, Name "*nitpick*"), (false, Name "*Nitpick*"),
+    (false, Name "*full_exhaustive*"), (false, Name "*_def*"),
+    (false, Name "Enum.finite*"), (false, Name "*Quickcheck*"),
+    (false, Name "ATP*"), (false, Name "*Nunchaku*"),
+    (false, Name "*Code*"), (false, Name "*BNF*"), (false, Name "*SMT*"),
+    (false, Name "*.*.*")]:
+   (bool * term Find_Theorems.criterion) list
+val has_vars = fn: term -> bool
+val get_all_eqs = fn: string -> Proof.context -> (string * thm) list
+val get_all_thms = fn: string -> Proof.context -> (string * thm) list
+val get_noneq_thms = fn: string -> Proof.context -> (string * thm) list
+val template_eqs = fn:
+   string -> Proof.context -> (string * thm * template) list
+val template_thms = fn:
+   string -> Proof.context -> (string * thm * template) list
+### theory "Draft.ExtrEqs"
+### 0.488s elapsed time, 0.532s cpu time, 0.054s GC time
+Loading theory "Draft.C_Lexer_AnnotationTemplates"
+val templateLemmas = []: (string * thm * template) list
+### theory "Draft.C_Lexer_AnnotationTemplates"
+### 0.265s elapsed time, 0.337s cpu time, 0.000s GC time
+val it = (): unit

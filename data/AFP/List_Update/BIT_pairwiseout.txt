@@ -1,0 +1,479 @@
+Loading theory "HOL-Library.Function_Algebras" (required by "Draft.BIT_pairwiseTemplates" via "Draft.ExtrEqs" via "HOL-Library.BigO")
+Loading theory "Draft.On_Off" (required by "Draft.BIT_pairwiseTemplates" via "Draft.BIT_pairwise" via "Draft.List_Factoring" via "Draft.Partial_Cost_Model" via "Draft.Move_to_Front")
+Loading theory "Draft.Templates" (required by "Draft.BIT_pairwiseTemplates" via "Draft.ExtrEqs")
+Loading theory "Draft.Bit_Strings" (required by "Draft.BIT_pairwiseTemplates" via "Draft.BIT_pairwise" via "Draft.BIT")
+instantiation
+  fun :: (type, plus) plus
+  plus_fun == plus :: ('a => 'b) => ('a => 'b) => 'a => 'b
+locale On_Off
+  fixes step :: "'state => 'request => 'answer => 'state"
+    and t :: "'state => 'request => 'answer => nat"
+    and wf :: "'state => 'request list => bool"
+### Missing patterns in function definition:
+### !!a v va. T a (v # va) [] = undefined
+### !!a v va. T a [] (v # va) = undefined
+instantiation
+  fun :: (type, zero) zero
+  zero_fun == zero_class.zero :: 'a => 'b
+instantiation
+  fun :: (type, times) times
+  times_fun == times :: ('a => 'b) => ('a => 'b) => 'a => 'b
+instantiation
+  fun :: (type, one) one
+  one_fun == one_class.one :: 'a => 'b
+datatype template_term
+=
+     t_empty
+   | template_app of template_term * template_term
+   | template_hole of int
+   | template_var of int
+datatype sign
+= equals | greater_equals | greater_than | less_equals | less_than
+datatype template
+=
+     template_bimplication of template * template
+   | template_dunno
+   | template_equation of template_term * template_term
+   | template_implication of template list * template
+   | template_inequation of sign * template_term * template_term
+   | template_negation of template
+   | template_predicate of template_term
+constructor t_empty: template_term
+constructor template_app: template_term * template_term -> template_term
+constructor template_hole: int -> template_term
+constructor template_var: int -> template_term
+constructor equals: sign
+constructor greater_equals: sign
+constructor greater_than: sign
+constructor less_equals: sign
+constructor less_than: sign
+constructor template_bimplication: template * template -> template
+constructor template_dunno: template
+constructor template_equation: template_term * template_term -> template
+constructor template_implication: template list * template -> template
+constructor template_inequation:
+   sign * template_term * template_term -> template
+constructor template_negation: template -> template
+constructor template_predicate: template_term -> template
+val vfs = fn: term -> (indexname * typ) list * (string * typ) list
+val indexOf = fn: ''a list -> ''a -> int -> int
+val has_eq = fn: term -> bool
+val term2template = fn:
+   (indexname * typ) list -> (string * typ) list -> term -> template_term
+val lemma2predicate = fn: term -> term -> template
+val makeTemplatewithContext = fn: term -> term -> template
+val lemma2template = fn: term -> template
+val thm2template = fn: thm -> template
+val tterm2string = fn: template_term -> string
+val template2string = fn: template -> string
+val t = "height ?t <= size ?t": thm
+val th =
+   Const ("HOL.Trueprop", "bool => prop") $
+     (Const ("Orderings.ord_class.less_eq", "nat => nat => bool") $
+       (Const ("Tree.height_class.height", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree")) $
+       (Const ("Nat.size_class.size", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree"))):
+   term
+### theory "Draft.Templates"
+### 0.089s elapsed time, 0.388s cpu time, 0.000s GC time
+Loading theory "Draft.Prob_Theory" (required by "Draft.BIT_pairwiseTemplates" via "Draft.BIT_pairwise" via "Draft.List_Factoring" via "Draft.Partial_Cost_Model" via "Draft.Move_to_Front" via "Draft.Competitive_Analysis")
+Found termination order: "(%p. size (snd p)) <*mlex*> {}"
+### theory "HOL-Library.Function_Algebras"
+### 0.150s elapsed time, 0.600s cpu time, 0.038s GC time
+Loading theory "HOL-Library.BigO" (required by "Draft.BIT_pairwiseTemplates" via "Draft.ExtrEqs")
+### theory "Draft.Bit_Strings"
+### 0.155s elapsed time, 0.616s cpu time, 0.038s GC time
+Loading theory "Draft.Inversion" (required by "Draft.BIT_pairwiseTemplates" via "Draft.BIT_pairwise" via "Draft.List_Factoring" via "Draft.Partial_Cost_Model" via "Draft.Move_to_Front" via "Draft.Swaps")
+Found termination order: "(%p. length (snd (snd p))) <*mlex*> {}"
+### theory "Draft.Inversion"
+### 0.055s elapsed time, 0.228s cpu time, 0.000s GC time
+Loading theory "Draft.Swaps" (required by "Draft.BIT_pairwiseTemplates" via "Draft.BIT_pairwise" via "Draft.List_Factoring" via "Draft.Partial_Cost_Model" via "Draft.Move_to_Front")
+Found termination order: "(%p. length (snd (snd p))) <*mlex*> {}"
+### theory "Draft.Swaps"
+### 0.120s elapsed time, 0.455s cpu time, 0.083s GC time
+Found termination order: "size <*mlex*> {}"
+Found termination order: "(%p. length (snd (snd p))) <*mlex*> {}"
+Found termination order: "(%p. length (snd p)) <*mlex*> {}"
+Found termination order: "(%p. length (snd (snd p))) <*mlex*> {}"
+[| finite ?A; !!a. [| a : set_pmf ?M; ?f a ~= (0::?'b) |] ==> a : ?A |]
+==> measure_pmf.expectation ?M ?f = (SUM a:?A. pmf ?M a *\<^sub>R ?f a)
+set_pmf ?p Int ?s ~= {} ==>
+pmf (cond_pmf ?p ?s) ?x =
+(if ?x : ?s then pmf ?p ?x / measure_pmf.prob ?p ?s else 0)
+[| 0 < ?p1; ?p1 < 1 |]
+==> pmf (cond_pmf
+          (bernoulli_pmf ?p1 >>=
+           (%b. if b then map_pmf Inl ?Da1 else map_pmf Inr ?Db1))
+          {f. EX e. Inl e = f})
+     ?x =
+    (if ?x : {f. EX e. Inl e = f}
+     then pmf (bernoulli_pmf ?p1 >>=
+               (%b. if b then map_pmf Inl ?Da1 else map_pmf Inr ?Db1))
+           ?x /
+          measure_pmf.prob
+           (bernoulli_pmf ?p1 >>=
+            (%b. if b then map_pmf Inl ?Da1 else map_pmf Inr ?Db1))
+           {f. EX e. Inl e = f}
+     else 0)
+"%a. case a of Inl e => Inl (fa e) | Inr e => Inr (fb e)"
+  :: "'a + 'b => 'c + 'd"
+"(>>=)"
+  :: "'a pmf => ('a => 'b pmf) => 'b pmf"
+### theory "Draft.Prob_Theory"
+### 0.536s elapsed time, 1.841s cpu time, 0.152s GC time
+### theory "Draft.On_Off"
+### 0.651s elapsed time, 2.302s cpu time, 0.190s GC time
+Loading theory "Draft.Competitive_Analysis" (required by "Draft.BIT_pairwiseTemplates" via "Draft.BIT_pairwise" via "Draft.List_Factoring" via "Draft.Partial_Cost_Model" via "Draft.Move_to_Front")
+### theory "HOL-Library.BigO"
+### 0.721s elapsed time, 2.131s cpu time, 0.213s GC time
+Loading theory "Draft.ExtrEqs" (required by "Draft.BIT_pairwiseTemplates")
+locale On_Off
+  fixes step :: "'state => 'request => 'answer => 'state"
+    and t :: "'state => 'request => 'answer => nat"
+    and wf :: "'state => 'request list => bool"
+### Missing patterns in function definition:
+### !!a v va. steps a (v # va) [] = undefined
+### !!a v va. steps a [] (v # va) = undefined
+Found termination order: "(%p. length (snd (snd p))) <*mlex*> {}"
+Found termination order: "(%p. length (snd (snd p))) <*mlex*> {}"
+val eqpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Var (("_dummy_", 2), "?'a"))
+       ):
+   term Find_Theorems.criterion
+val badeqpattern = Pattern (Const ("Pure.eq", "?'a => ?'a => prop")):
+   term Find_Theorems.criterion
+val undefpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Const ("HOL.undefined", "?'a"))
+       ):
+   term Find_Theorems.criterion
+val thmpattern =
+   Pattern
+    (Const ("HOL.Trueprop", "bool => prop") $ Var (("_dummy_", 1), "bool")):
+   term Find_Theorems.criterion
+val badnames =
+   ["*nitpick*", "*Nitpick*", "*full_exhaustive*", "*_def*", "Enum.finite*",
+    "*Quickcheck*", "ATP*", "*Nunchaku*", "*Code*", "*BNF*", "*SMT*",
+    "*.*.*"]:
+   string list
+val unwanted_names =
+   [(false, Name "*nitpick*"), (false, Name "*Nitpick*"),
+    (false, Name "*full_exhaustive*"), (false, Name "*_def*"),
+    (false, Name "Enum.finite*"), (false, Name "*Quickcheck*"),
+    (false, Name "ATP*"), (false, Name "*Nunchaku*"),
+    (false, Name "*Code*"), (false, Name "*BNF*"), (false, Name "*SMT*"),
+    (false, Name "*.*.*")]:
+   (bool * term Find_Theorems.criterion) list
+val has_vars = fn: term -> bool
+val get_all_eqs = fn: string -> Proof.context -> (string * thm) list
+val get_all_thms = fn: string -> Proof.context -> (string * thm) list
+val get_noneq_thms = fn: string -> Proof.context -> (string * thm) list
+val template_eqs = fn:
+   string -> Proof.context -> (string * thm * template) list
+val template_thms = fn:
+   string -> Proof.context -> (string * thm * template) list
+### theory "Draft.ExtrEqs"
+### 0.627s elapsed time, 1.450s cpu time, 0.483s GC time
+Found termination order: "(%p. length (snd (snd p))) <*mlex*> {}"
+Found termination order: "{}"
+### theory "Draft.Competitive_Analysis"
+### 1.137s elapsed time, 2.253s cpu time, 0.574s GC time
+Loading theory "Draft.Move_to_Front" (required by "Draft.BIT_pairwiseTemplates" via "Draft.BIT_pairwise" via "Draft.List_Factoring" via "Draft.Partial_Cost_Model")
+?A Int set ?xs = set (filter (%x. x : ?A) ?xs)
+locale MTF_Off
+  fixes as :: "(nat * nat list) list"
+    and rs :: "'a list"
+    and s0 :: "'a list"
+  assumes "MTF_Off as rs s0"
+Found termination order: "size <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+Found termination order: "(%p. length (snd (snd p))) <*mlex*> {}"
+Found termination order: "(%p. length (snd p)) <*mlex*> {}"
+Found termination order: "(%p. size (snd (snd p))) <*mlex*> {}"
+### theory "Draft.Move_to_Front"
+### 2.346s elapsed time, 2.621s cpu time, 0.382s GC time
+Loading theory "Draft.MTF2_Effects" (required by "Draft.BIT_pairwiseTemplates" via "Draft.BIT_pairwise" via "Draft.List_Factoring")
+Loading theory "Draft.Partial_Cost_Model" (required by "Draft.BIT_pairwiseTemplates" via "Draft.BIT_pairwise" via "Draft.List_Factoring")
+"mtf2"
+  :: "nat => 'a => 'a list => 'a list"
+### theory "Draft.MTF2_Effects"
+### 0.474s elapsed time, 1.287s cpu time, 0.798s GC time
+Loading theory "Draft.BIT" (required by "Draft.BIT_pairwiseTemplates" via "Draft.BIT_pairwise")
+### theory "Draft.Partial_Cost_Model"
+### 0.898s elapsed time, 2.221s cpu time, 0.993s GC time
+Loading theory "Draft.List_Factoring" (required by "Draft.BIT_pairwiseTemplates" via "Draft.BIT_pairwise")
+Found termination order: "{}"
+### Missing patterns in function definition:
+### !!a va vb v. steps' a (va # vb) [] (Suc v) = undefined
+### !!a va vb v. steps' a [] (va # vb) (Suc v) = undefined
+Found termination order: "(%p. size (snd (snd (snd p)))) <*mlex*> {}"
+"config'_rand BIT s0 qs"
+  :: "('a list * bool list * 'a list) pmf"
+locale BIT_Off
+  fixes acts :: "(nat * nat list) list"
+    and qs :: "'a list"
+    and init :: "'a list"
+  assumes "BIT_Off acts qs init"
+Found termination order: "size <*mlex*> {}"
+Found termination order: "(%p. size_list size (fst p)) <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+"%i. ALG'_det Strat (A @ [b]) init i y"
+  :: "nat => nat"
+Found termination order: "(%p. size (snd p)) <*mlex*> {}"
+### Ignoring duplicate rewrite rule:
+### distinct init == True
+### theory "Draft.List_Factoring"
+### 1.613s elapsed time, 3.869s cpu time, 1.467s GC time
+Found termination order: "{}"
+"Inv"
+  :: "'b list => 'b list => ('b * 'b) set"
+### theory "Draft.BIT"
+### 2.313s elapsed time, 5.063s cpu time, 1.662s GC time
+Loading theory "Draft.BIT_pairwise" (required by "Draft.BIT_pairwiseTemplates")
+### theory "Draft.BIT_pairwise"
+### 0.422s elapsed time, 0.485s cpu time, 0.070s GC time
+Loading theory "Draft.BIT_pairwiseTemplates"
+val templateLemmas =
+   [("BIT_pairwise.nths_map", "map ?f (nths ?xs ?S) = nths (map ?f ?xs) ?S",
+     template_equation
+      (template_app
+        (template_app (template_hole 2, template_var 2),
+         template_app
+          (template_app (template_hole 1, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 0,
+           template_app
+            (template_app (template_hole 2, template_var 2),
+             template_var 1)),
+         template_var 0))),
+    ("BIT_pairwise.nths_empty",
+     "ALL i:?S. length ?xs <= i ==> nths ?xs ?S = []",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 5, template_var 1), t_empty)
+            )],
+       template_equation
+        (template_app
+          (template_app (template_hole 1, template_var 0), template_var 1),
+         template_hole 0))),
+    ("BIT_pairwise.L_nths",
+     "?S <= {..<length ?init} ==>
+      map_pmf (%l. nths l ?S) (bv (length ?init)) =
+      bv (length (nths ?init ?S))",
+     template_implication
+      ([template_inequation
+         (less_equals, template_var 1,
+          template_app
+           (template_hole 6,
+            template_app (template_hole 5, template_var 0)))],
+       template_equation
+        (template_app
+          (template_app (template_hole 3, t_empty),
+           template_app
+            (template_hole 1,
+             template_app (template_hole 5, template_var 0))),
+         template_app
+          (template_hole 1,
+           template_app
+            (template_hole 5,
+             template_app
+              (template_app (template_hole 0, template_var 0),
+               template_var 1)))))),
+    ("BIT_pairwise.nths_project'",
+     "[| ?i < length ?xs; ?j < length ?xs; ?i < ?j |]
+      ==> nths ?xs {?i, ?j} = [?xs ! ?i, ?xs ! ?j]",
+     template_implication
+      ([template_inequation
+         (less_than, template_var 2,
+          template_app (template_hole 7, template_var 1)),
+        template_inequation
+         (less_than, template_var 0,
+          template_app (template_hole 7, template_var 1)),
+        template_inequation (less_than, template_var 2, template_var 0)],
+       template_equation
+        (template_app
+          (template_app (template_hole 5, template_var 1),
+           template_app
+            (template_app (template_hole 4, template_var 2),
+             template_app
+              (template_app (template_hole 4, template_var 0),
+               template_hole 3))),
+         template_app
+          (template_app
+            (template_hole 2,
+             template_app
+              (template_app (template_hole 1, template_var 1),
+               template_var 2)),
+           template_app
+            (template_app
+              (template_hole 2,
+               template_app
+                (template_app (template_hole 1, template_var 1),
+                 template_var 0)),
+             template_hole 0))))),
+    ("BIT_pairwise.nths_project",
+     "[| ?i < length ?xs; ?j < length ?xs; ?i < ?j |]
+      ==> nths ?xs {?i, ?j} ! 0 = ?xs ! ?i &
+          nths ?xs {?i, ?j} ! 1 = ?xs ! ?j",
+     template_implication
+      ([template_inequation
+         (less_than, template_var 2,
+          template_app (template_hole 8, template_var 1)),
+        template_inequation
+         (less_than, template_var 0,
+          template_app (template_hole 8, template_var 1)),
+        template_inequation (less_than, template_var 2, template_var 0)],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 7,
+               template_app
+                (template_app
+                  (template_hole 6,
+                   template_app
+                    (template_app
+                      (template_hole 5,
+                       template_app
+                        (template_app (template_hole 4, template_var 1),
+                         template_app
+                          (template_app (template_hole 3, template_var 2),
+                           template_app
+                            (template_app (template_hole 3, template_var 0),
+                             template_hole 2)))),
+                     template_hole 1)),
+                 template_app
+                  (template_app (template_hole 5, template_var 1),
+                   template_var 2))),
+             template_app
+              (template_app
+                (template_hole 6,
+                 template_app
+                  (template_app
+                    (template_hole 5,
+                     template_app
+                      (template_app (template_hole 4, template_var 1),
+                       template_app
+                        (template_app (template_hole 3, template_var 2),
+                         template_app
+                          (template_app (template_hole 3, template_var 0),
+                           template_hole 2)))),
+                   template_hole 0)),
+               template_app
+                (template_app (template_hole 5, template_var 1),
+                 template_var 0)))
+           ))),
+    ("BIT_pairwise.L_nths_Lxy",
+     "[| ?x : set ?init; ?y : set ?init; ?x ~= ?y; distinct ?init |]
+      ==> map_pmf (%l. nths l {index ?init ?x, index ?init ?y})
+           (bv (length ?init)) =
+          bv (length (Lxy ?init {?x, ?y}))",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 15, template_var 2),
+              template_app (template_hole 14, template_var 1))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 15, template_var 0),
+              template_app (template_hole 14, template_var 1))
+            ),
+        template_negation
+         (template_equation (template_var 2, template_var 0)),
+        template_predicate
+         (template_app (template_hole 11, template_var 1))],
+       template_equation
+        (template_app
+          (template_app (template_hole 9, t_empty),
+           template_app
+            (template_hole 4,
+             template_app (template_hole 3, template_var 1))),
+         template_app
+          (template_hole 4,
+           template_app
+            (template_hole 3,
+             template_app
+              (template_app (template_hole 2, template_var 1),
+               template_app
+                (template_app (template_hole 1, template_var 2),
+                 template_app
+                  (template_app (template_hole 1, template_var 0),
+                   template_hole 0)))))))),
+    ("BIT_pairwise.BIT_pairwise'",
+     "[| set ?qs <= set ?init;
+         (?x, ?y) : {(x, y). x : set ?init & y : set ?init & x ~= y};
+         ?x ~= ?y; distinct ?init |]
+      ==> Pbefore_in ?x ?y BIT ?qs ?init =
+          Pbefore_in ?x ?y BIT (Lxy ?qs {?x, ?y}) (Lxy ?init {?x, ?y})",
+     template_implication
+      ([template_inequation
+         (less_equals, template_app (template_hole 17, template_var 3),
+          template_app (template_hole 17, template_var 2)),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 16,
+                template_app
+                 (template_app (template_hole 15, template_var 1),
+                  template_var 0)),
+              template_app
+               (template_hole 14, template_app (template_hole 13, t_empty)))
+            ),
+        template_negation
+         (template_equation (template_var 1, template_var 0)),
+        template_predicate
+         (template_app (template_hole 8, template_var 2))],
+       template_equation
+        (template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 6, template_var 1),
+                 template_var 0),
+               template_app
+                (template_app (template_hole 5, template_hole 4),
+                 template_hole 3)),
+             template_var 3),
+           template_var 2),
+         template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 6, template_var 1),
+                 template_var 0),
+               template_app
+                (template_app (template_hole 5, template_hole 4),
+                 template_hole 3)),
+             template_app
+              (template_app (template_hole 2, template_var 3),
+               template_app
+                (template_app (template_hole 1, template_var 1),
+                 template_app
+                  (template_app (template_hole 1, template_var 0),
+                   template_hole 0)))),
+           template_app
+            (template_app (template_hole 2, template_var 2),
+             template_app
+              (template_app (template_hole 1, template_var 1),
+               template_app
+                (template_app (template_hole 1, template_var 0),
+                 template_hole 0)))))))]:
+   (string * thm * template) list
+### theory "Draft.BIT_pairwiseTemplates"
+### 1.328s elapsed time, 1.784s cpu time, 0.331s GC time
+val it = (): unit

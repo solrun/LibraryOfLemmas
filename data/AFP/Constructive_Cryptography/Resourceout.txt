@@ -1,0 +1,1393 @@
+Loading theory "HOL-Library.BigO" (required by "Draft.ResourceTemplates" via "Draft.ExtrEqs")
+Loading theory "Draft.Resource" (required by "Draft.ResourceTemplates")
+Loading theory "Draft.Templates" (required by "Draft.ResourceTemplates" via "Draft.ExtrEqs")
+datatype template_term
+=
+     t_empty
+   | template_app of template_term * template_term
+   | template_hole of int
+   | template_var of int
+datatype sign
+= equals | greater_equals | greater_than | less_equals | less_than
+datatype template
+=
+     template_bimplication of template * template
+   | template_dunno
+   | template_equation of template_term * template_term
+   | template_implication of template list * template
+   | template_inequation of sign * template_term * template_term
+   | template_negation of template
+   | template_predicate of template_term
+constructor t_empty: template_term
+constructor template_app: template_term * template_term -> template_term
+constructor template_hole: int -> template_term
+constructor template_var: int -> template_term
+constructor equals: sign
+constructor greater_equals: sign
+constructor greater_than: sign
+constructor less_equals: sign
+constructor less_than: sign
+constructor template_bimplication: template * template -> template
+constructor template_dunno: template
+constructor template_equation: template_term * template_term -> template
+constructor template_implication: template list * template -> template
+constructor template_inequation:
+   sign * template_term * template_term -> template
+constructor template_negation: template -> template
+constructor template_predicate: template_term -> template
+val vfs = fn: term -> (indexname * typ) list * (string * typ) list
+val indexOf = fn: ''a list -> ''a -> int -> int
+val has_eq = fn: term -> bool
+val term2template = fn:
+   (indexname * typ) list -> (string * typ) list -> term -> template_term
+val lemma2predicate = fn: term -> term -> template
+val makeTemplatewithContext = fn: term -> term -> template
+val lemma2template = fn: term -> template
+val thm2template = fn: thm -> template
+val tterm2string = fn: template_term -> string
+val template2string = fn: template -> string
+val t = "height ?t <= size ?t": thm
+val th =
+   Const ("HOL.Trueprop", "bool => prop") $
+     (Const ("Orderings.ord_class.less_eq", "nat => nat => bool") $
+       (Const ("Tree.height_class.height", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree")) $
+       (Const ("Nat.size_class.size", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree"))):
+   term
+### theory "Draft.Templates"
+### 0.093s elapsed time, 0.316s cpu time, 0.000s GC time
+### theory "HOL-Library.BigO"
+### 0.664s elapsed time, 1.489s cpu time, 0.113s GC time
+Loading theory "Draft.ExtrEqs" (required by "Draft.ResourceTemplates")
+consts
+  map_resource :: "('a', 'b) resource => ('a, 'b') resource"
+Proofs for coinductive predicate(s) "rel_resource"
+  Proving monotonicity ...
+Proofs for coinductive predicate(s) "lossless_resource"
+  Proving monotonicity ...
+consts
+  resource_of_oracle :: "'s => ('a, 'b) resource"
+consts
+  parallel_resource ::
+    "('a, 'b) resource => ('c, 'd) resource => ('a + 'c, 'b + 'd) resource"
+val eqpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Var (("_dummy_", 2), "?'a"))
+       ):
+   term Find_Theorems.criterion
+val badeqpattern = Pattern (Const ("Pure.eq", "?'a => ?'a => prop")):
+   term Find_Theorems.criterion
+val undefpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Const ("HOL.undefined", "?'a"))
+       ):
+   term Find_Theorems.criterion
+val thmpattern =
+   Pattern
+    (Const ("HOL.Trueprop", "bool => prop") $ Var (("_dummy_", 1), "bool")):
+   term Find_Theorems.criterion
+val badnames =
+   ["*nitpick*", "*Nitpick*", "*full_exhaustive*", "*_def*", "Enum.finite*",
+    "*Quickcheck*", "ATP*", "*Nunchaku*", "*Code*", "*BNF*", "*SMT*",
+    "*.*.*"]:
+   string list
+val unwanted_names =
+   [(false, Name "*nitpick*"), (false, Name "*Nitpick*"),
+    (false, Name "*full_exhaustive*"), (false, Name "*_def*"),
+    (false, Name "Enum.finite*"), (false, Name "*Quickcheck*"),
+    (false, Name "ATP*"), (false, Name "*Nunchaku*"),
+    (false, Name "*Code*"), (false, Name "*BNF*"), (false, Name "*SMT*"),
+    (false, Name "*.*.*")]:
+   (bool * term Find_Theorems.criterion) list
+val has_vars = fn: term -> bool
+val get_all_eqs = fn: string -> Proof.context -> (string * thm) list
+val get_all_thms = fn: string -> Proof.context -> (string * thm) list
+val get_noneq_thms = fn: string -> Proof.context -> (string * thm) list
+val template_eqs = fn:
+   string -> Proof.context -> (string * thm * template) list
+val template_thms = fn:
+   string -> Proof.context -> (string * thm * template) list
+### theory "Draft.ExtrEqs"
+### 0.513s elapsed time, 1.053s cpu time, 0.104s GC time
+Proofs for coinductive predicate(s) "WT_resource"
+  Proving monotonicity ...
+### theory "Draft.Resource"
+### 1.442s elapsed time, 2.838s cpu time, 0.217s GC time
+Loading theory "Draft.ResourceTemplates"
+val templateLemmas =
+   [("Resource.WT_resource_full", "\<I>_full \<turnstile>res ?res \<surd>",
+     template_predicate
+      (
+         template_app
+          (template_app (template_hole 1, template_hole 0), template_var 0)
+         )),
+    ("Resource.WT_resource_bot", "\<bottom> \<turnstile>res ?res \<surd>",
+     template_predicate
+      (
+         template_app
+          (template_app (template_hole 1, template_hole 0), template_var 0)
+         )),
+    ("Resource.map_resource_id", "map_resource id id ?res = ?res",
+     template_equation
+      (template_app
+        (template_app
+          (template_app (template_hole 2, template_hole 1),
+           template_hole 0),
+         template_var 0),
+       template_var 0)),
+    ("Resource.callee_invariant_run_resource",
+     "callee_invariant_on run_resource (WT_resource ?\<I>) ?\<I>",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_app (template_hole 2, template_hole 1), t_empty),
+           template_var 0)
+         )),
+    ("Resource.case_resource_conv_run_resource",
+     "(case ?res of Resource x => ?f x) = ?f (run_resource ?res)",
+     template_equation
+      (template_app
+        (template_app (template_hole 1, template_var 1), template_var 0),
+       template_app
+        (template_var 1, template_app (template_hole 0, template_var 0)))),
+    ("Resource.map_resource_id1",
+     "map_resource id ?f ?res = map_resource' ?f ?res",
+     template_equation
+      (template_app
+        (template_app
+          (template_app (template_hole 2, template_hole 1), template_var 1),
+         template_var 0),
+       template_app
+        (template_app (template_hole 0, template_var 1), template_var 0))),
+    ("Resource.rel_resource_conversep",
+     "rel_resource ?A^--1 ?B^--1 = (rel_resource ?A ?B)^--1",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 4, template_app (template_hole 3, template_var 1)),
+         template_app (template_hole 2, template_var 0)),
+       template_app
+        (template_hole 1,
+         template_app
+          (template_app (template_hole 0, template_var 1),
+           template_var 0)))),
+    ("Resource.resource_of_oracle_extend_state_oracle",
+     "resource_of_oracle \<dagger>?oracle (?s', ?s) =
+      resource_of_oracle ?oracle ?s",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 3, template_app (template_hole 2, template_var 2)),
+         template_app
+          (template_app (template_hole 1, template_var 1), template_var 0)),
+       template_app
+        (template_app (template_hole 0, template_var 2), template_var 0))),
+    ("Resource.callee_invariant_run_lossless_resource",
+     "callee_invariant_on run_resource
+       (%res. lossless_resource ?\<I> res & ?\<I> 
+              \<turnstile>res res \<surd>)
+       ?\<I>",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_app (template_hole 4, template_hole 3), t_empty),
+           template_var 0)
+         )),
+    ("Resource.bi_unique_rel_resource",
+     "[| bi_total ?A; bi_unique ?B |] ==> bi_unique (rel_resource ?A ?B)",
+     template_implication
+      ([template_predicate (template_app (template_hole 3, template_var 1)),
+        template_predicate
+         (template_app (template_hole 2, template_var 0))],
+       template_predicate
+        (
+           template_app
+            (template_hole 1,
+             template_app
+              (template_app (template_hole 0, template_var 1),
+               template_var 0))
+           ))),
+    ("Resource.left_unique_rel_resource",
+     "[| left_total ?A; left_unique ?B |]
+      ==> left_unique (rel_resource ?A ?B)",
+     template_implication
+      ([template_predicate (template_app (template_hole 3, template_var 1)),
+        template_predicate
+         (template_app (template_hole 2, template_var 0))],
+       template_predicate
+        (
+           template_app
+            (template_hole 1,
+             template_app
+              (template_app (template_hole 0, template_var 1),
+               template_var 0))
+           ))),
+    ("Resource.right_unique_rel_resource",
+     "[| right_total ?A; right_unique ?B |]
+      ==> right_unique (rel_resource ?A ?B)",
+     template_implication
+      ([template_predicate (template_app (template_hole 3, template_var 1)),
+        template_predicate
+         (template_app (template_hole 2, template_var 0))],
+       template_predicate
+        (
+           template_app
+            (template_hole 1,
+             template_app
+              (template_app (template_hole 0, template_var 1),
+               template_var 0))
+           ))),
+    ("Resource.map_resource'_parametric",
+     "rel_fun (rel_fun ?B ?B')
+       (rel_fun (rel_resource (=) ?B) (rel_resource (=) ?B')) map_resource'
+       map_resource'",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_hole 7,
+                 template_app
+                  (template_app (template_hole 6, template_var 1),
+                   template_var 0)),
+               template_app
+                (template_app
+                  (template_hole 5,
+                   template_app
+                    (template_app (template_hole 4, template_hole 3),
+                     template_var 1)),
+                 template_app
+                  (template_app (template_hole 2, template_hole 3),
+                   template_var 0))),
+             template_hole 1),
+           template_hole 0)
+         )),
+    ("Resource.WT_resource_of_oracle",
+     "(!!s. ?\<I> \<turnstile>c ?oracle s \<surd>) ==>
+      ?\<I> \<turnstile>res resource_of_oracle ?oracle ?s \<surd>",
+     template_implication
+      ([template_predicate (template_app (template_hole 4, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 1, template_var 2),
+             template_app
+              (template_app (template_hole 0, template_var 1),
+               template_var 0))
+           ))),
+    ("Resource.lossless_resource_mono'",
+     "[| lossless_resource ?\<I>' ?res; ?\<I> <= ?\<I>' |]
+      ==> lossless_resource ?\<I> ?res",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 1, template_var 2),
+              template_var 1)
+            ),
+        template_inequation (less_equals, template_var 0, template_var 2)],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 1, template_var 0), template_var 1)
+           ))),
+    ("Resource.rel_resource_Grp",
+     "rel_resource (BNF_Def.Grp UNIV ?f)^--1 (BNF_Def.Grp UNIV ?g) =
+      BNF_Def.Grp UNIV (map_resource ?f ?g)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 8,
+           template_app
+            (template_hole 7,
+             template_app
+              (template_app (template_hole 6, template_hole 5),
+               template_var 1))),
+         template_app
+          (template_app (template_hole 4, template_hole 3),
+           template_var 0)),
+       template_app
+        (template_app (template_hole 2, template_hole 1),
+         template_app
+          (template_app (template_hole 0, template_var 1),
+           template_var 0)))),
+    ("Resource.parallel_resource_assoc",
+     "parallel_resource (parallel_resource ?res1.0 ?res2.0) ?res3.0 =
+      map_resource rsuml lsumr
+       (parallel_resource ?res1.0 (parallel_resource ?res2.0 ?res3.0))",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 6,
+           template_app
+            (template_app (template_hole 5, template_var 2),
+             template_var 1)),
+         template_var 0),
+       template_app
+        (template_app
+          (template_app (template_hole 4, template_hole 3),
+           template_hole 2),
+         template_app
+          (template_app (template_hole 1, template_var 2),
+           template_app
+            (template_app (template_hole 0, template_var 1),
+             template_var 0))))),
+    ("Resource.WT_intro",
+     "map_\<I> ?g id ?\<I> \<turnstile>g ?gpv \<surd> ==>
+      ?\<I> \<turnstile>g map_gpv ?f ?g ?gpv \<surd>",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 4,
+                template_app
+                 (template_app
+                   (template_app (template_hole 3, template_var 3),
+                    template_hole 2),
+                  template_var 2)),
+              template_var 1)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 1, template_var 2),
+             template_app
+              (template_app
+                (template_app (template_hole 0, template_var 0),
+                 template_var 3),
+               template_var 1))
+           ))),
+    ("Resource.Resource_parametric",
+     "rel_fun (rel_fun ?A (rel_spmf (rel_prod ?B (rel_resource ?A ?B))))
+       (rel_resource ?A ?B) Resource Resource",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_hole 7,
+                 template_app
+                  (template_app (template_hole 6, template_var 1),
+                   template_app
+                    (template_hole 5,
+                     template_app
+                      (template_hole 4,
+                       template_app
+                        (template_app (template_hole 3, template_var 0),
+                         template_app
+                          (template_app (template_hole 2, template_var 1),
+                           template_var 0)))))),
+               template_app
+                (template_app (template_hole 2, template_var 1),
+                 template_var 0)),
+             template_hole 1),
+           template_hole 0)
+         )),
+    ("Resource.run_resource_parametric",
+     "rel_fun (rel_resource ?A ?B)
+       (rel_fun ?A (rel_spmf (rel_prod ?B (rel_resource ?A ?B))))
+       run_resource run_resource",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_hole 7,
+                 template_app
+                  (template_app (template_hole 6, template_var 1),
+                   template_var 0)),
+               template_app
+                (template_app (template_hole 5, template_var 1),
+                 template_app
+                  (template_hole 4,
+                   template_app
+                    (template_hole 3,
+                     template_app
+                      (template_app (template_hole 2, template_var 0),
+                       template_app
+                        (template_app (template_hole 6, template_var 1),
+                         template_var 0)))))),
+             template_hole 1),
+           template_hole 0)
+         )),
+    ("Resource.resource_of_parallel_oracle",
+     "resource_of_oracle (parallel_oracle ?oracle1.0 ?oracle2.0)
+       (?s1.0, ?s2.0) =
+      parallel_resource (resource_of_oracle ?oracle1.0 ?s1.0)
+       (resource_of_oracle ?oracle2.0 ?s2.0)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 5,
+           template_app
+            (template_app (template_hole 4, template_var 3),
+             template_var 2)),
+         template_app
+          (template_app (template_hole 3, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 2,
+           template_app
+            (template_app (template_hole 1, template_var 3),
+             template_var 1)),
+         template_app
+          (template_app (template_hole 0, template_var 2),
+           template_var 0)))),
+    ("Resource.rel_resource_pos_distr",
+     "rel_resource ?A ?B OO rel_resource ?A' ?B'
+      <= rel_resource (?A OO ?A') (?B OO ?B')",
+     template_inequation
+      (less_equals,
+       template_app
+        (template_app
+          (template_hole 5,
+           template_app
+            (template_app (template_hole 4, template_var 3),
+             template_var 2)),
+         template_app
+          (template_app (template_hole 3, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 2,
+           template_app
+            (template_app (template_hole 1, template_var 3),
+             template_var 1)),
+         template_app
+          (template_app (template_hole 0, template_var 2),
+           template_var 0)))),
+    ("Resource.WT_intro",
+     "map_\<I> ?g ?h ?\<I> \<turnstile>g ?gpv \<surd> ==>
+      ?\<I> \<turnstile>g map_gpv' ?f ?g ?h ?gpv \<surd>",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 3,
+                template_app
+                 (template_app
+                   (template_app (template_hole 2, template_var 4),
+                    template_var 3),
+                  template_var 2)),
+              template_var 1)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 1, template_var 2),
+             template_app
+              (template_app
+                (template_app
+                  (template_app (template_hole 0, template_var 0),
+                   template_var 4),
+                 template_var 3),
+               template_var 1))
+           ))),
+    ("Resource.lossless_resource_mono",
+     "[| lossless_resource ?\<I>' ?res;
+         outs_\<I> ?\<I> <= outs_\<I> ?\<I>' |]
+      ==> lossless_resource ?\<I> ?res",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 2, template_var 2),
+              template_var 1)
+            ),
+        template_inequation
+         (less_equals, template_app (template_hole 0, template_var 0),
+          template_app (template_hole 0, template_var 2))],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 2, template_var 0), template_var 1)
+           ))),
+    ("Resource.rel_resource_map_resource'1",
+     "rel_resource ?A ?B (map_resource' ?f ?res1.0) ?res2.0 =
+      rel_resource ?A (%x. ?B (?f x)) ?res1.0 ?res2.0",
+     template_equation
+      (template_app
+        (template_app
+          (template_app
+            (template_app (template_hole 2, template_var 4),
+             template_var 3),
+           template_app
+            (template_app (template_hole 1, template_var 2),
+             template_var 1)),
+         template_var 0),
+       template_app
+        (template_app
+          (template_app
+            (template_app (template_hole 0, template_var 4), t_empty),
+           template_var 1),
+         template_var 0))),
+    ("Resource.map_resource_compose",
+     "map_resource ?a ?b (map_resource ?a' ?b' ?res) =
+      map_resource (?a' o ?a) (?b o ?b') ?res",
+     template_equation
+      (template_app
+        (template_app
+          (template_app (template_hole 4, template_var 4), template_var 3),
+         template_app
+          (template_app
+            (template_app (template_hole 3, template_var 2),
+             template_var 1),
+           template_var 0)),
+       template_app
+        (template_app
+          (template_app
+            (template_hole 2,
+             template_app
+              (template_app (template_hole 1, template_var 2),
+               template_var 4)),
+           template_app
+            (template_app (template_hole 0, template_var 3),
+             template_var 1)),
+         template_var 0))),
+    ("Resource.bi_total_rel_resource",
+     "[| bi_total ?A; bi_unique ?A; bi_total ?B |]
+      ==> bi_total (rel_resource ?A ?B)",
+     template_implication
+      ([template_predicate (template_app (template_hole 4, template_var 1)),
+        template_predicate (template_app (template_hole 3, template_var 1)),
+        template_predicate
+         (template_app (template_hole 2, template_var 0))],
+       template_predicate
+        (
+           template_app
+            (template_hole 1,
+             template_app
+              (template_app (template_hole 0, template_var 1),
+               template_var 0))
+           ))),
+    ("Resource.left_total_rel_resource",
+     "[| left_unique ?A; right_total ?A; left_total ?B |]
+      ==> left_total (rel_resource ?A ?B)",
+     template_implication
+      ([template_predicate (template_app (template_hole 4, template_var 1)),
+        template_predicate (template_app (template_hole 3, template_var 1)),
+        template_predicate
+         (template_app (template_hole 2, template_var 0))],
+       template_predicate
+        (
+           template_app
+            (template_hole 1,
+             template_app
+              (template_app (template_hole 0, template_var 1),
+               template_var 0))
+           ))),
+    ("Resource.right_total_rel_resource",
+     "[| right_unique ?A; left_total ?A; right_total ?B |]
+      ==> right_total (rel_resource ?A ?B)",
+     template_implication
+      ([template_predicate (template_app (template_hole 4, template_var 1)),
+        template_predicate (template_app (template_hole 3, template_var 1)),
+        template_predicate
+         (template_app (template_hole 2, template_var 0))],
+       template_predicate
+        (
+           template_app
+            (template_hole 1,
+             template_app
+              (template_app (template_hole 0, template_var 1),
+               template_var 0))
+           ))),
+    ("Resource.map_resource_parametric",
+     "rel_fun (rel_fun ?A' ?A)
+       (rel_fun (rel_fun ?B ?B')
+         (rel_fun (rel_resource ?A ?B) (rel_resource ?A' ?B')))
+       map_resource map_resource",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_hole 8,
+                 template_app
+                  (template_app (template_hole 7, template_var 3),
+                   template_var 2)),
+               template_app
+                (template_app
+                  (template_hole 6,
+                   template_app
+                    (template_app (template_hole 5, template_var 1),
+                     template_var 0)),
+                 template_app
+                  (template_app
+                    (template_hole 4,
+                     template_app
+                      (template_app (template_hole 3, template_var 2),
+                       template_var 1)),
+                   template_app
+                    (template_app (template_hole 2, template_var 3),
+                     template_var 0)))),
+             template_hole 1),
+           template_hole 0)
+         )),
+    ("Resource.resource_of_oracle_parametric",
+     "rel_fun (rel_fun ?S (rel_fun ?A (rel_spmf (rel_prod ?B ?S))))
+       (rel_fun ?S (rel_resource ?A ?B)) resource_of_oracle
+       resource_of_oracle",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_hole 9,
+                 template_app
+                  (template_app (template_hole 8, template_var 2),
+                   template_app
+                    (template_app (template_hole 7, template_var 1),
+                     template_app
+                      (template_hole 6,
+                       template_app
+                        (template_hole 5,
+                         template_app
+                          (template_app (template_hole 4, template_var 0),
+                           template_var 2)))))),
+               template_app
+                (template_app (template_hole 3, template_var 2),
+                 template_app
+                  (template_app (template_hole 2, template_var 1),
+                   template_var 0))),
+             template_hole 1),
+           template_hole 0)
+         )),
+    ("Resource.parallel_resource_parametric",
+     "rel_fun (rel_resource ?A ?B)
+       (rel_fun (rel_resource ?C ?D)
+         (rel_resource (rel_sum ?A ?C) (rel_sum ?B ?D)))
+       parallel_resource parallel_resource",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_hole 8,
+                 template_app
+                  (template_app (template_hole 7, template_var 3),
+                   template_var 2)),
+               template_app
+                (template_app
+                  (template_hole 6,
+                   template_app
+                    (template_app (template_hole 5, template_var 1),
+                     template_var 0)),
+                 template_app
+                  (template_app
+                    (template_hole 4,
+                     template_app
+                      (template_app (template_hole 3, template_var 3),
+                       template_var 1)),
+                   template_app
+                    (template_app (template_hole 2, template_var 2),
+                     template_var 0)))),
+             template_hole 1),
+           template_hole 0)
+         )),
+    ("Resource.exec_gpv_resource_of_oracle",
+     "exec_gpv run_resource ?gpv (resource_of_oracle ?oracle ?s) =
+      map_spmf (map_prod id (resource_of_oracle ?oracle))
+       (exec_gpv ?oracle ?gpv ?s)",
+     template_equation
+      (template_app
+        (template_app
+          (template_app (template_hole 7, template_hole 6), template_var 2),
+         template_app
+          (template_app (template_hole 5, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 4,
+           template_app
+            (template_hole 3,
+             template_app
+              (template_app (template_hole 2, template_hole 1),
+               template_app (template_hole 5, template_var 1)))),
+         template_app
+          (template_app
+            (template_app (template_hole 0, template_var 1),
+             template_var 2),
+           template_var 0)))),
+    ("Resource.rel_resource_mono",
+     "[| ?A' <= ?A; ?B <= ?B' |]
+      ==> rel_resource ?A ?B <= rel_resource ?A' ?B'",
+     template_implication
+      ([template_inequation (less_equals, template_var 3, template_var 2),
+        template_inequation (less_equals, template_var 1, template_var 0)],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_app (template_hole 0, template_var 2), template_var 1),
+         template_app
+          (template_app (template_hole 0, template_var 3),
+           template_var 0)))),
+    ("Resource.WT_parallel_resource",
+     "[| ?\<I>1.0 \<turnstile>res ?res1.0 \<surd>;
+         ?\<I>2.0 \<turnstile>res ?res2.0 \<surd> |]
+      ==> ?\<I>1.0 \<oplus>\<^sub>\<I> ?\<I>2.0 
+          \<turnstile>res parallel_resource ?res1.0 ?res2.0 \<surd>",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 4, template_var 3),
+              template_var 2)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 3, template_var 1),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 2,
+               template_app
+                (template_app (template_hole 1, template_var 3),
+                 template_var 1)),
+             template_app
+              (template_app (template_hole 0, template_var 2),
+               template_var 0))
+           ))),
+    ("Resource.lossless_parallel_resource",
+     "[| lossless_resource ?\<I> ?res1.0;
+         lossless_resource ?\<I>' ?res2.0 |]
+      ==> lossless_resource (?\<I> \<oplus>\<^sub>\<I> ?\<I>')
+           (parallel_resource ?res1.0 ?res2.0)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 4, template_var 3),
+              template_var 2)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 3, template_var 1),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 2,
+               template_app
+                (template_app (template_hole 1, template_var 3),
+                 template_var 1)),
+             template_app
+              (template_app (template_hole 0, template_var 2),
+               template_var 0))
+           ))),
+    ("Resource.rel_resource_map_resource'2",
+     "rel_resource ?A ?B ?res1.0 (map_resource' ?f ?res2.0) =
+      rel_resource ?A (%x y. ?B x (?f y)) ?res1.0 ?res2.0",
+     template_equation
+      (template_app
+        (template_app
+          (template_app
+            (template_app (template_hole 2, template_var 4),
+             template_var 3),
+           template_var 2),
+         template_app
+          (template_app (template_hole 1, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_app
+            (template_app (template_hole 0, template_var 4), t_empty),
+           template_var 2),
+         template_var 0))),
+    ("Resource.map_resource_ctr",
+     "map_resource ?a ?b (Resource ?f) =
+      Resource (map_spmf (map_prod ?b (map_resource ?a ?b)) o ?f o ?a)",
+     template_equation
+      (template_app
+        (template_app
+          (template_app (template_hole 7, template_var 2), template_var 1),
+         template_app (template_hole 6, template_var 0)),
+       template_app
+        (template_hole 5,
+         template_app
+          (template_app
+            (template_hole 4,
+             template_app
+              (template_app
+                (template_hole 3,
+                 template_app
+                  (template_hole 2,
+                   template_app
+                    (template_hole 1,
+                     template_app
+                      (template_app (template_hole 0, template_var 1),
+                       template_app
+                        (template_app (template_hole 7, template_var 2),
+                         template_var 1))))),
+               template_var 0)),
+           template_var 2)))),
+    ("Resource.map_resource_sel",
+     "run_resource (map_resource ?a ?b ?res) ?a' =
+      map_spmf (map_prod ?b (map_resource ?a ?b))
+       (run_resource ?res (?a ?a'))",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 5,
+           template_app
+            (template_app
+              (template_app (template_hole 4, template_var 3),
+               template_var 2),
+             template_var 1)),
+         template_var 0),
+       template_app
+        (template_app
+          (template_hole 3,
+           template_app
+            (template_hole 2,
+             template_app
+              (template_app (template_hole 1, template_var 2),
+               template_app
+                (template_app (template_hole 4, template_var 3),
+                 template_var 2)))),
+         template_app
+          (template_app (template_hole 0, template_var 1),
+           template_app (template_var 3, template_var 0))))),
+    ("Resource.case_resource_parametric",
+     "rel_fun
+       (rel_fun (rel_fun ?A (rel_spmf (rel_prod ?B (rel_resource ?A ?B))))
+         ?C)
+       (rel_fun (rel_resource ?A ?B) ?C) case_resource case_resource",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_hole 9,
+                 template_app
+                  (template_app
+                    (template_hole 8,
+                     template_app
+                      (template_app (template_hole 7, template_var 2),
+                       template_app
+                        (template_hole 6,
+                         template_app
+                          (template_hole 5,
+                           template_app
+                            (template_app (template_hole 4, template_var 1),
+                             template_app
+                              (template_app
+                                (template_hole 3, template_var 2),
+                               template_var 1)))))),
+                   template_var 0)),
+               template_app
+                (template_app
+                  (template_hole 2,
+                   template_app
+                    (template_app (template_hole 3, template_var 2),
+                     template_var 1)),
+                 template_var 0)),
+             template_hole 1),
+           template_hole 0)
+         )),
+    ("Resource.rel_resource_simps",
+     "rel_resource ?A ?B (Resource ?f) (Resource ?g) =
+      rel_fun ?A (rel_spmf (rel_prod ?B (rel_resource ?A ?B))) ?f ?g",
+     template_equation
+      (template_app
+        (template_app
+          (template_app
+            (template_app (template_hole 6, template_var 3),
+             template_var 2),
+           template_app (template_hole 5, template_var 1)),
+         template_app (template_hole 4, template_var 0)),
+       template_app
+        (template_app
+          (template_app
+            (template_app (template_hole 3, template_var 3),
+             template_app
+              (template_hole 2,
+               template_app
+                (template_hole 1,
+                 template_app
+                  (template_app (template_hole 0, template_var 2),
+                   template_app
+                    (template_app (template_hole 6, template_var 3),
+                     template_var 2))))),
+           template_var 1),
+         template_var 0))),
+    ("Resource.map_resource_resource_of_oracle",
+     "map_resource ?f ?g (resource_of_oracle ?oracle ?s) =
+      resource_of_oracle
+       (map_fun id (map_fun ?f (map_spmf (map_prod ?g id))) ?oracle) ?s",
+     template_equation
+      (template_app
+        (template_app
+          (template_app (template_hole 8, template_var 3), template_var 2),
+         template_app
+          (template_app (template_hole 7, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 6,
+           template_app
+            (template_app
+              (template_app (template_hole 5, template_hole 4),
+               template_app
+                (template_app (template_hole 3, template_var 3),
+                 template_app
+                  (template_hole 2,
+                   template_app
+                    (template_hole 1,
+                     template_app
+                      (template_app (template_hole 0, template_var 2),
+                       template_hole 4))))),
+             template_var 1)),
+         template_var 0))),
+    ("Resource.rel_resourceD",
+     "rel_resource ?A ?B ?res1.0 ?res2.0 ==>
+      rel_fun ?A (rel_spmf (rel_prod ?B (rel_resource ?A ?B)))
+       (run_resource ?res1.0) (run_resource ?res2.0)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 6, template_var 3),
+                  template_var 2),
+                template_var 1),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 5, template_var 3),
+                 template_app
+                  (template_hole 4,
+                   template_app
+                    (template_hole 3,
+                     template_app
+                      (template_app (template_hole 2, template_var 2),
+                       template_app
+                        (template_app (template_hole 6, template_var 3),
+                         template_var 2))))),
+               template_app (template_hole 1, template_var 1)),
+             template_app (template_hole 0, template_var 0))
+           ))),
+    ("Resource.corec_resource_parametric",
+     "rel_fun
+       (rel_fun ?S
+         (rel_fun ?A
+           (rel_spmf (rel_prod ?B (rel_sum (rel_resource ?A ?B) ?S)))))
+       (rel_fun ?S (rel_resource ?A ?B)) corec_resource corec_resource",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_hole 10,
+                 template_app
+                  (template_app (template_hole 9, template_var 2),
+                   template_app
+                    (template_app (template_hole 8, template_var 1),
+                     template_app
+                      (template_hole 7,
+                       template_app
+                        (template_hole 6,
+                         template_app
+                          (template_app (template_hole 5, template_var 0),
+                           template_app
+                            (template_app
+                              (template_hole 4,
+                               template_app
+                                (template_app
+                                  (template_hole 3, template_var 1),
+                                 template_var 0)),
+                             template_var 2))))))),
+               template_app
+                (template_app (template_hole 2, template_var 2),
+                 template_app
+                  (template_app (template_hole 3, template_var 1),
+                   template_var 0))),
+             template_hole 1),
+           template_hole 0)
+         )),
+    ("Resource.resource_of_oracle_rprodl",
+     "resource_of_oracle
+       (map_fun rprodl (map_fun id (map_spmf (map_prod id lprodr))) ?oracle)
+       ((?s1.0, ?s2.0), ?s3.0) =
+      resource_of_oracle ?oracle (?s1.0, ?s2.0, ?s3.0)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 14,
+           template_app
+            (template_app
+              (template_app (template_hole 13, template_hole 12),
+               template_app
+                (template_app (template_hole 11, template_hole 10),
+                 template_app
+                  (template_hole 9,
+                   template_app
+                    (template_hole 8,
+                     template_app
+                      (template_app (template_hole 7, template_hole 6),
+                       template_hole 5))))),
+             template_var 3)),
+         template_app
+          (template_app
+            (template_hole 4,
+             template_app
+              (template_app (template_hole 3, template_var 2),
+               template_var 1)),
+           template_var 0)),
+       template_app
+        (template_app (template_hole 2, template_var 3),
+         template_app
+          (template_app (template_hole 1, template_var 2),
+           template_app
+            (template_app (template_hole 0, template_var 1),
+             template_var 0))))),
+    ("Resource.lossless_resourceD",
+     "[| lossless_resource ?\<I> ?res; ?a : outs_\<I> ?\<I> |]
+      ==> lossless_spmf (run_resource ?res ?a) &
+          (ALL (x, res'):set_spmf (run_resource ?res ?a).
+              lossless_resource ?\<I> res')",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 8, template_var 2),
+              template_var 1)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 7, template_var 0),
+              template_app (template_hole 6, template_var 2))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 5,
+               template_app
+                (template_hole 4,
+                 template_app
+                  (template_app (template_hole 3, template_var 1),
+                   template_var 0))),
+             template_app
+              (template_app
+                (template_hole 2,
+                 template_app
+                  (template_hole 1,
+                   template_app
+                    (template_app (template_hole 3, template_var 1),
+                     template_var 0))),
+               template_app (template_hole 0, t_empty)))
+           ))),
+    ("Resource.WT_resourceD",
+     "[| ?\<I> \<turnstile>res ?res \<surd>; ?q : outs_\<I> ?\<I>;
+         (?r, ?res') : set_spmf (run_resource ?res ?q) |]
+      ==> ?r : responses_\<I> ?\<I> ?q & ?\<I> 
+          \<turnstile>res ?res' \<surd>",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 9, template_var 4),
+              template_var 3)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 8, template_var 2),
+              template_app (template_hole 7, template_var 4))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 6,
+                template_app
+                 (template_app (template_hole 5, template_var 1),
+                  template_var 0)),
+              template_app
+               (template_hole 4,
+                template_app
+                 (template_app (template_hole 3, template_var 3),
+                  template_var 2)))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 2,
+               template_app
+                (template_app (template_hole 1, template_var 1),
+                 template_app
+                  (template_app (template_hole 0, template_var 4),
+                   template_var 2))),
+             template_app
+              (template_app (template_hole 9, template_var 4),
+               template_var 0))
+           ))),
+    ("Resource.rel_resource_neg_distr",
+     "[| left_unique ?A; right_total ?A; right_unique ?A'; left_total ?A' |]
+      ==> rel_resource (?A OO ?A') (?B OO ?B')
+          <= rel_resource ?A ?B OO rel_resource ?A' ?B'",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 10, template_var 3)),
+        template_predicate (template_app (template_hole 9, template_var 3)),
+        template_predicate (template_app (template_hole 8, template_var 2)),
+        template_predicate
+         (template_app (template_hole 7, template_var 2))],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_app
+            (template_hole 5,
+             template_app
+              (template_app (template_hole 4, template_var 3),
+               template_var 2)),
+           template_app
+            (template_app (template_hole 3, template_var 1),
+             template_var 0)),
+         template_app
+          (template_app
+            (template_hole 2,
+             template_app
+              (template_app (template_hole 1, template_var 3),
+               template_var 1)),
+           template_app
+            (template_app (template_hole 0, template_var 2),
+             template_var 0))))),
+    ("Resource.rel_witness_resource_sel",
+     "run_resource (rel_witness_resource ?A ?A' ?B (?res1.0, ?res2.0)) =
+      map_spmf
+       (map_prod id (rel_witness_resource ?A ?A' ?B) o rel_witness_prod) o
+      rel_witness_spmf (rel_prod ?B (rel_resource (?A OO ?A') ?B)) o
+      rel_witness_fun ?A ?A' (run_resource ?res1.0, run_resource ?res2.0)",
+     template_equation
+      (template_app
+        (template_hole 18,
+         template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 17, template_var 4),
+               template_var 3),
+             template_var 2),
+           template_app
+            (template_app (template_hole 16, template_var 1),
+             template_var 0))),
+       template_app
+        (template_app
+          (template_hole 15,
+           template_app
+            (template_app
+              (template_hole 14,
+               template_app
+                (template_hole 13,
+                 template_app
+                  (template_hole 12,
+                   template_app
+                    (template_app
+                      (template_hole 11,
+                       template_app
+                        (template_app (template_hole 10, template_hole 9),
+                         template_app
+                          (template_app
+                            (template_app
+                              (template_hole 17, template_var 4),
+                             template_var 3),
+                           template_var 2))),
+                     template_hole 8)))),
+             template_app
+              (template_hole 7,
+               template_app
+                (template_app (template_hole 6, template_var 2),
+                 template_app
+                  (template_app
+                    (template_hole 5,
+                     template_app
+                      (template_app (template_hole 4, template_var 4),
+                       template_var 3)),
+                   template_var 2))))),
+         template_app
+          (template_app
+            (template_app (template_hole 3, template_var 4),
+             template_var 3),
+           template_app
+            (template_app
+              (template_hole 2,
+               template_app (template_hole 1, template_var 1)),
+             template_app (template_hole 0, template_var 0)))))),
+    ("Resource.lossless_resource_coinduct",
+     "[| ?X ?res;
+         !!res a.
+            [| ?X res; a : outs_\<I> ?\<I> |]
+            ==> lossless_spmf (run_resource res a) &
+                (ALL (b, res'):set_spmf (run_resource res a).
+                    ?X res' | lossless_resource ?\<I> res') |]
+      ==> lossless_resource ?\<I> ?res",
+     template_implication
+      ([template_predicate (template_app (template_var 2, template_var 1)),
+        template_predicate (template_app (template_hole 11, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 0, template_var 0), template_var 1)
+           ))),
+    ("Resource.rel_resource_coinduct",
+     "[| ?X ?res1.0 ?res2.0;
+         !!res1 res2.
+            ?X res1 res2 ==>
+            rel_fun ?A
+             (rel_spmf
+               (rel_prod ?B
+                 (%res1 res2. ?X res1 res2 | rel_resource ?A ?B res1 res2)))
+             (run_resource res1) (run_resource res2) |]
+      ==> rel_resource ?A ?B ?res1.0 ?res2.0",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_var 4, template_var 3), template_var 2)
+            ),
+        template_predicate (template_app (template_hole 9, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 2, template_var 1),
+                 template_var 0),
+               template_var 3),
+             template_var 2)
+           ))),
+    ("Resource.rel_witness_resource1",
+     "[| rel_resource (?A OO ?A') ?B ?res ?res'; left_unique ?A;
+         right_total ?A; right_unique ?A'; left_total ?A' |]
+      ==> rel_resource ?A (%b (b', c). b = b' & ?B b' c) ?res
+           (rel_witness_resource ?A ?A' ?B (?res, ?res'))",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_hole 11,
+                    template_app
+                     (template_app (template_hole 10, template_var 4),
+                      template_var 3)),
+                  template_var 2),
+                template_var 1),
+              template_var 0)
+            ),
+        template_predicate (template_app (template_hole 9, template_var 4)),
+        template_predicate (template_app (template_hole 8, template_var 4)),
+        template_predicate (template_app (template_hole 7, template_var 3)),
+        template_predicate
+         (template_app (template_hole 6, template_var 3))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 5, template_var 4), t_empty),
+               template_var 1),
+             template_app
+              (template_app
+                (template_app
+                  (template_app (template_hole 1, template_var 4),
+                   template_var 3),
+                 template_var 2),
+               template_app
+                (template_app (template_hole 0, template_var 1),
+                 template_var 0)))
+           ))),
+    ("Resource.rel_witness_resource2",
+     "[| rel_resource (?A OO ?A') ?B ?res ?res'; left_unique ?A;
+         right_total ?A; right_unique ?A'; left_total ?A' |]
+      ==> rel_resource ?A' (%(b, c') c. c = c' & ?B b c')
+           (rel_witness_resource ?A ?A' ?B (?res, ?res')) ?res'",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_hole 11,
+                    template_app
+                     (template_app (template_hole 10, template_var 4),
+                      template_var 3)),
+                  template_var 2),
+                template_var 1),
+              template_var 0)
+            ),
+        template_predicate (template_app (template_hole 9, template_var 4)),
+        template_predicate (template_app (template_hole 8, template_var 4)),
+        template_predicate (template_app (template_hole 7, template_var 3)),
+        template_predicate
+         (template_app (template_hole 6, template_var 3))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 5, template_var 3),
+                 template_app (template_hole 4, t_empty)),
+               template_app
+                (template_app
+                  (template_app
+                    (template_app (template_hole 1, template_var 4),
+                     template_var 3),
+                   template_var 2),
+                 template_app
+                  (template_app (template_hole 0, template_var 1),
+                   template_var 0))),
+             template_var 0)
+           ))),
+    ("Resource.WT_resource_coinduct",
+     "[| ?X ?res;
+         !!res q r res'.
+            [| ?X res; q : outs_\<I> ?\<I>;
+               (r, res') : set_spmf (run_resource res q) |]
+            ==> r : responses_\<I> ?\<I> q &
+                (?X res' | ?\<I> \<turnstile>res res' \<surd>) |]
+      ==> ?\<I> \<turnstile>res ?res \<surd>",
+     template_implication
+      ([template_predicate (template_app (template_var 2, template_var 1)),
+        template_predicate (template_app (template_hole 13, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 0, template_var 0), template_var 1)
+           )))]:
+   (string * thm * template) list
+### theory "Draft.ResourceTemplates"
+### 2.199s elapsed time, 2.913s cpu time, 0.629s GC time
+val it = (): unit

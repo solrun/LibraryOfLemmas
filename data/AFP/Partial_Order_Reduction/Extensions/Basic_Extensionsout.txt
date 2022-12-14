@@ -1,0 +1,618 @@
+Loading theory "Draft.Basic_Extensions" (required by "Draft.Basic_ExtensionsTemplates")
+Loading theory "HOL-Library.Function_Algebras" (required by "Draft.Basic_ExtensionsTemplates" via "Draft.ExtrEqs" via "HOL-Library.BigO")
+Loading theory "HOL-Library.Set_Algebras" (required by "Draft.Basic_ExtensionsTemplates" via "Draft.ExtrEqs" via "HOL-Library.BigO")
+Loading theory "HOL-Library.Tree" (required by "Draft.Basic_ExtensionsTemplates" via "Draft.ExtrEqs" via "Draft.Templates")
+instantiation
+  fun :: (type, plus) plus
+  plus_fun == plus :: ('a => 'b) => ('a => 'b) => 'a => 'b
+instantiation
+  set :: (plus) plus
+  plus_set == plus :: 'a set => 'a set => 'a set
+instantiation
+  set :: (times) times
+  times_set == times :: 'a set => 'a set => 'a set
+instantiation
+  fun :: (type, zero) zero
+  zero_fun == zero_class.zero :: 'a => 'b
+instantiation
+  fun :: (type, times) times
+  times_fun == times :: ('a => 'b) => ('a => 'b) => 'a => 'b
+instantiation
+  set :: (zero) zero
+  zero_set == zero_class.zero :: 'a set
+instantiation
+  set :: (one) one
+  one_set == one_class.one :: 'a set
+instantiation
+  fun :: (type, one) one
+  one_fun == one_class.one :: 'a => 'b
+### theory "HOL-Library.Function_Algebras"
+### 0.147s elapsed time, 0.578s cpu time, 0.052s GC time
+### theory "HOL-Library.Set_Algebras"
+### 0.278s elapsed time, 0.964s cpu time, 0.052s GC time
+Loading theory "HOL-Library.BigO" (required by "Draft.Basic_ExtensionsTemplates" via "Draft.ExtrEqs")
+### theory "Draft.Basic_Extensions"
+### 0.295s elapsed time, 1.019s cpu time, 0.052s GC time
+consts
+  left :: "'a tree => 'a tree"
+consts
+  right :: "'a tree => 'a tree"
+Found termination order: "size <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+class height = type +
+  fixes height :: "'a => nat"
+instantiation
+  tree :: (type) height
+  height_tree == height :: 'a tree => nat
+Found termination order: "size <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+### theory "HOL-Library.BigO"
+### 0.677s elapsed time, 1.451s cpu time, 0.247s GC time
+Found termination order: "size <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+Found termination order: "(%p. size (fst p)) <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+Found termination order: "(%p. size (snd p)) <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+### theory "HOL-Library.Tree"
+### 1.752s elapsed time, 3.597s cpu time, 0.815s GC time
+Loading theory "Draft.Templates" (required by "Draft.Basic_ExtensionsTemplates" via "Draft.ExtrEqs")
+datatype template_term
+=
+     t_empty
+   | template_app of template_term * template_term
+   | template_hole of int
+   | template_var of int
+datatype sign
+= equals | greater_equals | greater_than | less_equals | less_than
+datatype template
+=
+     template_bimplication of template * template
+   | template_dunno
+   | template_equation of template_term * template_term
+   | template_implication of template list * template
+   | template_inequation of sign * template_term * template_term
+   | template_negation of template
+   | template_predicate of template_term
+constructor t_empty: template_term
+constructor template_app: template_term * template_term -> template_term
+constructor template_hole: int -> template_term
+constructor template_var: int -> template_term
+constructor equals: sign
+constructor greater_equals: sign
+constructor greater_than: sign
+constructor less_equals: sign
+constructor less_than: sign
+constructor template_bimplication: template * template -> template
+constructor template_dunno: template
+constructor template_equation: template_term * template_term -> template
+constructor template_implication: template list * template -> template
+constructor template_inequation:
+   sign * template_term * template_term -> template
+constructor template_negation: template -> template
+constructor template_predicate: template_term -> template
+val vfs = fn: term -> (indexname * typ) list * (string * typ) list
+val indexOf = fn: ''a list -> ''a -> int -> int
+val has_eq = fn: term -> bool
+val term2template = fn:
+   (indexname * typ) list -> (string * typ) list -> term -> template_term
+val lemma2predicate = fn: term -> term -> template
+val makeTemplatewithContext = fn: term -> term -> template
+val lemma2template = fn: term -> template
+val thm2template = fn: thm -> template
+val tterm2string = fn: template_term -> string
+val template2string = fn: template -> string
+val t = "height ?t <= size ?t": thm
+val th =
+   Const ("HOL.Trueprop", "bool => prop") $
+     (Const ("Orderings.ord_class.less_eq", "nat => nat => bool") $
+       (Const ("Tree.height_class.height", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree")) $
+       (Const ("Nat.size_class.size", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree"))):
+   term
+### theory "Draft.Templates"
+### 0.061s elapsed time, 0.083s cpu time, 0.000s GC time
+Loading theory "Draft.ExtrEqs" (required by "Draft.Basic_ExtensionsTemplates")
+val eqpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Var (("_dummy_", 2), "?'a"))
+       ):
+   term Find_Theorems.criterion
+val badeqpattern = Pattern (Const ("Pure.eq", "?'a => ?'a => prop")):
+   term Find_Theorems.criterion
+val undefpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Const ("HOL.undefined", "?'a"))
+       ):
+   term Find_Theorems.criterion
+val thmpattern =
+   Pattern
+    (Const ("HOL.Trueprop", "bool => prop") $ Var (("_dummy_", 1), "bool")):
+   term Find_Theorems.criterion
+val badnames =
+   ["*nitpick*", "*Nitpick*", "*full_exhaustive*", "*_def*", "Enum.finite*",
+    "*Quickcheck*", "ATP*", "*Nunchaku*", "*Code*", "*BNF*", "*SMT*",
+    "*.*.*"]:
+   string list
+val unwanted_names =
+   [(false, Name "*nitpick*"), (false, Name "*Nitpick*"),
+    (false, Name "*full_exhaustive*"), (false, Name "*_def*"),
+    (false, Name "Enum.finite*"), (false, Name "*Quickcheck*"),
+    (false, Name "ATP*"), (false, Name "*Nunchaku*"),
+    (false, Name "*Code*"), (false, Name "*BNF*"), (false, Name "*SMT*"),
+    (false, Name "*.*.*")]:
+   (bool * term Find_Theorems.criterion) list
+val has_vars = fn: term -> bool
+val get_all_eqs = fn: string -> Proof.context -> (string * thm) list
+val get_all_thms = fn: string -> Proof.context -> (string * thm) list
+val get_noneq_thms = fn: string -> Proof.context -> (string * thm) list
+val template_eqs = fn:
+   string -> Proof.context -> (string * thm * template) list
+val template_thms = fn:
+   string -> Proof.context -> (string * thm * template) list
+### theory "Draft.ExtrEqs"
+### 0.472s elapsed time, 0.504s cpu time, 0.042s GC time
+Loading theory "Draft.Basic_ExtensionsTemplates"
+val templateLemmas =
+   [("Basic_Extensions.const_apply", "const ?x ?y = ?x",
+     template_equation
+      (template_app
+        (template_app (template_hole 0, template_var 1), template_var 0),
+       template_var 1)),
+    ("Basic_Extensions.const2_apply", "const2 ?x ?y ?z = ?x",
+     template_equation
+      (template_app
+        (template_app
+          (template_app (template_hole 0, template_var 2), template_var 1),
+         template_var 0),
+       template_var 2)),
+    ("Basic_Extensions.const3_apply", "const3 ?x ?y ?z ?u = ?x",
+     template_equation
+      (template_app
+        (template_app
+          (template_app
+            (template_app (template_hole 0, template_var 3),
+             template_var 2),
+           template_var 1),
+         template_var 0),
+       template_var 3)),
+    ("Basic_Extensions.zip_fun_simps", "fst o (?f \<parallel> ?g) = ?f",
+     template_equation
+      (template_app
+        (template_app (template_hole 2, template_hole 1),
+         template_app
+          (template_app (template_hole 0, template_var 1), template_var 0)),
+       template_var 1)),
+    ("Basic_Extensions.zip_fun_simps", "snd o (?f \<parallel> ?g) = ?g",
+     template_equation
+      (template_app
+        (template_app (template_hole 2, template_hole 1),
+         template_app
+          (template_app (template_hole 0, template_var 1), template_var 0)),
+       template_var 0)),
+    ("Basic_Extensions.mono_curry_left", "mono (curry o ?h) = mono ?h",
+     template_equation
+      (template_app
+        (template_hole 3,
+         template_app
+          (template_app (template_hole 2, template_hole 1),
+           template_var 0)),
+       template_app (template_hole 0, template_var 0))),
+    ("Basic_Extensions.mono_split_left", "mono (case_prod o ?h) = mono ?h",
+     template_equation
+      (template_app
+        (template_hole 3,
+         template_app
+          (template_app (template_hole 2, template_hole 1),
+           template_var 0)),
+       template_app (template_hole 0, template_var 0))),
+    ("Basic_Extensions.mono_split_right", "mono (?h o case_prod) = mono ?h",
+     template_equation
+      (template_app
+        (template_hole 3,
+         template_app
+          (template_app (template_hole 2, template_var 0),
+           template_hole 1)),
+       template_app (template_hole 0, template_var 0))),
+    ("Basic_Extensions.mono_curry_right", "mono (?h o curry) = mono ?h",
+     template_equation
+      (template_app
+        (template_hole 3,
+         template_app
+          (template_app (template_hole 2, template_var 0),
+           template_hole 1)),
+       template_app (template_hole 0, template_var 0))),
+    ("Basic_Extensions.const4_apply", "const4 ?x ?y ?z ?u ?v = ?x",
+     template_equation
+      (template_app
+        (template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 0, template_var 4),
+               template_var 3),
+             template_var 2),
+           template_var 1),
+         template_var 0),
+       template_var 4)),
+    ("Basic_Extensions.label_select", "label (?p, ?a, ?q) = ?a",
+     template_equation
+      (template_app
+        (template_hole 2,
+         template_app
+          (template_app (template_hole 1, template_var 2),
+           template_app
+            (template_app (template_hole 0, template_var 1),
+             template_var 0))),
+       template_var 1)),
+    ("Basic_Extensions.swap_simps", "swap (?a, ?b) = (?b, ?a)",
+     template_equation
+      (template_app
+        (template_hole 2,
+         template_app
+          (template_app (template_hole 1, template_var 1), template_var 0)),
+       template_app
+        (template_app (template_hole 0, template_var 0), template_var 1))),
+    ("Basic_Extensions.const5_apply", "const5 ?x ?y ?z ?u ?v ?w = ?x",
+     template_equation
+      (template_app
+        (template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 0, template_var 5),
+                 template_var 4),
+               template_var 3),
+             template_var 2),
+           template_var 1),
+         template_var 0),
+       template_var 5)),
+    ("Basic_Extensions.zip_fun_simps", "fst o ?h \<parallel> snd o ?h = ?h",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 4,
+           template_app
+            (template_app (template_hole 3, template_hole 2),
+             template_var 0)),
+         template_app
+          (template_app (template_hole 1, template_hole 0),
+           template_var 0)),
+       template_var 0)),
+    ("Basic_Extensions.curry_le", "(curry ?f <= curry ?g) = (?f <= ?g)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 2, template_app (template_hole 1, template_var 1)),
+         template_app (template_hole 1, template_var 0)),
+       template_app
+        (template_app (template_hole 0, template_var 1), template_var 0))),
+    ("Basic_Extensions.split_le",
+     "((%(x, y). ?f x y) <= (%(x, y). ?g x y)) = (?f <= ?g)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 2, template_app (template_hole 1, template_var 1)),
+         template_app (template_hole 1, template_var 0)),
+       template_app
+        (template_app (template_hole 0, template_var 1), template_var 0))),
+    ("Basic_Extensions.gfp_curry_split",
+     "gfp (curry o ?f o case_prod) = curry (gfp ?f)",
+     template_equation
+      (template_app
+        (template_hole 5,
+         template_app
+          (template_app
+            (template_hole 4,
+             template_app
+              (template_app (template_hole 3, template_hole 2),
+               template_var 0)),
+           template_hole 1)),
+       template_app
+        (template_hole 2, template_app (template_hole 0, template_var 0)))),
+    ("Basic_Extensions.gfp_split_curry",
+     "gfp (case_prod o ?f o curry) = (%(x, y). gfp ?f x y)",
+     template_equation
+      (template_app
+        (template_hole 5,
+         template_app
+          (template_app
+            (template_hole 4,
+             template_app
+              (template_app (template_hole 3, template_hole 2),
+               template_var 0)),
+           template_hole 1)),
+       template_app
+        (template_hole 2, template_app (template_hole 0, template_var 0)))),
+    ("Basic_Extensions.zip_fun_simps",
+     "(?f \<parallel> ?g) ?x = (?f ?x, ?g ?x)",
+     template_equation
+      (template_app
+        (template_app
+          (template_app (template_hole 1, template_var 2), template_var 1),
+         template_var 0),
+       template_app
+        (template_app
+          (template_hole 0, template_app (template_var 2, template_var 0)),
+         template_app (template_var 1, template_var 0)))),
+    ("Basic_Extensions.IdI'", "?x = ?y ==> (?x, ?y) : Id",
+     template_implication
+      ([template_equation (template_var 1, template_var 0)],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 2,
+               template_app
+                (template_app (template_hole 1, template_var 1),
+                 template_var 0)),
+             template_hole 0)
+           ))),
+    ("Basic_Extensions.zip_fun_simps",
+     "fst ` range (?f \<parallel> ?g) = range ?f",
+     template_equation
+      (template_app
+        (template_app (template_hole 5, template_hole 4),
+         template_app
+          (template_app
+            (template_hole 3,
+             template_app
+              (template_app (template_hole 2, template_var 1),
+               template_var 0)),
+           template_hole 1)),
+       template_app
+        (template_app (template_hole 0, template_var 1), template_hole 1))),
+    ("Basic_Extensions.zip_fun_simps",
+     "snd ` range (?f \<parallel> ?g) = range ?g",
+     template_equation
+      (template_app
+        (template_app (template_hole 5, template_hole 4),
+         template_app
+          (template_app
+            (template_hole 3,
+             template_app
+              (template_app (template_hole 2, template_var 1),
+               template_var 0)),
+           template_hole 1)),
+       template_app
+        (template_app (template_hole 0, template_var 0), template_hole 1))),
+    ("Basic_Extensions.eq_le_absorb", "(?x = ?y & ?x <= ?y) = (?x = ?y)",
+     template_bimplication
+      (template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 2,
+               template_app
+                (template_app (template_hole 1, template_var 1),
+                 template_var 0)),
+             template_app
+              (template_app (template_hole 0, template_var 1),
+               template_var 0))
+           ),
+       template_equation (template_var 1, template_var 0))),
+    ("Basic_Extensions.eq_le_absorb", "(?x <= ?y & ?x = ?y) = (?x = ?y)",
+     template_bimplication
+      (template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 2,
+               template_app
+                (template_app (template_hole 1, template_var 1),
+                 template_var 0)),
+             template_app
+              (template_app (template_hole 0, template_var 1),
+               template_var 0))
+           ),
+       template_equation (template_var 1, template_var 0))),
+    ("Basic_Extensions.Collect_split",
+     "{x. ?P (%(xa, y). x xa y)} = curry ` {x. ?P x}",
+     template_equation
+      (template_app (template_hole 4, t_empty),
+       template_app
+        (template_app (template_hole 2, template_hole 1),
+         template_app (template_hole 0, t_empty)))),
+    ("Basic_Extensions.Collect_curry",
+     "{x. ?P (curry x)} = case_prod ` {x. ?P x}",
+     template_equation
+      (template_app (template_hole 4, t_empty),
+       template_app
+        (template_app (template_hole 2, template_hole 1),
+         template_app (template_hole 0, t_empty)))),
+    ("Basic_Extensions.INFM_Suc", "(INFM i. ?P (Suc i)) = (INFM i. ?P i)",
+     template_equation
+      (template_app
+        (template_app (template_hole 2, t_empty), template_hole 0),
+       template_app
+        (template_app (template_hole 2, t_empty), template_hole 0))),
+    ("Basic_Extensions.push_simps", "push ((?x, ?y), ?z) = (?x, ?y, ?z)",
+     template_equation
+      (template_app
+        (template_hole 4,
+         template_app
+          (template_app
+            (template_hole 3,
+             template_app
+              (template_app (template_hole 2, template_var 2),
+               template_var 1)),
+           template_var 0)),
+       template_app
+        (template_app (template_hole 1, template_var 2),
+         template_app
+          (template_app (template_hole 0, template_var 1),
+           template_var 0)))),
+    ("Basic_Extensions.pull_simps", "pull (?x, ?y, ?z) = ((?x, ?y), ?z)",
+     template_equation
+      (template_app
+        (template_hole 4,
+         template_app
+          (template_app (template_hole 3, template_var 2),
+           template_app
+            (template_app (template_hole 2, template_var 1),
+             template_var 0))),
+       template_app
+        (template_app
+          (template_hole 1,
+           template_app
+            (template_app (template_hole 0, template_var 2),
+             template_var 1)),
+         template_var 0))),
+    ("Basic_Extensions.zip_fun_eq",
+     "?f \<parallel> ?g = ?h \<parallel> ?i ==> ?f = ?h",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app (template_hole 1, template_var 3), template_var 2),
+          template_app
+           (template_app (template_hole 1, template_var 1),
+            template_var 0))],
+       template_equation (template_var 3, template_var 1))),
+    ("Basic_Extensions.zip_fun_eq",
+     "?f \<parallel> ?g = ?h \<parallel> ?i ==> ?g = ?i",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app (template_hole 1, template_var 3), template_var 2),
+          template_app
+           (template_app (template_hole 1, template_var 1),
+            template_var 0))],
+       template_equation (template_var 2, template_var 0))),
+    ("Basic_Extensions.monoI_comp",
+     "[| mono ?f; mono ?g |] ==> mono (?f o ?g)",
+     template_implication
+      ([template_predicate (template_app (template_hole 3, template_var 1)),
+        template_predicate
+         (template_app (template_hole 2, template_var 0))],
+       template_predicate
+        (
+           template_app
+            (template_hole 1,
+             template_app
+              (template_app (template_hole 0, template_var 1),
+               template_var 0))
+           ))),
+    ("Basic_Extensions.strict_monoI_comp",
+     "[| strict_mono ?f; strict_mono ?g |] ==> strict_mono (?f o ?g)",
+     template_implication
+      ([template_predicate (template_app (template_hole 3, template_var 1)),
+        template_predicate
+         (template_app (template_hole 2, template_var 0))],
+       template_predicate
+        (
+           template_app
+            (template_hole 1,
+             template_app
+              (template_app (template_hole 0, template_var 1),
+               template_var 0))
+           ))),
+    ("Basic_Extensions.INFM_minus",
+     "(INFM i. ?P (i - ?n)) = (INFM i. ?P i)",
+     template_equation
+      (template_app
+        (template_app (template_hole 2, t_empty), template_hole 0),
+       template_app
+        (template_app (template_hole 2, t_empty), template_hole 0))),
+    ("Basic_Extensions.INFM_plus", "(INFM i. ?P (i + ?n)) = (INFM i. ?P i)",
+     template_equation
+      (template_app
+        (template_app (template_hole 2, t_empty), template_hole 0),
+       template_app
+        (template_app (template_hole 2, t_empty), template_hole 0))),
+    ("Basic_Extensions.zip_fun_range_subset",
+     "range (?f \<parallel> ?g) <= range ?f \<times> range ?g",
+     template_inequation
+      (less_equals,
+       template_app
+        (template_app
+          (template_hole 5,
+           template_app
+            (template_app (template_hole 4, template_var 1),
+             template_var 0)),
+         template_hole 3),
+       template_app
+        (template_app
+          (template_hole 2,
+           template_app
+            (template_app (template_hole 1, template_var 1),
+             template_hole 3)),
+         t_empty))),
+    ("Basic_Extensions.not_someI",
+     "(!!x. ?P x ==> False) ==> ~ ?P (SOME x. ?P x)",
+     template_implication
+      ([template_predicate (template_app (template_hole 4, t_empty))],
+       template_negation
+        (
+           template_predicate
+            (
+               template_app
+                (template_var 0, template_app (template_hole 0, t_empty))
+               )
+           ))),
+    ("Basic_Extensions.some_ccontr",
+     "((!!x. ~ ?P x) ==> False) ==> ?P (SOME x. ?P x)",
+     template_implication
+      ([template_implication
+         ([template_predicate (template_app (template_hole 4, t_empty))],
+          template_predicate (template_hole 1))],
+       template_predicate
+        (
+           template_app
+            (template_var 0, template_app (template_hole 0, t_empty))
+           ))),
+    ("Basic_Extensions.zip_fun_split",
+     "(!!f g. ?h = f \<parallel> g ==> ?thesis) ==> ?thesis",
+     template_implication
+      ([template_predicate (template_app (template_hole 4, t_empty))],
+       template_predicate (template_var 0))),
+    ("Basic_Extensions.zip_fun_range_finite",
+     "[| finite (range (?f \<parallel> ?g));
+         [| finite (range ?f); finite (range ?g) |] ==> ?thesis |]
+      ==> ?thesis",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_hole 7,
+              template_app
+               (template_app
+                 (template_hole 6,
+                  template_app
+                   (template_app (template_hole 5, template_var 2),
+                    template_var 1)),
+                template_hole 4))
+            ),
+        template_implication
+         ([template_predicate
+            (
+               template_app
+                (template_hole 3,
+                 template_app
+                  (template_app (template_hole 2, template_var 2),
+                   template_hole 4))
+               )],
+          template_implication
+           ([template_predicate
+              (
+                 template_app
+                  (template_hole 1,
+                   template_app
+                    (template_app (template_hole 0, template_var 1),
+                     template_hole 4))
+                 )],
+            template_predicate (template_var 0)))],
+       template_predicate (template_var 0)))]:
+   (string * thm * template) list
+### theory "Draft.Basic_ExtensionsTemplates"
+### 0.352s elapsed time, 0.483s cpu time, 0.072s GC time
+val it = (): unit

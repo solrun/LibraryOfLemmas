@@ -1,0 +1,823 @@
+Loading theory "Automatic_Refinement.Refine_Util_Bootstrap1" (required by "Draft.Dict_ConstructionMoreTemplates" via "Draft.Dict_Construction" via "Automatic_Refinement.Refine_Util")
+Loading theory "HOL-Library.Function_Algebras" (required by "Draft.Dict_ConstructionMoreTemplates" via "Draft.ExtrEqs" via "HOL-Library.BigO")
+Loading theory "HOL-Library.Nat_Bijection" (required by "Draft.Dict_ConstructionMoreTemplates" via "Draft.ExtrEqs" via "HOL-Library.Stream")
+Loading theory "HOL-Library.Set_Algebras" (required by "Draft.Dict_ConstructionMoreTemplates" via "Draft.ExtrEqs" via "HOL-Library.BigO")
+instantiation
+  fun :: (type, plus) plus
+  plus_fun == plus :: ('a => 'b) => ('a => 'b) => 'a => 'b
+instantiation
+  set :: (plus) plus
+  plus_set == plus :: 'a set => 'a set => 'a set
+infix 1 ##
+signature BASIC_REFINE_UTIL =
+  sig
+    val ## : ('a -> 'b) * ('c -> 'd) -> 'a * 'c -> 'b * 'd
+    val map_fold: ('a -> 'b -> 'c * 'b) -> 'a list -> 'b -> 'c list * 'b
+    val map_option: ('a -> 'b) -> 'a option -> 'b option
+    val seq_is_empty: 'a Seq.seq -> bool * 'a Seq.seq
+    val split: ('a -> bool) -> 'a list -> 'a list * 'a list
+    val split_matching:
+       ('a -> 'b -> bool) ->
+         'a list -> 'b list -> ('b list * 'b list) option
+    val yield_singleton2:
+       ('a list -> 'b -> ('c * 'd list) * 'e) -> 'a -> 'b -> ('c * 'd) * 'e
+  end
+structure Basic_Refine_Util: BASIC_REFINE_UTIL
+val map_option = fn: ('a -> 'b) -> 'a option -> 'b option
+val split = fn: ('a -> bool) -> 'a list -> 'a list * 'a list
+val map_fold = fn: ('a -> 'b -> 'c * 'b) -> 'a list -> 'b -> 'c list * 'b
+val split_matching = fn:
+   ('a -> 'b -> bool) -> 'a list -> 'b list -> ('b list * 'b list) option
+val seq_is_empty = fn: 'a Seq.seq -> bool * 'a Seq.seq
+val ## = fn: ('a -> 'b) * ('c -> 'd) -> 'a * 'c -> 'b * 'd
+val yield_singleton2 = fn:
+   ('a list -> 'b -> ('c * 'd list) * 'e) -> 'a -> 'b -> ('c * 'd) * 'e
+### theory "Automatic_Refinement.Refine_Util_Bootstrap1"
+### 0.045s elapsed time, 0.212s cpu time, 0.000s GC time
+Loading theory "Automatic_Refinement.Mk_Term_Antiquot" (required by "Draft.Dict_ConstructionMoreTemplates" via "Draft.Dict_Construction" via "Automatic_Refinement.Refine_Util")
+instantiation
+  fun :: (type, zero) zero
+  zero_fun == zero_class.zero :: 'a => 'b
+instantiation
+  set :: (times) times
+  times_set == times :: 'a set => 'a set => 'a set
+instantiation
+  fun :: (type, times) times
+  times_fun == times :: ('a => 'b) => ('a => 'b) => 'a => 'b
+instantiation
+  set :: (zero) zero
+  zero_set == zero_class.zero :: 'a set
+instantiation
+  fun :: (type, one) one
+  one_fun == one_class.one :: 'a => 'b
+instantiation
+  set :: (one) one
+  one_set == one_class.one :: 'a set
+Found termination order: "(%p. size (snd p)) <*mlex*> {}"
+### theory "HOL-Library.Function_Algebras"
+### 0.129s elapsed time, 0.537s cpu time, 0.040s GC time
+Loading theory "Automatic_Refinement.Mpat_Antiquot" (required by "Draft.Dict_ConstructionMoreTemplates" via "Draft.Dict_Construction" via "Automatic_Refinement.Refine_Util")
+val mk_term_antiquot = fn:
+   Context.generic * Token.T list ->
+     string * (Context.generic * Token.T list)
+### theory "Automatic_Refinement.Mk_Term_Antiquot"
+### 0.114s elapsed time, 0.443s cpu time, 0.040s GC time
+Loading theory "HOL-Library.Tree" (required by "Draft.Dict_ConstructionMoreTemplates" via "Draft.ExtrEqs" via "Draft.Templates")
+Found termination order: "size_list size <*mlex*> {}"
+val mpat_antiquot = fn:
+   Context.generic * Token.T list ->
+     string * (Context.generic * Token.T list)
+### theory "Automatic_Refinement.Mpat_Antiquot"
+### 0.102s elapsed time, 0.409s cpu time, 0.000s GC time
+Loading theory "Automatic_Refinement.Refine_Util" (required by "Draft.Dict_ConstructionMoreTemplates" via "Draft.Dict_Construction")
+### theory "HOL-Library.Set_Algebras"
+### 0.240s elapsed time, 0.978s cpu time, 0.040s GC time
+Loading theory "HOL-Library.BigO" (required by "Draft.Dict_ConstructionMoreTemplates" via "Draft.ExtrEqs")
+### theory "HOL-Library.Nat_Bijection"
+### 0.328s elapsed time, 1.314s cpu time, 0.116s GC time
+Loading theory "HOL-Library.Stream" (required by "Draft.Dict_ConstructionMoreTemplates" via "Draft.ExtrEqs")
+### ML warning (line 563 of "$AFP/Automatic_Refinement/Lib/Refine_Util.thy"):
+### Handler catches all exceptions.
+infix 0 THEN_ELSE'
+infix 0 THEN_ELSE_COMB'
+infix 1 THEN_ALL_NEW_FWD
+infix 1 THEN_INTERVAL
+infix 2 ORELSE_INTERVAL
+infix 3 ->>
+type itactic = int -> int -> tactic
+type tactic' = int -> tactic
+signature BASIC_REFINE_UTIL =
+  sig
+    val ## : ('a -> 'b) * ('c -> 'd) -> 'a * 'c -> 'b * 'd
+    val ->> :
+       'a context_parser * ('a * Context.generic -> 'b * Context.generic) ->
+         'b context_parser
+    val ALL_GOALS_FWD: tactic' -> tactic
+    val ALL_GOALS_FWD': tactic' -> tactic'
+    val APPEND_LIST': tactic' list -> tactic'
+    val CAN': tactic' -> tactic'
+    val CASES': (tactic' * tactic) list -> tactic'
+    val CONCL_COND': (term -> bool) -> tactic'
+    val COND': (term -> bool) -> tactic'
+    val IF_EXGOAL: (int -> tactic) -> tactic'
+    val INTERVAL_FWD: tactic' -> int -> int -> tactic
+    val NTIMES': tactic' -> int -> tactic'
+    val ORELSE_INTERVAL: itactic * itactic -> itactic
+    val REPEAT': tactic' -> tactic'
+    val REPEAT_ALL_NEW_FWD: tactic' -> tactic'
+    val REPEAT_DETERM': tactic' -> tactic'
+    val RSm: Proof.context -> thm -> thm -> thm
+    val SINGLE_INTERVAL: itactic -> tactic'
+    val THEN_ALL_NEW_FWD: tactic' * tactic' -> tactic'
+    val THEN_ELSE': tactic' * (tactic' * tactic') -> tactic'
+    val THEN_ELSE_COMB':
+       tactic' * ((tactic' * tactic' -> tactic') * tactic' * tactic') ->
+         tactic'
+    val THEN_INTERVAL: itactic * itactic -> itactic
+    val TRADE: (Proof.context -> tactic') -> Proof.context -> tactic'
+    val TRY_SOLVED': tactic' -> tactic'
+    val WITH_concl: (term -> tactic') -> tactic'
+    val WITH_subgoal: (term -> tactic') -> tactic'
+    val elim_all_tac: Proof.context -> thm list -> tactic
+    val eqsubst_inst_meth: (Proof.context -> Proof.method) context_parser
+    val eqsubst_inst_tac:
+       Proof.context ->
+         bool ->
+           int list ->
+             ((indexname * Position.T) * string) list ->
+               thm -> int -> tactic
+    val fo_resolve_tac: thm list -> Proof.context -> tactic'
+    val fo_rtac: thm -> Proof.context -> tactic'
+    val has_Var: term -> bool
+    val insert_subgoal_tac: cterm -> tactic'
+    val insert_subgoals_tac: cterm list -> tactic'
+    val is_Abs: term -> bool
+    val is_Comb: term -> bool
+    val is_TFree: typ -> bool
+    val is_def_thm: thm -> bool
+    type itactic = int -> int -> tactic
+    val map_fold: ('a -> 'b -> 'c * 'b) -> 'a list -> 'b -> 'c list * 'b
+    val map_option: ('a -> 'b) -> 'a option -> 'b option
+    val prefer_tac: int -> tactic
+    val rprem_tac: int -> Proof.context -> tactic'
+    val rprems_tac: Proof.context -> tactic'
+    val seq_is_empty: 'a Seq.seq -> bool * 'a Seq.seq
+    val split: ('a -> bool) -> 'a list -> 'a list * 'a list
+    val split_matching:
+       ('a -> 'b -> bool) ->
+         'a list -> 'b list -> ('b list * 'b list) option
+    type tactic' = int -> tactic
+    val yield_singleton2:
+       ('a list -> 'b -> ('c * 'd list) * 'e) -> 'a -> 'b -> ('c * 'd) * 'e
+  end
+signature REFINE_UTIL =
+  sig
+    val ## : ('a -> 'b) * ('c -> 'd) -> 'a * 'c -> 'b * 'd
+    val ->> :
+       'a context_parser * ('a * Context.generic -> 'b * Context.generic) ->
+         'b context_parser
+    val ALL_GOALS_FWD: tactic' -> tactic
+    val ALL_GOALS_FWD': tactic' -> tactic'
+    val APPEND_LIST': tactic' list -> tactic'
+    val CAN': tactic' -> tactic'
+    val CASES': (tactic' * tactic) list -> tactic'
+    val CONCL_COND': (term -> bool) -> tactic'
+    val COND': (term -> bool) -> tactic'
+    val HOL_concl_conv: (Proof.context -> conv) -> Proof.context -> conv
+    val IF_EXGOAL: (int -> tactic) -> tactic'
+    val INTERVAL_FWD: tactic' -> int -> int -> tactic
+    val NTIMES': tactic' -> int -> tactic'
+    val OF_fst: thm list -> thm list -> thm
+    val ORELSE_INTERVAL: itactic * itactic -> itactic
+    val REPEAT': tactic' -> tactic'
+    val REPEAT_ALL_NEW_FWD: tactic' -> tactic'
+    val REPEAT_DETERM': tactic' -> tactic'
+    val RS_fst: thm -> thm list -> thm
+    val RSm: Proof.context -> thm -> thm -> thm
+    val SINGLE_INTERVAL: itactic -> tactic'
+    val THEN_ALL_NEW_FWD: tactic' * tactic' -> tactic'
+    val THEN_ELSE': tactic' * (tactic' * tactic') -> tactic'
+    val THEN_ELSE_COMB':
+       tactic' * ((tactic' * tactic' -> tactic') * tactic' * tactic') ->
+         tactic'
+    val THEN_INTERVAL: itactic * itactic -> itactic
+    val TRADE: (Proof.context -> tactic') -> Proof.context -> tactic'
+    val TRY_SOLVED': tactic' -> tactic'
+    val WITH_concl: (term -> tactic') -> tactic'
+    val WITH_subgoal: (term -> tactic') -> tactic'
+    val abs_def: Proof.context -> thm -> thm
+    val anorm_term: term -> term
+    val anorm_typ: typ -> typ
+    val apply_configs:
+       ('a Config.T * 'a) list -> Proof.context -> Proof.context
+    val build_res_net: thm list -> (int * thm) Net.net
+    val cfg_trace_f_tac_conv: bool Config.T
+    val changed_rule: (thm -> thm) -> thm -> thm
+    val dest_itselfT: typ -> typ
+    val dummify_tvars: term -> term
+    val elim_all_tac: Proof.context -> thm list -> tactic
+    val eqsubst_inst_meth: (Proof.context -> Proof.method) context_parser
+    val eqsubst_inst_tac:
+       Proof.context ->
+         bool ->
+           int list ->
+             ((indexname * Position.T) * string) list ->
+               thm -> int -> tactic
+    val f_tac_conv:
+       Proof.context -> (term -> term) -> (Proof.context -> tactic) -> conv
+    val fcomb_conv: conv -> conv
+    val fix_conv: Proof.context -> conv -> conv
+    val fix_left_tuple_from_Ts:
+       string -> typ list -> Proof.context -> term * Proof.context
+    val fixup_vars: cterm -> thm -> thm
+    val fixup_vars_conv: conv -> conv
+    val fixup_vars_conv': (Proof.context -> conv) -> Proof.context -> conv
+    val fo_matches: theory -> cterm -> term -> bool
+    val fo_matchp: theory -> cterm -> term -> term list option
+    val fo_resolve_tac: thm list -> Proof.context -> tactic'
+    val fo_rtac: thm -> Proof.context -> tactic'
+    val fold_binop_left:
+       ('a -> 'b * 'a) ->
+         ('c -> 'a -> 'b * 'a) ->
+           ('b * 'b -> 'b) -> 'c list -> 'a -> 'b * 'a
+    val fsub_conv: (Proof.context -> conv) -> Proof.context -> conv
+    val ftop_conv: (Proof.context -> conv) -> Proof.context -> conv
+    val has_Var: term -> bool
+    val import_conv: (Proof.context -> conv) -> Proof.context -> conv
+    val import_cterms:
+       bool -> cterm list -> Proof.context -> cterm list * Proof.context
+    val insert_subgoal_tac: cterm -> tactic'
+    val insert_subgoals_tac: cterm list -> tactic'
+    val instantiate_tuples:
+       Proof.context -> (indexname * typ) list -> thm -> thm
+    val instantiate_tuples_from_term_tac: Proof.context -> term -> tactic
+    val instantiate_tuples_subgoal_tac: Proof.context -> tactic'
+    val is_Abs: term -> bool
+    val is_Comb: term -> bool
+    val is_TFree: typ -> bool
+    val is_def_thm: thm -> bool
+    type itactic = int -> int -> tactic
+    val ite_conv: conv -> conv -> conv -> conv
+    val lambda_tuple: term list -> term -> term
+    val list_binop_left: 'a -> ('a * 'a -> 'a) -> 'a list -> 'a
+    val list_prodT_left: typ list -> typ
+    val map_fold: ('a -> 'b -> 'c * 'b) -> 'a list -> 'b -> 'c list * 'b
+    val map_option: ('a -> 'b) -> 'a option -> 'b option
+    val mk_compN: int -> term -> term -> term
+    val mk_compN1: typ list -> int -> term -> term -> term
+    val mk_ltuple: term list -> term
+    val monitor_conv: string -> conv -> conv
+    val monitor_conv':
+       string -> (Proof.context -> conv) -> Proof.context -> conv
+    val order_by: ('a * 'a -> order) -> ('b -> 'a) -> 'b list -> 'b list
+    val parse_bool_config: string -> bool Config.T -> bool context_parser
+    val parse_bool_config':
+       string ->
+         bool Config.T ->
+           Token.T list -> (bool Config.T * bool) * Token.T list
+    val parse_paren_list: 'a context_parser -> 'a list context_parser
+    val parse_paren_list':
+       'a parser -> Token.T list -> 'a list * Token.T list
+    val parse_paren_lists: 'a context_parser -> 'a list list context_parser
+    val pat_conv: cterm -> (Proof.context -> conv) -> Proof.context -> conv
+    val pat_conv':
+       cterm -> (string -> Proof.context -> conv) -> Proof.context -> conv
+    val prefer_tac: int -> tactic
+    val repeat_rule: (thm -> thm) -> thm -> thm
+    val rprem_tac: int -> Proof.context -> tactic'
+    val rprems_tac: Proof.context -> tactic'
+    val seq_is_empty: 'a Seq.seq -> bool * 'a Seq.seq
+    val shift_lambda_left: thm -> thm
+    val shift_lambda_leftN: int -> thm -> thm
+    val split: ('a -> bool) -> 'a list -> 'a list * 'a list
+    val split_matching:
+       ('a -> 'b -> bool) ->
+         'a list -> 'b list -> ('b list * 'b list) option
+    val strip_prodT_left: typ -> typ list
+    val subsume_sort: ('a -> term) -> theory -> 'a list -> 'a list
+    val subsume_sort_gen:
+       ('a -> term) -> Context.generic -> 'a list -> 'a list
+    type tactic' = int -> tactic
+    val trace_conv: conv
+    val trade_rule:
+       (Proof.context -> thm -> thm) -> Proof.context -> thm -> thm
+    val try_rule: (thm -> thm) -> thm -> thm
+    val yield_singleton2:
+       ('a list -> 'b -> ('c * 'd list) * 'e) -> 'a -> 'b -> ('c * 'd) * 'e
+  end
+structure Refine_Util: REFINE_UTIL
+structure Basic_Refine_Util: BASIC_REFINE_UTIL
+val map_option = fn: ('a -> 'b) -> 'a option -> 'b option
+val split = fn: ('a -> bool) -> 'a list -> 'a list * 'a list
+val REPEAT_DETERM' = fn: tactic' -> tactic'
+val RSm = fn: Proof.context -> thm -> thm -> thm
+val NTIMES' = fn: tactic' -> int -> tactic'
+val fo_resolve_tac = fn: thm list -> Proof.context -> tactic'
+val SINGLE_INTERVAL = fn: itactic -> tactic'
+val insert_subgoals_tac = fn: cterm list -> tactic'
+val insert_subgoal_tac = fn: cterm -> tactic'
+val THEN_ALL_NEW_FWD = fn: tactic' * tactic' -> tactic'
+val TRY_SOLVED' = fn: tactic' -> tactic'
+val INTERVAL_FWD = fn: tactic' -> int -> int -> tactic
+val IF_EXGOAL = fn: (int -> tactic) -> tactic'
+val eqsubst_inst_tac = fn:
+   Proof.context ->
+     bool ->
+       int list ->
+         ((indexname * Position.T) * string) list -> thm -> int -> tactic
+val fo_rtac = fn: thm -> Proof.context -> tactic'
+val TRADE = fn: (Proof.context -> tactic') -> Proof.context -> tactic'
+val is_TFree = fn: typ -> bool
+val ALL_GOALS_FWD = fn: tactic' -> tactic
+val yield_singleton2 = fn:
+   ('a list -> 'b -> ('c * 'd list) * 'e) -> 'a -> 'b -> ('c * 'd) * 'e
+val ## = fn: ('a -> 'b) * ('c -> 'd) -> 'a * 'c -> 'b * 'd
+val CAN' = fn: tactic' -> tactic'
+val WITH_concl = fn: (term -> tactic') -> tactic'
+val is_Abs = fn: term -> bool
+val COND' = fn: (term -> bool) -> tactic'
+val split_matching = fn:
+   ('a -> 'b -> bool) -> 'a list -> 'b list -> ('b list * 'b list) option
+val REPEAT_ALL_NEW_FWD = fn: tactic' -> tactic'
+val CASES' = fn: (tactic' * tactic) list -> tactic'
+val APPEND_LIST' = fn: tactic' list -> tactic'
+val map_fold = fn: ('a -> 'b -> 'c * 'b) -> 'a list -> 'b -> 'c list * 'b
+val is_def_thm = fn: thm -> bool
+val THEN_INTERVAL = fn: itactic * itactic -> itactic
+val rprems_tac = fn: Proof.context -> tactic'
+val WITH_subgoal = fn: (term -> tactic') -> tactic'
+val is_Comb = fn: term -> bool
+val THEN_ELSE_COMB' = fn:
+   tactic' * ((tactic' * tactic' -> tactic') * tactic' * tactic') -> tactic'
+val eqsubst_inst_meth = fn: (Proof.context -> Proof.method) context_parser
+val elim_all_tac = fn: Proof.context -> thm list -> tactic
+val ->> = fn:
+   'a context_parser * ('a * Context.generic -> 'b * Context.generic) ->
+     'b context_parser
+val ALL_GOALS_FWD' = fn: tactic' -> tactic'
+val prefer_tac = fn: int -> tactic
+val rprem_tac = fn: int -> Proof.context -> tactic'
+val has_Var = fn: term -> bool
+val REPEAT' = fn: tactic' -> tactic'
+val THEN_ELSE' = fn: tactic' * (tactic' * tactic') -> tactic'
+val CONCL_COND' = fn: (term -> bool) -> tactic'
+val ORELSE_INTERVAL = fn: itactic * itactic -> itactic
+val seq_is_empty = fn: 'a Seq.seq -> bool * 'a Seq.seq
+### theory "Automatic_Refinement.Refine_Util"
+### 0.362s elapsed time, 1.410s cpu time, 0.181s GC time
+Loading theory "Draft.Dict_Construction" (required by "Draft.Dict_ConstructionMoreTemplates")
+consts
+  left :: "'a tree => 'a tree"
+consts
+  right :: "'a tree => 'a tree"
+consts
+  shift :: "'a list => 'a stream => 'a stream"
+Proofs for coinductive predicate(s) "streamsp"
+  Proving monotonicity ...
+Found termination order: "size <*mlex*> {}"
+consts
+  snth :: "'a stream => nat => 'a"
+Found termination order: "size <*mlex*> {}"
+### ML warning (line 246 of "$AFP/Dict_Construction/dict_construction_util.ML"):
+### Pattern is not exhaustive.
+### ML warning (line 246 of "$AFP/Dict_Construction/dict_construction_util.ML"):
+### Value identifier (frees) has not been referenced.
+infixr 5 ==>
+infixr 0 ===>
+infix 1 CONTINUE_WITH
+infix 1 CONTINUE_WITH_FW
+signature DICT_CONSTRUCTION_UTIL =
+  sig
+    val ===> : term list * term -> term
+    val ==> : term * term -> term
+    val ALLGOALS': Proof.context -> (int -> tactic) -> tactic
+    val ANY: tactic list -> tactic
+    val ANY': ('a -> tactic) list -> 'a -> tactic
+    val CONTINUE_WITH:
+       (int -> tactic) * (int -> tactic) list -> int -> thm -> thm Seq.seq
+    val CONTINUE_WITH_FW:
+       (int -> tactic) * (int -> tactic) list -> int -> thm -> thm Seq.seq
+    val SOLVED: tactic -> tactic
+    val TRY': ('a -> tactic) -> 'a -> tactic
+    val all_frees: term -> (string * typ) list
+    val all_frees': term -> string list
+    val all_tfrees: typ -> (string * sort) list
+    val cat_options: 'a option list -> 'a list
+    val changed_conv: ('a -> thm) -> 'a -> thm
+    val contract: Proof.context -> thm -> thm
+    val conv_result: ('a -> thm) -> 'a -> term
+    val debug: bool Config.T
+    val define_params_nosyn: term -> local_theory -> thm * local_theory
+    val descend_fun_conv: conv -> conv
+    val flat_right: ('a * 'b list) list -> ('a * 'b) list
+    val fo_cong_tac: Proof.context -> thm -> int -> tactic
+    val if_debug: Proof.context -> (unit -> unit) -> unit
+    val lhs_conv: conv -> conv
+    val maybe_induct_tac:
+       thm list option ->
+         term list list -> term list list -> Proof.context -> tactic
+    val multi_induct_tac:
+       thm list ->
+         term list list -> term list list -> Proof.context -> tactic
+    val note_thm: binding -> thm -> local_theory -> thm * local_theory
+    val note_thms:
+       binding -> thm list -> local_theory -> thm list * local_theory
+    val on_thms_complete: (unit -> 'a) -> thm list -> thm list
+    val partition: ('a -> bool) -> 'a list -> 'a list * 'a list
+    val pretty_const: Proof.context -> string -> Pretty.T
+    val print_tac': Proof.context -> string -> int -> tactic
+    val prove':
+       Proof.context ->
+         string list ->
+           term list ->
+             term ->
+               ({context: Proof.context, prems: thm list} -> tactic) -> thm
+    val prove_common':
+       Proof.context ->
+         string list ->
+           term list ->
+             term list ->
+               ({context: Proof.context, prems: thm list} -> tactic) ->
+                 thm list
+    val rewr_lhs_head_conv: thm -> conv
+    val rewr_rhs_head_conv: thm -> conv
+    val rhs_conv: conv -> conv
+    val sortify: sort -> term -> term
+    val sortify_typ: sort -> typ -> typ
+    val split_list3: ('a * 'b * 'c) list -> 'a list * 'b list * 'c list
+    val symreltab_of_symtab:
+       'a Symtab.table Symtab.table -> 'a Symreltab.table
+    val typify: term -> term
+    val typify_typ: typ -> typ
+    val unappend: 'a list * 'b -> 'c list -> 'c list * 'c list
+    val with_timeout: Time.time -> ('a -> 'a) -> 'a -> 'a
+    val zip_symtabs:
+       ('a -> 'b -> 'c) ->
+         'a Symtab.table -> 'b Symtab.table -> 'c Symtab.table
+  end
+structure Dict_Construction_Util: DICT_CONSTRUCTION_UTIL
+consts
+  stake :: "nat => 'a stream => 'a list"
+consts
+  sdrop :: "nat => 'a stream => 'a stream"
+signature TRANSFER_TERMINATION =
+  sig
+    val termination_tac:
+       Function.info -> Function.info -> Proof.context -> int -> tactic
+  end
+structure Transfer_Termination: TRANSFER_TERMINATION
+Found termination order: "size <*mlex*> {}"
+signature CONGRUENCES =
+  sig
+    type ctx = (string * typ) list * term list
+    datatype ctx_tree = Tree of term * (rule * (ctx * ctx_tree) list) option
+    val export_term_ctx: ctx -> term -> term
+    val fold_tree:
+       (term -> 'a) ->
+         (term -> rule -> (ctx * 'a) list -> 'a) -> ctx_tree -> 'a
+    val import_rule: Proof.context -> thm -> rule
+    val import_term: Proof.context -> rule list -> term -> ctx_tree
+    type rule = {concl: term, prems: term list, proper: bool, rule: thm}
+  end
+structure Congruences: CONGRUENCES
+consts
+  sfilter :: "('a => bool) => 'a stream => 'a stream"
+class height = type +
+  fixes height :: "'a => nat"
+instantiation
+  tree :: (type) height
+  height_tree == height :: 'a tree => nat
+consts
+  cycle :: "'a list => 'a stream"
+### ML warning (line 54 of "$AFP/Dict_Construction/side_conditions.ML"):
+### Pattern is not exhaustive.
+### ML warning (line 96 of "$AFP/Dict_Construction/side_conditions.ML"):
+### Matches are not exhaustive.
+signature SIDE_CONDITIONS =
+  sig
+    val get_predicate: Proof.context -> term -> predicate option
+    val is_total: Proof.context -> term -> bool
+    val mk_side:
+       thm list ->
+         thm list option -> local_theory -> predicate list * local_theory
+    type predicate =
+       {alt: thm option, f: term, index: int, inductive: Inductive.result}
+    val set_alt: term -> thm -> Context.generic -> Context.generic
+    val time_limit: real Config.T
+    val transform_predicate: morphism -> predicate -> predicate
+  end
+structure Side_Conditions: SIDE_CONDITIONS
+consts
+  siterate :: "('a => 'a) => 'a => 'a stream"
+Found termination order: "size <*mlex*> {}"
+consts
+  flat :: "'a list stream => 'a stream"
+signature CLASS_GRAPH =
+  sig
+    val all_edges: local_theory -> edge Symreltab.table
+    val all_nodes: local_theory -> node Symtab.table
+    val class_of: ev -> class
+    val dict_typ: node -> typ -> typ
+    type edge = {subclass: thm, super_selector: selector}
+    val edges: local_theory -> class -> edge Symtab.table option
+    val ensure_class: class -> local_theory -> ev * local_theory
+    type ev
+    val find_path: ev -> class -> path option
+    val find_path': ev -> (ev -> 'a option) -> (path * 'a) option
+    val fold_path: path -> typ -> term -> term
+    val mangle: string -> string
+    val node: local_theory -> class -> node option
+    type node =
+       {cert: typ -> term,
+        cert_thms: thm * thm * thm list,
+        class: string,
+        data_thms: thm list,
+        make: typ -> term, qname: string, selectors: selector Symtab.table}
+    val node_of: ev -> node
+    val param_sorts: string -> class -> theory -> class list list
+    val parents_of: ev -> (edge * ev) Symtab.table
+    type path = edge list
+    val pretty_ev: Proof.context -> ev -> Pretty.T
+    type selector = typ -> term
+    val super_classes: class -> theory -> string list
+  end
+structure Class_Graph: CLASS_GRAPH
+Found termination order: "size <*mlex*> {}"
+### theory "HOL-Library.BigO"
+### 1.026s elapsed time, 3.861s cpu time, 0.855s GC time
+consts
+  sinterleave :: "'a stream => 'a stream => 'a stream"
+val mk_2elem_list = fn: term -> term -> term
+val mk_compr = fn: term -> term -> term
+val test1 = "[1, 2]": cterm
+val test2 = "{x: {1, 2, 3}. 2 < x}": cterm
+val test3 =
+   Const ("Groups.plus_class.plus", "nat => nat => nat") $ Bound 0 $
+     Bound 0:
+   term
+consts
+  szip :: "'a stream => 'b stream => ('a * 'b) stream"
+Found termination order: "size <*mlex*> {}"
+val dest_pair_singleton = fn: term -> term
+val dest_nat_pair_singleton = fn: term -> term * term
+val dest_pair_singleton_T = fn: term -> (term * typ) * (term * typ)
+val dest_pair_lambda = fn: term -> string * typ * string * typ * term * term
+val foo = fn: term -> term * term * int * term * term
+consts
+  smap2 :: "('a => 'b => 'c) => 'a stream => 'b stream => 'c stream"
+### theory "HOL-Library.Stream"
+### 1.074s elapsed time, 4.030s cpu time, 0.862s GC time
+Found termination order: "size <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+Found termination order: "(%p. size (fst p)) <*mlex*> {}"
+### ML warning (line 269 of "$AFP/Dict_Construction/dict_construction.ML"):
+### Pattern is not exhaustive.
+### ML warning (line 300 of "$AFP/Dict_Construction/dict_construction.ML"):
+### Pattern is not exhaustive.
+### ML warning (line 782 of "$AFP/Dict_Construction/dict_construction.ML"):
+### Matches are not exhaustive.
+### ML warning (line 806 of "$AFP/Dict_Construction/dict_construction.ML"):
+### Matches are not exhaustive.
+### ML warning (line 884 of "$AFP/Dict_Construction/dict_construction.ML"):
+### Value identifier (side) has not been referenced.
+signature DICT_CONSTRUCTION =
+  sig
+    val annotate_code_eqs:
+       local_theory -> string list -> const sccs * local_theory
+    val axclass: class -> local_theory -> Class_Graph.node * local_theory
+    datatype cert_proof = Cert | Skip
+    val cong_of_const: Proof.context -> string -> thm option
+    type const
+    type const_info =
+       {base_certs: thm list,
+        base_thms: thm list,
+        code_thms: thm list,
+        congs: thm list option,
+        fun_info: Function.info option,
+        inducts: thm list option, simps: thm list}
+    val consts:
+       (string * const) Symtab.table ->
+         cert_proof -> (string * const) list -> local_theory -> local_theory
+    type dict_target = (string * class) list * (term * string * class)
+    type dict_thms = {base_thms: thm list, def_thm: thm}
+    type fun_target = (string * class) list * (term * term)
+    val get_code_eqs: Proof.context -> string -> thm list
+    val group_code_eqs:
+       Proof.context ->
+         string list ->
+           (string *
+            (((string * sort) list * typ) *
+             ((term list * term) * thm option) list)
+           )
+           list
+           list
+    val instance:
+       (string * const) Symtab.table ->
+         string -> class -> local_theory -> term * local_theory
+    val new_names: local_theory -> const sccs -> (string * const) sccs
+    val normalizer_conv: Proof.context -> conv
+    val prove_dict_cert: dict_target -> dict_thms -> local_theory -> thm
+    val prove_fun_cert:
+       fun_target list ->
+         const_info -> cert_proof -> local_theory -> thm list
+    type 'a sccs = (string * 'a) list list
+    val symtab_of_sccs: 'a sccs -> 'a Symtab.table
+    val term:
+       term Symreltab.table ->
+         (string * const) Symtab.table ->
+           term -> local_theory -> term * local_theory
+    val the_info: Proof.context -> string -> const_info
+  end
+structure Dict_Construction: DICT_CONSTRUCTION
+### theory "Draft.Dict_Construction"
+### 1.067s elapsed time, 3.511s cpu time, 0.788s GC time
+Found termination order: "size <*mlex*> {}"
+Found termination order: "(%p. size (snd p)) <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+### theory "HOL-Library.Tree"
+### 1.927s elapsed time, 5.701s cpu time, 1.015s GC time
+Loading theory "Draft.Templates" (required by "Draft.Dict_ConstructionMoreTemplates" via "Draft.ExtrEqs")
+datatype template_term
+=
+     t_empty
+   | template_app of template_term * template_term
+   | template_hole of int
+   | template_var of int
+datatype sign
+= equals | greater_equals | greater_than | less_equals | less_than
+datatype template
+=
+     template_bimplication of template * template
+   | template_dunno
+   | template_equation of template_term * template_term
+   | template_implication of template list * template
+   | template_inequation of sign * template_term * template_term
+   | template_negation of template
+   | template_predicate of template_term
+constructor t_empty: template_term
+constructor template_app: template_term * template_term -> template_term
+constructor template_hole: int -> template_term
+constructor template_var: int -> template_term
+constructor equals: sign
+constructor greater_equals: sign
+constructor greater_than: sign
+constructor less_equals: sign
+constructor less_than: sign
+constructor template_bimplication: template * template -> template
+constructor template_dunno: template
+constructor template_equation: template_term * template_term -> template
+constructor template_implication: template list * template -> template
+constructor template_inequation:
+   sign * template_term * template_term -> template
+constructor template_negation: template -> template
+constructor template_predicate: template_term -> template
+val vfs = fn: term -> (indexname * typ) list * (string * typ) list
+val indexOf = fn: ''a list -> ''a -> int -> int
+val has_eq = fn: term -> bool
+val term2template = fn:
+   (indexname * typ) list -> (string * typ) list -> term -> template_term
+val lemma2predicate = fn: term -> term -> template
+val makeTemplatewithContext = fn: term -> term -> template
+val lemma2template = fn: term -> template
+val thm2template = fn: thm -> template
+val tterm2string = fn: template_term -> string
+val template2string = fn: template -> string
+val t = "height ?t <= size ?t": thm
+val th =
+   Const ("HOL.Trueprop", "bool => prop") $
+     (Const ("Orderings.ord_class.less_eq", "nat => nat => bool") $
+       (Const ("Tree.height_class.height", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree")) $
+       (Const ("Nat.size_class.size", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree"))):
+   term
+### theory "Draft.Templates"
+### 0.049s elapsed time, 0.064s cpu time, 0.000s GC time
+Loading theory "Draft.ExtrEqs" (required by "Draft.Dict_ConstructionMoreTemplates")
+val eqpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Var (("_dummy_", 2), "?'a"))
+       ):
+   term Find_Theorems.criterion
+val badeqpattern = Pattern (Const ("Pure.eq", "?'a => ?'a => prop")):
+   term Find_Theorems.criterion
+val undefpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Const ("HOL.undefined", "?'a"))
+       ):
+   term Find_Theorems.criterion
+val thmpattern =
+   Pattern
+    (Const ("HOL.Trueprop", "bool => prop") $ Var (("_dummy_", 1), "bool")):
+   term Find_Theorems.criterion
+val badnames =
+   ["*nitpick*", "*Nitpick*", "*full_exhaustive*", "*_def*", "Enum.finite*",
+    "*Quickcheck*", "ATP*", "*Nunchaku*", "*Code*", "*BNF*", "*SMT*",
+    "*.*.*"]:
+   string list
+val unwanted_names =
+   [(false, Name "*nitpick*"), (false, Name "*Nitpick*"),
+    (false, Name "*full_exhaustive*"), (false, Name "*_def*"),
+    (false, Name "Enum.finite*"), (false, Name "*Quickcheck*"),
+    (false, Name "ATP*"), (false, Name "*Nunchaku*"),
+    (false, Name "*Code*"), (false, Name "*BNF*"), (false, Name "*SMT*"),
+    (false, Name "*.*.*")]:
+   (bool * term Find_Theorems.criterion) list
+val has_vars = fn: term -> bool
+val get_all_eqs = fn: string -> Proof.context -> (string * thm) list
+val get_all_thms = fn: string -> Proof.context -> (string * thm) list
+val get_noneq_thms = fn: string -> Proof.context -> (string * thm) list
+val template_eqs = fn:
+   string -> Proof.context -> (string * thm * template) list
+val template_thms = fn:
+   string -> Proof.context -> (string * thm * template) list
+### theory "Draft.ExtrEqs"
+### 0.479s elapsed time, 0.520s cpu time, 0.048s GC time
+Loading theory "Draft.Dict_ConstructionMoreTemplates"
+val templateLemmas =
+   [("Dict_Construction.wfP_implies_wf_set_of", "wfP ?P ==> wf (set_of ?P)",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 2, template_var 0))],
+       template_predicate
+        (
+           template_app
+            (template_hole 1,
+             template_app (template_hole 0, template_var 0))
+           ))),
+    ("Dict_Construction.wfP_implies_dom",
+     "wfP ?R ==> All (Wellfounded.accp ?R)",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 2, template_var 0))],
+       template_predicate
+        (
+           template_app
+            (template_hole 1,
+             template_app (template_hole 0, template_var 0))
+           ))),
+    ("Dict_Construction.wf_set_of_implies_wfP", "wf (set_of ?P) ==> wfP ?P",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_hole 2,
+              template_app (template_hole 1, template_var 0))
+            )],
+       template_predicate
+        (template_app (template_hole 0, template_var 0)))),
+    ("Dict_Construction.wf_implies_dom",
+     "wf (set_of ?R) ==> All (Wellfounded.accp ?R)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_hole 3,
+              template_app (template_hole 2, template_var 0))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_hole 1,
+             template_app (template_hole 0, template_var 0))
+           ))),
+    ("Dict_Construction.set_ofI", "?P ?x ?y ==> (?x, ?y) : set_of ?P",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_var 2, template_var 1), template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 2,
+               template_app
+                (template_app (template_hole 1, template_var 1),
+                 template_var 0)),
+             template_app (template_hole 0, template_var 2))
+           ))),
+    ("Dict_Construction.set_ofD", "(?x, ?y) : set_of ?P ==> ?P ?x ?y",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 2,
+                template_app
+                 (template_app (template_hole 1, template_var 2),
+                  template_var 1)),
+              template_app (template_hole 0, template_var 0))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app (template_var 0, template_var 2), template_var 1)
+           ))),
+    ("Dict_Construction.wfP_simulate_simple",
+     "[| wfP ?r; !!x y. ?r' x y ==> ?r (?g x) (?g y) |] ==> wfP ?r'",
+     template_implication
+      ([template_predicate (template_app (template_hole 2, template_var 2)),
+        template_predicate (template_app (template_hole 1, t_empty))],
+       template_predicate
+        (template_app (template_hole 0, template_var 1)))),
+    ("Dict_Construction.wf_simulate_simple",
+     "[| wf ?r; !!x y. (x, y) : ?r' ==> (?g x, ?g y) : ?r |] ==> wf ?r'",
+     template_implication
+      ([template_predicate (template_app (template_hole 6, template_var 2)),
+        template_predicate (template_app (template_hole 5, t_empty))],
+       template_predicate
+        (template_app (template_hole 0, template_var 1))))]:
+   (string * thm * template) list
+### theory "Draft.Dict_ConstructionMoreTemplates"
+### 0.320s elapsed time, 0.446s cpu time, 0.056s GC time
+val it = (): unit

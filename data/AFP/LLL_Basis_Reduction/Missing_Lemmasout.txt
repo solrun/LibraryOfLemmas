@@ -1,0 +1,1310 @@
+Loading theory "Draft.Missing_Lemmas" (required by "Draft.Missing_LemmasTemplates")
+Loading theory "Draft.Templates" (required by "Draft.Missing_LemmasTemplates" via "Draft.ExtrEqs")
+datatype template_term
+=
+     t_empty
+   | template_app of template_term * template_term
+   | template_hole of int
+   | template_var of int
+datatype sign
+= equals | greater_equals | greater_than | less_equals | less_than
+datatype template
+=
+     template_bimplication of template * template
+   | template_dunno
+   | template_equation of template_term * template_term
+   | template_implication of template list * template
+   | template_inequation of sign * template_term * template_term
+   | template_negation of template
+   | template_predicate of template_term
+constructor t_empty: template_term
+constructor template_app: template_term * template_term -> template_term
+constructor template_hole: int -> template_term
+constructor template_var: int -> template_term
+constructor equals: sign
+constructor greater_equals: sign
+constructor greater_than: sign
+constructor less_equals: sign
+constructor less_than: sign
+constructor template_bimplication: template * template -> template
+constructor template_dunno: template
+constructor template_equation: template_term * template_term -> template
+constructor template_implication: template list * template -> template
+constructor template_inequation:
+   sign * template_term * template_term -> template
+constructor template_negation: template -> template
+constructor template_predicate: template_term -> template
+val vfs = fn: term -> (indexname * typ) list * (string * typ) list
+val indexOf = fn: ''a list -> ''a -> int -> int
+val has_eq = fn: term -> bool
+val term2template = fn:
+   (indexname * typ) list -> (string * typ) list -> term -> template_term
+val lemma2predicate = fn: term -> term -> template
+val makeTemplatewithContext = fn: term -> term -> template
+val lemma2template = fn: term -> template
+val thm2template = fn: thm -> template
+val tterm2string = fn: template_term -> string
+val template2string = fn: template -> string
+val t = "height ?t <= size ?t": thm
+val th =
+   Const ("HOL.Trueprop", "bool => prop") $
+     (Const ("Orderings.ord_class.less_eq", "nat => nat => bool") $
+       (Const ("Tree.height_class.height", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree")) $
+       (Const ("Nat.size_class.size", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree"))):
+   term
+### theory "Draft.Templates"
+### 0.068s elapsed time, 0.188s cpu time, 0.000s GC time
+Loading theory "Draft.ExtrEqs" (required by "Draft.Missing_LemmasTemplates")
+val eqpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Var (("_dummy_", 2), "?'a"))
+       ):
+   term Find_Theorems.criterion
+val badeqpattern = Pattern (Const ("Pure.eq", "?'a => ?'a => prop")):
+   term Find_Theorems.criterion
+val undefpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Const ("HOL.undefined", "?'a"))
+       ):
+   term Find_Theorems.criterion
+val thmpattern =
+   Pattern
+    (Const ("HOL.Trueprop", "bool => prop") $ Var (("_dummy_", 1), "bool")):
+   term Find_Theorems.criterion
+val badnames =
+   ["*nitpick*", "*Nitpick*", "*full_exhaustive*", "*_def*", "Enum.finite*",
+    "*Quickcheck*", "ATP*", "*Nunchaku*", "*Code*", "*BNF*", "*SMT*",
+    "*.*.*"]:
+   string list
+val unwanted_names =
+   [(false, Name "*nitpick*"), (false, Name "*Nitpick*"),
+    (false, Name "*full_exhaustive*"), (false, Name "*_def*"),
+    (false, Name "Enum.finite*"), (false, Name "*Quickcheck*"),
+    (false, Name "ATP*"), (false, Name "*Nunchaku*"),
+    (false, Name "*Code*"), (false, Name "*BNF*"), (false, Name "*SMT*"),
+    (false, Name "*.*.*")]:
+   (bool * term Find_Theorems.criterion) list
+val has_vars = fn: term -> bool
+val get_all_eqs = fn: string -> Proof.context -> (string * thm) list
+val get_all_thms = fn: string -> Proof.context -> (string * thm) list
+val get_noneq_thms = fn: string -> Proof.context -> (string * thm) list
+val template_eqs = fn:
+   string -> Proof.context -> (string * thm * template) list
+val template_thms = fn:
+   string -> Proof.context -> (string * thm * template) list
+### theory "Draft.ExtrEqs"
+### 0.581s elapsed time, 1.167s cpu time, 0.162s GC time
+Found termination order: "length <*mlex*> {}"
+consts
+  rev_upt :: "nat => nat => nat list"
+### theory "Draft.Missing_Lemmas"
+### 6.527s elapsed time, 8.072s cpu time, 1.583s GC time
+Loading theory "Draft.Missing_LemmasTemplates"
+val templateLemmas =
+   [("Missing_Lemmas.primitive_part_field", "primitive_part ?p = ?p",
+     template_equation
+      (template_app (template_hole 0, template_var 0), template_var 0)),
+    ("Missing_Lemmas.primitive_part_dvd", "primitive_part ?a dvd ?a",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_hole 1,
+             template_app (template_hole 0, template_var 0)),
+           template_var 0)
+         )),
+    ("Missing_Lemmas.max_idem", "max ?a ?a = ?a",
+     template_equation
+      (template_app
+        (template_app (template_hole 0, template_var 0), template_var 0),
+       template_var 0)),
+    ("Missing_Lemmas.content_uminus", "content (- ?f) = content ?f",
+     template_equation
+      (template_app
+        (template_hole 1, template_app (template_hole 0, template_var 0)),
+       template_app (template_hole 1, template_var 0))),
+    ("Missing_Lemmas.degree_abs", "degree \<bar>?p\<bar> = degree ?p",
+     template_equation
+      (template_app
+        (template_hole 1, template_app (template_hole 0, template_var 0)),
+       template_app (template_hole 1, template_var 0))),
+    ("Missing_Lemmas.vec_dim_vec_of_poly_n",
+     "dim_vec (vec_of_poly_n ?p ?n) = ?n",
+     template_equation
+      (template_app
+        (template_hole 1,
+         template_app
+          (template_app (template_hole 0, template_var 1), template_var 0)),
+       template_var 0)),
+    ("Missing_Lemmas.vec_of_poly_n0", "vec_of_poly_n 0 ?n = 0\<^sub>v ?n",
+     template_equation
+      (template_app
+        (template_app (template_hole 2, template_hole 1), template_var 0),
+       template_app (template_hole 0, template_var 0))),
+    ("Missing_Lemmas.vec_dim_vec_of_poly_n",
+     "vec_of_poly_n ?p ?n : carrier_vec ?n",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_hole 2,
+             template_app
+              (template_app (template_hole 1, template_var 1),
+               template_var 0)),
+           template_app (template_hole 0, template_var 0))
+         )),
+    ("Missing_Lemmas.poly_of_vec_as_Poly",
+     "poly_of_vec ?v = Poly (rev (list_of_vec ?v))",
+     template_equation
+      (template_app (template_hole 3, template_var 0),
+       template_app
+        (template_hole 2,
+         template_app
+          (template_hole 1,
+           template_app (template_hole 0, template_var 0))))),
+    ("Missing_Lemmas.primitive_part_neg",
+     "primitive_part (- ?a) = - primitive_part ?a",
+     template_equation
+      (template_app
+        (template_hole 1, template_app (template_hole 0, template_var 0)),
+       template_app
+        (template_hole 0, template_app (template_hole 1, template_var 0)))),
+    ("Missing_Lemmas.dim_vec_of_poly",
+     "dim_vec (vec_of_poly ?f) = degree ?f + 1",
+     template_equation
+      (template_app
+        (template_hole 4, template_app (template_hole 3, template_var 0)),
+       template_app
+        (template_app
+          (template_hole 2, template_app (template_hole 1, template_var 0)),
+         template_hole 0))),
+    ("Missing_Lemmas.length_rev_upt", "length [?i>..?j] = ?i - ?j",
+     template_equation
+      (template_app
+        (template_hole 2,
+         template_app
+          (template_app (template_hole 1, template_var 1), template_var 0)),
+       template_app
+        (template_app (template_hole 0, template_var 1), template_var 0))),
+    ("Missing_Lemmas.vec_of_poly_rev_shifted_dim",
+     "dim_vec (Missing_Lemmas.vec_of_poly_rev_shifted ?p ?n ?s ?j) = ?n",
+     template_equation
+      (template_app
+        (template_hole 1,
+         template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 0, template_var 3),
+               template_var 2),
+             template_var 1),
+           template_var 0)),
+       template_var 2)),
+    ("Missing_Lemmas.rev_upt_code", "[?i>..?j] = rev_upt_aux ?i ?j []",
+     template_equation
+      (template_app
+        (template_app (template_hole 2, template_var 1), template_var 0),
+       template_app
+        (template_app
+          (template_app (template_hole 1, template_var 1), template_var 0),
+         template_hole 0))),
+    ("Missing_Lemmas.rev_upt_upt", "rev [?i..<?j] = [?j>..?i]",
+     template_equation
+      (template_app
+        (template_hole 2,
+         template_app
+          (template_app (template_hole 1, template_var 1), template_var 0)),
+       template_app
+        (template_app (template_hole 0, template_var 0), template_var 1))),
+    ("Missing_Lemmas.upt_rev_upt", "rev [?j>..?i] = [?i..<?j]",
+     template_equation
+      (template_app
+        (template_hole 2,
+         template_app
+          (template_app (template_hole 1, template_var 1), template_var 0)),
+       template_app
+        (template_app (template_hole 0, template_var 0), template_var 1))),
+    ("Missing_Lemmas.vec_of_poly_n_0", "vec_of_poly_n ?p 0 = vNil",
+     template_equation
+      (template_app
+        (template_app (template_hole 4, template_var 0), template_hole 3),
+       template_app
+        (template_app (template_hole 2, template_hole 3),
+         template_app (template_hole 1, template_hole 0)))),
+    ("Missing_Lemmas.vec_of_poly_as",
+     "vec_of_poly_n ?p (Suc (degree ?p)) = vec_of_poly ?p",
+     template_equation
+      (template_app
+        (template_app (template_hole 3, template_var 0),
+         template_app
+          (template_hole 2,
+           template_app (template_hole 1, template_var 0))),
+       template_app (template_hole 0, template_var 0))),
+    ("Missing_Lemmas.content_field",
+     "content ?p = (if ?p = 0 then 0::?'a else (1::?'a))",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 5, template_var 0))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_hole 4,
+                 template_app
+                  (template_app (template_hole 3, template_var 0),
+                   template_hole 2)),
+               template_hole 1),
+             template_hole 0)
+           ))),
+    ("Missing_Lemmas.normalize_field",
+     "normalize ?a = (if ?a = (0::?'a) then 0::?'a else (1::?'a))",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 3, template_var 0))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_hole 2,
+                 template_app
+                  (template_app (template_hole 4, template_var 0),
+                   template_hole 1)),
+               template_hole 1),
+             template_hole 0)
+           ))),
+    ("Missing_Lemmas.coeffs_poly_of_vec",
+     "coeffs (poly_of_vec ?v) =
+      rev (dropWhile ((=) (0::?'a)) (list_of_vec ?v))",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_hole 6,
+              template_app (template_hole 5, template_var 0))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_hole 4,
+             template_app
+              (template_app
+                (template_hole 3,
+                 template_app (template_hole 2, template_hole 1)),
+               template_app (template_hole 0, template_var 0)))
+           ))),
+    ("Missing_Lemmas.Gcd_uminus",
+     "finite ?A ==> Gcd ?A = Gcd (uminus ` ?A)",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 4, template_var 0))],
+       template_equation
+        (template_app (template_hole 2, template_var 0),
+         template_app
+          (template_hole 2,
+           template_app
+            (template_app (template_hole 1, template_hole 0),
+             template_var 0))))),
+    ("Missing_Lemmas.max_list_mem",
+     "?xs ~= [] ==> Missing_Lemmas.max_list ?xs : set ?xs",
+     template_implication
+      ([template_negation
+         (template_equation (template_var 0, template_hole 3))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 2,
+               template_app (template_hole 1, template_var 0)),
+             template_app (template_hole 0, template_var 0))
+           ))),
+    ("Missing_Lemmas.poly_of_vec_vCons",
+     "poly_of_vec (vCons ?a ?v) = monom ?a (dim_vec ?v) + poly_of_vec ?v",
+     template_equation
+      (template_app
+        (template_hole 4,
+         template_app
+          (template_app (template_hole 3, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 2,
+           template_app
+            (template_app (template_hole 1, template_var 1),
+             template_app (template_hole 0, template_var 0))),
+         template_app (template_hole 4, template_var 0)))),
+    ("Missing_Lemmas.poly_of_vec_vec",
+     "poly_of_vec (vec ?n ?f) = Poly (rev (map ?f [0..<?n]))",
+     template_equation
+      (template_app
+        (template_hole 6,
+         template_app
+          (template_app (template_hole 5, template_var 1), template_var 0)),
+       template_app
+        (template_hole 4,
+         template_app
+          (template_hole 3,
+           template_app
+            (template_app (template_hole 2, template_var 0),
+             template_app
+              (template_app (template_hole 1, template_hole 0),
+               template_var 1)))))),
+    ("Missing_Lemmas.vec_of_poly_n_poly_of_vec",
+     "dim_vec ?g = ?n ==> vec_of_poly_n (poly_of_vec ?g) ?n = ?g",
+     template_implication
+      ([template_equation
+         (template_app (template_hole 3, template_var 1), template_var 0)],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 1,
+             template_app (template_hole 0, template_var 1)),
+           template_var 0),
+         template_var 1))),
+    ("Missing_Lemmas.poly_of_vec_of_poly_n",
+     "degree ?p < ?n ==> poly_of_vec (vec_of_poly_n ?p ?n) = ?p",
+     template_implication
+      ([template_inequation
+         (less_than, template_app (template_hole 3, template_var 1),
+          template_var 0)],
+       template_equation
+        (template_app
+          (template_hole 1,
+           template_app
+            (template_app (template_hole 0, template_var 1),
+             template_var 0)),
+         template_var 1))),
+    ("Missing_Lemmas.sum_list_zero",
+     "set ?xs <= {0::?'a} ==> sum_list ?xs = (0::?'a)",
+     template_implication
+      ([template_inequation
+         (less_equals, template_app (template_hole 5, template_var 0),
+          template_app
+           (template_app (template_hole 4, template_hole 3),
+            template_hole 2))],
+       template_equation
+        (template_app (template_hole 0, template_var 0), template_hole 3))),
+    ("Missing_Lemmas.vec_of_poly_n_add",
+     "vec_of_poly_n (?a + ?b) ?n =
+      vec_of_poly_n ?a ?n + vec_of_poly_n ?b ?n",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 2,
+           template_app
+            (template_app (template_hole 1, template_var 2),
+             template_var 1)),
+         template_var 0),
+       template_app
+        (template_app
+          (template_hole 0,
+           template_app
+            (template_app (template_hole 2, template_var 2),
+             template_var 0)),
+         template_app
+          (template_app (template_hole 2, template_var 1),
+           template_var 0)))),
+    ("Missing_Lemmas.aux_abs_int",
+     "?c ~= 0 ==> \<bar>?x\<bar> <= \<bar>?x * ?c\<bar>",
+     template_implication
+      ([template_negation
+         (template_equation (template_var 1, template_hole 3))],
+       template_inequation
+        (less_equals, template_app (template_hole 1, template_var 0),
+         template_app
+          (template_hole 1,
+           template_app
+            (template_app (template_hole 0, template_var 0),
+             template_var 1))))),
+    ("Missing_Lemmas.degree_gcd1",
+     "?a ~= 0 ==> degree (gcd ?a ?b) <= degree ?a",
+     template_implication
+      ([template_negation
+         (template_equation (template_var 1, template_hole 3))],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_hole 1,
+           template_app
+            (template_app (template_hole 0, template_var 1),
+             template_var 0)),
+         template_app (template_hole 1, template_var 1)))),
+    ("Missing_Lemmas.max_list_Cons",
+     "Missing_Lemmas.max_list (?x # ?xs) =
+      (if ?xs = [] then ?x else max ?x (Missing_Lemmas.max_list ?xs))",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_hole 5,
+              template_app
+               (template_app (template_hole 4, template_var 1),
+                template_var 0))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_hole 3,
+                 template_app
+                  (template_app (template_hole 2, template_var 0),
+                   template_hole 1)),
+               template_var 1),
+             template_app
+              (template_app (template_hole 0, template_var 1),
+               template_app (template_hole 5, template_var 0)))
+           ))),
+    ("Missing_Lemmas.list_of_vec_of_poly",
+     "list_of_vec (vec_of_poly ?p) =
+      (if ?p = 0 then [0::?'a] else rev (coeffs ?p))",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_hole 9,
+              template_app (template_hole 8, template_var 0))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_hole 7,
+                 template_app
+                  (template_app (template_hole 6, template_var 0),
+                   template_hole 5)),
+               template_app
+                (template_app (template_hole 4, template_hole 3),
+                 template_hole 2)),
+             template_app
+              (template_hole 1,
+               template_app (template_hole 0, template_var 0)))
+           ))),
+    ("Missing_Lemmas.le_max_self",
+     "?a <= ?b | ?b <= ?a ==> ?a <= max ?a ?b",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 2,
+                template_app
+                 (template_app (template_hole 1, template_var 1),
+                  template_var 0)),
+              template_app
+               (template_app (template_hole 1, template_var 0),
+                template_var 1))
+            )],
+       template_inequation
+        (less_equals, template_var 1,
+         template_app
+          (template_app (template_hole 0, template_var 1),
+           template_var 0)))),
+    ("Missing_Lemmas.le_max_self",
+     "?a <= ?b | ?b <= ?a ==> ?b <= max ?a ?b",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 2,
+                template_app
+                 (template_app (template_hole 1, template_var 1),
+                  template_var 0)),
+              template_app
+               (template_app (template_hole 1, template_var 0),
+                template_var 1))
+            )],
+       template_inequation
+        (less_equals, template_var 0,
+         template_app
+          (template_app (template_hole 0, template_var 1),
+           template_var 0)))),
+    ("Missing_Lemmas.vec_of_poly_n_pCons",
+     "vec_of_poly_n (pCons ?a ?p) (Suc ?n) =
+      vec_of_poly_n ?p ?n @\<^sub>v vec_of_list [?a]",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 6,
+           template_app
+            (template_app (template_hole 5, template_var 2),
+             template_var 1)),
+         template_app (template_hole 4, template_var 0)),
+       template_app
+        (template_app
+          (template_hole 3,
+           template_app
+            (template_app (template_hole 6, template_var 1),
+             template_var 0)),
+         template_app
+          (template_hole 2,
+           template_app
+            (template_app (template_hole 1, template_var 2),
+             template_hole 0))))),
+    ("Missing_Lemmas.less_1_mult'",
+     "[| (1::?'a) < ?a; (1::?'a) <= ?b |] ==> (1::?'a) < ?a * ?b",
+     template_implication
+      ([template_inequation (less_than, template_hole 2, template_var 1),
+        template_inequation (less_equals, template_hole 2, template_var 0)],
+       template_inequation
+        (less_than, template_hole 2,
+         template_app
+          (template_app (template_hole 0, template_var 1),
+           template_var 0)))),
+    ("Missing_Lemmas.mod_0_abs_less_imp_0",
+     "[| [?a = 0] (mod ?m); \<bar>?a\<bar> < ?m |] ==> ?a = 0",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 4, template_var 1),
+                template_hole 3),
+              template_var 0)
+            ),
+        template_inequation
+         (less_than, template_app (template_hole 1, template_var 1),
+          template_var 0)],
+       template_equation (template_var 1, template_hole 3))),
+    ("Missing_Lemmas.poly_of_vec_scalar_mult",
+     "degree ?b < ?n ==>
+      poly_of_vec (?a \<cdot>\<^sub>v vec_of_poly_n ?b ?n) = smult ?a ?b",
+     template_implication
+      ([template_inequation
+         (less_than, template_app (template_hole 5, template_var 2),
+          template_var 1)],
+       template_equation
+        (template_app
+          (template_hole 3,
+           template_app
+            (template_app (template_hole 2, template_var 0),
+             template_app
+              (template_app (template_hole 1, template_var 2),
+               template_var 1))),
+         template_app
+          (template_app (template_hole 0, template_var 0),
+           template_var 2)))),
+    ("Missing_Lemmas.rev_upt_rec",
+     "[?i>..?j] = (if ?j < ?i then [?i>..Suc ?j] @ [?j] else [])",
+     template_equation
+      (template_app
+        (template_app (template_hole 6, template_var 1), template_var 0),
+       template_app
+        (template_app
+          (template_app
+            (template_hole 5,
+             template_app
+              (template_app (template_hole 4, template_var 0),
+               template_var 1)),
+           template_app
+            (template_app
+              (template_hole 3,
+               template_app
+                (template_app (template_hole 6, template_var 1),
+                 template_app (template_hole 2, template_var 0))),
+             template_app
+              (template_app (template_hole 1, template_var 0),
+               template_hole 0))),
+         template_hole 0))),
+    ("Missing_Lemmas.upt_aux_rec",
+     "rev_upt_aux ?i ?j ?js =
+      (if ?i <= ?j then ?js else rev_upt_aux ?i (Suc ?j) (?j # ?js))",
+     template_equation
+      (template_app
+        (template_app
+          (template_app (template_hole 4, template_var 2), template_var 1),
+         template_var 0),
+       template_app
+        (template_app
+          (template_app
+            (template_hole 3,
+             template_app
+              (template_app (template_hole 2, template_var 2),
+               template_var 1)),
+           template_var 0),
+         template_app
+          (template_app
+            (template_app (template_hole 4, template_var 2),
+             template_app (template_hole 1, template_var 1)),
+           template_app
+            (template_app (template_hole 0, template_var 1),
+             template_var 0))))),
+    ("Missing_Lemmas.vec_index_vec_of_poly",
+     "?i <= degree ?p ==> vec_of_poly ?p $ ?i = coeff ?p (degree ?p - ?i)",
+     template_implication
+      ([template_inequation
+         (less_equals, template_var 1,
+          template_app (template_hole 5, template_var 0))],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 3,
+             template_app (template_hole 2, template_var 0)),
+           template_var 1),
+         template_app
+          (template_app (template_hole 1, template_var 0),
+           template_app
+            (template_app
+              (template_hole 0,
+               template_app (template_hole 5, template_var 0)),
+             template_var 1))))),
+    ("Missing_Lemmas.poly_of_vec_add",
+     "dim_vec ?a = dim_vec ?b ==>
+      poly_of_vec (?a + ?b) = poly_of_vec ?a + poly_of_vec ?b",
+     template_implication
+      ([template_equation
+         (template_app (template_hole 4, template_var 1),
+          template_app (template_hole 4, template_var 0))],
+       template_equation
+        (template_app
+          (template_hole 2,
+           template_app
+            (template_app (template_hole 1, template_var 1),
+             template_var 0)),
+         template_app
+          (template_app
+            (template_hole 0,
+             template_app (template_hole 2, template_var 1)),
+           template_app (template_hole 2, template_var 0))))),
+    ("Missing_Lemmas.range_subsetI",
+     "(!!x. ?f x = ?g (?h x)) ==> range ?f <= range ?g",
+     template_implication
+      ([template_predicate (template_app (template_hole 7, t_empty))],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_app (template_hole 3, template_var 2), template_hole 2),
+         template_app
+          (template_app (template_hole 1, template_var 1),
+           template_hole 0)))),
+    ("Missing_Lemmas.prod_list_nonneg",
+     "(!!x. x : set ?xs ==> (0::?'a) <= x) ==> (0::?'a) <= prod_list ?xs",
+     template_implication
+      ([template_predicate (template_app (template_hole 6, t_empty))],
+       template_inequation
+        (less_equals, template_hole 1,
+         template_app (template_hole 0, template_var 0)))),
+    ("Missing_Lemmas.degree_poly_of_vec_less",
+     "[| 0 < dim_vec ?v; dim_vec ?v <= ?n |]
+      ==> degree (poly_of_vec ?v) < ?n",
+     template_implication
+      ([template_inequation
+         (less_than, template_hole 4,
+          template_app (template_hole 3, template_var 1)),
+        template_inequation
+         (less_equals, template_app (template_hole 3, template_var 1),
+          template_var 0)],
+       template_inequation
+        (less_than,
+         template_app
+          (template_hole 1, template_app (template_hole 0, template_var 1)),
+         template_var 0))),
+    ("Missing_Lemmas.sum_list_map_dropWhile0",
+     "?f (0::?'b) = (0::?'a) ==>
+      sum_list (map ?f (dropWhile ((=) (0::?'b)) ?xs)) =
+      sum_list (map ?f ?xs)",
+     template_implication
+      ([template_equation
+         (template_app (template_var 1, template_hole 5), template_hole 4)],
+       template_equation
+        (template_app
+          (template_hole 3,
+           template_app
+            (template_app (template_hole 2, template_var 1),
+             template_app
+              (template_app
+                (template_hole 1,
+                 template_app (template_hole 0, template_hole 5)),
+               template_var 0))),
+         template_app
+          (template_hole 3,
+           template_app
+            (template_app (template_hole 2, template_var 1),
+             template_var 0))))),
+    ("Missing_Lemmas.nth_rev_upt",
+     "?j + ?k < ?i ==> [?i>..?j] ! ?k = ?i - 1 - ?k",
+     template_implication
+      ([template_inequation
+         (less_than,
+          template_app
+           (template_app (template_hole 5, template_var 2), template_var 1),
+          template_var 0)],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 3,
+             template_app
+              (template_app (template_hole 2, template_var 0),
+               template_var 2)),
+           template_var 1),
+         template_app
+          (template_app
+            (template_hole 1,
+             template_app
+              (template_app (template_hole 1, template_var 0),
+               template_hole 0)),
+           template_var 1)))),
+    ("Missing_Lemmas.pseudo_mod_monic",
+     "monic ?g ==> EX q. ?f = ?g * q + pseudo_mod ?f ?g",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app (template_hole 7, template_var 1),
+            template_app (template_hole 6, template_var 1)),
+          template_hole 5)],
+       template_predicate (template_app (template_hole 4, t_empty)))),
+    ("Missing_Lemmas.coeff_mult_monom",
+     "coeff (?p * monom ?a ?d) ?i =
+      (if ?d <= ?i then ?a * coeff ?p (?i - ?d) else (0::?'a))",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 7,
+           template_app
+            (template_app (template_hole 6, template_var 3),
+             template_app
+              (template_app (template_hole 5, template_var 2),
+               template_var 1))),
+         template_var 0),
+       template_app
+        (template_app
+          (template_app
+            (template_hole 4,
+             template_app
+              (template_app (template_hole 3, template_var 1),
+               template_var 0)),
+           template_app
+            (template_app (template_hole 2, template_var 2),
+             template_app
+              (template_app (template_hole 7, template_var 3),
+               template_app
+                (template_app (template_hole 1, template_var 0),
+                 template_var 1)))),
+         template_hole 0))),
+    ("Missing_Lemmas.vec_of_poly_pCons",
+     "vec_of_poly (pCons ?a ?p) =
+      (if ?p = 0 then vec_of_list [?a]
+       else vec_of_poly ?p @\<^sub>v vec_of_list [?a])",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_hole 8,
+              template_app
+               (template_app (template_hole 7, template_var 1),
+                template_var 0))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_hole 6,
+                 template_app
+                  (template_app (template_hole 5, template_var 0),
+                   template_hole 4)),
+               template_app
+                (template_hole 3,
+                 template_app
+                  (template_app (template_hole 2, template_var 1),
+                   template_hole 1))),
+             template_app
+              (template_app
+                (template_hole 0,
+                 template_app (template_hole 8, template_var 0)),
+               template_app
+                (template_hole 3,
+                 template_app
+                  (template_app (template_hole 2, template_var 1),
+                   template_hole 1))))
+           ))),
+    ("Missing_Lemmas.nth_map_rev_upt",
+     "?i < ?m - ?n ==> map ?f [?m>..?n] ! ?i = ?f (?m - 1 - ?i)",
+     template_implication
+      ([template_inequation
+         (less_than, template_var 3,
+          template_app
+           (template_app (template_hole 5, template_var 2),
+            template_var 1))],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 3,
+             template_app
+              (template_app (template_hole 2, template_var 0),
+               template_app
+                (template_app (template_hole 1, template_var 2),
+                 template_var 1))),
+           template_var 3),
+         template_app
+          (template_var 0,
+           template_app
+            (template_app
+              (template_hole 5,
+               template_app
+                (template_app (template_hole 5, template_var 2),
+                 template_hole 0)),
+             template_var 3))))),
+    ("Missing_Lemmas.pseudo_mod_monic",
+     "monic ?g ==>
+      pseudo_mod ?f ?g = 0 | degree (pseudo_mod ?f ?g) < degree ?g",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app (template_hole 7, template_var 1),
+            template_app (template_hole 6, template_var 1)),
+          template_hole 5)],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 4,
+               template_app
+                (template_app
+                  (template_hole 3,
+                   template_app
+                    (template_app (template_hole 2, template_var 0),
+                     template_var 1)),
+                 template_hole 1)),
+             template_app
+              (template_app
+                (template_hole 0,
+                 template_app
+                  (template_hole 6,
+                   template_app
+                    (template_app (template_hole 2, template_var 0),
+                     template_var 1))),
+               template_app (template_hole 6, template_var 1)))
+           ))),
+    ("Missing_Lemmas.hom_max",
+     "(?a <= ?b) = (?f ?a <= ?f ?b) ==>
+      ?f (max ?a ?b) = max (?f ?a) (?f ?b)",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app (template_hole 4, template_var 2), template_var 1),
+          template_app
+           (template_app
+             (template_hole 3,
+              template_app (template_var 0, template_var 2)),
+            template_app (template_var 0, template_var 1)))],
+       template_equation
+        (template_app
+          (template_var 0,
+           template_app
+            (template_app (template_hole 1, template_var 2),
+             template_var 1)),
+         template_app
+          (template_app
+            (template_hole 0,
+             template_app (template_var 0, template_var 2)),
+           template_app (template_var 0, template_var 1))))),
+    ("Missing_Lemmas.list_trisect",
+     "?x < length ?lst ==>
+      [0..<length ?lst] = [0..<?x] @ ?x # [Suc ?x..<length ?lst]",
+     template_implication
+      ([template_inequation
+         (less_than, template_var 1,
+          template_app (template_hole 6, template_var 0))],
+       template_equation
+        (template_app
+          (template_app (template_hole 4, template_hole 3),
+           template_app (template_hole 6, template_var 0)),
+         template_app
+          (template_app
+            (template_hole 2,
+             template_app
+              (template_app (template_hole 4, template_hole 3),
+               template_var 1)),
+           template_app
+            (template_app (template_hole 1, template_var 1),
+             template_app
+              (template_app
+                (template_hole 4,
+                 template_app (template_hole 0, template_var 1)),
+               template_app (template_hole 6, template_var 0))))))),
+    ("Missing_Lemmas.le_max",
+     "[| ?c <= ?a | ?c <= ?b; ?a <= ?b | ?b <= ?a |] ==> ?c <= max ?a ?b",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 2,
+                template_app
+                 (template_app (template_hole 1, template_var 2),
+                  template_var 1)),
+              template_app
+               (template_app (template_hole 1, template_var 2),
+                template_var 0))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 2,
+                template_app
+                 (template_app (template_hole 1, template_var 1),
+                  template_var 0)),
+              template_app
+               (template_app (template_hole 1, template_var 0),
+                template_var 1))
+            )],
+       template_inequation
+        (less_equals, template_var 2,
+         template_app
+          (template_app (template_hole 0, template_var 1),
+           template_var 0)))),
+    ("Missing_Lemmas.max_list_le",
+     "[| !!x. x : set ?xs ==> x <= ?a; ?xs ~= [] |]
+      ==> Missing_Lemmas.max_list ?xs <= ?a",
+     template_implication
+      ([template_predicate (template_app (template_hole 8, t_empty)),
+        template_negation
+         (template_equation (template_var 1, template_hole 1))],
+       template_inequation
+        (less_equals, template_app (template_hole 0, template_var 1),
+         template_var 0))),
+    ("Missing_Lemmas.col_sylvester_sub",
+     "?j < ?m + ?n ==>
+      col (sylvester_mat_sub ?m ?n ?p ?q) ?j =
+      Missing_Lemmas.vec_of_poly_rev_shifted ?p ?n ?m ?j @\<^sub>v
+      Missing_Lemmas.vec_of_poly_rev_shifted ?q ?m ?n ?j",
+     template_implication
+      ([template_inequation
+         (less_than, template_var 4,
+          template_app
+           (template_app (template_hole 5, template_var 3),
+            template_var 2))],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 3,
+             template_app
+              (template_app
+                (template_app
+                  (template_app (template_hole 2, template_var 3),
+                   template_var 2),
+                 template_var 1),
+               template_var 0)),
+           template_var 4),
+         template_app
+          (template_app
+            (template_hole 1,
+             template_app
+              (template_app
+                (template_app
+                  (template_app (template_hole 0, template_var 1),
+                   template_var 2),
+                 template_var 3),
+               template_var 4)),
+           template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 0, template_var 0),
+                 template_var 3),
+               template_var 2),
+             template_var 4))))),
+    ("Missing_Lemmas.id_imp_bij_betw",
+     "[| ?f : ?A \<rightarrow> ?A; !!a. a : ?A ==> ?f (?f a) = a |]
+      ==> bij_betw ?f ?A ?A",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 5, template_var 1),
+              template_app
+               (template_app (template_hole 4, template_var 0), t_empty))
+            ),
+        template_predicate (template_app (template_hole 3, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app (template_hole 0, template_var 1),
+               template_var 0),
+             template_var 0)
+           ))),
+    ("Missing_Lemmas.vec_index_of_poly_n",
+     "?i < ?n ==>
+      vec_of_poly_n ?p ?n $ ?i =
+      (if ?i < ?n - Suc (degree ?p) then 0::?'a
+       else coeff ?p (?n - ?i - 1))",
+     template_implication
+      ([template_inequation (less_than, template_var 2, template_var 1)],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 8,
+             template_app
+              (template_app (template_hole 7, template_var 0),
+               template_var 1)),
+           template_var 2),
+         template_app
+          (template_app
+            (template_app
+              (template_hole 6,
+               template_app
+                (template_app (template_hole 10, template_var 2),
+                 template_app
+                  (template_app (template_hole 5, template_var 1),
+                   template_app
+                    (template_hole 4,
+                     template_app (template_hole 3, template_var 0))))),
+             template_hole 2),
+           template_app
+            (template_app (template_hole 1, template_var 0),
+             template_app
+              (template_app
+                (template_hole 5,
+                 template_app
+                  (template_app (template_hole 5, template_var 1),
+                   template_var 2)),
+               template_hole 0)))))),
+    ("Missing_Lemmas.upt_minus_eq_append",
+     "[| ?i <= ?j; ?i <= ?j - ?k |]
+      ==> [?i..<?j] = [?i..<?j - ?k] @ [?j - ?k..<?j]",
+     template_implication
+      ([template_inequation (less_equals, template_var 2, template_var 1),
+        template_inequation
+         (less_equals, template_var 2,
+          template_app
+           (template_app (template_hole 3, template_var 1),
+            template_var 0))],
+       template_equation
+        (template_app
+          (template_app (template_hole 1, template_var 2), template_var 1),
+         template_app
+          (template_app
+            (template_hole 0,
+             template_app
+              (template_app (template_hole 1, template_var 2),
+               template_app
+                (template_app (template_hole 3, template_var 1),
+                 template_var 0))),
+           template_app
+            (template_app
+              (template_hole 1,
+               template_app
+                (template_app (template_hole 3, template_var 1),
+                 template_var 0)),
+             template_var 1))))),
+    ("Missing_Lemmas.monic_imp_div_mod_int_poly_degree",
+     "monic ?u ==>
+      EX q r. ?p = q * ?u + r & (r = 0 | degree r < degree ?u)",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app (template_hole 10, template_var 1),
+            template_app (template_hole 9, template_var 1)),
+          template_hole 8)],
+       template_predicate (template_app (template_hole 7, t_empty)))),
+    ("Missing_Lemmas.monic_imp_div_mod_int_poly_degree2",
+     "[| monic ?u; 0 < degree ?u |]
+      ==> EX q r. ?p = q * ?u + r & degree r < degree ?u",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app (template_hole 9, template_var 1),
+            template_app (template_hole 8, template_var 1)),
+          template_hole 7),
+        template_inequation
+         (less_than, template_hole 5,
+          template_app (template_hole 8, template_var 1))],
+       template_predicate (template_app (template_hole 4, t_empty)))),
+    ("Missing_Lemmas.max_list_as_Greatest",
+     "(!!x y. [| x : set ?xs; y : set ?xs |] ==> x <= y | y <= x) ==>
+      Missing_Lemmas.max_list ?xs = (GREATEST a. a : set ?xs)",
+     template_implication
+      ([template_predicate (template_app (template_hole 8, t_empty))],
+       template_equation
+        (template_app (template_hole 1, template_var 0),
+         template_app (template_hole 0, t_empty)))),
+    ("Missing_Lemmas.mem_set_imp_le_max_list",
+     "[| !!a b. [| a : set ?xs; b : set ?xs |] ==> a <= b | b <= a;
+         ?a : set ?xs |]
+      ==> ?a <= Missing_Lemmas.max_list ?xs",
+     template_implication
+      ([template_predicate (template_app (template_hole 6, t_empty)),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 4, template_var 0),
+              template_app (template_hole 3, template_var 1))
+            )],
+       template_inequation
+        (less_equals, template_var 0,
+         template_app (template_hole 0, template_var 1)))),
+    ("Missing_Lemmas.log_prod",
+     "[| 0 < ?a; ?a ~= 1; !!x. x : ?X ==> 0 < ?f x |]
+      ==> log ?a (prod ?f ?X) = sum (log ?a o ?f) ?X",
+     template_implication
+      ([template_inequation (less_than, template_hole 9, template_var 2),
+        template_negation
+         (template_equation (template_var 2, template_hole 6)),
+        template_predicate (template_app (template_hole 5, t_empty))],
+       template_equation
+        (template_app
+          (template_app (template_hole 3, template_var 2),
+           template_app
+            (template_app (template_hole 2, template_var 0),
+             template_var 1)),
+         template_app
+          (template_app
+            (template_hole 1,
+             template_app
+              (template_app
+                (template_hole 0,
+                 template_app (template_hole 3, template_var 2)),
+               template_var 0)),
+           template_var 1)))),
+    ("Missing_Lemmas.vec_of_poly_rev_shifted_scalar_prod",
+     "[| degree ?p <= ?m; dim_vec ?v = ?n; ?j < ?m + ?n |]
+      ==> Missing_Lemmas.vec_of_poly_rev_shifted ?p ?n ?m
+           (?n + ?m - Suc ?j) \<bullet>
+          ?v =
+          coeff (?p * poly_of_vec ?v) ?j",
+     template_implication
+      ([template_inequation
+         (less_equals, template_app (template_hole 12, template_var 4),
+          template_var 3),
+        template_equation
+         (template_app (template_hole 10, template_var 2), template_var 1),
+        template_inequation
+         (less_than, template_var 0,
+          template_app
+           (template_app (template_hole 8, template_var 3),
+            template_var 1))],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 6,
+             template_app
+              (template_app
+                (template_app
+                  (template_app (template_hole 5, template_var 4),
+                   template_var 1),
+                 template_var 3),
+               template_app
+                (template_app
+                  (template_hole 4,
+                   template_app
+                    (template_app (template_hole 8, template_var 1),
+                     template_var 3)),
+                 template_app (template_hole 3, template_var 0)))),
+           template_var 2),
+         template_app
+          (template_app
+            (template_hole 2,
+             template_app
+              (template_app (template_hole 1, template_var 4),
+               template_app (template_hole 0, template_var 2))),
+           template_var 0)))),
+    ("Missing_Lemmas.le_max_list",
+     "[| !!a b. [| a : set ?xs; b : set ?xs |] ==> a <= b | b <= a;
+         ?a <= ?b; ?b : set ?xs |]
+      ==> ?a <= Missing_Lemmas.max_list ?xs",
+     template_implication
+      ([template_predicate (template_app (template_hole 6, t_empty)),
+        template_inequation (less_equals, template_var 1, template_var 0),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 4, template_var 0),
+              template_app (template_hole 3, template_var 2))
+            )],
+       template_inequation
+        (less_equals, template_var 1,
+         template_app (template_hole 0, template_var 2)))),
+    ("Missing_Lemmas.hom_max_list_commute",
+     "[| ?xs ~= [];
+         !!x y.
+            [| x : set ?xs; y : set ?xs |]
+            ==> ?h (max x y) = max (?h x) (?h y) |]
+      ==> ?h (Missing_Lemmas.max_list ?xs) =
+          Missing_Lemmas.max_list (map ?h ?xs)",
+     template_implication
+      ([template_negation
+         (template_equation (template_var 1, template_hole 9)),
+        template_predicate (template_app (template_hole 8, t_empty))],
+       template_equation
+        (template_app
+          (template_var 0, template_app (template_hole 2, template_var 1)),
+         template_app
+          (template_hole 1,
+           template_app
+            (template_app (template_hole 0, template_var 0),
+             template_var 1))))),
+    ("Missing_Lemmas.sylvester_sub_poly",
+     "[| degree ?p <= ?m; degree ?q <= ?n; ?v : carrier_vec (?m + ?n) |]
+      ==> poly_of_vec
+           ((sylvester_mat_sub ?m ?n ?p ?q)\<^sup>T *\<^sub>v ?v) =
+          poly_of_vec (vec_first ?v ?n) * ?p +
+          poly_of_vec (vec_last ?v ?m) * ?q",
+     template_implication
+      ([template_inequation
+         (less_equals, template_app (template_hole 12, template_var 4),
+          template_var 3),
+        template_inequation
+         (less_equals, template_app (template_hole 12, template_var 2),
+          template_var 1),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 11, template_var 0),
+              template_app
+               (template_hole 10,
+                template_app
+                 (template_app (template_hole 9, template_var 3),
+                  template_var 1)))
+            )],
+       template_equation
+        (template_app
+          (template_hole 7,
+           template_app
+            (template_app
+              (template_hole 6,
+               template_app
+                (template_hole 5,
+                 template_app
+                  (template_app
+                    (template_app
+                      (template_app (template_hole 4, template_var 3),
+                       template_var 1),
+                     template_var 4),
+                   template_var 2))),
+             template_var 0)),
+         template_app
+          (template_app
+            (template_hole 3,
+             template_app
+              (template_app
+                (template_hole 2,
+                 template_app
+                  (template_hole 7,
+                   template_app
+                    (template_app (template_hole 1, template_var 0),
+                     template_var 1))),
+               template_var 4)),
+           template_app
+            (template_app
+              (template_hole 2,
+               template_app
+                (template_hole 7,
+                 template_app
+                  (template_app (template_hole 0, template_var 0),
+                   template_var 3))),
+             template_var 2)))))]:
+   (string * thm * template) list
+### theory "Draft.Missing_LemmasTemplates"
+### 2.058s elapsed time, 2.430s cpu time, 0.301s GC time
+val it = (): unit

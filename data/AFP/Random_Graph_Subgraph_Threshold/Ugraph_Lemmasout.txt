@@ -1,0 +1,1159 @@
+Loading theory "Draft.Ugraph_Misc" (required by "Draft.Ugraph_LemmasTemplates" via "Draft.Ugraph_Lemmas" via "Draft.Prob_Lemmas")
+Loading theory "HOL-Library.Function_Algebras" (required by "Draft.Ugraph_LemmasTemplates" via "Draft.ExtrEqs" via "HOL-Library.BigO")
+Loading theory "Draft.Templates" (required by "Draft.Ugraph_LemmasTemplates" via "Draft.ExtrEqs")
+instantiation
+  fun :: (type, plus) plus
+  plus_fun == plus :: ('a => 'b) => ('a => 'b) => 'a => 'b
+instantiation
+  fun :: (type, zero) zero
+  zero_fun == zero_class.zero :: 'a => 'b
+instantiation
+  fun :: (type, times) times
+  times_fun == times :: ('a => 'b) => ('a => 'b) => 'a => 'b
+instantiation
+  fun :: (type, one) one
+  one_fun == one_class.one :: 'a => 'b
+datatype template_term
+=
+     t_empty
+   | template_app of template_term * template_term
+   | template_hole of int
+   | template_var of int
+datatype sign
+= equals | greater_equals | greater_than | less_equals | less_than
+datatype template
+=
+     template_bimplication of template * template
+   | template_dunno
+   | template_equation of template_term * template_term
+   | template_implication of template list * template
+   | template_inequation of sign * template_term * template_term
+   | template_negation of template
+   | template_predicate of template_term
+constructor t_empty: template_term
+constructor template_app: template_term * template_term -> template_term
+constructor template_hole: int -> template_term
+constructor template_var: int -> template_term
+constructor equals: sign
+constructor greater_equals: sign
+constructor greater_than: sign
+constructor less_equals: sign
+constructor less_than: sign
+constructor template_bimplication: template * template -> template
+constructor template_dunno: template
+constructor template_equation: template_term * template_term -> template
+constructor template_implication: template list * template -> template
+constructor template_inequation:
+   sign * template_term * template_term -> template
+constructor template_negation: template -> template
+constructor template_predicate: template_term -> template
+val vfs = fn: term -> (indexname * typ) list * (string * typ) list
+val indexOf = fn: ''a list -> ''a -> int -> int
+val has_eq = fn: term -> bool
+val term2template = fn:
+   (indexname * typ) list -> (string * typ) list -> term -> template_term
+val lemma2predicate = fn: term -> term -> template
+val makeTemplatewithContext = fn: term -> term -> template
+val lemma2template = fn: term -> template
+val thm2template = fn: thm -> template
+val tterm2string = fn: template_term -> string
+val template2string = fn: template -> string
+val t = "height ?t <= size ?t": thm
+val th =
+   Const ("HOL.Trueprop", "bool => prop") $
+     (Const ("Orderings.ord_class.less_eq", "nat => nat => bool") $
+       (Const ("Tree.height_class.height", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree")) $
+       (Const ("Nat.size_class.size", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree"))):
+   term
+### theory "Draft.Templates"
+### 0.071s elapsed time, 0.256s cpu time, 0.000s GC time
+### theory "HOL-Library.Function_Algebras"
+### 0.109s elapsed time, 0.333s cpu time, 0.000s GC time
+Loading theory "HOL-Library.BigO" (required by "Draft.Ugraph_LemmasTemplates" via "Draft.ExtrEqs")
+theorem Lim_transform_eventually:
+  fixes f :: "'a => 'b"
+    and l :: "'b"
+    and F :: "'a filter"
+    and g :: "'a => 'b"
+  assumes "(f \<longlongrightarrow> l) F"
+    and "\<forall>\<^sub>F x in F. f x = g x"
+  shows "(g \<longlongrightarrow> l) F"
+### theory "Draft.Ugraph_Misc"
+### 0.576s elapsed time, 1.302s cpu time, 0.087s GC time
+Loading theory "Draft.Prob_Lemmas" (required by "Draft.Ugraph_LemmasTemplates" via "Draft.Ugraph_Lemmas")
+### theory "HOL-Library.BigO"
+### 0.602s elapsed time, 1.237s cpu time, 0.087s GC time
+Loading theory "Draft.ExtrEqs" (required by "Draft.Ugraph_LemmasTemplates")
+locale prob_space
+  fixes M :: "'a measure"
+  assumes "prob_space M"
+locale prob_space_with_indicators
+  fixes M :: "'a measure"
+    and I :: "'i set"
+    and A :: "'i => 'a set"
+  assumes "prob_space_with_indicators M I A"
+val eqpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Var (("_dummy_", 2), "?'a"))
+       ):
+   term Find_Theorems.criterion
+val badeqpattern = Pattern (Const ("Pure.eq", "?'a => ?'a => prop")):
+   term Find_Theorems.criterion
+val undefpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Const ("HOL.undefined", "?'a"))
+       ):
+   term Find_Theorems.criterion
+val thmpattern =
+   Pattern
+    (Const ("HOL.Trueprop", "bool => prop") $ Var (("_dummy_", 1), "bool")):
+   term Find_Theorems.criterion
+val badnames =
+   ["*nitpick*", "*Nitpick*", "*full_exhaustive*", "*_def*", "Enum.finite*",
+    "*Quickcheck*", "ATP*", "*Nunchaku*", "*Code*", "*BNF*", "*SMT*",
+    "*.*.*"]:
+   string list
+val unwanted_names =
+   [(false, Name "*nitpick*"), (false, Name "*Nitpick*"),
+    (false, Name "*full_exhaustive*"), (false, Name "*_def*"),
+    (false, Name "Enum.finite*"), (false, Name "*Quickcheck*"),
+    (false, Name "ATP*"), (false, Name "*Nunchaku*"),
+    (false, Name "*Code*"), (false, Name "*BNF*"), (false, Name "*SMT*"),
+    (false, Name "*.*.*")]:
+   (bool * term Find_Theorems.criterion) list
+val has_vars = fn: term -> bool
+val get_all_eqs = fn: string -> Proof.context -> (string * thm) list
+val get_all_thms = fn: string -> Proof.context -> (string * thm) list
+val get_noneq_thms = fn: string -> Proof.context -> (string * thm) list
+val template_eqs = fn:
+   string -> Proof.context -> (string * thm * template) list
+val template_thms = fn:
+   string -> Proof.context -> (string * thm * template) list
+### theory "Draft.ExtrEqs"
+### 0.508s elapsed time, 1.063s cpu time, 0.132s GC time
+### theory "Draft.Prob_Lemmas"
+### 0.680s elapsed time, 1.391s cpu time, 0.132s GC time
+Loading theory "Draft.Ugraph_Lemmas" (required by "Draft.Ugraph_LemmasTemplates")
+Found termination order: "{}"
+### Ambiguous input (line 369 of "$AFP/Random_Graph_Subgraph_Threshold/Ugraph_Lemmas.thy") produces 8 parse trees:
+### ("\<^const>Pure.eq"
+###   ("\<^fixed>subgraph_isomorphic" ("_position" G') ("_position" G))
+###   ("\<^const>HOL.conj" ("_applC" ("_position" uwellformed) ("_position" G))
+###     ("\<^const>HOL.Ex_binder" ("_position" G'')
+###       ("_applC"
+###         ("\<^const>Ugraph_Lemmas.isomorphic" ("_position" G')
+###           ("\<^const>HOL.conj" ("_position" G'')
+###             ("_applC" ("_position" subgraph) ("_position" G''))))
+###         ("_position" G)))))
+### ("\<^const>Pure.eq"
+###   ("\<^fixed>subgraph_isomorphic" ("_position" G') ("_position" G))
+###   ("\<^const>HOL.conj" ("_applC" ("_position" uwellformed) ("_position" G))
+###     ("_applC"
+###       ("\<^const>Ugraph_Lemmas.isomorphic"
+###         ("\<^const>HOL.Ex_binder" ("_position" G'') ("_position" G'))
+###         ("\<^const>HOL.conj" ("_position" G'')
+###           ("_applC" ("_position" subgraph) ("_position" G''))))
+###       ("_position" G))))
+### ("\<^const>Pure.eq"
+###   ("\<^fixed>subgraph_isomorphic" ("_position" G') ("_position" G))
+###   ("\<^const>HOL.conj" ("_applC" ("_position" uwellformed) ("_position" G))
+###     ("\<^const>HOL.Ex_binder" ("_position" G'')
+###       ("_applC"
+###         ("\<^const>Ugraph_Lemmas.isomorphic" ("_position" G')
+###           ("\<^const>HOL.conj" ("_position" G'') ("_position" subgraph)))
+###         ("_cargs" ("_position" G'') ("_position" G))))))
+### ("\<^const>Pure.eq"
+###   ("\<^fixed>subgraph_isomorphic" ("_position" G') ("_position" G))
+###   ("\<^const>HOL.conj" ("_applC" ("_position" uwellformed) ("_position" G))
+###     ("_applC"
+###       ("\<^const>Ugraph_Lemmas.isomorphic"
+###         ("\<^const>HOL.Ex_binder" ("_position" G'') ("_position" G'))
+###         ("\<^const>HOL.conj" ("_position" G'') ("_position" subgraph)))
+###       ("_cargs" ("_position" G'') ("_position" G)))))
+### ("\<^const>Pure.eq"
+###   ("\<^fixed>subgraph_isomorphic" ("_position" G') ("_position" G))
+###   ("\<^const>HOL.conj" ("_applC" ("_position" uwellformed) ("_position" G))
+###     ("\<^const>HOL.conj"
+###       ("\<^const>Ugraph_Lemmas.isomorphic"
+###         ("\<^const>HOL.Ex_binder" ("_position" G'') ("_position" G'))
+###         ("_position" G''))
+###       ("_applC" ("_position" subgraph)
+###         ("_cargs" ("_position" G'') ("_position" G))))))
+### ("\<^const>Pure.eq"
+###   ("\<^fixed>subgraph_isomorphic" ("_position" G') ("_position" G))
+###   ("\<^const>HOL.conj" ("_applC" ("_position" uwellformed) ("_position" G))
+###     ("\<^const>HOL.Ex_binder" ("_position" G'')
+###       ("\<^const>HOL.conj"
+###         ("\<^const>Ugraph_Lemmas.isomorphic" ("_position" G')
+###           ("_position" G''))
+###         ("_applC" ("_position" subgraph)
+###           ("_cargs" ("_position" G'') ("_position" G)))))))
+### ("\<^const>Pure.eq"
+###   ("\<^fixed>subgraph_isomorphic" ("_position" G') ("_position" G))
+###   ("\<^const>HOL.conj" ("_applC" ("_position" uwellformed) ("_position" G))
+###     ("\<^const>Ugraph_Lemmas.isomorphic"
+###       ("\<^const>HOL.Ex_binder" ("_position" G'') ("_position" G'))
+###       ("\<^const>HOL.conj" ("_position" G'')
+###         ("_applC" ("_position" subgraph)
+###           ("_cargs" ("_position" G'') ("_position" G)))))))
+### ("\<^const>Pure.eq"
+###   ("\<^fixed>subgraph_isomorphic" ("_position" G') ("_position" G))
+###   ("\<^const>HOL.conj" ("_applC" ("_position" uwellformed) ("_position" G))
+###     ("\<^const>HOL.Ex_binder" ("_position" G'')
+###       ("\<^const>Ugraph_Lemmas.isomorphic" ("_position" G')
+###         ("\<^const>HOL.conj" ("_position" G'')
+###           ("_applC" ("_position" subgraph)
+###             ("_cargs" ("_position" G'') ("_position" G))))))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ambiguous input (line 608 of "$AFP/Random_Graph_Subgraph_Threshold/Ugraph_Lemmas.thy") produces 40 parse trees (10 displayed):
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" is_fixed_selector)
+###       ("_cargs" ("_position" H) ("_position" f)))
+###     ("\<^const>HOL.All_binder" ("_position" V)
+###       ("\<^const>HOL.conj" ("_applC" ("_position" finite) ("_position" V))
+###         ("\<^const>HOL.eq"
+###           ("\<^const>HOL.eq"
+###             ("_applC" ("_position" card)
+###               ("_applC" ("_position" uverts) ("_position" H)))
+###             ("_applC" ("_position" card)
+###               ("\<^const>Ugraph_Lemmas.isomorphic"
+###                 ("\<^const>HOL.implies" ("_position" V) ("_position" H))
+###                 ("\<^const>HOL.conj"
+###                   ("_applC" ("_position" f) ("_position" V))
+###                   ("_applC" ("_position" uverts)
+###                     ("_applC" ("_position" f) ("_position" V)))))))
+###           ("_position" V))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" is_fixed_selector)
+###       ("_cargs" ("_position" H) ("_position" f)))
+###     ("\<^const>HOL.All_binder" ("_position" V)
+###       ("\<^const>HOL.conj" ("_applC" ("_position" finite) ("_position" V))
+###         ("\<^const>HOL.eq"
+###           ("_applC" ("_position" card)
+###             ("\<^const>Ugraph_Lemmas.isomorphic"
+###               ("\<^const>HOL.implies"
+###                 ("\<^const>HOL.eq"
+###                   ("_applC" ("_position" uverts) ("_position" H))
+###                   ("_applC" ("_position" card) ("_position" V)))
+###                 ("_position" H))
+###               ("\<^const>HOL.conj"
+###                 ("_applC" ("_position" f) ("_position" V))
+###                 ("_applC" ("_position" uverts)
+###                   ("_applC" ("_position" f) ("_position" V))))))
+###           ("_position" V))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" is_fixed_selector)
+###       ("_cargs" ("_position" H) ("_position" f)))
+###     ("\<^const>HOL.All_binder" ("_position" V)
+###       ("\<^const>HOL.eq"
+###         ("_applC" ("_position" finite)
+###           ("\<^const>Ugraph_Lemmas.isomorphic"
+###             ("\<^const>HOL.implies"
+###               ("\<^const>HOL.conj" ("_position" V)
+###                 ("\<^const>HOL.eq"
+###                   ("_applC" ("_position" card)
+###                     ("_applC" ("_position" uverts) ("_position" H)))
+###                   ("_applC" ("_position" card) ("_position" V))))
+###               ("_position" H))
+###             ("\<^const>HOL.conj" ("_applC" ("_position" f) ("_position" V))
+###               ("_applC" ("_position" uverts)
+###                 ("_applC" ("_position" f) ("_position" V))))))
+###         ("_position" V)))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" is_fixed_selector)
+###       ("_cargs" ("_position" H) ("_position" f)))
+###     ("\<^const>HOL.All_binder" ("_position" V)
+###       ("\<^const>HOL.conj" ("_applC" ("_position" finite) ("_position" V))
+###         ("\<^const>HOL.eq"
+###           ("\<^const>Ugraph_Lemmas.isomorphic"
+###             ("\<^const>HOL.implies"
+###               ("\<^const>HOL.eq"
+###                 ("_applC" ("_position" card)
+###                   ("_applC" ("_position" uverts) ("_position" H)))
+###                 ("_applC" ("_position" card) ("_position" V)))
+###               ("_position" H))
+###             ("\<^const>HOL.conj" ("_applC" ("_position" f) ("_position" V))
+###               ("_applC" ("_position" uverts)
+###                 ("_applC" ("_position" f) ("_position" V)))))
+###           ("_position" V))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" is_fixed_selector)
+###       ("_cargs" ("_position" H) ("_position" f)))
+###     ("\<^const>HOL.eq"
+###       ("\<^const>Ugraph_Lemmas.isomorphic"
+###         ("\<^const>HOL.All_binder" ("_position" V)
+###           ("\<^const>HOL.implies"
+###             ("\<^const>HOL.conj"
+###               ("_applC" ("_position" finite) ("_position" V))
+###               ("\<^const>HOL.eq"
+###                 ("_applC" ("_position" card)
+###                   ("_applC" ("_position" uverts) ("_position" H)))
+###                 ("_applC" ("_position" card) ("_position" V))))
+###             ("_position" H)))
+###         ("\<^const>HOL.conj" ("_applC" ("_position" f) ("_position" V))
+###           ("_applC" ("_position" uverts)
+###             ("_applC" ("_position" f) ("_position" V)))))
+###       ("_position" V))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" is_fixed_selector)
+###       ("_cargs" ("_position" H) ("_position" f)))
+###     ("\<^const>HOL.All_binder" ("_position" V)
+###       ("\<^const>HOL.eq"
+###         ("\<^const>Ugraph_Lemmas.isomorphic"
+###           ("\<^const>HOL.implies"
+###             ("\<^const>HOL.conj"
+###               ("_applC" ("_position" finite) ("_position" V))
+###               ("\<^const>HOL.eq"
+###                 ("_applC" ("_position" card)
+###                   ("_applC" ("_position" uverts) ("_position" H)))
+###                 ("_applC" ("_position" card) ("_position" V))))
+###             ("_position" H))
+###           ("\<^const>HOL.conj" ("_applC" ("_position" f) ("_position" V))
+###             ("_applC" ("_position" uverts)
+###               ("_applC" ("_position" f) ("_position" V)))))
+###         ("_position" V)))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" is_fixed_selector)
+###       ("_cargs" ("_position" H) ("_position" f)))
+###     ("\<^const>HOL.All_binder" ("_position" V)
+###       ("\<^const>HOL.implies"
+###         ("\<^const>HOL.conj" ("_applC" ("_position" finite) ("_position" V))
+###           ("\<^const>HOL.eq"
+###             ("_applC" ("_position" card)
+###               ("_applC" ("_position" uverts) ("_position" H)))
+###             ("_applC" ("_position" card) ("_position" V))))
+###         ("\<^const>HOL.eq"
+###           ("\<^const>Ugraph_Lemmas.isomorphic" ("_position" H)
+###             ("\<^const>HOL.conj" ("_applC" ("_position" f) ("_position" V))
+###               ("_applC" ("_position" uverts)
+###                 ("_applC" ("_position" f) ("_position" V)))))
+###           ("_position" V))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" is_fixed_selector)
+###       ("_cargs" ("_position" H) ("_position" f)))
+###     ("\<^const>HOL.All_binder" ("_position" V)
+###       ("\<^const>HOL.conj" ("_applC" ("_position" finite) ("_position" V))
+###         ("\<^const>HOL.eq"
+###           ("\<^const>HOL.eq"
+###             ("_applC" ("_position" card)
+###               ("_applC" ("_position" uverts) ("_position" H)))
+###             ("\<^const>Ugraph_Lemmas.isomorphic"
+###               ("\<^const>HOL.implies"
+###                 ("_applC" ("_position" card) ("_position" V))
+###                 ("_position" H))
+###               ("\<^const>HOL.conj"
+###                 ("_applC" ("_position" f) ("_position" V))
+###                 ("_applC" ("_position" uverts)
+###                   ("_applC" ("_position" f) ("_position" V))))))
+###           ("_position" V))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" is_fixed_selector)
+###       ("_cargs" ("_position" H) ("_position" f)))
+###     ("\<^const>HOL.All_binder" ("_position" V)
+###       ("\<^const>HOL.conj" ("_applC" ("_position" finite) ("_position" V))
+###         ("\<^const>HOL.conj"
+###           ("\<^const>HOL.eq"
+###             ("_applC" ("_position" card)
+###               ("_applC" ("_position" uverts) ("_position" H)))
+###             ("_applC"
+###               ("\<^const>Ugraph_Lemmas.isomorphic"
+###                 ("\<^const>HOL.implies"
+###                   ("_applC" ("_position" card) ("_position" V))
+###                   ("_position" H))
+###                 ("_position" f))
+###               ("_position" V)))
+###           ("\<^const>HOL.eq"
+###             ("_applC" ("_position" uverts)
+###               ("_applC" ("_position" f) ("_position" V)))
+###             ("_position" V)))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" is_fixed_selector)
+###       ("_cargs" ("_position" H) ("_position" f)))
+###     ("\<^const>HOL.All_binder" ("_position" V)
+###       ("\<^const>HOL.conj" ("_applC" ("_position" finite) ("_position" V))
+###         ("\<^const>HOL.conj"
+###           ("\<^const>HOL.eq"
+###             ("_applC" ("_position" card)
+###               ("_applC" ("_position" uverts) ("_position" H)))
+###             ("_applC" ("_position" card)
+###               ("\<^const>Ugraph_Lemmas.isomorphic"
+###                 ("\<^const>HOL.implies" ("_position" V) ("_position" H))
+###                 ("_applC" ("_position" f) ("_position" V)))))
+###           ("\<^const>HOL.eq"
+###             ("_applC" ("_position" uverts)
+###               ("_applC" ("_position" f) ("_position" V)))
+###             ("_position" V)))))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### theory "Draft.Ugraph_Lemmas"
+### 0.373s elapsed time, 0.413s cpu time, 0.043s GC time
+Loading theory "Draft.Ugraph_LemmasTemplates"
+val templateLemmas =
+   [("Ugraph_Lemmas.subgraph_refl", "subgraph ?G ?G",
+     template_predicate
+      (
+         template_app
+          (template_app (template_hole 0, template_var 0), template_var 0)
+         )),
+    ("Ugraph_Lemmas.complete_wellformed",
+     "uwellformed (Ugraph_Lemmas.complete ?V)",
+     template_predicate
+      (
+         template_app
+          (template_hole 1, template_app (template_hole 0, template_var 0))
+         )),
+    ("Ugraph_Lemmas.all_edges_finite",
+     "finite ?V ==> finite (all_edges ?V)",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 2, template_var 0))],
+       template_predicate
+        (
+           template_app
+            (template_hole 1,
+             template_app (template_hole 0, template_var 0))
+           ))),
+    ("Ugraph_Lemmas.complete_finite",
+     "finite ?V ==> finite_graph (Ugraph_Lemmas.complete ?V)",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 2, template_var 0))],
+       template_predicate
+        (
+           template_app
+            (template_hole 1,
+             template_app (template_hole 0, template_var 0))
+           ))),
+    ("Ugraph_Lemmas.nonempty_subgraphs_finite",
+     "finite_graph ?G ==> finite (nonempty_subgraphs ?G)",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 2, template_var 0))],
+       template_predicate
+        (
+           template_app
+            (template_hole 1,
+             template_app (template_hole 0, template_var 0))
+           ))),
+    ("Ugraph_Lemmas.subgraphs_finite",
+     "finite_graph ?G ==> finite (subgraphs ?G)",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 2, template_var 0))],
+       template_predicate
+        (
+           template_app
+            (template_hole 1,
+             template_app (template_hole 0, template_var 0))
+           ))),
+    ("Ugraph_Lemmas.subgraph_isomorphic_refl",
+     "uwellformed ?G ==> ?G \<sqsubseteq> ?G",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 1, template_var 0))],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 0, template_var 0), template_var 0)
+           ))),
+    ("Ugraph_Lemmas.complete_finite_edges",
+     "finite ?V ==> finite (uedges (Ugraph_Lemmas.complete ?V))",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 3, template_var 0))],
+       template_predicate
+        (
+           template_app
+            (template_hole 2,
+             template_app
+              (template_hole 1,
+               template_app (template_hole 0, template_var 0)))
+           ))),
+    ("Ugraph_Lemmas.map_ugraph_finite",
+     "finite_graph ?G ==> finite_graph (map_ugraph ?f ?G)",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 1, template_var 1))],
+       template_predicate
+        (
+           template_app
+            (template_hole 1,
+             template_app
+              (template_app (template_hole 0, template_var 0),
+               template_var 1))
+           ))),
+    ("Ugraph_Lemmas.subgraph_complete",
+     "uwellformed ?G ==> subgraph ?G (Ugraph_Lemmas.complete (uverts ?G))",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 3, template_var 0))],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 2, template_var 0),
+             template_app
+              (template_hole 1,
+               template_app (template_hole 0, template_var 0)))
+           ))),
+    ("Ugraph_Lemmas.map_ugraph_trans",
+     "map_ugraph (?g o ?f) = map_ugraph ?g o map_ugraph ?f",
+     template_equation
+      (template_app
+        (template_hole 2,
+         template_app
+          (template_app (template_hole 1, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 0, template_app (template_hole 2, template_var 1)),
+         template_app (template_hole 2, template_var 0)))),
+    ("Ugraph_Lemmas.wellformed_all_edges",
+     "uwellformed ?G ==> uedges ?G <= all_edges (uverts ?G)",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 4, template_var 0))],
+       template_inequation
+        (less_equals, template_app (template_hole 2, template_var 0),
+         template_app
+          (template_hole 1,
+           template_app (template_hole 0, template_var 0))))),
+    ("Ugraph_Lemmas.induced_is_subgraph",
+     "?V <= uverts ?G ==> subgraph (induced_subgraph ?V ?G) ?G",
+     template_implication
+      ([template_inequation
+         (less_equals, template_var 1,
+          template_app (template_hole 2, template_var 0))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 1,
+               template_app
+                (template_app (template_hole 0, template_var 1),
+                 template_var 0)),
+             template_var 0)
+           ))),
+    ("Ugraph_Lemmas.subgraph_finite",
+     "[| finite_graph ?G; subgraph ?G' ?G |] ==> finite_graph ?G'",
+     template_implication
+      ([template_predicate (template_app (template_hole 1, template_var 1)),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 0, template_var 0),
+              template_var 1)
+            )],
+       template_predicate
+        (template_app (template_hole 1, template_var 0)))),
+    ("Ugraph_Lemmas.wellformed_finite",
+     "[| finite (uverts ?G); uwellformed ?G |] ==> finite_graph ?G",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_hole 3,
+              template_app (template_hole 2, template_var 0))
+            ),
+        template_predicate
+         (template_app (template_hole 1, template_var 0))],
+       template_predicate
+        (template_app (template_hole 0, template_var 0)))),
+    ("Ugraph_Lemmas.map_ugraph_preserves_sub",
+     "subgraph ?G\<^sub>1 ?G\<^sub>2 ==>
+      subgraph (map_ugraph ?f ?G\<^sub>1) (map_ugraph ?f ?G\<^sub>2)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 1, template_var 2),
+              template_var 1)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 1,
+               template_app
+                (template_app (template_hole 0, template_var 0),
+                 template_var 2)),
+             template_app
+              (template_app (template_hole 0, template_var 0),
+               template_var 1))
+           ))),
+    ("Ugraph_Lemmas.induced_is_subgraph",
+     "?V <= uverts ?G ==>
+      subgraph (induced_subgraph ?V ?G) (Ugraph_Lemmas.complete ?V)",
+     template_implication
+      ([template_inequation
+         (less_equals, template_var 1,
+          template_app (template_hole 3, template_var 0))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 2,
+               template_app
+                (template_app (template_hole 1, template_var 1),
+                 template_var 0)),
+             template_app (template_hole 0, template_var 1))
+           ))),
+    ("Ugraph_Lemmas.subgraph_antisym",
+     "[| subgraph ?G ?G'; subgraph ?G' ?G |] ==> ?G = ?G'",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 1, template_var 1),
+              template_var 0)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 1, template_var 0),
+              template_var 1)
+            )],
+       template_equation (template_var 1, template_var 0))),
+    ("Ugraph_Lemmas.subgraph_trans",
+     "[| subgraph ?G'' ?G'; subgraph ?G' ?G |] ==> subgraph ?G'' ?G",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 0, template_var 2),
+              template_var 1)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 0, template_var 1),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 0, template_var 2), template_var 0)
+           ))),
+    ("Ugraph_Lemmas.subgraph_isomorphic_trans",
+     "[| ?G\<^sub>1 \<sqsubseteq> ?G\<^sub>2;
+         ?G\<^sub>2 \<sqsubseteq> ?G\<^sub>3 |]
+      ==> ?G\<^sub>1 \<sqsubseteq> ?G\<^sub>3",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 0, template_var 2),
+              template_var 1)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 0, template_var 1),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 0, template_var 2), template_var 0)
+           ))),
+    ("Ugraph_Lemmas.all_edges_disjoint",
+     "?S Int ?T = {} ==> all_edges ?S Int all_edges ?T = {}",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app (template_hole 5, template_var 1), template_var 0),
+          template_hole 4)],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 2,
+             template_app (template_hole 1, template_var 1)),
+           template_app (template_hole 1, template_var 0)),
+         template_hole 0))),
+    ("Ugraph_Lemmas.map_ugraph_wellformed",
+     "[| uwellformed ?G; inj_on ?f (uverts ?G) |]
+      ==> uwellformed (map_ugraph ?f ?G)",
+     template_implication
+      ([template_predicate (template_app (template_hole 3, template_var 1)),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 2, template_var 0),
+              template_app (template_hole 1, template_var 1))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_hole 3,
+             template_app
+              (template_app (template_hole 0, template_var 0),
+               template_var 1))
+           ))),
+    ("Ugraph_Lemmas.induced_wellformed",
+     "[| uwellformed ?G; ?V <= uverts ?G |]
+      ==> uwellformed (induced_subgraph ?V ?G)",
+     template_implication
+      ([template_predicate (template_app (template_hole 3, template_var 1)),
+        template_inequation
+         (less_equals, template_var 0,
+          template_app (template_hole 1, template_var 1))],
+       template_predicate
+        (
+           template_app
+            (template_hole 3,
+             template_app
+              (template_app (template_hole 0, template_var 0),
+               template_var 1))
+           ))),
+    ("Ugraph_Lemmas.isomorphic_refl", "uwellformed ?G ==> ?G \<simeq> ?G",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 3, template_var 0))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 2,
+               template_app (template_hole 3, template_var 0)),
+             template_app
+              (template_app
+                (template_hole 2,
+                 template_app (template_hole 3, template_var 0)),
+               template_app (template_hole 1, t_empty)))
+           ))),
+    ("Ugraph_Lemmas.max_density_gr_zero",
+     "[| finite_graph ?G; nonempty_graph ?G; uwellformed ?G |]
+      ==> 0 < max_density ?G",
+     template_implication
+      ([template_predicate (template_app (template_hole 5, template_var 0)),
+        template_predicate (template_app (template_hole 4, template_var 0)),
+        template_predicate
+         (template_app (template_hole 3, template_var 0))],
+       template_inequation
+        (less_than, template_hole 1,
+         template_app (template_hole 0, template_var 0)))),
+    ("Ugraph_Lemmas.subgraph_is_subgraph_isomorphic",
+     "[| uwellformed ?G'; uwellformed ?G; subgraph ?G' ?G |]
+      ==> ?G' \<sqsubseteq> ?G",
+     template_implication
+      ([template_predicate (template_app (template_hole 2, template_var 1)),
+        template_predicate (template_app (template_hole 2, template_var 0)),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 1, template_var 1),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 0, template_var 1), template_var 0)
+           ))),
+    ("Ugraph_Lemmas.isomorphic_is_subgraph_isomorphic",
+     "?G\<^sub>1 \<simeq> ?G\<^sub>2 ==>
+      ?G\<^sub>1 \<sqsubseteq> ?G\<^sub>2",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 4,
+                template_app (template_hole 3, template_var 1)),
+              template_app
+               (template_app
+                 (template_hole 4,
+                  template_app (template_hole 3, template_var 0)),
+                template_app (template_hole 2, t_empty)))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 0, template_var 1), template_var 0)
+           ))),
+    ("Ugraph_Lemmas.subgraph_isomorphic_pre_subgraph_closed",
+     "[| uwellformed ?G\<^sub>1; subgraph ?G\<^sub>1 ?G\<^sub>2;
+         ?G\<^sub>2 \<sqsubseteq> ?G\<^sub>3 |]
+      ==> ?G\<^sub>1 \<sqsubseteq> ?G\<^sub>3",
+     template_implication
+      ([template_predicate (template_app (template_hole 2, template_var 2)),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 1, template_var 2),
+              template_var 1)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 0, template_var 1),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 0, template_var 2), template_var 0)
+           ))),
+    ("Ugraph_Lemmas.isomorphic_density",
+     "?G\<^sub>1 \<simeq> ?G\<^sub>2 ==>
+      Ugraph_Lemmas.density ?G\<^sub>1 = Ugraph_Lemmas.density ?G\<^sub>2",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 5,
+                template_app (template_hole 4, template_var 1)),
+              template_app
+               (template_app
+                 (template_hole 5,
+                  template_app (template_hole 4, template_var 0)),
+                template_app (template_hole 3, t_empty)))
+            )],
+       template_equation
+        (template_app (template_hole 0, template_var 1),
+         template_app (template_hole 0, template_var 0)))),
+    ("Ugraph_Lemmas.ex_fixed_selector",
+     "[| uwellformed ?H; finite_graph ?H;
+         !!f. is_fixed_selector ?H f ==> ?thesis |]
+      ==> ?thesis",
+     template_implication
+      ([template_predicate (template_app (template_hole 3, template_var 1)),
+        template_predicate (template_app (template_hole 2, template_var 1)),
+        template_predicate (template_app (template_hole 1, t_empty))],
+       template_predicate (template_var 0))),
+    ("Ugraph_Lemmas.isomorphic_cards",
+     "?G\<^sub>1 \<simeq> ?G\<^sub>2 ==>
+      card (uverts ?G\<^sub>1) = card (uverts ?G\<^sub>2)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 6,
+                template_app (template_hole 5, template_var 1)),
+              template_app
+               (template_app
+                 (template_hole 6,
+                  template_app (template_hole 5, template_var 0)),
+                template_app (template_hole 4, t_empty)))
+            )],
+       template_equation
+        (template_app
+          (template_hole 1, template_app (template_hole 0, template_var 1)),
+         template_app
+          (template_hole 1,
+           template_app (template_hole 0, template_var 0))))),
+    ("Ugraph_Lemmas.isomorphic_cards",
+     "?G\<^sub>1 \<simeq> ?G\<^sub>2 ==>
+      card (uedges ?G\<^sub>1) = card (uedges ?G\<^sub>2)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 6,
+                template_app (template_hole 5, template_var 1)),
+              template_app
+               (template_app
+                 (template_hole 6,
+                  template_app (template_hole 5, template_var 0)),
+                template_app (template_hole 4, t_empty)))
+            )],
+       template_equation
+        (template_app
+          (template_hole 1, template_app (template_hole 0, template_var 1)),
+         template_app
+          (template_hole 1,
+           template_app (template_hole 0, template_var 0))))),
+    ("Ugraph_Lemmas.subgraph_isomorphic_post_closed",
+     "[| ?H \<sqsubseteq> ?G; ?G \<simeq> ?G' |] ==> ?H \<sqsubseteq> ?G'",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 4, template_var 2),
+              template_var 1)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 3,
+                template_app (template_hole 2, template_var 1)),
+              template_app
+               (template_app
+                 (template_hole 3,
+                  template_app (template_hole 2, template_var 0)),
+                template_app (template_hole 1, t_empty)))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 4, template_var 2), template_var 0)
+           ))),
+    ("Ugraph_Lemmas.subgraph_isomorphic_pre_iso_closed",
+     "[| ?G\<^sub>1 \<simeq> ?G\<^sub>2;
+         ?G\<^sub>2 \<sqsubseteq> ?G\<^sub>3 |]
+      ==> ?G\<^sub>1 \<sqsubseteq> ?G\<^sub>3",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 4,
+                template_app (template_hole 3, template_var 2)),
+              template_app
+               (template_app
+                 (template_hole 4,
+                  template_app (template_hole 3, template_var 1)),
+                template_app (template_hole 2, t_empty)))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 0, template_var 1),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 0, template_var 2), template_var 0)
+           ))),
+    ("Ugraph_Lemmas.isomorphic_sym",
+     "?G\<^sub>1 \<simeq> ?G\<^sub>2 ==> ?G\<^sub>2 \<simeq> ?G\<^sub>1",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 3,
+                template_app (template_hole 2, template_var 1)),
+              template_app
+               (template_app
+                 (template_hole 3,
+                  template_app (template_hole 2, template_var 0)),
+                template_app (template_hole 1, t_empty)))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 3,
+               template_app (template_hole 2, template_var 0)),
+             template_app
+              (template_app
+                (template_hole 3,
+                 template_app (template_hole 2, template_var 1)),
+               template_app (template_hole 1, t_empty)))
+           ))),
+    ("Ugraph_Lemmas.max_density_is_max",
+     "[| finite_graph ?G; finite_graph ?G'; nonempty_graph ?G';
+         uwellformed ?G'; subgraph ?G' ?G |]
+      ==> Ugraph_Lemmas.density ?G' <= max_density ?G",
+     template_implication
+      ([template_predicate (template_app (template_hole 6, template_var 1)),
+        template_predicate (template_app (template_hole 6, template_var 0)),
+        template_predicate (template_app (template_hole 5, template_var 0)),
+        template_predicate (template_app (template_hole 4, template_var 0)),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 3, template_var 0),
+              template_var 1)
+            )],
+       template_inequation
+        (less_equals, template_app (template_hole 1, template_var 0),
+         template_app (template_hole 0, template_var 1)))),
+    ("Ugraph_Lemmas.subgraph_has_max_density",
+     "[| finite_graph ?G; nonempty_graph ?G; uwellformed ?G |]
+      ==> EX G'.
+             Ugraph_Lemmas.density G' = max_density ?G &
+             subgraph G' ?G &
+             nonempty_graph G' & finite_graph G' & uwellformed G'",
+     template_implication
+      ([template_predicate (template_app (template_hole 8, template_var 0)),
+        template_predicate (template_app (template_hole 7, template_var 0)),
+        template_predicate
+         (template_app (template_hole 6, template_var 0))],
+       template_predicate (template_app (template_hole 5, t_empty)))),
+    ("Ugraph_Lemmas.isomorphic_max_density",
+     "[| ?G\<^sub>1 \<simeq> ?G\<^sub>2; nonempty_graph ?G\<^sub>1;
+         nonempty_graph ?G\<^sub>2; finite_graph ?G\<^sub>1;
+         finite_graph ?G\<^sub>2 |]
+      ==> max_density ?G\<^sub>1 = max_density ?G\<^sub>2",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 7,
+                template_app (template_hole 6, template_var 1)),
+              template_app
+               (template_app
+                 (template_hole 7,
+                  template_app (template_hole 6, template_var 0)),
+                template_app (template_hole 5, t_empty)))
+            ),
+        template_predicate (template_app (template_hole 3, template_var 1)),
+        template_predicate (template_app (template_hole 3, template_var 0)),
+        template_predicate (template_app (template_hole 2, template_var 1)),
+        template_predicate
+         (template_app (template_hole 2, template_var 0))],
+       template_equation
+        (template_app (template_hole 0, template_var 1),
+         template_app (template_hole 0, template_var 0)))),
+    ("Ugraph_Lemmas.fixed_selector_induced_subgraph",
+     "[| is_fixed_selector ?H ?f; card (uverts ?H) = card ?V; finite ?V;
+         subgraph (?f ?V) (induced_subgraph ?V ?G); ?V <= uverts ?G;
+         uwellformed ?G |]
+      ==> ?H \<sqsubseteq> ?G",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 9, template_var 3),
+              template_var 2)
+            ),
+        template_equation
+         (template_app
+           (template_hole 7,
+            template_app (template_hole 6, template_var 3)),
+          template_app (template_hole 7, template_var 1)),
+        template_predicate (template_app (template_hole 5, template_var 1)),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 4,
+                template_app (template_var 2, template_var 1)),
+              template_app
+               (template_app (template_hole 3, template_var 1),
+                template_var 0))
+            ),
+        template_inequation
+         (less_equals, template_var 1,
+          template_app (template_hole 6, template_var 0)),
+        template_predicate
+         (template_app (template_hole 1, template_var 0))],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 0, template_var 3), template_var 0)
+           ))),
+    ("Ugraph_Lemmas.isomorphic_trans",
+     "[| ?G\<^sub>1 \<simeq> ?G\<^sub>2; ?G\<^sub>2 \<simeq> ?G\<^sub>3 |]
+      ==> ?G\<^sub>1 \<simeq> ?G\<^sub>3",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 3,
+                template_app (template_hole 2, template_var 2)),
+              template_app
+               (template_app
+                 (template_hole 3,
+                  template_app (template_hole 2, template_var 1)),
+                template_app (template_hole 1, t_empty)))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 3,
+                template_app (template_hole 2, template_var 1)),
+              template_app
+               (template_app
+                 (template_hole 3,
+                  template_app (template_hole 2, template_var 0)),
+                template_app (template_hole 1, t_empty)))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 3,
+               template_app (template_hole 2, template_var 2)),
+             template_app
+              (template_app
+                (template_hole 3,
+                 template_app (template_hole 2, template_var 0)),
+               template_app (template_hole 1, t_empty)))
+           ))),
+    ("Ugraph_Lemmas.subgraph_union_induced",
+     "[| uverts ?H\<^sub>1 <= ?S; uverts ?H\<^sub>2 <= ?T;
+         uwellformed ?H\<^sub>1; uwellformed ?H\<^sub>2 |]
+      ==> (subgraph ?H\<^sub>1 (induced_subgraph ?S ?G) &
+           subgraph ?H\<^sub>2 (induced_subgraph ?T ?G)) =
+          subgraph
+           (uverts ?H\<^sub>1 Un uverts ?H\<^sub>2,
+            uedges ?H\<^sub>1 Un uedges ?H\<^sub>2)
+           (induced_subgraph (?S Un ?T) ?G)",
+     template_implication
+      ([template_inequation
+         (less_equals, template_app (template_hole 9, template_var 4),
+          template_var 3),
+        template_inequation
+         (less_equals, template_app (template_hole 9, template_var 2),
+          template_var 1),
+        template_predicate (template_app (template_hole 8, template_var 4)),
+        template_predicate
+         (template_app (template_hole 8, template_var 2))],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 6,
+             template_app
+              (template_app (template_hole 5, template_var 4),
+               template_app
+                (template_app (template_hole 4, template_var 3),
+                 template_var 0))),
+           template_app
+            (template_app (template_hole 5, template_var 2),
+             template_app
+              (template_app (template_hole 4, template_var 1),
+               template_var 0))),
+         template_app
+          (template_app
+            (template_hole 5,
+             template_app
+              (template_app
+                (template_hole 3,
+                 template_app
+                  (template_app
+                    (template_hole 2,
+                     template_app (template_hole 9, template_var 4)),
+                   template_app (template_hole 9, template_var 2))),
+               template_app
+                (template_app
+                  (template_hole 1,
+                   template_app (template_hole 0, template_var 4)),
+                 template_app (template_hole 0, template_var 2)))),
+           template_app
+            (template_app
+              (template_hole 4,
+               template_app
+                (template_app (template_hole 2, template_var 3),
+                 template_var 1)),
+             template_var 0)))))]:
+   (string * thm * template) list
+### theory "Draft.Ugraph_LemmasTemplates"
+### 1.591s elapsed time, 2.277s cpu time, 0.639s GC time
+val it = (): unit

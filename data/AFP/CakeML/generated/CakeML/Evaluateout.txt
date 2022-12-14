@@ -1,0 +1,2615 @@
+Loading theory "HOL-Library.Function_Algebras" (required by "Draft.EvaluateTemplates" via "Draft.ExtrEqs" via "HOL-Library.BigO")
+Loading theory "HOL-Library.Stream" (required by "Draft.EvaluateTemplates" via "Draft.ExtrEqs")
+Loading theory "HOL-Library.Set_Algebras" (required by "Draft.EvaluateTemplates" via "Draft.ExtrEqs" via "HOL-Library.BigO")
+Loading theory "HOL-Library.Tree" (required by "Draft.EvaluateTemplates" via "Draft.ExtrEqs" via "Draft.Templates")
+instantiation
+  fun :: (type, plus) plus
+  plus_fun == plus :: ('a => 'b) => ('a => 'b) => 'a => 'b
+instantiation
+  set :: (plus) plus
+  plus_set == plus :: 'a set => 'a set => 'a set
+instantiation
+  fun :: (type, zero) zero
+  zero_fun == zero_class.zero :: 'a => 'b
+instantiation
+  fun :: (type, times) times
+  times_fun == times :: ('a => 'b) => ('a => 'b) => 'a => 'b
+instantiation
+  set :: (times) times
+  times_set == times :: 'a set => 'a set => 'a set
+instantiation
+  fun :: (type, one) one
+  one_fun == one_class.one :: 'a => 'b
+instantiation
+  set :: (zero) zero
+  zero_set == zero_class.zero :: 'a set
+instantiation
+  set :: (one) one
+  one_set == one_class.one :: 'a set
+### theory "HOL-Library.Function_Algebras"
+### 0.126s elapsed time, 0.515s cpu time, 0.065s GC time
+Loading theory "Draft.Lib" (required by "Draft.EvaluateTemplates" via "Draft.Evaluate")
+### theory "HOL-Library.Set_Algebras"
+### 0.243s elapsed time, 0.981s cpu time, 0.065s GC time
+Loading theory "HOL-Library.BigO" (required by "Draft.EvaluateTemplates" via "Draft.ExtrEqs")
+consts
+  shift :: "'a list => 'a stream => 'a stream"
+Proofs for coinductive predicate(s) "streamsp"
+  Proving monotonicity ...
+consts
+  left :: "'a tree => 'a tree"
+consts
+  right :: "'a tree => 'a tree"
+consts
+  snth :: "'a stream => nat => 'a"
+consts
+  stake :: "nat => 'a stream => 'a list"
+Found termination order: "size <*mlex*> {}"
+consts
+  sdrop :: "nat => 'a stream => 'a stream"
+consts
+  sfilter :: "('a => bool) => 'a stream => 'a stream"
+Found termination order: "size <*mlex*> {}"
+consts
+  cycle :: "'a list => 'a stream"
+Found termination order: "size <*mlex*> {}"
+consts
+  siterate :: "('a => 'a) => 'a => 'a stream"
+class height = type +
+  fixes height :: "'a => nat"
+instantiation
+  tree :: (type) height
+  height_tree == height :: 'a tree => nat
+consts
+  flat :: "'a list stream => 'a stream"
+Found termination order: "size <*mlex*> {}"
+consts
+  sinterleave :: "'a stream => 'a stream => 'a stream"
+consts
+  szip :: "'a stream => 'b stream => ('a * 'b) stream"
+consts
+  smap2 :: "('a => 'b => 'c) => 'a stream => 'b stream => 'c stream"
+Found termination order: "size <*mlex*> {}"
+### theory "HOL-Library.Stream"
+### 0.885s elapsed time, 3.465s cpu time, 0.385s GC time
+Loading theory "Draft.Namespace" (required by "Draft.EvaluateTemplates" via "Draft.Evaluate")
+Found termination order: "size <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+### theory "HOL-Library.BigO"
+### 0.893s elapsed time, 3.399s cpu time, 0.765s GC time
+Found termination order: "size <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+Found termination order: "(%p. size (fst p)) <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+Found termination order: "(%p. size (snd p)) <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+Found termination order: "{}"
+### theory "HOL-Library.Tree"
+### 2.008s elapsed time, 7.072s cpu time, 1.320s GC time
+Loading theory "Draft.Templates" (required by "Draft.EvaluateTemplates" via "Draft.ExtrEqs")
+datatype template_term
+=
+     t_empty
+   | template_app of template_term * template_term
+   | template_hole of int
+   | template_var of int
+datatype sign
+= equals | greater_equals | greater_than | less_equals | less_than
+datatype template
+=
+     template_bimplication of template * template
+   | template_dunno
+   | template_equation of template_term * template_term
+   | template_implication of template list * template
+   | template_inequation of sign * template_term * template_term
+   | template_negation of template
+   | template_predicate of template_term
+constructor t_empty: template_term
+constructor template_app: template_term * template_term -> template_term
+constructor template_hole: int -> template_term
+constructor template_var: int -> template_term
+constructor equals: sign
+constructor greater_equals: sign
+constructor greater_than: sign
+constructor less_equals: sign
+constructor less_than: sign
+constructor template_bimplication: template * template -> template
+constructor template_dunno: template
+constructor template_equation: template_term * template_term -> template
+constructor template_implication: template list * template -> template
+constructor template_inequation:
+   sign * template_term * template_term -> template
+constructor template_negation: template -> template
+constructor template_predicate: template_term -> template
+val vfs = fn: term -> (indexname * typ) list * (string * typ) list
+val indexOf = fn: ''a list -> ''a -> int -> int
+val has_eq = fn: term -> bool
+val term2template = fn:
+   (indexname * typ) list -> (string * typ) list -> term -> template_term
+val lemma2predicate = fn: term -> term -> template
+val makeTemplatewithContext = fn: term -> term -> template
+val lemma2template = fn: term -> template
+val thm2template = fn: thm -> template
+val tterm2string = fn: template_term -> string
+val template2string = fn: template -> string
+val t = "height ?t <= size ?t": thm
+val th =
+   Const ("HOL.Trueprop", "bool => prop") $
+     (Const ("Orderings.ord_class.less_eq", "nat => nat => bool") $
+       (Const ("Tree.height_class.height", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree")) $
+       (Const ("Nat.size_class.size", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree"))):
+   term
+### theory "Draft.Templates"
+### 0.062s elapsed time, 0.200s cpu time, 0.000s GC time
+Loading theory "Draft.ExtrEqs" (required by "Draft.EvaluateTemplates")
+Found termination order: "{}"
+Found termination order: "{}"
+### theory "Draft.Lib"
+### 2.470s elapsed time, 8.359s cpu time, 1.447s GC time
+Loading theory "Draft.Ffi" (required by "Draft.EvaluateTemplates" via "Draft.Evaluate" via "Draft.SemanticPrimitives")
+Loading theory "Draft.FpSem" (required by "Draft.EvaluateTemplates" via "Draft.Evaluate" via "Draft.Ast")
+val eqpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Var (("_dummy_", 2), "?'a"))
+       ):
+   term Find_Theorems.criterion
+val badeqpattern = Pattern (Const ("Pure.eq", "?'a => ?'a => prop")):
+   term Find_Theorems.criterion
+val undefpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Const ("HOL.undefined", "?'a"))
+       ):
+   term Find_Theorems.criterion
+val thmpattern =
+   Pattern
+    (Const ("HOL.Trueprop", "bool => prop") $ Var (("_dummy_", 1), "bool")):
+   term Find_Theorems.criterion
+val badnames =
+   ["*nitpick*", "*Nitpick*", "*full_exhaustive*", "*_def*", "Enum.finite*",
+    "*Quickcheck*", "ATP*", "*Nunchaku*", "*Code*", "*BNF*", "*SMT*",
+    "*.*.*"]:
+   string list
+val unwanted_names =
+   [(false, Name "*nitpick*"), (false, Name "*Nitpick*"),
+    (false, Name "*full_exhaustive*"), (false, Name "*_def*"),
+    (false, Name "Enum.finite*"), (false, Name "*Quickcheck*"),
+    (false, Name "ATP*"), (false, Name "*Nunchaku*"),
+    (false, Name "*Code*"), (false, Name "*BNF*"), (false, Name "*SMT*"),
+    (false, Name "*.*.*")]:
+   (bool * term Find_Theorems.criterion) list
+val has_vars = fn: term -> bool
+val get_all_eqs = fn: string -> Proof.context -> (string * thm) list
+val get_all_thms = fn: string -> Proof.context -> (string * thm) list
+val get_noneq_thms = fn: string -> Proof.context -> (string * thm) list
+val template_eqs = fn:
+   string -> Proof.context -> (string * thm * template) list
+val template_thms = fn:
+   string -> Proof.context -> (string * thm * template) list
+### theory "Draft.ExtrEqs"
+### 0.706s elapsed time, 2.303s cpu time, 0.282s GC time
+Found termination order: "(%p. length (fst p)) <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+Found termination order: "(%p. size (snd p)) <*mlex*> {}"
+Found termination order: "(%p. length (snd p)) <*mlex*> {}"
+Found termination order: "{}"
+Found termination order: "{}"
+Found termination order: "{}"
+Found termination order: "{}"
+### theory "Draft.Namespace"
+### 3.890s elapsed time, 12.135s cpu time, 1.825s GC time
+Found termination order: "{}"
+Found termination order: "{}"
+Found termination order: "{}"
+### theory "Draft.FpSem"
+### 2.576s elapsed time, 7.568s cpu time, 0.796s GC time
+Loading theory "Draft.Ast" (required by "Draft.EvaluateTemplates" via "Draft.Evaluate")
+### Ambiguous input (line 48 of "$AFP/CakeML/generated/CakeML/Ffi.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" initial_ffi_state)
+###       ("_cargs" ("_position" oc) ("_position" ffi1)))
+###     ("_record"
+###       ("_fields" ("_field" ("_constify" oracle0) ("_position" oc))
+###         ("_fields" ("_field" ("_constify" ffi_state) ("_position" ffi1))
+###           ("_fields" ("_field" ("_constify" final_event) ("_position" None))
+###             ("_field" ("_constify" io_events)
+###               ("\<^const>List.list.Nil"))))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" initial_ffi_state)
+###       ("_cargs" ("_position" oc) ("_position" ffi1)))
+###     ("_datatype_record"
+###       ("_datatype_fields"
+###         ("_datatype_field" ("_constify" oracle0) ("_position" oc))
+###         ("_datatype_fields"
+###           ("_datatype_field" ("_constify" ffi_state) ("_position" ffi1))
+###           ("_datatype_fields"
+###             ("_datatype_field" ("_constify" final_event) ("_position" None))
+###             ("_datatype_field" ("_constify" io_events)
+###               ("\<^const>List.list.Nil"))))))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ambiguous input (line 58 of "$AFP/CakeML/generated/CakeML/Ffi.thy") produces 16 parse trees (10 displayed):
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" call_FFI)
+###       ("_cargs" ("_position" st)
+###         ("_cargs" ("_position" s)
+###           ("_cargs" ("_position" conf) ("_position" bytes)))))
+###     ("\<^const>HOL.If"
+###       ("\<^const>HOL.conj"
+###         ("\<^const>HOL.eq"
+###           ("_applC" ("_position" final_event) ("_position" st))
+###           ("_position" None))
+###         ("\<^const>HOL.Not"
+###           ("\<^const>HOL.eq" ("_position" s)
+###             ("_String" ("_position" '''')))))
+###       ("_case_syntax"
+###         ("_applC" ("_applC" ("_position" oracle0) ("_position" st))
+###           ("_cargs" ("_position" s)
+###             ("_cargs" ("_applC" ("_position" ffi_state) ("_position" st))
+###               ("_cargs" ("_position" conf) ("_position" bytes)))))
+###         ("_case2"
+###           ("_case1"
+###             ("_applC" ("_position" Oracle_return)
+###               ("_cargs" ("_position" ffi') ("_position" bytes')))
+###             ("\<^const>HOL.If"
+###               ("\<^const>HOL.eq"
+###                 ("_applC" ("_position" List.length) ("_position" bytes'))
+###                 ("_applC" ("_position" List.length) ("_position" bytes)))
+###               ("_tuple"
+###                 ("_record_update" ("_position" st)
+###                   ("_field_updates"
+###                     ("_field_update" ("_constify" ffi_state)
+###                       ("_position" ffi'))
+###                     ("_field_update" ("_constify" io_events)
+###                       ("\<^const>List.append"
+###                         ("_applC" ("_position" io_events) ("_position" st))
+###                         ("_list"
+###                           ("_applC" ("_position" IO_event)
+###                             ("_cargs" ("_position" s)
+###                               ("_cargs" ("_position" conf)
+###                                 ("_applC" ("_position" zipSameLength)
+###                                   ("_cargs" ("_position" bytes)
+###                                     ("_position" bytes')))))))))))
+###                 ("_tuple_arg" ("_position" bytes')))
+###               ("_tuple"
+###                 ("_record_update" ("_position" st)
+###                   ("_field_update" ("_constify" final_event)
+###                     ("_applC" ("_position" Some)
+###                       ("_applC" ("_position" Final_event)
+###                         ("_cargs" ("_position" s)
+###                           ("_cargs" ("_position" conf)
+###                             ("_cargs" ("_position" bytes)
+###                               ("_position" FFI_failed))))))))
+###                 ("_tuple_arg" ("_position" bytes)))))
+###           ("_case2"
+###             ("_case1" ("_position" Oracle_diverge)
+###               ("_tuple"
+###                 ("_record_update" ("_position" st)
+###                   ("_field_update" ("_constify" final_event)
+###                     ("_applC" ("_position" Some)
+###                       ("_applC" ("_position" Final_event)
+###                         ("_cargs" ("_position" s)
+###                           ("_cargs" ("_position" conf)
+###                             ("_cargs" ("_position" bytes)
+###                               ("_position" FFI_diverged))))))))
+###                 ("_tuple_arg" ("_position" bytes))))
+###             ("_case1" ("_position" Oracle_fail)
+###               ("_tuple"
+###                 ("_record_update" ("_position" st)
+###                   ("_field_update" ("_constify" final_event)
+###                     ("_applC" ("_position" Some)
+###                       ("_applC" ("_position" Final_event)
+###                         ("_cargs" ("_position" s)
+###                           ("_cargs" ("_position" conf)
+###                             ("_cargs" ("_position" bytes)
+###                               ("_position" FFI_failed))))))))
+###                 ("_tuple_arg" ("_position" bytes)))))))
+###       ("_tuple" ("_position" st) ("_tuple_arg" ("_position" bytes))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" call_FFI)
+###       ("_cargs" ("_position" st)
+###         ("_cargs" ("_position" s)
+###           ("_cargs" ("_position" conf) ("_position" bytes)))))
+###     ("\<^const>HOL.If"
+###       ("\<^const>HOL.conj"
+###         ("\<^const>HOL.eq"
+###           ("_applC" ("_position" final_event) ("_position" st))
+###           ("_position" None))
+###         ("\<^const>HOL.Not"
+###           ("\<^const>HOL.eq" ("_position" s)
+###             ("_String" ("_position" '''')))))
+###       ("_case_syntax"
+###         ("_applC" ("_applC" ("_position" oracle0) ("_position" st))
+###           ("_cargs" ("_position" s)
+###             ("_cargs" ("_applC" ("_position" ffi_state) ("_position" st))
+###               ("_cargs" ("_position" conf) ("_position" bytes)))))
+###         ("_case2"
+###           ("_case1"
+###             ("_applC" ("_position" Oracle_return)
+###               ("_cargs" ("_position" ffi') ("_position" bytes')))
+###             ("\<^const>HOL.If"
+###               ("\<^const>HOL.eq"
+###                 ("_applC" ("_position" List.length) ("_position" bytes'))
+###                 ("_applC" ("_position" List.length) ("_position" bytes)))
+###               ("_tuple"
+###                 ("_datatype_record_update" ("_position" st)
+###                   ("_datatype_field_updates"
+###                     ("_datatype_field_update" ("_constify" ffi_state)
+###                       ("_position" ffi'))
+###                     ("_datatype_field_update" ("_constify" io_events)
+###                       ("\<^const>List.append"
+###                         ("_applC" ("_position" io_events) ("_position" st))
+###                         ("_list"
+###                           ("_applC" ("_position" IO_event)
+###                             ("_cargs" ("_position" s)
+###                               ("_cargs" ("_position" conf)
+###                                 ("_applC" ("_position" zipSameLength)
+###                                   ("_cargs" ("_position" bytes)
+###                                     ("_position" bytes')))))))))))
+###                 ("_tuple_arg" ("_position" bytes')))
+###               ("_tuple"
+###                 ("_record_update" ("_position" st)
+###                   ("_field_update" ("_constify" final_event)
+###                     ("_applC" ("_position" Some)
+###                       ("_applC" ("_position" Final_event)
+###                         ("_cargs" ("_position" s)
+###                           ("_cargs" ("_position" conf)
+###                             ("_cargs" ("_position" bytes)
+###                               ("_position" FFI_failed))))))))
+###                 ("_tuple_arg" ("_position" bytes)))))
+###           ("_case2"
+###             ("_case1" ("_position" Oracle_diverge)
+###               ("_tuple"
+###                 ("_record_update" ("_position" st)
+###                   ("_field_update" ("_constify" final_event)
+###                     ("_applC" ("_position" Some)
+###                       ("_applC" ("_position" Final_event)
+###                         ("_cargs" ("_position" s)
+###                           ("_cargs" ("_position" conf)
+###                             ("_cargs" ("_position" bytes)
+###                               ("_position" FFI_diverged))))))))
+###                 ("_tuple_arg" ("_position" bytes))))
+###             ("_case1" ("_position" Oracle_fail)
+###               ("_tuple"
+###                 ("_record_update" ("_position" st)
+###                   ("_field_update" ("_constify" final_event)
+###                     ("_applC" ("_position" Some)
+###                       ("_applC" ("_position" Final_event)
+###                         ("_cargs" ("_position" s)
+###                           ("_cargs" ("_position" conf)
+###                             ("_cargs" ("_position" bytes)
+###                               ("_position" FFI_failed))))))))
+###                 ("_tuple_arg" ("_position" bytes)))))))
+###       ("_tuple" ("_position" st) ("_tuple_arg" ("_position" bytes))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" call_FFI)
+###       ("_cargs" ("_position" st)
+###         ("_cargs" ("_position" s)
+###           ("_cargs" ("_position" conf) ("_position" bytes)))))
+###     ("\<^const>HOL.If"
+###       ("\<^const>HOL.conj"
+###         ("\<^const>HOL.eq"
+###           ("_applC" ("_position" final_event) ("_position" st))
+###           ("_position" None))
+###         ("\<^const>HOL.Not"
+###           ("\<^const>HOL.eq" ("_position" s)
+###             ("_String" ("_position" '''')))))
+###       ("_case_syntax"
+###         ("_applC" ("_applC" ("_position" oracle0) ("_position" st))
+###           ("_cargs" ("_position" s)
+###             ("_cargs" ("_applC" ("_position" ffi_state) ("_position" st))
+###               ("_cargs" ("_position" conf) ("_position" bytes)))))
+###         ("_case2"
+###           ("_case1"
+###             ("_applC" ("_position" Oracle_return)
+###               ("_cargs" ("_position" ffi') ("_position" bytes')))
+###             ("\<^const>HOL.If"
+###               ("\<^const>HOL.eq"
+###                 ("_applC" ("_position" List.length) ("_position" bytes'))
+###                 ("_applC" ("_position" List.length) ("_position" bytes)))
+###               ("_tuple"
+###                 ("_record_update" ("_position" st)
+###                   ("_field_updates"
+###                     ("_field_update" ("_constify" ffi_state)
+###                       ("_position" ffi'))
+###                     ("_field_update" ("_constify" io_events)
+###                       ("\<^const>List.append"
+###                         ("_applC" ("_position" io_events) ("_position" st))
+###                         ("_list"
+###                           ("_applC" ("_position" IO_event)
+###                             ("_cargs" ("_position" s)
+###                               ("_cargs" ("_position" conf)
+###                                 ("_applC" ("_position" zipSameLength)
+###                                   ("_cargs" ("_position" bytes)
+###                                     ("_position" bytes')))))))))))
+###                 ("_tuple_arg" ("_position" bytes')))
+###               ("_tuple"
+###                 ("_datatype_record_update" ("_position" st)
+###                   ("_datatype_field_update" ("_constify" final_event)
+###                     ("_applC" ("_position" Some)
+###                       ("_applC" ("_position" Final_event)
+###                         ("_cargs" ("_position" s)
+###                           ("_cargs" ("_position" conf)
+###                             ("_cargs" ("_position" bytes)
+###                               ("_position" FFI_failed))))))))
+###                 ("_tuple_arg" ("_position" bytes)))))
+###           ("_case2"
+###             ("_case1" ("_position" Oracle_diverge)
+###               ("_tuple"
+###                 ("_record_update" ("_position" st)
+###                   ("_field_update" ("_constify" final_event)
+###                     ("_applC" ("_position" Some)
+###                       ("_applC" ("_position" Final_event)
+###                         ("_cargs" ("_position" s)
+###                           ("_cargs" ("_position" conf)
+###                             ("_cargs" ("_position" bytes)
+###                               ("_position" FFI_diverged))))))))
+###                 ("_tuple_arg" ("_position" bytes))))
+###             ("_case1" ("_position" Oracle_fail)
+###               ("_tuple"
+###                 ("_record_update" ("_position" st)
+###                   ("_field_update" ("_constify" final_event)
+###                     ("_applC" ("_position" Some)
+###                       ("_applC" ("_position" Final_event)
+###                         ("_cargs" ("_position" s)
+###                           ("_cargs" ("_position" conf)
+###                             ("_cargs" ("_position" bytes)
+###                               ("_position" FFI_failed))))))))
+###                 ("_tuple_arg" ("_position" bytes)))))))
+###       ("_tuple" ("_position" st) ("_tuple_arg" ("_position" bytes))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" call_FFI)
+###       ("_cargs" ("_position" st)
+###         ("_cargs" ("_position" s)
+###           ("_cargs" ("_position" conf) ("_position" bytes)))))
+###     ("\<^const>HOL.If"
+###       ("\<^const>HOL.conj"
+###         ("\<^const>HOL.eq"
+###           ("_applC" ("_position" final_event) ("_position" st))
+###           ("_position" None))
+###         ("\<^const>HOL.Not"
+###           ("\<^const>HOL.eq" ("_position" s)
+###             ("_String" ("_position" '''')))))
+###       ("_case_syntax"
+###         ("_applC" ("_applC" ("_position" oracle0) ("_position" st))
+###           ("_cargs" ("_position" s)
+###             ("_cargs" ("_applC" ("_position" ffi_state) ("_position" st))
+###               ("_cargs" ("_position" conf) ("_position" bytes)))))
+###         ("_case2"
+###           ("_case1"
+###             ("_applC" ("_position" Oracle_return)
+###               ("_cargs" ("_position" ffi') ("_position" bytes')))
+###             ("\<^const>HOL.If"
+###               ("\<^const>HOL.eq"
+###                 ("_applC" ("_position" List.length) ("_position" bytes'))
+###                 ("_applC" ("_position" List.length) ("_position" bytes)))
+###               ("_tuple"
+###                 ("_datatype_record_update" ("_position" st)
+###                   ("_datatype_field_updates"
+###                     ("_datatype_field_update" ("_constify" ffi_state)
+###                       ("_position" ffi'))
+###                     ("_datatype_field_update" ("_constify" io_events)
+###                       ("\<^const>List.append"
+###                         ("_applC" ("_position" io_events) ("_position" st))
+###                         ("_list"
+###                           ("_applC" ("_position" IO_event)
+###                             ("_cargs" ("_position" s)
+###                               ("_cargs" ("_position" conf)
+###                                 ("_applC" ("_position" zipSameLength)
+###                                   ("_cargs" ("_position" bytes)
+###                                     ("_position" bytes')))))))))))
+###                 ("_tuple_arg" ("_position" bytes')))
+###               ("_tuple"
+###                 ("_datatype_record_update" ("_position" st)
+###                   ("_datatype_field_update" ("_constify" final_event)
+###                     ("_applC" ("_position" Some)
+###                       ("_applC" ("_position" Final_event)
+###                         ("_cargs" ("_position" s)
+###                           ("_cargs" ("_position" conf)
+###                             ("_cargs" ("_position" bytes)
+###                               ("_position" FFI_failed))))))))
+###                 ("_tuple_arg" ("_position" bytes)))))
+###           ("_case2"
+###             ("_case1" ("_position" Oracle_diverge)
+###               ("_tuple"
+###                 ("_record_update" ("_position" st)
+###                   ("_field_update" ("_constify" final_event)
+###                     ("_applC" ("_position" Some)
+###                       ("_applC" ("_position" Final_event)
+###                         ("_cargs" ("_position" s)
+###                           ("_cargs" ("_position" conf)
+###                             ("_cargs" ("_position" bytes)
+###                               ("_position" FFI_diverged))))))))
+###                 ("_tuple_arg" ("_position" bytes))))
+###             ("_case1" ("_position" Oracle_fail)
+###               ("_tuple"
+###                 ("_record_update" ("_position" st)
+###                   ("_field_update" ("_constify" final_event)
+###                     ("_applC" ("_position" Some)
+###                       ("_applC" ("_position" Final_event)
+###                         ("_cargs" ("_position" s)
+###                           ("_cargs" ("_position" conf)
+###                             ("_cargs" ("_position" bytes)
+###                               ("_position" FFI_failed))))))))
+###                 ("_tuple_arg" ("_position" bytes)))))))
+###       ("_tuple" ("_position" st) ("_tuple_arg" ("_position" bytes))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" call_FFI)
+###       ("_cargs" ("_position" st)
+###         ("_cargs" ("_position" s)
+###           ("_cargs" ("_position" conf) ("_position" bytes)))))
+###     ("\<^const>HOL.If"
+###       ("\<^const>HOL.conj"
+###         ("\<^const>HOL.eq"
+###           ("_applC" ("_position" final_event) ("_position" st))
+###           ("_position" None))
+###         ("\<^const>HOL.Not"
+###           ("\<^const>HOL.eq" ("_position" s)
+###             ("_String" ("_position" '''')))))
+###       ("_case_syntax"
+###         ("_applC" ("_applC" ("_position" oracle0) ("_position" st))
+###           ("_cargs" ("_position" s)
+###             ("_cargs" ("_applC" ("_position" ffi_state) ("_position" st))
+###               ("_cargs" ("_position" conf) ("_position" bytes)))))
+###         ("_case2"
+###           ("_case1"
+###             ("_applC" ("_position" Oracle_return)
+###               ("_cargs" ("_position" ffi') ("_position" bytes')))
+###             ("\<^const>HOL.If"
+###               ("\<^const>HOL.eq"
+###                 ("_applC" ("_position" List.length) ("_position" bytes'))
+###                 ("_applC" ("_position" List.length) ("_position" bytes)))
+###               ("_tuple"
+###                 ("_record_update" ("_position" st)
+###                   ("_field_updates"
+###                     ("_field_update" ("_constify" ffi_state)
+###                       ("_position" ffi'))
+###                     ("_field_update" ("_constify" io_events)
+###                       ("\<^const>List.append"
+###                         ("_applC" ("_position" io_events) ("_position" st))
+###                         ("_list"
+###                           ("_applC" ("_position" IO_event)
+###                             ("_cargs" ("_position" s)
+###                               ("_cargs" ("_position" conf)
+###                                 ("_applC" ("_position" zipSameLength)
+###                                   ("_cargs" ("_position" bytes)
+###                                     ("_position" bytes')))))))))))
+###                 ("_tuple_arg" ("_position" bytes')))
+###               ("_tuple"
+###                 ("_record_update" ("_position" st)
+###                   ("_field_update" ("_constify" final_event)
+###                     ("_applC" ("_position" Some)
+###                       ("_applC" ("_position" Final_event)
+###                         ("_cargs" ("_position" s)
+###                           ("_cargs" ("_position" conf)
+###                             ("_cargs" ("_position" bytes)
+###                               ("_position" FFI_failed))))))))
+###                 ("_tuple_arg" ("_position" bytes)))))
+###           ("_case2"
+###             ("_case1" ("_position" Oracle_diverge)
+###               ("_tuple"
+###                 ("_datatype_record_update" ("_position" st)
+###                   ("_datatype_field_update" ("_constify" final_event)
+###                     ("_applC" ("_position" Some)
+###                       ("_applC" ("_position" Final_event)
+###                         ("_cargs" ("_position" s)
+###                           ("_cargs" ("_position" conf)
+###                             ("_cargs" ("_position" bytes)
+###                               ("_position" FFI_diverged))))))))
+###                 ("_tuple_arg" ("_position" bytes))))
+###             ("_case1" ("_position" Oracle_fail)
+###               ("_tuple"
+###                 ("_record_update" ("_position" st)
+###                   ("_field_update" ("_constify" final_event)
+###                     ("_applC" ("_position" Some)
+###                       ("_applC" ("_position" Final_event)
+###                         ("_cargs" ("_position" s)
+###                           ("_cargs" ("_position" conf)
+###                             ("_cargs" ("_position" bytes)
+###                               ("_position" FFI_failed))))))))
+###                 ("_tuple_arg" ("_position" bytes)))))))
+###       ("_tuple" ("_position" st) ("_tuple_arg" ("_position" bytes))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" call_FFI)
+###       ("_cargs" ("_position" st)
+###         ("_cargs" ("_position" s)
+###           ("_cargs" ("_position" conf) ("_position" bytes)))))
+###     ("\<^const>HOL.If"
+###       ("\<^const>HOL.conj"
+###         ("\<^const>HOL.eq"
+###           ("_applC" ("_position" final_event) ("_position" st))
+###           ("_position" None))
+###         ("\<^const>HOL.Not"
+###           ("\<^const>HOL.eq" ("_position" s)
+###             ("_String" ("_position" '''')))))
+###       ("_case_syntax"
+###         ("_applC" ("_applC" ("_position" oracle0) ("_position" st))
+###           ("_cargs" ("_position" s)
+###             ("_cargs" ("_applC" ("_position" ffi_state) ("_position" st))
+###               ("_cargs" ("_position" conf) ("_position" bytes)))))
+###         ("_case2"
+###           ("_case1"
+###             ("_applC" ("_position" Oracle_return)
+###               ("_cargs" ("_position" ffi') ("_position" bytes')))
+###             ("\<^const>HOL.If"
+###               ("\<^const>HOL.eq"
+###                 ("_applC" ("_position" List.length) ("_position" bytes'))
+###                 ("_applC" ("_position" List.length) ("_position" bytes)))
+###               ("_tuple"
+###                 ("_datatype_record_update" ("_position" st)
+###                   ("_datatype_field_updates"
+###                     ("_datatype_field_update" ("_constify" ffi_state)
+###                       ("_position" ffi'))
+###                     ("_datatype_field_update" ("_constify" io_events)
+###                       ("\<^const>List.append"
+###                         ("_applC" ("_position" io_events) ("_position" st))
+###                         ("_list"
+###                           ("_applC" ("_position" IO_event)
+###                             ("_cargs" ("_position" s)
+###                               ("_cargs" ("_position" conf)
+###                                 ("_applC" ("_position" zipSameLength)
+###                                   ("_cargs" ("_position" bytes)
+###                                     ("_position" bytes')))))))))))
+###                 ("_tuple_arg" ("_position" bytes')))
+###               ("_tuple"
+###                 ("_record_update" ("_position" st)
+###                   ("_field_update" ("_constify" final_event)
+###                     ("_applC" ("_position" Some)
+###                       ("_applC" ("_position" Final_event)
+###                         ("_cargs" ("_position" s)
+###                           ("_cargs" ("_position" conf)
+###                             ("_cargs" ("_position" bytes)
+###                               ("_position" FFI_failed))))))))
+###                 ("_tuple_arg" ("_position" bytes)))))
+###           ("_case2"
+###             ("_case1" ("_position" Oracle_diverge)
+###               ("_tuple"
+###                 ("_datatype_record_update" ("_position" st)
+###                   ("_datatype_field_update" ("_constify" final_event)
+###                     ("_applC" ("_position" Some)
+###                       ("_applC" ("_position" Final_event)
+###                         ("_cargs" ("_position" s)
+###                           ("_cargs" ("_position" conf)
+###                             ("_cargs" ("_position" bytes)
+###                               ("_position" FFI_diverged))))))))
+###                 ("_tuple_arg" ("_position" bytes))))
+###             ("_case1" ("_position" Oracle_fail)
+###               ("_tuple"
+###                 ("_record_update" ("_position" st)
+###                   ("_field_update" ("_constify" final_event)
+###                     ("_applC" ("_position" Some)
+###                       ("_applC" ("_position" Final_event)
+###                         ("_cargs" ("_position" s)
+###                           ("_cargs" ("_position" conf)
+###                             ("_cargs" ("_position" bytes)
+###                               ("_position" FFI_failed))))))))
+###                 ("_tuple_arg" ("_position" bytes)))))))
+###       ("_tuple" ("_position" st) ("_tuple_arg" ("_position" bytes))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" call_FFI)
+###       ("_cargs" ("_position" st)
+###         ("_cargs" ("_position" s)
+###           ("_cargs" ("_position" conf) ("_position" bytes)))))
+###     ("\<^const>HOL.If"
+###       ("\<^const>HOL.conj"
+###         ("\<^const>HOL.eq"
+###           ("_applC" ("_position" final_event) ("_position" st))
+###           ("_position" None))
+###         ("\<^const>HOL.Not"
+###           ("\<^const>HOL.eq" ("_position" s)
+###             ("_String" ("_position" '''')))))
+###       ("_case_syntax"
+###         ("_applC" ("_applC" ("_position" oracle0) ("_position" st))
+###           ("_cargs" ("_position" s)
+###             ("_cargs" ("_applC" ("_position" ffi_state) ("_position" st))
+###               ("_cargs" ("_position" conf) ("_position" bytes)))))
+###         ("_case2"
+###           ("_case1"
+###             ("_applC" ("_position" Oracle_return)
+###               ("_cargs" ("_position" ffi') ("_position" bytes')))
+###             ("\<^const>HOL.If"
+###               ("\<^const>HOL.eq"
+###                 ("_applC" ("_position" List.length) ("_position" bytes'))
+###                 ("_applC" ("_position" List.length) ("_position" bytes)))
+###               ("_tuple"
+###                 ("_record_update" ("_position" st)
+###                   ("_field_updates"
+###                     ("_field_update" ("_constify" ffi_state)
+###                       ("_position" ffi'))
+###                     ("_field_update" ("_constify" io_events)
+###                       ("\<^const>List.append"
+###                         ("_applC" ("_position" io_events) ("_position" st))
+###                         ("_list"
+###                           ("_applC" ("_position" IO_event)
+###                             ("_cargs" ("_position" s)
+###                               ("_cargs" ("_position" conf)
+###                                 ("_applC" ("_position" zipSameLength)
+###                                   ("_cargs" ("_position" bytes)
+###                                     ("_position" bytes')))))))))))
+###                 ("_tuple_arg" ("_position" bytes')))
+###               ("_tuple"
+###                 ("_datatype_record_update" ("_position" st)
+###                   ("_datatype_field_update" ("_constify" final_event)
+###                     ("_applC" ("_position" Some)
+###                       ("_applC" ("_position" Final_event)
+###                         ("_cargs" ("_position" s)
+###                           ("_cargs" ("_position" conf)
+###                             ("_cargs" ("_position" bytes)
+###                               ("_position" FFI_failed))))))))
+###                 ("_tuple_arg" ("_position" bytes)))))
+###           ("_case2"
+###             ("_case1" ("_position" Oracle_diverge)
+###               ("_tuple"
+###                 ("_datatype_record_update" ("_position" st)
+###                   ("_datatype_field_update" ("_constify" final_event)
+###                     ("_applC" ("_position" Some)
+###                       ("_applC" ("_position" Final_event)
+###                         ("_cargs" ("_position" s)
+###                           ("_cargs" ("_position" conf)
+###                             ("_cargs" ("_position" bytes)
+###                               ("_position" FFI_diverged))))))))
+###                 ("_tuple_arg" ("_position" bytes))))
+###             ("_case1" ("_position" Oracle_fail)
+###               ("_tuple"
+###                 ("_record_update" ("_position" st)
+###                   ("_field_update" ("_constify" final_event)
+###                     ("_applC" ("_position" Some)
+###                       ("_applC" ("_position" Final_event)
+###                         ("_cargs" ("_position" s)
+###                           ("_cargs" ("_position" conf)
+###                             ("_cargs" ("_position" bytes)
+###                               ("_position" FFI_failed))))))))
+###                 ("_tuple_arg" ("_position" bytes)))))))
+###       ("_tuple" ("_position" st) ("_tuple_arg" ("_position" bytes))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" call_FFI)
+###       ("_cargs" ("_position" st)
+###         ("_cargs" ("_position" s)
+###           ("_cargs" ("_position" conf) ("_position" bytes)))))
+###     ("\<^const>HOL.If"
+###       ("\<^const>HOL.conj"
+###         ("\<^const>HOL.eq"
+###           ("_applC" ("_position" final_event) ("_position" st))
+###           ("_position" None))
+###         ("\<^const>HOL.Not"
+###           ("\<^const>HOL.eq" ("_position" s)
+###             ("_String" ("_position" '''')))))
+###       ("_case_syntax"
+###         ("_applC" ("_applC" ("_position" oracle0) ("_position" st))
+###           ("_cargs" ("_position" s)
+###             ("_cargs" ("_applC" ("_position" ffi_state) ("_position" st))
+###               ("_cargs" ("_position" conf) ("_position" bytes)))))
+###         ("_case2"
+###           ("_case1"
+###             ("_applC" ("_position" Oracle_return)
+###               ("_cargs" ("_position" ffi') ("_position" bytes')))
+###             ("\<^const>HOL.If"
+###               ("\<^const>HOL.eq"
+###                 ("_applC" ("_position" List.length) ("_position" bytes'))
+###                 ("_applC" ("_position" List.length) ("_position" bytes)))
+###               ("_tuple"
+###                 ("_datatype_record_update" ("_position" st)
+###                   ("_datatype_field_updates"
+###                     ("_datatype_field_update" ("_constify" ffi_state)
+###                       ("_position" ffi'))
+###                     ("_datatype_field_update" ("_constify" io_events)
+###                       ("\<^const>List.append"
+###                         ("_applC" ("_position" io_events) ("_position" st))
+###                         ("_list"
+###                           ("_applC" ("_position" IO_event)
+###                             ("_cargs" ("_position" s)
+###                               ("_cargs" ("_position" conf)
+###                                 ("_applC" ("_position" zipSameLength)
+###                                   ("_cargs" ("_position" bytes)
+###                                     ("_position" bytes')))))))))))
+###                 ("_tuple_arg" ("_position" bytes')))
+###               ("_tuple"
+###                 ("_datatype_record_update" ("_position" st)
+###                   ("_datatype_field_update" ("_constify" final_event)
+###                     ("_applC" ("_position" Some)
+###                       ("_applC" ("_position" Final_event)
+###                         ("_cargs" ("_position" s)
+###                           ("_cargs" ("_position" conf)
+###                             ("_cargs" ("_position" bytes)
+###                               ("_position" FFI_failed))))))))
+###                 ("_tuple_arg" ("_position" bytes)))))
+###           ("_case2"
+###             ("_case1" ("_position" Oracle_diverge)
+###               ("_tuple"
+###                 ("_datatype_record_update" ("_position" st)
+###                   ("_datatype_field_update" ("_constify" final_event)
+###                     ("_applC" ("_position" Some)
+###                       ("_applC" ("_position" Final_event)
+###                         ("_cargs" ("_position" s)
+###                           ("_cargs" ("_position" conf)
+###                             ("_cargs" ("_position" bytes)
+###                               ("_position" FFI_diverged))))))))
+###                 ("_tuple_arg" ("_position" bytes))))
+###             ("_case1" ("_position" Oracle_fail)
+###               ("_tuple"
+###                 ("_record_update" ("_position" st)
+###                   ("_field_update" ("_constify" final_event)
+###                     ("_applC" ("_position" Some)
+###                       ("_applC" ("_position" Final_event)
+###                         ("_cargs" ("_position" s)
+###                           ("_cargs" ("_position" conf)
+###                             ("_cargs" ("_position" bytes)
+###                               ("_position" FFI_failed))))))))
+###                 ("_tuple_arg" ("_position" bytes)))))))
+###       ("_tuple" ("_position" st) ("_tuple_arg" ("_position" bytes))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" call_FFI)
+###       ("_cargs" ("_position" st)
+###         ("_cargs" ("_position" s)
+###           ("_cargs" ("_position" conf) ("_position" bytes)))))
+###     ("\<^const>HOL.If"
+###       ("\<^const>HOL.conj"
+###         ("\<^const>HOL.eq"
+###           ("_applC" ("_position" final_event) ("_position" st))
+###           ("_position" None))
+###         ("\<^const>HOL.Not"
+###           ("\<^const>HOL.eq" ("_position" s)
+###             ("_String" ("_position" '''')))))
+###       ("_case_syntax"
+###         ("_applC" ("_applC" ("_position" oracle0) ("_position" st))
+###           ("_cargs" ("_position" s)
+###             ("_cargs" ("_applC" ("_position" ffi_state) ("_position" st))
+###               ("_cargs" ("_position" conf) ("_position" bytes)))))
+###         ("_case2"
+###           ("_case1"
+###             ("_applC" ("_position" Oracle_return)
+###               ("_cargs" ("_position" ffi') ("_position" bytes')))
+###             ("\<^const>HOL.If"
+###               ("\<^const>HOL.eq"
+###                 ("_applC" ("_position" List.length) ("_position" bytes'))
+###                 ("_applC" ("_position" List.length) ("_position" bytes)))
+###               ("_tuple"
+###                 ("_record_update" ("_position" st)
+###                   ("_field_updates"
+###                     ("_field_update" ("_constify" ffi_state)
+###                       ("_position" ffi'))
+###                     ("_field_update" ("_constify" io_events)
+###                       ("\<^const>List.append"
+###                         ("_applC" ("_position" io_events) ("_position" st))
+###                         ("_list"
+###                           ("_applC" ("_position" IO_event)
+###                             ("_cargs" ("_position" s)
+###                               ("_cargs" ("_position" conf)
+###                                 ("_applC" ("_position" zipSameLength)
+###                                   ("_cargs" ("_position" bytes)
+###                                     ("_position" bytes')))))))))))
+###                 ("_tuple_arg" ("_position" bytes')))
+###               ("_tuple"
+###                 ("_record_update" ("_position" st)
+###                   ("_field_update" ("_constify" final_event)
+###                     ("_applC" ("_position" Some)
+###                       ("_applC" ("_position" Final_event)
+###                         ("_cargs" ("_position" s)
+###                           ("_cargs" ("_position" conf)
+###                             ("_cargs" ("_position" bytes)
+###                               ("_position" FFI_failed))))))))
+###                 ("_tuple_arg" ("_position" bytes)))))
+###           ("_case2"
+###             ("_case1" ("_position" Oracle_diverge)
+###               ("_tuple"
+###                 ("_record_update" ("_position" st)
+###                   ("_field_update" ("_constify" final_event)
+###                     ("_applC" ("_position" Some)
+###                       ("_applC" ("_position" Final_event)
+###                         ("_cargs" ("_position" s)
+###                           ("_cargs" ("_position" conf)
+###                             ("_cargs" ("_position" bytes)
+###                               ("_position" FFI_diverged))))))))
+###                 ("_tuple_arg" ("_position" bytes))))
+###             ("_case1" ("_position" Oracle_fail)
+###               ("_tuple"
+###                 ("_datatype_record_update" ("_position" st)
+###                   ("_datatype_field_update" ("_constify" final_event)
+###                     ("_applC" ("_position" Some)
+###                       ("_applC" ("_position" Final_event)
+###                         ("_cargs" ("_position" s)
+###                           ("_cargs" ("_position" conf)
+###                             ("_cargs" ("_position" bytes)
+###                               ("_position" FFI_failed))))))))
+###                 ("_tuple_arg" ("_position" bytes)))))))
+###       ("_tuple" ("_position" st) ("_tuple_arg" ("_position" bytes))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" call_FFI)
+###       ("_cargs" ("_position" st)
+###         ("_cargs" ("_position" s)
+###           ("_cargs" ("_position" conf) ("_position" bytes)))))
+###     ("\<^const>HOL.If"
+###       ("\<^const>HOL.conj"
+###         ("\<^const>HOL.eq"
+###           ("_applC" ("_position" final_event) ("_position" st))
+###           ("_position" None))
+###         ("\<^const>HOL.Not"
+###           ("\<^const>HOL.eq" ("_position" s)
+###             ("_String" ("_position" '''')))))
+###       ("_case_syntax"
+###         ("_applC" ("_applC" ("_position" oracle0) ("_position" st))
+###           ("_cargs" ("_position" s)
+###             ("_cargs" ("_applC" ("_position" ffi_state) ("_position" st))
+###               ("_cargs" ("_position" conf) ("_position" bytes)))))
+###         ("_case2"
+###           ("_case1"
+###             ("_applC" ("_position" Oracle_return)
+###               ("_cargs" ("_position" ffi') ("_position" bytes')))
+###             ("\<^const>HOL.If"
+###               ("\<^const>HOL.eq"
+###                 ("_applC" ("_position" List.length) ("_position" bytes'))
+###                 ("_applC" ("_position" List.length) ("_position" bytes)))
+###               ("_tuple"
+###                 ("_datatype_record_update" ("_position" st)
+###                   ("_datatype_field_updates"
+###                     ("_datatype_field_update" ("_constify" ffi_state)
+###                       ("_position" ffi'))
+###                     ("_datatype_field_update" ("_constify" io_events)
+###                       ("\<^const>List.append"
+###                         ("_applC" ("_position" io_events) ("_position" st))
+###                         ("_list"
+###                           ("_applC" ("_position" IO_event)
+###                             ("_cargs" ("_position" s)
+###                               ("_cargs" ("_position" conf)
+###                                 ("_applC" ("_position" zipSameLength)
+###                                   ("_cargs" ("_position" bytes)
+###                                     ("_position" bytes')))))))))))
+###                 ("_tuple_arg" ("_position" bytes')))
+###               ("_tuple"
+###                 ("_record_update" ("_position" st)
+###                   ("_field_update" ("_constify" final_event)
+###                     ("_applC" ("_position" Some)
+###                       ("_applC" ("_position" Final_event)
+###                         ("_cargs" ("_position" s)
+###                           ("_cargs" ("_position" conf)
+###                             ("_cargs" ("_position" bytes)
+###                               ("_position" FFI_failed))))))))
+###                 ("_tuple_arg" ("_position" bytes)))))
+###           ("_case2"
+###             ("_case1" ("_position" Oracle_diverge)
+###               ("_tuple"
+###                 ("_record_update" ("_position" st)
+###                   ("_field_update" ("_constify" final_event)
+###                     ("_applC" ("_position" Some)
+###                       ("_applC" ("_position" Final_event)
+###                         ("_cargs" ("_position" s)
+###                           ("_cargs" ("_position" conf)
+###                             ("_cargs" ("_position" bytes)
+###                               ("_position" FFI_diverged))))))))
+###                 ("_tuple_arg" ("_position" bytes))))
+###             ("_case1" ("_position" Oracle_fail)
+###               ("_tuple"
+###                 ("_datatype_record_update" ("_position" st)
+###                   ("_datatype_field_update" ("_constify" final_event)
+###                     ("_applC" ("_position" Some)
+###                       ("_applC" ("_position" Final_event)
+###                         ("_cargs" ("_position" s)
+###                           ("_cargs" ("_position" conf)
+###                             ("_cargs" ("_position" bytes)
+###                               ("_position" FFI_failed))))))))
+###                 ("_tuple_arg" ("_position" bytes)))))))
+###       ("_tuple" ("_position" st) ("_tuple_arg" ("_position" bytes))))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### theory "Draft.Ffi"
+### 5.449s elapsed time, 14.004s cpu time, 2.476s GC time
+Found termination order: "{}"
+### theory "Draft.Ast"
+### 13.292s elapsed time, 20.436s cpu time, 6.660s GC time
+Loading theory "Draft.SemanticPrimitives" (required by "Draft.EvaluateTemplates" via "Draft.Evaluate")
+Found termination order: "{}"
+Found termination order: "{}"
+Found termination order: "{}"
+Found termination order: "{}"
+Found termination order:
+  "(%p. size_list (%p. size (snd p)) (snd p)) <*mlex*> {}"
+### Ambiguous input (line 377 of "$AFP/CakeML/generated/CakeML/SemanticPrimitives.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" do_opapp)
+###       ("_list"
+###         ("_args"
+###           ("_applC" ("_position" Closure)
+###             ("_cargs" ("_position" env)
+###               ("_cargs" ("_position" n) ("_position" e))))
+###           ("_position" v2))))
+###     ("_applC" ("_position" Some)
+###       ("_tuple"
+###         ("_datatype_record_update" ("_position" env)
+###           ("_datatype_field_update" ("_constify" v)
+###             ("_applC" ("_position" nsBind)
+###               ("_cargs" ("_position" n)
+###                 ("_cargs" ("_position" v2)
+###                   ("_applC" ("_position" v) ("_position" env)))))))
+###         ("_tuple_arg" ("_position" e))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" do_opapp)
+###       ("_list"
+###         ("_args"
+###           ("_applC" ("_position" Closure)
+###             ("_cargs" ("_position" env)
+###               ("_cargs" ("_position" n) ("_position" e))))
+###           ("_position" v2))))
+###     ("_applC" ("_position" Some)
+###       ("_tuple"
+###         ("_record_update" ("_position" env)
+###           ("_field_update" ("_constify" v)
+###             ("_applC" ("_position" nsBind)
+###               ("_cargs" ("_position" n)
+###                 ("_cargs" ("_position" v2)
+###                   ("_applC" ("_position" v) ("_position" env)))))))
+###         ("_tuple_arg" ("_position" e))))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ambiguous input (line 379 of "$AFP/CakeML/generated/CakeML/SemanticPrimitives.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" do_opapp)
+###       ("_list"
+###         ("_args"
+###           ("_applC" ("_position" Recclosure)
+###             ("_cargs" ("_position" env)
+###               ("_cargs" ("_position" funs) ("_position" n))))
+###           ("_position" v2))))
+###     ("\<^const>HOL.If"
+###       ("_applC" ("_position" allDistinct)
+###         ("_applC" ("_position" List.map)
+###           ("_cargs"
+###             ("_lambda" ("_position" x)
+###               ("_case_syntax" ("_position" x)
+###                 ("_case1"
+###                   ("_tuple" ("_position" f)
+###                     ("_tuple_args" ("_position" x)
+###                       ("_tuple_arg" ("_position" e))))
+###                   ("_position" f))))
+###             ("_position" funs))))
+###       ("_case_syntax"
+###         ("_applC" ("_position" find_recfun)
+###           ("_cargs" ("_position" n) ("_position" funs)))
+###         ("_case2"
+###           ("_case1"
+###             ("_applC" ("_position" Some)
+###               ("_tuple" ("_position" n) ("_tuple_arg" ("_position" e))))
+###             ("_applC" ("_position" Some)
+###               ("_tuple"
+###                 ("_record_update" ("_position" env)
+###                   ("_field_update" ("_constify" v)
+###                     ("_applC" ("_position" nsBind)
+###                       ("_cargs" ("_position" n)
+###                         ("_cargs" ("_position" v2)
+###                           ("_applC" ("_position" build_rec_env)
+###                             ("_cargs" ("_position" funs)
+###                               ("_cargs" ("_position" env)
+###                                 ("_applC" ("_position" v)
+###                                   ("_position" env))))))))))
+###                 ("_tuple_arg" ("_position" e)))))
+###           ("_case1" ("_position" None) ("_position" None))))
+###       ("_position" None))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" do_opapp)
+###       ("_list"
+###         ("_args"
+###           ("_applC" ("_position" Recclosure)
+###             ("_cargs" ("_position" env)
+###               ("_cargs" ("_position" funs) ("_position" n))))
+###           ("_position" v2))))
+###     ("\<^const>HOL.If"
+###       ("_applC" ("_position" allDistinct)
+###         ("_applC" ("_position" List.map)
+###           ("_cargs"
+###             ("_lambda" ("_position" x)
+###               ("_case_syntax" ("_position" x)
+###                 ("_case1"
+###                   ("_tuple" ("_position" f)
+###                     ("_tuple_args" ("_position" x)
+###                       ("_tuple_arg" ("_position" e))))
+###                   ("_position" f))))
+###             ("_position" funs))))
+###       ("_case_syntax"
+###         ("_applC" ("_position" find_recfun)
+###           ("_cargs" ("_position" n) ("_position" funs)))
+###         ("_case2"
+###           ("_case1"
+###             ("_applC" ("_position" Some)
+###               ("_tuple" ("_position" n) ("_tuple_arg" ("_position" e))))
+###             ("_applC" ("_position" Some)
+###               ("_tuple"
+###                 ("_datatype_record_update" ("_position" env)
+###                   ("_datatype_field_update" ("_constify" v)
+###                     ("_applC" ("_position" nsBind)
+###                       ("_cargs" ("_position" n)
+###                         ("_cargs" ("_position" v2)
+###                           ("_applC" ("_position" build_rec_env)
+###                             ("_cargs" ("_position" funs)
+###                               ("_cargs" ("_position" env)
+###                                 ("_applC" ("_position" v)
+###                                   ("_position" env))))))))))
+###                 ("_tuple_arg" ("_position" e)))))
+###           ("_case1" ("_position" None) ("_position" None))))
+###       ("_position" None))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+Found termination order: "{}"
+Found termination order: "{}"
+Found termination order: "{}"
+Found termination order: "{}"
+Found termination order: "{}"
+Found termination order: "{}"
+Found termination order: "{}"
+Found termination order: "{}"
+Found termination order: "{}"
+Found termination order: "{}"
+### Ambiguous input (line 939 of "$AFP/CakeML/generated/CakeML/SemanticPrimitives.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" combine_dec_result)
+###       ("_cargs" ("_position" env)
+###         ("_applC" ("_position" Rval) ("_position" env'))))
+###     ("_applC" ("_position" Rval)
+###       ("_record"
+###         ("_fields"
+###           ("_field" ("_constify" v)
+###             ("_applC" ("_position" nsAppend)
+###               ("_cargs" ("_applC" ("_position" v) ("_position" env'))
+###                 ("_applC" ("_position" v) ("_position" env)))))
+###           ("_field" ("_constify" c)
+###             ("_applC" ("_position" nsAppend)
+###               ("_cargs" ("_applC" ("_position" c) ("_position" env'))
+###                 ("_applC" ("_position" c) ("_position" env))))))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" combine_dec_result)
+###       ("_cargs" ("_position" env)
+###         ("_applC" ("_position" Rval) ("_position" env'))))
+###     ("_applC" ("_position" Rval)
+###       ("_datatype_record"
+###         ("_datatype_fields"
+###           ("_datatype_field" ("_constify" v)
+###             ("_applC" ("_position" nsAppend)
+###               ("_cargs" ("_applC" ("_position" v) ("_position" env'))
+###                 ("_applC" ("_position" v) ("_position" env)))))
+###           ("_datatype_field" ("_constify" c)
+###             ("_applC" ("_position" nsAppend)
+###               ("_cargs" ("_applC" ("_position" c) ("_position" env'))
+###                 ("_applC" ("_position" c) ("_position" env))))))))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+Found termination order: "{}"
+### Ambiguous input (line 944 of "$AFP/CakeML/generated/CakeML/SemanticPrimitives.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" extend_dec_env)
+###       ("_cargs" ("_position" new_env) ("_position" env)))
+###     ("_record"
+###       ("_fields"
+###         ("_field" ("_constify" v)
+###           ("_applC" ("_position" nsAppend)
+###             ("_cargs" ("_applC" ("_position" v) ("_position" new_env))
+###               ("_applC" ("_position" v) ("_position" env)))))
+###         ("_field" ("_constify" c)
+###           ("_applC" ("_position" nsAppend)
+###             ("_cargs" ("_applC" ("_position" c) ("_position" new_env))
+###               ("_applC" ("_position" c) ("_position" env)))))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" extend_dec_env)
+###       ("_cargs" ("_position" new_env) ("_position" env)))
+###     ("_datatype_record"
+###       ("_datatype_fields"
+###         ("_datatype_field" ("_constify" v)
+###           ("_applC" ("_position" nsAppend)
+###             ("_cargs" ("_applC" ("_position" v) ("_position" new_env))
+###               ("_applC" ("_position" v) ("_position" env)))))
+###         ("_datatype_field" ("_constify" c)
+###           ("_applC" ("_position" nsAppend)
+###             ("_cargs" ("_applC" ("_position" c) ("_position" new_env))
+###               ("_applC" ("_position" c) ("_position" env)))))))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### theory "Draft.SemanticPrimitives"
+### 16.712s elapsed time, 18.392s cpu time, 1.652s GC time
+Loading theory "Draft.Evaluate" (required by "Draft.EvaluateTemplates")
+### Ambiguous input (line 29 of "$AFP/CakeML/generated/CakeML/Evaluate.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" fix_clock)
+###       ("_cargs" ("_position" s)
+###         ("_tuple" ("_position" s') ("_tuple_arg" ("_position" res)))))
+###     ("_tuple"
+###       ("_datatype_record_update" ("_position" s')
+###         ("_datatype_field_update" ("_constify" clock)
+###           ("\<^const>HOL.If"
+###             ("\<^const>Orderings.ord_class.less_eq"
+###               ("_applC" ("_position" clock) ("_position" s'))
+###               ("_applC" ("_position" clock) ("_position" s)))
+###             ("_applC" ("_position" clock) ("_position" s'))
+###             ("_applC" ("_position" clock) ("_position" s)))))
+###       ("_tuple_arg" ("_position" res)))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" fix_clock)
+###       ("_cargs" ("_position" s)
+###         ("_tuple" ("_position" s') ("_tuple_arg" ("_position" res)))))
+###     ("_tuple"
+###       ("_record_update" ("_position" s')
+###         ("_field_update" ("_constify" clock)
+###           ("\<^const>HOL.If"
+###             ("\<^const>Orderings.ord_class.less_eq"
+###               ("_applC" ("_position" clock) ("_position" s'))
+###               ("_applC" ("_position" clock) ("_position" s)))
+###             ("_applC" ("_position" clock) ("_position" s'))
+###             ("_applC" ("_position" clock) ("_position" s)))))
+###       ("_tuple_arg" ("_position" res)))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+Found termination order: "{}"
+### Ambiguous input (line 35 of "$AFP/CakeML/generated/CakeML/Evaluate.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq" ("_applC" ("_position" dec_clock) ("_position" s))
+###     ("_record_update" ("_position" s)
+###       ("_field_update" ("_constify" clock)
+###         ("\<^const>Groups.minus_class.minus"
+###           ("_applC" ("_position" clock) ("_position" s))
+###           ("_constrain" ("\<^const>Groups.one_class.one")
+###             ("_type_name" nat)))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq" ("_applC" ("_position" dec_clock) ("_position" s))
+###     ("_datatype_record_update" ("_position" s)
+###       ("_datatype_field_update" ("_constify" clock)
+###         ("\<^const>Groups.minus_class.minus"
+###           ("_applC" ("_position" clock) ("_position" s))
+###           ("_constrain" ("\<^const>Groups.one_class.one")
+###             ("_type_name" nat)))))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+Found termination order: "{}"
+### Ambiguous input (line 148 of "$AFP/CakeML/generated/CakeML/Evaluate.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" fun_evaluate)
+###       ("_cargs" ("_position" st)
+###         ("_cargs" ("_position" env)
+###           ("_list"
+###             ("_applC" ("_position" Let)
+###               ("_cargs" ("_position" xo)
+###                 ("_cargs" ("_position" e1) ("_position" e2))))))))
+###     ("_case_syntax"
+###       ("_applC" ("_position" fix_clock)
+###         ("_cargs" ("_position" st)
+###           ("_applC" ("_position" fun_evaluate)
+###             ("_cargs" ("_position" st)
+###               ("_cargs" ("_position" env) ("_list" ("_position" e1)))))))
+###       ("_case2"
+###         ("_case1"
+###           ("_tuple" ("_position" st')
+###             ("_tuple_arg" ("_applC" ("_position" Rval) ("_position" v2))))
+###           ("_applC" ("_position" fun_evaluate)
+###             ("_cargs" ("_position" st')
+###               ("_cargs"
+###                 ("_record_update" ("_position" env)
+###                   ("_field_update" ("_constify" v)
+###                     ("_applC" ("_position" nsOptBind)
+###                       ("_cargs" ("_position" xo)
+###                         ("_cargs"
+###                           ("_applC" ("_position" List.hd) ("_position" v2))
+###                           ("_applC" ("_position" v) ("_position" env)))))))
+###                 ("_list" ("_position" e2))))))
+###         ("_case1" ("_position" res) ("_position" res))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" fun_evaluate)
+###       ("_cargs" ("_position" st)
+###         ("_cargs" ("_position" env)
+###           ("_list"
+###             ("_applC" ("_position" Let)
+###               ("_cargs" ("_position" xo)
+###                 ("_cargs" ("_position" e1) ("_position" e2))))))))
+###     ("_case_syntax"
+###       ("_applC" ("_position" fix_clock)
+###         ("_cargs" ("_position" st)
+###           ("_applC" ("_position" fun_evaluate)
+###             ("_cargs" ("_position" st)
+###               ("_cargs" ("_position" env) ("_list" ("_position" e1)))))))
+###       ("_case2"
+###         ("_case1"
+###           ("_tuple" ("_position" st')
+###             ("_tuple_arg" ("_applC" ("_position" Rval) ("_position" v2))))
+###           ("_applC" ("_position" fun_evaluate)
+###             ("_cargs" ("_position" st')
+###               ("_cargs"
+###                 ("_datatype_record_update" ("_position" env)
+###                   ("_datatype_field_update" ("_constify" v)
+###                     ("_applC" ("_position" nsOptBind)
+###                       ("_cargs" ("_position" xo)
+###                         ("_cargs"
+###                           ("_applC" ("_position" List.hd) ("_position" v2))
+###                           ("_applC" ("_position" v) ("_position" env)))))))
+###                 ("_list" ("_position" e2))))))
+###         ("_case1" ("_position" res) ("_position" res))))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ambiguous input (line 154 of "$AFP/CakeML/generated/CakeML/Evaluate.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" fun_evaluate)
+###       ("_cargs" ("_position" st)
+###         ("_cargs" ("_position" env)
+###           ("_list"
+###             ("_applC" ("_position" Letrec)
+###               ("_cargs" ("_position" funs) ("_position" e)))))))
+###     ("\<^const>HOL.If"
+###       ("_applC" ("_position" allDistinct)
+###         ("_applC" ("_position" List.map)
+###           ("_cargs"
+###             ("_lambda" ("_position" x)
+###               ("_case_syntax" ("_position" x)
+###                 ("_case1"
+###                   ("_tuple" ("_position" x)
+###                     ("_tuple_args" ("_position" y)
+###                       ("_tuple_arg" ("_position" z))))
+###                   ("_position" x))))
+###             ("_position" funs))))
+###       ("_applC" ("_position" fun_evaluate)
+###         ("_cargs" ("_position" st)
+###           ("_cargs"
+###             ("_datatype_record_update" ("_position" env)
+###               ("_datatype_field_update" ("_constify" v)
+###                 ("_applC" ("_position" build_rec_env)
+###                   ("_cargs" ("_position" funs)
+###                     ("_cargs" ("_position" env)
+###                       ("_applC" ("_position" v) ("_position" env)))))))
+###             ("_list" ("_position" e)))))
+###       ("_tuple" ("_position" st)
+###         ("_tuple_arg"
+###           ("_applC" ("_position" Rerr)
+###             ("_applC" ("_position" Rabort) ("_position" Rtype_error))))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" fun_evaluate)
+###       ("_cargs" ("_position" st)
+###         ("_cargs" ("_position" env)
+###           ("_list"
+###             ("_applC" ("_position" Letrec)
+###               ("_cargs" ("_position" funs) ("_position" e)))))))
+###     ("\<^const>HOL.If"
+###       ("_applC" ("_position" allDistinct)
+###         ("_applC" ("_position" List.map)
+###           ("_cargs"
+###             ("_lambda" ("_position" x)
+###               ("_case_syntax" ("_position" x)
+###                 ("_case1"
+###                   ("_tuple" ("_position" x)
+###                     ("_tuple_args" ("_position" y)
+###                       ("_tuple_arg" ("_position" z))))
+###                   ("_position" x))))
+###             ("_position" funs))))
+###       ("_applC" ("_position" fun_evaluate)
+###         ("_cargs" ("_position" st)
+###           ("_cargs"
+###             ("_record_update" ("_position" env)
+###               ("_field_update" ("_constify" v)
+###                 ("_applC" ("_position" build_rec_env)
+###                   ("_cargs" ("_position" funs)
+###                     ("_cargs" ("_position" env)
+###                       ("_applC" ("_position" v) ("_position" env)))))))
+###             ("_list" ("_position" e)))))
+###       ("_tuple" ("_position" st)
+###         ("_tuple_arg"
+###           ("_applC" ("_position" Rerr)
+###             ("_applC" ("_position" Rabort) ("_position" Rtype_error))))))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ambiguous input (line 169 of "$AFP/CakeML/generated/CakeML/Evaluate.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" fun_evaluate_match)
+###       ("_cargs" ("_position" st)
+###         ("_cargs" ("_position" env)
+###           ("_cargs" ("_position" v2)
+###             ("_cargs"
+###               ("\<^const>List.list.Cons"
+###                 ("_tuple" ("_position" p) ("_tuple_arg" ("_position" e)))
+###                 ("_position" pes))
+###               ("_position" err_v))))))
+###     ("\<^const>HOL.If"
+###       ("_applC" ("_position" allDistinct)
+###         ("_applC" ("_position" pat_bindings)
+###           ("_cargs" ("_position" p) ("\<^const>List.list.Nil"))))
+###       ("_case_syntax"
+###         ("_applC" ("_position" pmatch)
+###           ("_cargs" ("_applC" ("_position" c) ("_position" env))
+###             ("_cargs" ("_applC" ("_position" refs) ("_position" st))
+###               ("_cargs" ("_position" p)
+###                 ("_cargs" ("_position" v2) ("\<^const>List.list.Nil"))))))
+###         ("_case2"
+###           ("_case1" ("_applC" ("_position" Match) ("_position" env_v'))
+###             ("_applC" ("_position" fun_evaluate)
+###               ("_cargs" ("_position" st)
+###                 ("_cargs"
+###                   ("_record_update" ("_position" env)
+###                     ("_field_update" ("_constify" v)
+###                       ("_applC" ("_position" nsAppend)
+###                         ("_cargs"
+###                           ("_applC" ("_position" alist_to_ns)
+###                             ("_position" env_v'))
+###                           ("_applC" ("_position" v) ("_position" env))))))
+###                   ("_list" ("_position" e))))))
+###           ("_case2"
+###             ("_case1" ("_position" No_match)
+###               ("_applC" ("_position" fun_evaluate_match)
+###                 ("_cargs" ("_position" st)
+###                   ("_cargs" ("_position" env)
+###                     ("_cargs" ("_position" v2)
+###                       ("_cargs" ("_position" pes) ("_position" err_v)))))))
+###             ("_case1" ("_position" Match_type_error)
+###               ("_tuple" ("_position" st)
+###                 ("_tuple_arg"
+###                   ("_applC" ("_position" Rerr)
+###                     ("_applC" ("_position" Rabort)
+###                       ("_position" Rtype_error)))))))))
+###       ("_tuple" ("_position" st)
+###         ("_tuple_arg"
+###           ("_applC" ("_position" Rerr)
+###             ("_applC" ("_position" Rabort) ("_position" Rtype_error))))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" fun_evaluate_match)
+###       ("_cargs" ("_position" st)
+###         ("_cargs" ("_position" env)
+###           ("_cargs" ("_position" v2)
+###             ("_cargs"
+###               ("\<^const>List.list.Cons"
+###                 ("_tuple" ("_position" p) ("_tuple_arg" ("_position" e)))
+###                 ("_position" pes))
+###               ("_position" err_v))))))
+###     ("\<^const>HOL.If"
+###       ("_applC" ("_position" allDistinct)
+###         ("_applC" ("_position" pat_bindings)
+###           ("_cargs" ("_position" p) ("\<^const>List.list.Nil"))))
+###       ("_case_syntax"
+###         ("_applC" ("_position" pmatch)
+###           ("_cargs" ("_applC" ("_position" c) ("_position" env))
+###             ("_cargs" ("_applC" ("_position" refs) ("_position" st))
+###               ("_cargs" ("_position" p)
+###                 ("_cargs" ("_position" v2) ("\<^const>List.list.Nil"))))))
+###         ("_case2"
+###           ("_case1" ("_applC" ("_position" Match) ("_position" env_v'))
+###             ("_applC" ("_position" fun_evaluate)
+###               ("_cargs" ("_position" st)
+###                 ("_cargs"
+###                   ("_datatype_record_update" ("_position" env)
+###                     ("_datatype_field_update" ("_constify" v)
+###                       ("_applC" ("_position" nsAppend)
+###                         ("_cargs"
+###                           ("_applC" ("_position" alist_to_ns)
+###                             ("_position" env_v'))
+###                           ("_applC" ("_position" v) ("_position" env))))))
+###                   ("_list" ("_position" e))))))
+###           ("_case2"
+###             ("_case1" ("_position" No_match)
+###               ("_applC" ("_position" fun_evaluate_match)
+###                 ("_cargs" ("_position" st)
+###                   ("_cargs" ("_position" env)
+###                     ("_cargs" ("_position" v2)
+###                       ("_cargs" ("_position" pes) ("_position" err_v)))))))
+###             ("_case1" ("_position" Match_type_error)
+###               ("_tuple" ("_position" st)
+###                 ("_tuple_arg"
+###                   ("_applC" ("_position" Rerr)
+###                     ("_applC" ("_position" Rabort)
+###                       ("_position" Rtype_error)))))))))
+###       ("_tuple" ("_position" st)
+###         ("_tuple_arg"
+###           ("_applC" ("_position" Rerr)
+###             ("_applC" ("_position" Rabort) ("_position" Rtype_error))))))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ambiguous input (line 100 of "$AFP/CakeML/generated/CakeML/Evaluate.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" fun_evaluate)
+###       ("_cargs" ("_position" st)
+###         ("_cargs" ("_position" env)
+###           ("_list"
+###             ("_applC" ("_position" App)
+###               ("_cargs" ("_position" op1) ("_position" es)))))))
+###     ("_case_syntax"
+###       ("_applC" ("_position" fix_clock)
+###         ("_cargs" ("_position" st)
+###           ("_applC" ("_position" fun_evaluate)
+###             ("_cargs" ("_position" st)
+###               ("_cargs" ("_position" env)
+###                 ("_applC" ("_position" List.rev) ("_position" es)))))))
+###       ("_case2"
+###         ("_case1"
+###           ("_tuple" ("_position" st')
+###             ("_tuple_arg" ("_applC" ("_position" Rval) ("_position" vs))))
+###           ("\<^const>HOL.If"
+###             ("\<^const>HOL.eq" ("_position" op1) ("_position" Opapp))
+###             ("_case_syntax"
+###               ("_applC" ("_position" do_opapp)
+###                 ("_applC" ("_position" List.rev) ("_position" vs)))
+###               ("_case2"
+###                 ("_case1"
+###                   ("_applC" ("_position" Some)
+###                     ("_tuple" ("_position" env')
+###                       ("_tuple_arg" ("_position" e))))
+###                   ("\<^const>HOL.If"
+###                     ("\<^const>HOL.eq"
+###                       ("_applC" ("_position" clock) ("_position" st'))
+###                       ("_constrain" ("\<^const>Groups.zero_class.zero")
+###                         ("_type_name" nat)))
+###                     ("_tuple" ("_position" st')
+###                       ("_tuple_arg"
+###                         ("_applC" ("_position" Rerr)
+###                           ("_applC" ("_position" Rabort)
+###                             ("_position" Rtimeout_error)))))
+###                     ("_applC" ("_position" fun_evaluate)
+###                       ("_cargs"
+###                         ("_applC" ("_position" dec_clock) ("_position" st'))
+###                         ("_cargs" ("_position" env')
+###                           ("_list" ("_position" e)))))))
+###                 ("_case1" ("_position" None)
+###                   ("_tuple" ("_position" st')
+###                     ("_tuple_arg"
+###                       ("_applC" ("_position" Rerr)
+###                         ("_applC" ("_position" Rabort)
+###                           ("_position" Rtype_error))))))))
+###             ("_case_syntax"
+###               ("_applC" ("_position" do_app)
+###                 ("_cargs"
+###                   ("_tuple" ("_applC" ("_position" refs) ("_position" st'))
+###                     ("_tuple_arg"
+###                       ("_applC" ("_position" ffi) ("_position" st'))))
+###                   ("_cargs" ("_position" op1)
+###                     ("_applC" ("_position" List.rev) ("_position" vs)))))
+###               ("_case2"
+###                 ("_case1"
+###                   ("_applC" ("_position" Some)
+###                     ("_tuple"
+###                       ("_tuple" ("_position" refs1)
+###                         ("_tuple_arg" ("_position" ffi1)))
+###                       ("_tuple_arg" ("_position" r))))
+###                   ("_tuple"
+###                     ("_datatype_record_update" ("_position" st')
+###                       ("_datatype_field_updates"
+###                         ("_datatype_field_update" ("_constify" refs)
+###                           ("_position" refs1))
+###                         ("_datatype_field_update" ("_constify" ffi)
+###                           ("_position" ffi1))))
+###                     ("_tuple_arg"
+###                       ("_applC" ("_position" list_result)
+###                         ("_position" r)))))
+###                 ("_case1" ("_position" None)
+###                   ("_tuple" ("_position" st')
+###                     ("_tuple_arg"
+###                       ("_applC" ("_position" Rerr)
+###                         ("_applC" ("_position" Rabort)
+###                           ("_position" Rtype_error))))))))))
+###         ("_case1" ("_position" res) ("_position" res))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" fun_evaluate)
+###       ("_cargs" ("_position" st)
+###         ("_cargs" ("_position" env)
+###           ("_list"
+###             ("_applC" ("_position" App)
+###               ("_cargs" ("_position" op1) ("_position" es)))))))
+###     ("_case_syntax"
+###       ("_applC" ("_position" fix_clock)
+###         ("_cargs" ("_position" st)
+###           ("_applC" ("_position" fun_evaluate)
+###             ("_cargs" ("_position" st)
+###               ("_cargs" ("_position" env)
+###                 ("_applC" ("_position" List.rev) ("_position" es)))))))
+###       ("_case2"
+###         ("_case1"
+###           ("_tuple" ("_position" st')
+###             ("_tuple_arg" ("_applC" ("_position" Rval) ("_position" vs))))
+###           ("\<^const>HOL.If"
+###             ("\<^const>HOL.eq" ("_position" op1) ("_position" Opapp))
+###             ("_case_syntax"
+###               ("_applC" ("_position" do_opapp)
+###                 ("_applC" ("_position" List.rev) ("_position" vs)))
+###               ("_case2"
+###                 ("_case1"
+###                   ("_applC" ("_position" Some)
+###                     ("_tuple" ("_position" env')
+###                       ("_tuple_arg" ("_position" e))))
+###                   ("\<^const>HOL.If"
+###                     ("\<^const>HOL.eq"
+###                       ("_applC" ("_position" clock) ("_position" st'))
+###                       ("_constrain" ("\<^const>Groups.zero_class.zero")
+###                         ("_type_name" nat)))
+###                     ("_tuple" ("_position" st')
+###                       ("_tuple_arg"
+###                         ("_applC" ("_position" Rerr)
+###                           ("_applC" ("_position" Rabort)
+###                             ("_position" Rtimeout_error)))))
+###                     ("_applC" ("_position" fun_evaluate)
+###                       ("_cargs"
+###                         ("_applC" ("_position" dec_clock) ("_position" st'))
+###                         ("_cargs" ("_position" env')
+###                           ("_list" ("_position" e)))))))
+###                 ("_case1" ("_position" None)
+###                   ("_tuple" ("_position" st')
+###                     ("_tuple_arg"
+###                       ("_applC" ("_position" Rerr)
+###                         ("_applC" ("_position" Rabort)
+###                           ("_position" Rtype_error))))))))
+###             ("_case_syntax"
+###               ("_applC" ("_position" do_app)
+###                 ("_cargs"
+###                   ("_tuple" ("_applC" ("_position" refs) ("_position" st'))
+###                     ("_tuple_arg"
+###                       ("_applC" ("_position" ffi) ("_position" st'))))
+###                   ("_cargs" ("_position" op1)
+###                     ("_applC" ("_position" List.rev) ("_position" vs)))))
+###               ("_case2"
+###                 ("_case1"
+###                   ("_applC" ("_position" Some)
+###                     ("_tuple"
+###                       ("_tuple" ("_position" refs1)
+###                         ("_tuple_arg" ("_position" ffi1)))
+###                       ("_tuple_arg" ("_position" r))))
+###                   ("_tuple"
+###                     ("_record_update" ("_position" st')
+###                       ("_field_updates"
+###                         ("_field_update" ("_constify" refs)
+###                           ("_position" refs1))
+###                         ("_field_update" ("_constify" ffi)
+###                           ("_position" ffi1))))
+###                     ("_tuple_arg"
+###                       ("_applC" ("_position" list_result)
+###                         ("_position" r)))))
+###                 ("_case1" ("_position" None)
+###                   ("_tuple" ("_position" st')
+###                     ("_tuple_arg"
+###                       ("_applC" ("_position" Rerr)
+###                         ("_applC" ("_position" Rabort)
+###                           ("_position" Rtype_error))))))))))
+###         ("_case1" ("_position" res) ("_position" res))))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ambiguous input (line 185 of "$AFP/CakeML/generated/CakeML/Evaluate.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" fun_evaluate_decs)
+###       ("_cargs" ("_position" mn)
+###         ("_cargs" ("_position" st)
+###           ("_cargs" ("_position" env) ("\<^const>List.list.Nil")))))
+###     ("_tuple" ("_position" st)
+###       ("_tuple_arg"
+###         ("_applC" ("_position" Rval)
+###           ("_datatype_record"
+###             ("_datatype_fields"
+###               ("_datatype_field" ("_constify" v) ("_position" nsEmpty))
+###               ("_datatype_field" ("_constify" c)
+###                 ("_position" nsEmpty)))))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" fun_evaluate_decs)
+###       ("_cargs" ("_position" mn)
+###         ("_cargs" ("_position" st)
+###           ("_cargs" ("_position" env) ("\<^const>List.list.Nil")))))
+###     ("_tuple" ("_position" st)
+###       ("_tuple_arg"
+###         ("_applC" ("_position" Rval)
+###           ("_record"
+###             ("_fields" ("_field" ("_constify" v) ("_position" nsEmpty))
+###               ("_field" ("_constify" c) ("_position" nsEmpty)))))))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ambiguous input (line 196 of "$AFP/CakeML/generated/CakeML/Evaluate.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" fun_evaluate_decs)
+###       ("_cargs" ("_position" mn)
+###         ("_cargs" ("_position" st)
+###           ("_cargs" ("_position" env)
+###             ("_list"
+###               ("_applC" ("_position" Dlet)
+###                 ("_cargs" ("_position" locs)
+###                   ("_cargs" ("_position" p) ("_position" e)))))))))
+###     ("\<^const>HOL.If"
+###       ("_applC" ("_position" allDistinct)
+###         ("_applC" ("_position" pat_bindings)
+###           ("_cargs" ("_position" p) ("\<^const>List.list.Nil"))))
+###       ("_case_syntax"
+###         ("_applC" ("_position" fun_evaluate)
+###           ("_cargs" ("_position" st)
+###             ("_cargs" ("_position" env) ("_list" ("_position" e)))))
+###         ("_case2"
+###           ("_case1"
+###             ("_tuple" ("_position" st')
+###               ("_tuple_arg" ("_applC" ("_position" Rval) ("_position" v2))))
+###             ("_tuple" ("_position" st')
+###               ("_tuple_arg"
+###                 ("_case_syntax"
+###                   ("_applC" ("_position" pmatch)
+###                     ("_cargs" ("_applC" ("_position" c) ("_position" env))
+###                       ("_cargs"
+###                         ("_applC" ("_position" refs) ("_position" st'))
+###                         ("_cargs" ("_position" p)
+###                           ("_cargs"
+###                             ("_applC" ("_position" List.hd)
+###                               ("_position" v2))
+###                             ("\<^const>List.list.Nil"))))))
+###                   ("_case2"
+###                     ("_case1"
+###                       ("_applC" ("_position" Match) ("_position" new_vals))
+###                       ("_applC" ("_position" Rval)
+###                         ("_datatype_record"
+###                           ("_datatype_fields"
+###                             ("_datatype_field" ("_constify" v)
+###                               ("_applC" ("_position" alist_to_ns)
+###                                 ("_position" new_vals)))
+###                             ("_datatype_field" ("_constify" c)
+###                               ("_position" nsEmpty))))))
+###                     ("_case2"
+###                       ("_case1" ("_position" No_match)
+###                         ("_applC" ("_position" Rerr)
+###                           ("_applC" ("_position" Rraise)
+###                             ("_position" Bindv))))
+###                       ("_case1" ("_position" Match_type_error)
+###                         ("_applC" ("_position" Rerr)
+###                           ("_applC" ("_position" Rabort)
+###                             ("_position" Rtype_error))))))))))
+###           ("_case1"
+###             ("_tuple" ("_position" st')
+###               ("_tuple_arg"
+###                 ("_applC" ("_position" Rerr) ("_position" err))))
+###             ("_tuple" ("_position" st')
+###               ("_tuple_arg"
+###                 ("_applC" ("_position" Rerr) ("_position" err)))))))
+###       ("_tuple" ("_position" st)
+###         ("_tuple_arg"
+###           ("_applC" ("_position" Rerr)
+###             ("_applC" ("_position" Rabort) ("_position" Rtype_error))))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" fun_evaluate_decs)
+###       ("_cargs" ("_position" mn)
+###         ("_cargs" ("_position" st)
+###           ("_cargs" ("_position" env)
+###             ("_list"
+###               ("_applC" ("_position" Dlet)
+###                 ("_cargs" ("_position" locs)
+###                   ("_cargs" ("_position" p) ("_position" e)))))))))
+###     ("\<^const>HOL.If"
+###       ("_applC" ("_position" allDistinct)
+###         ("_applC" ("_position" pat_bindings)
+###           ("_cargs" ("_position" p) ("\<^const>List.list.Nil"))))
+###       ("_case_syntax"
+###         ("_applC" ("_position" fun_evaluate)
+###           ("_cargs" ("_position" st)
+###             ("_cargs" ("_position" env) ("_list" ("_position" e)))))
+###         ("_case2"
+###           ("_case1"
+###             ("_tuple" ("_position" st')
+###               ("_tuple_arg" ("_applC" ("_position" Rval) ("_position" v2))))
+###             ("_tuple" ("_position" st')
+###               ("_tuple_arg"
+###                 ("_case_syntax"
+###                   ("_applC" ("_position" pmatch)
+###                     ("_cargs" ("_applC" ("_position" c) ("_position" env))
+###                       ("_cargs"
+###                         ("_applC" ("_position" refs) ("_position" st'))
+###                         ("_cargs" ("_position" p)
+###                           ("_cargs"
+###                             ("_applC" ("_position" List.hd)
+###                               ("_position" v2))
+###                             ("\<^const>List.list.Nil"))))))
+###                   ("_case2"
+###                     ("_case1"
+###                       ("_applC" ("_position" Match) ("_position" new_vals))
+###                       ("_applC" ("_position" Rval)
+###                         ("_record"
+###                           ("_fields"
+###                             ("_field" ("_constify" v)
+###                               ("_applC" ("_position" alist_to_ns)
+###                                 ("_position" new_vals)))
+###                             ("_field" ("_constify" c)
+###                               ("_position" nsEmpty))))))
+###                     ("_case2"
+###                       ("_case1" ("_position" No_match)
+###                         ("_applC" ("_position" Rerr)
+###                           ("_applC" ("_position" Rraise)
+###                             ("_position" Bindv))))
+###                       ("_case1" ("_position" Match_type_error)
+###                         ("_applC" ("_position" Rerr)
+###                           ("_applC" ("_position" Rabort)
+###                             ("_position" Rtype_error))))))))))
+###           ("_case1"
+###             ("_tuple" ("_position" st')
+###               ("_tuple_arg"
+###                 ("_applC" ("_position" Rerr) ("_position" err))))
+###             ("_tuple" ("_position" st')
+###               ("_tuple_arg"
+###                 ("_applC" ("_position" Rerr) ("_position" err)))))))
+###       ("_tuple" ("_position" st)
+###         ("_tuple_arg"
+###           ("_applC" ("_position" Rerr)
+###             ("_applC" ("_position" Rabort) ("_position" Rtype_error))))))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ambiguous input (line 211 of "$AFP/CakeML/generated/CakeML/Evaluate.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" fun_evaluate_decs)
+###       ("_cargs" ("_position" mn)
+###         ("_cargs" ("_position" st)
+###           ("_cargs" ("_position" env)
+###             ("_list"
+###               ("_applC" ("_position" Dletrec)
+###                 ("_cargs" ("_position" locs) ("_position" funs))))))))
+###     ("_tuple" ("_position" st)
+###       ("_tuple_arg"
+###         ("\<^const>HOL.If"
+###           ("_applC" ("_position" allDistinct)
+###             ("_applC" ("_position" List.map)
+###               ("_cargs"
+###                 ("_lambda" ("_position" x)
+###                   ("_case_syntax" ("_position" x)
+###                     ("_case1"
+###                       ("_tuple" ("_position" x)
+###                         ("_tuple_args" ("_position" y)
+###                           ("_tuple_arg" ("_position" z))))
+###                       ("_position" x))))
+###                 ("_position" funs))))
+###           ("_applC" ("_position" Rval)
+###             ("_record"
+###               ("_fields"
+###                 ("_field" ("_constify" v)
+###                   ("_applC" ("_position" build_rec_env)
+###                     ("_cargs" ("_position" funs)
+###                       ("_cargs" ("_position" env) ("_position" nsEmpty)))))
+###                 ("_field" ("_constify" c) ("_position" nsEmpty)))))
+###           ("_applC" ("_position" Rerr)
+###             ("_applC" ("_position" Rabort) ("_position" Rtype_error))))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" fun_evaluate_decs)
+###       ("_cargs" ("_position" mn)
+###         ("_cargs" ("_position" st)
+###           ("_cargs" ("_position" env)
+###             ("_list"
+###               ("_applC" ("_position" Dletrec)
+###                 ("_cargs" ("_position" locs) ("_position" funs))))))))
+###     ("_tuple" ("_position" st)
+###       ("_tuple_arg"
+###         ("\<^const>HOL.If"
+###           ("_applC" ("_position" allDistinct)
+###             ("_applC" ("_position" List.map)
+###               ("_cargs"
+###                 ("_lambda" ("_position" x)
+###                   ("_case_syntax" ("_position" x)
+###                     ("_case1"
+###                       ("_tuple" ("_position" x)
+###                         ("_tuple_args" ("_position" y)
+###                           ("_tuple_arg" ("_position" z))))
+###                       ("_position" x))))
+###                 ("_position" funs))))
+###           ("_applC" ("_position" Rval)
+###             ("_datatype_record"
+###               ("_datatype_fields"
+###                 ("_datatype_field" ("_constify" v)
+###                   ("_applC" ("_position" build_rec_env)
+###                     ("_cargs" ("_position" funs)
+###                       ("_cargs" ("_position" env) ("_position" nsEmpty)))))
+###                 ("_datatype_field" ("_constify" c) ("_position" nsEmpty)))))
+###           ("_applC" ("_position" Rerr)
+###             ("_applC" ("_position" Rabort) ("_position" Rtype_error))))))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ambiguous input (line 219 of "$AFP/CakeML/generated/CakeML/Evaluate.thy") produces 4 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" fun_evaluate_decs)
+###       ("_cargs" ("_position" mn)
+###         ("_cargs" ("_position" st)
+###           ("_cargs" ("_position" env)
+###             ("_list"
+###               ("_applC" ("_position" Dtype)
+###                 ("_cargs" ("_position" locs) ("_position" tds))))))))
+###     ("_Let"
+###       ("_bind" ("_position" new_tdecs)
+###         ("_applC" ("_position" type_defs_to_new_tdecs)
+###           ("_cargs" ("_position" mn) ("_position" tds))))
+###       ("\<^const>HOL.If"
+###         ("\<^const>HOL.conj"
+###           ("_applC" ("_position" check_dup_ctors) ("_position" tds))
+###           ("\<^const>HOL.conj"
+###             ("_applC" ("_position" disjnt)
+###               ("_cargs" ("_position" new_tdecs)
+###                 ("_applC" ("_position" defined_types) ("_position" st))))
+###             ("_applC" ("_position" allDistinct)
+###               ("_applC" ("_position" List.map)
+###                 ("_cargs"
+###                   ("_lambda" ("_position" x)
+###                     ("_case_syntax" ("_position" x)
+###                       ("_case1"
+###                         ("_tuple" ("_position" tvs)
+###                           ("_tuple_args" ("_position" tn)
+###                             ("_tuple_arg" ("_position" ctors))))
+###                         ("_position" tn))))
+###                   ("_position" tds))))))
+###         ("_tuple"
+###           ("_record_update" ("_position" st)
+###             ("_field_update" ("_constify" defined_types)
+###               ("\<^const>Set.union" ("_position" new_tdecs)
+###                 ("_applC" ("_position" defined_types) ("_position" st)))))
+###           ("_tuple_arg"
+###             ("_applC" ("_position" Rval)
+###               ("_record"
+###                 ("_fields" ("_field" ("_constify" v) ("_position" nsEmpty))
+###                   ("_field" ("_constify" c)
+###                     ("_applC" ("_position" build_tdefs)
+###                       ("_cargs" ("_position" mn) ("_position" tds)))))))))
+###         ("_tuple" ("_position" st)
+###           ("_tuple_arg"
+###             ("_applC" ("_position" Rerr)
+###               ("_applC" ("_position" Rabort)
+###                 ("_position" Rtype_error)))))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" fun_evaluate_decs)
+###       ("_cargs" ("_position" mn)
+###         ("_cargs" ("_position" st)
+###           ("_cargs" ("_position" env)
+###             ("_list"
+###               ("_applC" ("_position" Dtype)
+###                 ("_cargs" ("_position" locs) ("_position" tds))))))))
+###     ("_Let"
+###       ("_bind" ("_position" new_tdecs)
+###         ("_applC" ("_position" type_defs_to_new_tdecs)
+###           ("_cargs" ("_position" mn) ("_position" tds))))
+###       ("\<^const>HOL.If"
+###         ("\<^const>HOL.conj"
+###           ("_applC" ("_position" check_dup_ctors) ("_position" tds))
+###           ("\<^const>HOL.conj"
+###             ("_applC" ("_position" disjnt)
+###               ("_cargs" ("_position" new_tdecs)
+###                 ("_applC" ("_position" defined_types) ("_position" st))))
+###             ("_applC" ("_position" allDistinct)
+###               ("_applC" ("_position" List.map)
+###                 ("_cargs"
+###                   ("_lambda" ("_position" x)
+###                     ("_case_syntax" ("_position" x)
+###                       ("_case1"
+###                         ("_tuple" ("_position" tvs)
+###                           ("_tuple_args" ("_position" tn)
+###                             ("_tuple_arg" ("_position" ctors))))
+###                         ("_position" tn))))
+###                   ("_position" tds))))))
+###         ("_tuple"
+###           ("_datatype_record_update" ("_position" st)
+###             ("_datatype_field_update" ("_constify" defined_types)
+###               ("\<^const>Set.union" ("_position" new_tdecs)
+###                 ("_applC" ("_position" defined_types) ("_position" st)))))
+###           ("_tuple_arg"
+###             ("_applC" ("_position" Rval)
+###               ("_record"
+###                 ("_fields" ("_field" ("_constify" v) ("_position" nsEmpty))
+###                   ("_field" ("_constify" c)
+###                     ("_applC" ("_position" build_tdefs)
+###                       ("_cargs" ("_position" mn) ("_position" tds)))))))))
+###         ("_tuple" ("_position" st)
+###           ("_tuple_arg"
+###             ("_applC" ("_position" Rerr)
+###               ("_applC" ("_position" Rabort)
+###                 ("_position" Rtype_error)))))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" fun_evaluate_decs)
+###       ("_cargs" ("_position" mn)
+###         ("_cargs" ("_position" st)
+###           ("_cargs" ("_position" env)
+###             ("_list"
+###               ("_applC" ("_position" Dtype)
+###                 ("_cargs" ("_position" locs) ("_position" tds))))))))
+###     ("_Let"
+###       ("_bind" ("_position" new_tdecs)
+###         ("_applC" ("_position" type_defs_to_new_tdecs)
+###           ("_cargs" ("_position" mn) ("_position" tds))))
+###       ("\<^const>HOL.If"
+###         ("\<^const>HOL.conj"
+###           ("_applC" ("_position" check_dup_ctors) ("_position" tds))
+###           ("\<^const>HOL.conj"
+###             ("_applC" ("_position" disjnt)
+###               ("_cargs" ("_position" new_tdecs)
+###                 ("_applC" ("_position" defined_types) ("_position" st))))
+###             ("_applC" ("_position" allDistinct)
+###               ("_applC" ("_position" List.map)
+###                 ("_cargs"
+###                   ("_lambda" ("_position" x)
+###                     ("_case_syntax" ("_position" x)
+###                       ("_case1"
+###                         ("_tuple" ("_position" tvs)
+###                           ("_tuple_args" ("_position" tn)
+###                             ("_tuple_arg" ("_position" ctors))))
+###                         ("_position" tn))))
+###                   ("_position" tds))))))
+###         ("_tuple"
+###           ("_record_update" ("_position" st)
+###             ("_field_update" ("_constify" defined_types)
+###               ("\<^const>Set.union" ("_position" new_tdecs)
+###                 ("_applC" ("_position" defined_types) ("_position" st)))))
+###           ("_tuple_arg"
+###             ("_applC" ("_position" Rval)
+###               ("_datatype_record"
+###                 ("_datatype_fields"
+###                   ("_datatype_field" ("_constify" v) ("_position" nsEmpty))
+###                   ("_datatype_field" ("_constify" c)
+###                     ("_applC" ("_position" build_tdefs)
+###                       ("_cargs" ("_position" mn) ("_position" tds)))))))))
+###         ("_tuple" ("_position" st)
+###           ("_tuple_arg"
+###             ("_applC" ("_position" Rerr)
+###               ("_applC" ("_position" Rabort)
+###                 ("_position" Rtype_error)))))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" fun_evaluate_decs)
+###       ("_cargs" ("_position" mn)
+###         ("_cargs" ("_position" st)
+###           ("_cargs" ("_position" env)
+###             ("_list"
+###               ("_applC" ("_position" Dtype)
+###                 ("_cargs" ("_position" locs) ("_position" tds))))))))
+###     ("_Let"
+###       ("_bind" ("_position" new_tdecs)
+###         ("_applC" ("_position" type_defs_to_new_tdecs)
+###           ("_cargs" ("_position" mn) ("_position" tds))))
+###       ("\<^const>HOL.If"
+###         ("\<^const>HOL.conj"
+###           ("_applC" ("_position" check_dup_ctors) ("_position" tds))
+###           ("\<^const>HOL.conj"
+###             ("_applC" ("_position" disjnt)
+###               ("_cargs" ("_position" new_tdecs)
+###                 ("_applC" ("_position" defined_types) ("_position" st))))
+###             ("_applC" ("_position" allDistinct)
+###               ("_applC" ("_position" List.map)
+###                 ("_cargs"
+###                   ("_lambda" ("_position" x)
+###                     ("_case_syntax" ("_position" x)
+###                       ("_case1"
+###                         ("_tuple" ("_position" tvs)
+###                           ("_tuple_args" ("_position" tn)
+###                             ("_tuple_arg" ("_position" ctors))))
+###                         ("_position" tn))))
+###                   ("_position" tds))))))
+###         ("_tuple"
+###           ("_datatype_record_update" ("_position" st)
+###             ("_datatype_field_update" ("_constify" defined_types)
+###               ("\<^const>Set.union" ("_position" new_tdecs)
+###                 ("_applC" ("_position" defined_types) ("_position" st)))))
+###           ("_tuple_arg"
+###             ("_applC" ("_position" Rval)
+###               ("_datatype_record"
+###                 ("_datatype_fields"
+###                   ("_datatype_field" ("_constify" v) ("_position" nsEmpty))
+###                   ("_datatype_field" ("_constify" c)
+###                     ("_applC" ("_position" build_tdefs)
+###                       ("_cargs" ("_position" mn) ("_position" tds)))))))))
+###         ("_tuple" ("_position" st)
+###           ("_tuple_arg"
+###             ("_applC" ("_position" Rerr)
+###               ("_applC" ("_position" Rabort)
+###                 ("_position" Rtype_error)))))))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ambiguous input (line 231 of "$AFP/CakeML/generated/CakeML/Evaluate.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" fun_evaluate_decs)
+###       ("_cargs" ("_position" mn)
+###         ("_cargs" ("_position" st)
+###           ("_cargs" ("_position" env)
+###             ("_list"
+###               ("_applC" ("_position" Dtabbrev)
+###                 ("_cargs" ("_position" locs)
+###                   ("_cargs" ("_position" tvs)
+###                     ("_cargs" ("_position" tn) ("_position" t1))))))))))
+###     ("_tuple" ("_position" st)
+###       ("_tuple_arg"
+###         ("_applC" ("_position" Rval)
+###           ("_datatype_record"
+###             ("_datatype_fields"
+###               ("_datatype_field" ("_constify" v) ("_position" nsEmpty))
+###               ("_datatype_field" ("_constify" c)
+###                 ("_position" nsEmpty)))))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" fun_evaluate_decs)
+###       ("_cargs" ("_position" mn)
+###         ("_cargs" ("_position" st)
+###           ("_cargs" ("_position" env)
+###             ("_list"
+###               ("_applC" ("_position" Dtabbrev)
+###                 ("_cargs" ("_position" locs)
+###                   ("_cargs" ("_position" tvs)
+###                     ("_cargs" ("_position" tn) ("_position" t1))))))))))
+###     ("_tuple" ("_position" st)
+###       ("_tuple_arg"
+###         ("_applC" ("_position" Rval)
+###           ("_record"
+###             ("_fields" ("_field" ("_constify" v) ("_position" nsEmpty))
+###               ("_field" ("_constify" c) ("_position" nsEmpty)))))))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ambiguous input (line 234 of "$AFP/CakeML/generated/CakeML/Evaluate.thy") produces 4 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" fun_evaluate_decs)
+###       ("_cargs" ("_position" mn)
+###         ("_cargs" ("_position" st)
+###           ("_cargs" ("_position" env)
+###             ("_list"
+###               ("_applC" ("_position" Dexn)
+###                 ("_cargs" ("_position" locs)
+###                   ("_cargs" ("_position" cn) ("_position" ts)))))))))
+###     ("\<^const>HOL.If"
+###       ("\<^const>Set.member"
+###         ("_applC" ("_position" TypeExn)
+###           ("_applC" ("_position" mk_id)
+###             ("_cargs" ("_position" mn) ("_position" cn))))
+###         ("_applC" ("_position" defined_types) ("_position" st)))
+###       ("_tuple" ("_position" st)
+###         ("_tuple_arg"
+###           ("_applC" ("_position" Rerr)
+###             ("_applC" ("_position" Rabort) ("_position" Rtype_error)))))
+###       ("_tuple"
+###         ("_datatype_record_update" ("_position" st)
+###           ("_datatype_field_update" ("_constify" defined_types)
+###             ("\<^const>Set.union"
+###               ("_Finset"
+###                 ("_applC" ("_position" TypeExn)
+###                   ("_applC" ("_position" mk_id)
+###                     ("_cargs" ("_position" mn) ("_position" cn)))))
+###               ("_applC" ("_position" defined_types) ("_position" st)))))
+###         ("_tuple_arg"
+###           ("_applC" ("_position" Rval)
+###             ("_datatype_record"
+###               ("_datatype_fields"
+###                 ("_datatype_field" ("_constify" v) ("_position" nsEmpty))
+###                 ("_datatype_field" ("_constify" c)
+###                   ("_applC" ("_position" nsSing)
+###                     ("_cargs" ("_position" cn)
+###                       ("_tuple"
+###                         ("_applC" ("_position" List.length)
+###                           ("_position" ts))
+###                         ("_tuple_arg"
+###                           ("_applC" ("_position" TypeExn)
+###                             ("_applC" ("_position" mk_id)
+###                               ("_cargs" ("_position" mn)
+###                                 ("_position" cn)))))))))))))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" fun_evaluate_decs)
+###       ("_cargs" ("_position" mn)
+###         ("_cargs" ("_position" st)
+###           ("_cargs" ("_position" env)
+###             ("_list"
+###               ("_applC" ("_position" Dexn)
+###                 ("_cargs" ("_position" locs)
+###                   ("_cargs" ("_position" cn) ("_position" ts)))))))))
+###     ("\<^const>HOL.If"
+###       ("\<^const>Set.member"
+###         ("_applC" ("_position" TypeExn)
+###           ("_applC" ("_position" mk_id)
+###             ("_cargs" ("_position" mn) ("_position" cn))))
+###         ("_applC" ("_position" defined_types) ("_position" st)))
+###       ("_tuple" ("_position" st)
+###         ("_tuple_arg"
+###           ("_applC" ("_position" Rerr)
+###             ("_applC" ("_position" Rabort) ("_position" Rtype_error)))))
+###       ("_tuple"
+###         ("_record_update" ("_position" st)
+###           ("_field_update" ("_constify" defined_types)
+###             ("\<^const>Set.union"
+###               ("_Finset"
+###                 ("_applC" ("_position" TypeExn)
+###                   ("_applC" ("_position" mk_id)
+###                     ("_cargs" ("_position" mn) ("_position" cn)))))
+###               ("_applC" ("_position" defined_types) ("_position" st)))))
+###         ("_tuple_arg"
+###           ("_applC" ("_position" Rval)
+###             ("_datatype_record"
+###               ("_datatype_fields"
+###                 ("_datatype_field" ("_constify" v) ("_position" nsEmpty))
+###                 ("_datatype_field" ("_constify" c)
+###                   ("_applC" ("_position" nsSing)
+###                     ("_cargs" ("_position" cn)
+###                       ("_tuple"
+###                         ("_applC" ("_position" List.length)
+###                           ("_position" ts))
+###                         ("_tuple_arg"
+###                           ("_applC" ("_position" TypeExn)
+###                             ("_applC" ("_position" mk_id)
+###                               ("_cargs" ("_position" mn)
+###                                 ("_position" cn)))))))))))))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" fun_evaluate_decs)
+###       ("_cargs" ("_position" mn)
+###         ("_cargs" ("_position" st)
+###           ("_cargs" ("_position" env)
+###             ("_list"
+###               ("_applC" ("_position" Dexn)
+###                 ("_cargs" ("_position" locs)
+###                   ("_cargs" ("_position" cn) ("_position" ts)))))))))
+###     ("\<^const>HOL.If"
+###       ("\<^const>Set.member"
+###         ("_applC" ("_position" TypeExn)
+###           ("_applC" ("_position" mk_id)
+###             ("_cargs" ("_position" mn) ("_position" cn))))
+###         ("_applC" ("_position" defined_types) ("_position" st)))
+###       ("_tuple" ("_position" st)
+###         ("_tuple_arg"
+###           ("_applC" ("_position" Rerr)
+###             ("_applC" ("_position" Rabort) ("_position" Rtype_error)))))
+###       ("_tuple"
+###         ("_datatype_record_update" ("_position" st)
+###           ("_datatype_field_update" ("_constify" defined_types)
+###             ("\<^const>Set.union"
+###               ("_Finset"
+###                 ("_applC" ("_position" TypeExn)
+###                   ("_applC" ("_position" mk_id)
+###                     ("_cargs" ("_position" mn) ("_position" cn)))))
+###               ("_applC" ("_position" defined_types) ("_position" st)))))
+###         ("_tuple_arg"
+###           ("_applC" ("_position" Rval)
+###             ("_record"
+###               ("_fields" ("_field" ("_constify" v) ("_position" nsEmpty))
+###                 ("_field" ("_constify" c)
+###                   ("_applC" ("_position" nsSing)
+###                     ("_cargs" ("_position" cn)
+###                       ("_tuple"
+###                         ("_applC" ("_position" List.length)
+###                           ("_position" ts))
+###                         ("_tuple_arg"
+###                           ("_applC" ("_position" TypeExn)
+###                             ("_applC" ("_position" mk_id)
+###                               ("_cargs" ("_position" mn)
+###                                 ("_position" cn)))))))))))))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" fun_evaluate_decs)
+###       ("_cargs" ("_position" mn)
+###         ("_cargs" ("_position" st)
+###           ("_cargs" ("_position" env)
+###             ("_list"
+###               ("_applC" ("_position" Dexn)
+###                 ("_cargs" ("_position" locs)
+###                   ("_cargs" ("_position" cn) ("_position" ts)))))))))
+###     ("\<^const>HOL.If"
+###       ("\<^const>Set.member"
+###         ("_applC" ("_position" TypeExn)
+###           ("_applC" ("_position" mk_id)
+###             ("_cargs" ("_position" mn) ("_position" cn))))
+###         ("_applC" ("_position" defined_types) ("_position" st)))
+###       ("_tuple" ("_position" st)
+###         ("_tuple_arg"
+###           ("_applC" ("_position" Rerr)
+###             ("_applC" ("_position" Rabort) ("_position" Rtype_error)))))
+###       ("_tuple"
+###         ("_record_update" ("_position" st)
+###           ("_field_update" ("_constify" defined_types)
+###             ("\<^const>Set.union"
+###               ("_Finset"
+###                 ("_applC" ("_position" TypeExn)
+###                   ("_applC" ("_position" mk_id)
+###                     ("_cargs" ("_position" mn) ("_position" cn)))))
+###               ("_applC" ("_position" defined_types) ("_position" st)))))
+###         ("_tuple_arg"
+###           ("_applC" ("_position" Rval)
+###             ("_record"
+###               ("_fields" ("_field" ("_constify" v) ("_position" nsEmpty))
+###                 ("_field" ("_constify" c)
+###                   ("_applC" ("_position" nsSing)
+###                     ("_cargs" ("_position" cn)
+###                       ("_tuple"
+###                         ("_applC" ("_position" List.length)
+###                           ("_position" ts))
+###                         ("_tuple_arg"
+###                           ("_applC" ("_position" TypeExn)
+###                             ("_applC" ("_position" mk_id)
+###                               ("_cargs" ("_position" mn)
+###                                 ("_position" cn)))))))))))))))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+Found termination order:
+  "(%p. size_list size (snd (snd (snd p)))) <*mlex*> {}"
+### Ambiguous input (line 244 of "$AFP/CakeML/generated/CakeML/Evaluate.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" envLift)
+###       ("_cargs" ("_position" mn) ("_position" env)))
+###     ("_record"
+###       ("_fields"
+###         ("_field" ("_constify" v)
+###           ("_applC" ("_position" nsLift)
+###             ("_cargs" ("_position" mn)
+###               ("_applC" ("_position" v) ("_position" env)))))
+###         ("_field" ("_constify" c)
+###           ("_applC" ("_position" nsLift)
+###             ("_cargs" ("_position" mn)
+###               ("_applC" ("_position" c) ("_position" env)))))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" envLift)
+###       ("_cargs" ("_position" mn) ("_position" env)))
+###     ("_datatype_record"
+###       ("_datatype_fields"
+###         ("_datatype_field" ("_constify" v)
+###           ("_applC" ("_position" nsLift)
+###             ("_cargs" ("_position" mn)
+###               ("_applC" ("_position" v) ("_position" env)))))
+###         ("_datatype_field" ("_constify" c)
+###           ("_applC" ("_position" nsLift)
+###             ("_cargs" ("_position" mn)
+###               ("_applC" ("_position" c) ("_position" env)))))))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ambiguous input (line 252 of "$AFP/CakeML/generated/CakeML/Evaluate.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" evaluate_tops)
+###       ("_cargs" ("_position" st)
+###         ("_cargs" ("_position" env) ("\<^const>List.list.Nil"))))
+###     ("_tuple" ("_position" st)
+###       ("_tuple_arg"
+###         ("_applC" ("_position" Rval)
+###           ("_datatype_record"
+###             ("_datatype_fields"
+###               ("_datatype_field" ("_constify" v) ("_position" nsEmpty))
+###               ("_datatype_field" ("_constify" c)
+###                 ("_position" nsEmpty)))))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" evaluate_tops)
+###       ("_cargs" ("_position" st)
+###         ("_cargs" ("_position" env) ("\<^const>List.list.Nil"))))
+###     ("_tuple" ("_position" st)
+###       ("_tuple_arg"
+###         ("_applC" ("_position" Rval)
+###           ("_record"
+###             ("_fields" ("_field" ("_constify" v) ("_position" nsEmpty))
+###               ("_field" ("_constify" c) ("_position" nsEmpty)))))))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+### Ambiguous input (line 265 of "$AFP/CakeML/generated/CakeML/Evaluate.thy") produces 4 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" evaluate_tops)
+###       ("_cargs" ("_position" st)
+###         ("_cargs" ("_position" env)
+###           ("_list"
+###             ("_applC" ("_position" Tmod)
+###               ("_cargs" ("_position" mn)
+###                 ("_cargs" ("_position" specs) ("_position" ds))))))))
+###     ("\<^const>HOL.If"
+###       ("\<^const>HOL.conj"
+###         ("\<^const>HOL.Not"
+###           ("\<^const>Set.member" ("_list" ("_position" mn))
+###             ("_applC" ("_position" defined_mods) ("_position" st))))
+###         ("_applC" ("_position" no_dup_types) ("_position" ds)))
+###       ("_case_syntax"
+###         ("_applC" ("_position" fun_evaluate_decs)
+###           ("_cargs" ("_list" ("_position" mn))
+###             ("_cargs" ("_position" st)
+###               ("_cargs" ("_position" env) ("_position" ds)))))
+###         ("_case1"
+###           ("_tuple" ("_position" st') ("_tuple_arg" ("_position" r)))
+###           ("_tuple"
+###             ("_record_update" ("_position" st')
+###               ("_field_update" ("_constify" defined_mods)
+###                 ("\<^const>Set.union" ("_Finset" ("_list" ("_position" mn)))
+###                   ("_applC" ("_position" defined_mods) ("_position" st')))))
+###             ("_tuple_arg"
+###               ("_case_syntax" ("_position" r)
+###                 ("_case2"
+###                   ("_case1" ("_applC" ("_position" Rval) ("_position" env'))
+###                     ("_applC" ("_position" Rval)
+###                       ("_datatype_record"
+###                         ("_datatype_fields"
+###                           ("_datatype_field" ("_constify" v)
+###                             ("_applC" ("_position" nsLift)
+###                               ("_cargs" ("_position" mn)
+###                                 ("_applC" ("_position" v)
+###                                   ("_position" env')))))
+###                           ("_datatype_field" ("_constify" c)
+###                             ("_applC" ("_position" nsLift)
+###                               ("_cargs" ("_position" mn)
+###                                 ("_applC" ("_position" c)
+###                                   ("_position" env')))))))))
+###                   ("_case1" ("_applC" ("_position" Rerr) ("_position" err))
+###                     ("_applC" ("_position" Rerr) ("_position" err)))))))))
+###       ("_tuple" ("_position" st)
+###         ("_tuple_arg"
+###           ("_applC" ("_position" Rerr)
+###             ("_applC" ("_position" Rabort) ("_position" Rtype_error))))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" evaluate_tops)
+###       ("_cargs" ("_position" st)
+###         ("_cargs" ("_position" env)
+###           ("_list"
+###             ("_applC" ("_position" Tmod)
+###               ("_cargs" ("_position" mn)
+###                 ("_cargs" ("_position" specs) ("_position" ds))))))))
+###     ("\<^const>HOL.If"
+###       ("\<^const>HOL.conj"
+###         ("\<^const>HOL.Not"
+###           ("\<^const>Set.member" ("_list" ("_position" mn))
+###             ("_applC" ("_position" defined_mods) ("_position" st))))
+###         ("_applC" ("_position" no_dup_types) ("_position" ds)))
+###       ("_case_syntax"
+###         ("_applC" ("_position" fun_evaluate_decs)
+###           ("_cargs" ("_list" ("_position" mn))
+###             ("_cargs" ("_position" st)
+###               ("_cargs" ("_position" env) ("_position" ds)))))
+###         ("_case1"
+###           ("_tuple" ("_position" st') ("_tuple_arg" ("_position" r)))
+###           ("_tuple"
+###             ("_datatype_record_update" ("_position" st')
+###               ("_datatype_field_update" ("_constify" defined_mods)
+###                 ("\<^const>Set.union" ("_Finset" ("_list" ("_position" mn)))
+###                   ("_applC" ("_position" defined_mods) ("_position" st')))))
+###             ("_tuple_arg"
+###               ("_case_syntax" ("_position" r)
+###                 ("_case2"
+###                   ("_case1" ("_applC" ("_position" Rval) ("_position" env'))
+###                     ("_applC" ("_position" Rval)
+###                       ("_datatype_record"
+###                         ("_datatype_fields"
+###                           ("_datatype_field" ("_constify" v)
+###                             ("_applC" ("_position" nsLift)
+###                               ("_cargs" ("_position" mn)
+###                                 ("_applC" ("_position" v)
+###                                   ("_position" env')))))
+###                           ("_datatype_field" ("_constify" c)
+###                             ("_applC" ("_position" nsLift)
+###                               ("_cargs" ("_position" mn)
+###                                 ("_applC" ("_position" c)
+###                                   ("_position" env')))))))))
+###                   ("_case1" ("_applC" ("_position" Rerr) ("_position" err))
+###                     ("_applC" ("_position" Rerr) ("_position" err)))))))))
+###       ("_tuple" ("_position" st)
+###         ("_tuple_arg"
+###           ("_applC" ("_position" Rerr)
+###             ("_applC" ("_position" Rabort) ("_position" Rtype_error))))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" evaluate_tops)
+###       ("_cargs" ("_position" st)
+###         ("_cargs" ("_position" env)
+###           ("_list"
+###             ("_applC" ("_position" Tmod)
+###               ("_cargs" ("_position" mn)
+###                 ("_cargs" ("_position" specs) ("_position" ds))))))))
+###     ("\<^const>HOL.If"
+###       ("\<^const>HOL.conj"
+###         ("\<^const>HOL.Not"
+###           ("\<^const>Set.member" ("_list" ("_position" mn))
+###             ("_applC" ("_position" defined_mods) ("_position" st))))
+###         ("_applC" ("_position" no_dup_types) ("_position" ds)))
+###       ("_case_syntax"
+###         ("_applC" ("_position" fun_evaluate_decs)
+###           ("_cargs" ("_list" ("_position" mn))
+###             ("_cargs" ("_position" st)
+###               ("_cargs" ("_position" env) ("_position" ds)))))
+###         ("_case1"
+###           ("_tuple" ("_position" st') ("_tuple_arg" ("_position" r)))
+###           ("_tuple"
+###             ("_record_update" ("_position" st')
+###               ("_field_update" ("_constify" defined_mods)
+###                 ("\<^const>Set.union" ("_Finset" ("_list" ("_position" mn)))
+###                   ("_applC" ("_position" defined_mods) ("_position" st')))))
+###             ("_tuple_arg"
+###               ("_case_syntax" ("_position" r)
+###                 ("_case2"
+###                   ("_case1" ("_applC" ("_position" Rval) ("_position" env'))
+###                     ("_applC" ("_position" Rval)
+###                       ("_record"
+###                         ("_fields"
+###                           ("_field" ("_constify" v)
+###                             ("_applC" ("_position" nsLift)
+###                               ("_cargs" ("_position" mn)
+###                                 ("_applC" ("_position" v)
+###                                   ("_position" env')))))
+###                           ("_field" ("_constify" c)
+###                             ("_applC" ("_position" nsLift)
+###                               ("_cargs" ("_position" mn)
+###                                 ("_applC" ("_position" c)
+###                                   ("_position" env')))))))))
+###                   ("_case1" ("_applC" ("_position" Rerr) ("_position" err))
+###                     ("_applC" ("_position" Rerr) ("_position" err)))))))))
+###       ("_tuple" ("_position" st)
+###         ("_tuple_arg"
+###           ("_applC" ("_position" Rerr)
+###             ("_applC" ("_position" Rabort) ("_position" Rtype_error))))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" evaluate_tops)
+###       ("_cargs" ("_position" st)
+###         ("_cargs" ("_position" env)
+###           ("_list"
+###             ("_applC" ("_position" Tmod)
+###               ("_cargs" ("_position" mn)
+###                 ("_cargs" ("_position" specs) ("_position" ds))))))))
+###     ("\<^const>HOL.If"
+###       ("\<^const>HOL.conj"
+###         ("\<^const>HOL.Not"
+###           ("\<^const>Set.member" ("_list" ("_position" mn))
+###             ("_applC" ("_position" defined_mods) ("_position" st))))
+###         ("_applC" ("_position" no_dup_types) ("_position" ds)))
+###       ("_case_syntax"
+###         ("_applC" ("_position" fun_evaluate_decs)
+###           ("_cargs" ("_list" ("_position" mn))
+###             ("_cargs" ("_position" st)
+###               ("_cargs" ("_position" env) ("_position" ds)))))
+###         ("_case1"
+###           ("_tuple" ("_position" st') ("_tuple_arg" ("_position" r)))
+###           ("_tuple"
+###             ("_datatype_record_update" ("_position" st')
+###               ("_datatype_field_update" ("_constify" defined_mods)
+###                 ("\<^const>Set.union" ("_Finset" ("_list" ("_position" mn)))
+###                   ("_applC" ("_position" defined_mods) ("_position" st')))))
+###             ("_tuple_arg"
+###               ("_case_syntax" ("_position" r)
+###                 ("_case2"
+###                   ("_case1" ("_applC" ("_position" Rval) ("_position" env'))
+###                     ("_applC" ("_position" Rval)
+###                       ("_record"
+###                         ("_fields"
+###                           ("_field" ("_constify" v)
+###                             ("_applC" ("_position" nsLift)
+###                               ("_cargs" ("_position" mn)
+###                                 ("_applC" ("_position" v)
+###                                   ("_position" env')))))
+###                           ("_field" ("_constify" c)
+###                             ("_applC" ("_position" nsLift)
+###                               ("_cargs" ("_position" mn)
+###                                 ("_applC" ("_position" c)
+###                                   ("_position" env')))))))))
+###                   ("_case1" ("_applC" ("_position" Rerr) ("_position" err))
+###                     ("_applC" ("_position" Rerr) ("_position" err)))))))))
+###       ("_tuple" ("_position" st)
+###         ("_tuple_arg"
+###           ("_applC" ("_position" Rerr)
+###             ("_applC" ("_position" Rabort) ("_position" Rtype_error))))))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+Found termination order: "(%p. size_list size (snd (snd p))) <*mlex*> {}"
+### theory "Draft.Evaluate"
+### 2.649s elapsed time, 3.646s cpu time, 0.308s GC time
+Loading theory "Draft.EvaluateTemplates"
+val templateLemmas = []: (string * thm * template) list
+### theory "Draft.EvaluateTemplates"
+### 1.917s elapsed time, 2.254s cpu time, 0.233s GC time
+val it = (): unit

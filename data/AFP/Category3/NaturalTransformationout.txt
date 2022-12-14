@@ -1,0 +1,1329 @@
+Loading theory "Draft.Category" (required by "Draft.NaturalTransformationTemplates" via "Draft.NaturalTransformation" via "Draft.Functor")
+Loading theory "Draft.Templates" (required by "Draft.NaturalTransformationTemplates" via "Draft.ExtrEqs")
+locale partial_magma
+  fixes C :: "'a => 'a => 'a"  (infixr \<open>\<cdot>\<close> 55)
+  assumes "partial_magma (\<cdot>)"
+datatype template_term
+=
+     t_empty
+   | template_app of template_term * template_term
+   | template_hole of int
+   | template_var of int
+datatype sign
+= equals | greater_equals | greater_than | less_equals | less_than
+datatype template
+=
+     template_bimplication of template * template
+   | template_dunno
+   | template_equation of template_term * template_term
+   | template_implication of template list * template
+   | template_inequation of sign * template_term * template_term
+   | template_negation of template
+   | template_predicate of template_term
+constructor t_empty: template_term
+constructor template_app: template_term * template_term -> template_term
+constructor template_hole: int -> template_term
+constructor template_var: int -> template_term
+constructor equals: sign
+constructor greater_equals: sign
+constructor greater_than: sign
+constructor less_equals: sign
+constructor less_than: sign
+constructor template_bimplication: template * template -> template
+constructor template_dunno: template
+constructor template_equation: template_term * template_term -> template
+constructor template_implication: template list * template -> template
+constructor template_inequation:
+   sign * template_term * template_term -> template
+constructor template_negation: template -> template
+constructor template_predicate: template_term -> template
+val vfs = fn: term -> (indexname * typ) list * (string * typ) list
+val indexOf = fn: ''a list -> ''a -> int -> int
+val has_eq = fn: term -> bool
+val term2template = fn:
+   (indexname * typ) list -> (string * typ) list -> term -> template_term
+val lemma2predicate = fn: term -> term -> template
+val makeTemplatewithContext = fn: term -> term -> template
+val lemma2template = fn: term -> template
+val thm2template = fn: thm -> template
+val tterm2string = fn: template_term -> string
+val template2string = fn: template -> string
+val t = "height ?t <= size ?t": thm
+val th =
+   Const ("HOL.Trueprop", "bool => prop") $
+     (Const ("Orderings.ord_class.less_eq", "nat => nat => bool") $
+       (Const ("Tree.height_class.height", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree")) $
+       (Const ("Nat.size_class.size", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree"))):
+   term
+### theory "Draft.Templates"
+### 0.067s elapsed time, 0.161s cpu time, 0.000s GC time
+Loading theory "Draft.ExtrEqs" (required by "Draft.NaturalTransformationTemplates")
+locale category
+  fixes C :: "'a => 'a => 'a"  (infixr \<open>\<cdot>\<close> 55)
+  assumes "category (\<cdot>)"
+### theory "Draft.Category"
+### 0.234s elapsed time, 0.485s cpu time, 0.030s GC time
+Loading theory "Draft.ConcreteCategory" (required by "Draft.NaturalTransformationTemplates" via "Draft.NaturalTransformation" via "Draft.Functor")
+Loading theory "Draft.DualCategory" (required by "Draft.NaturalTransformationTemplates" via "Draft.NaturalTransformation" via "Draft.Functor")
+Loading theory "Draft.EpiMonoIso" (required by "Draft.NaturalTransformationTemplates" via "Draft.NaturalTransformation" via "Draft.Functor" via "Draft.InitialTerminal")
+locale category
+  fixes C :: "'a => 'a => 'a"  (infixr \<open>\<cdot>\<close> 55)
+  assumes "category (\<cdot>)"
+locale dual_category
+  fixes C :: "'a => 'a => 'a"  (infixr \<open>\<cdot>\<close> 55)
+  assumes "dual_category (\<cdot>)"
+locale concrete_category
+  fixes Obj :: "'o set"
+    and Hom :: "'o => 'o => 'a set"
+    and Id :: "'o => 'a"
+    and Comp :: "'o => 'o => 'o => 'a => 'a => 'a"
+  assumes "concrete_category Obj Hom Id Comp"
+locale dual_category
+  fixes C :: "'a => 'a => 'a"  (infixr \<open>\<cdot>\<close> 55)
+  assumes "dual_category (\<cdot>)"
+### theory "Draft.DualCategory"
+### 0.186s elapsed time, 0.703s cpu time, 0.068s GC time
+### theory "Draft.EpiMonoIso"
+### 0.236s elapsed time, 0.853s cpu time, 0.068s GC time
+Loading theory "Draft.InitialTerminal" (required by "Draft.NaturalTransformationTemplates" via "Draft.NaturalTransformation" via "Draft.Functor")
+locale category
+  fixes C :: "'a => 'a => 'a"  (infixr \<open>\<cdot>\<close> 55)
+  assumes "category (\<cdot>)"
+### theory "Draft.InitialTerminal"
+### 0.099s elapsed time, 0.285s cpu time, 0.072s GC time
+val eqpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Var (("_dummy_", 2), "?'a"))
+       ):
+   term Find_Theorems.criterion
+val badeqpattern = Pattern (Const ("Pure.eq", "?'a => ?'a => prop")):
+   term Find_Theorems.criterion
+val undefpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Const ("HOL.undefined", "?'a"))
+       ):
+   term Find_Theorems.criterion
+val thmpattern =
+   Pattern
+    (Const ("HOL.Trueprop", "bool => prop") $ Var (("_dummy_", 1), "bool")):
+   term Find_Theorems.criterion
+val badnames =
+   ["*nitpick*", "*Nitpick*", "*full_exhaustive*", "*_def*", "Enum.finite*",
+    "*Quickcheck*", "ATP*", "*Nunchaku*", "*Code*", "*BNF*", "*SMT*",
+    "*.*.*"]:
+   string list
+val unwanted_names =
+   [(false, Name "*nitpick*"), (false, Name "*Nitpick*"),
+    (false, Name "*full_exhaustive*"), (false, Name "*_def*"),
+    (false, Name "Enum.finite*"), (false, Name "*Quickcheck*"),
+    (false, Name "ATP*"), (false, Name "*Nunchaku*"),
+    (false, Name "*Code*"), (false, Name "*BNF*"), (false, Name "*SMT*"),
+    (false, Name "*.*.*")]:
+   (bool * term Find_Theorems.criterion) list
+val has_vars = fn: term -> bool
+val get_all_eqs = fn: string -> Proof.context -> (string * thm) list
+val get_all_thms = fn: string -> Proof.context -> (string * thm) list
+val get_noneq_thms = fn: string -> Proof.context -> (string * thm) list
+val template_eqs = fn:
+   string -> Proof.context -> (string * thm * template) list
+val template_thms = fn:
+   string -> Proof.context -> (string * thm * template) list
+### theory "Draft.ExtrEqs"
+### 0.574s elapsed time, 1.624s cpu time, 0.171s GC time
+Found termination order: "{}"
+Found termination order: "{}"
+Found termination order: "{}"
+### theory "Draft.ConcreteCategory"
+### 0.976s elapsed time, 1.887s cpu time, 0.207s GC time
+Loading theory "Draft.Functor" (required by "Draft.NaturalTransformationTemplates" via "Draft.NaturalTransformation")
+locale functor
+  fixes A :: "'a => 'a => 'a"  (infixr \<open>\<cdot>\<^sub>A\<close> 55)
+    and B :: "'b => 'b => 'b"  (infixr \<open>\<cdot>\<^sub>B\<close> 55)
+    and F :: "'a => 'b"
+  assumes "functor (\<cdot>\<^sub>A) (\<cdot>\<^sub>B) F"
+locale endofunctor
+  fixes A :: "'a => 'a => 'a"  (infixr \<open>\<cdot>\<close> 55)
+    and F :: "'a => 'a"
+  assumes "endofunctor (\<cdot>) F"
+locale faithful_functor
+  fixes A :: "'a => 'a => 'a"
+    and B :: "'b => 'b => 'b"
+    and F :: "'a => 'b"
+  assumes "faithful_functor A B F"
+locale full_functor
+  fixes A :: "'a => 'a => 'a"
+    and B :: "'b => 'b => 'b"
+    and F :: "'a => 'b"
+  assumes "full_functor A B F"
+locale fully_faithful_functor
+  fixes A :: "'a => 'a => 'a"
+    and B :: "'b => 'b => 'b"
+    and F :: "'a => 'b"
+  assumes "fully_faithful_functor A B F"
+locale embedding_functor
+  fixes A :: "'a => 'a => 'a"
+    and B :: "'b => 'b => 'b"
+    and F :: "'a => 'b"
+  assumes "embedding_functor A B F"
+locale embedding_functor
+  fixes A :: "'a => 'a => 'a"
+    and B :: "'b => 'b => 'b"
+    and F :: "'a => 'b"
+  assumes "embedding_functor A B F"
+locale full_embedding_functor
+  fixes A :: "'a => 'a => 'a"
+    and B :: "'b => 'b => 'b"
+    and F :: "'a => 'b"
+  assumes "full_embedding_functor A B F"
+locale essentially_surjective_functor
+  fixes A :: "'a => 'a => 'a"  (infixr \<open>\<cdot>\<^sub>A\<close> 55)
+    and B :: "'b => 'b => 'b"  (infixr \<open>\<cdot>\<^sub>B\<close> 55)
+    and F :: "'a => 'b"
+  assumes
+    "essentially_surjective_functor (\<cdot>\<^sub>A) (\<cdot>\<^sub>B) F"
+locale constant_functor
+  fixes A :: "'a => 'a => 'a"
+    and B :: "'b => 'b => 'b"
+    and b :: "'b"
+  assumes "constant_functor A B b"
+locale identity_functor
+  fixes C :: "'a => 'a => 'a"
+  assumes "identity_functor C"
+locale composite_functor
+  fixes A :: "'a => 'a => 'a"
+    and B :: "'b => 'b => 'b"
+    and C :: "'c => 'c => 'c"
+    and F :: "'a => 'b"
+    and G :: "'b => 'c"
+  assumes "composite_functor A B C F G"
+locale inverse_functors
+  fixes A :: "'a => 'a => 'a"  (infixr \<open>\<cdot>\<^sub>A\<close> 55)
+    and B :: "'b => 'b => 'b"  (infixr \<open>\<cdot>\<^sub>B\<close> 55)
+    and F :: "'b => 'a"
+    and G :: "'a => 'b"
+  assumes "inverse_functors (\<cdot>\<^sub>A) (\<cdot>\<^sub>B) F G"
+locale isomorphic_categories
+  fixes A :: "'a => 'a => 'a"  (infixr \<open>\<cdot>\<^sub>A\<close> 55)
+    and B :: "'b => 'b => 'b"  (infixr \<open>\<cdot>\<^sub>B\<close> 55)
+  assumes "isomorphic_categories (\<cdot>\<^sub>A) (\<cdot>\<^sub>B)"
+locale invertible_functor
+  fixes A :: "'a => 'a => 'a"  (infixr \<open>\<cdot>\<^sub>A\<close> 55)
+    and B :: "'b => 'b => 'b"  (infixr \<open>\<cdot>\<^sub>B\<close> 55)
+    and G :: "'a => 'b"
+  assumes "invertible_functor (\<cdot>\<^sub>A) (\<cdot>\<^sub>B) G"
+locale dual_functor
+  fixes A :: "'a => 'a => 'a"  (infixr \<open>\<cdot>\<^sub>A\<close> 55)
+    and B :: "'b => 'b => 'b"  (infixr \<open>\<cdot>\<^sub>B\<close> 55)
+    and F :: "'a => 'b"
+  assumes "dual_functor (\<cdot>\<^sub>A) (\<cdot>\<^sub>B) F"
+locale category
+  fixes C :: "'a => 'a => 'a"  (infixr \<open>\<cdot>\<close> 55)
+  assumes "category (\<cdot>)"
+locale category
+  fixes C :: "'a => 'a => 'a"  (infixr \<open>\<cdot>\<close> 55)
+  assumes "category (\<cdot>)"
+### theory "Draft.Functor"
+### 2.426s elapsed time, 2.852s cpu time, 0.681s GC time
+Loading theory "Draft.NaturalTransformation" (required by "Draft.NaturalTransformationTemplates")
+locale natural_transformation
+  fixes A :: "'a => 'a => 'a"  (infixr \<open>\<cdot>\<^sub>A\<close> 55)
+    and B :: "'b => 'b => 'b"  (infixr \<open>\<cdot>\<^sub>B\<close> 55)
+    and F :: "'a => 'b"
+    and G :: "'a => 'b"
+    and \<tau> :: "'a => 'b"
+  assumes
+    "natural_transformation (\<cdot>\<^sub>A) (\<cdot>\<^sub>B) F G \<tau>"
+locale transformation_by_components
+  fixes A :: "'a => 'a => 'a"  (infixr \<open>\<cdot>\<^sub>A\<close> 55)
+    and B :: "'b => 'b => 'b"  (infixr \<open>\<cdot>\<^sub>B\<close> 55)
+    and F :: "'a => 'b"
+    and G :: "'a => 'b"
+    and t :: "'a => 'b"
+  assumes
+    "transformation_by_components (\<cdot>\<^sub>A) (\<cdot>\<^sub>B) F G t"
+locale constant_transformation
+  fixes A :: "'a => 'a => 'a"  (infixr \<open>\<cdot>\<^sub>A\<close> 55)
+    and B :: "'b => 'b => 'b"  (infixr \<open>\<cdot>\<^sub>B\<close> 55)
+    and g :: "'b"
+  assumes "constant_transformation (\<cdot>\<^sub>A) (\<cdot>\<^sub>B) g"
+locale constant_transformation
+  fixes A :: "'a => 'a => 'a"  (infixr \<open>\<cdot>\<^sub>A\<close> 55)
+    and B :: "'b => 'b => 'b"  (infixr \<open>\<cdot>\<^sub>B\<close> 55)
+    and g :: "'b"
+  assumes "constant_transformation (\<cdot>\<^sub>A) (\<cdot>\<^sub>B) g"
+locale vertical_composite
+  fixes A :: "'a => 'a => 'a"  (infixr \<open>\<cdot>\<^sub>A\<close> 55)
+    and B :: "'b => 'b => 'b"  (infixr \<open>\<cdot>\<^sub>B\<close> 55)
+    and F :: "'a => 'b"
+    and G :: "'a => 'b"
+    and H :: "'a => 'b"
+    and \<sigma> :: "'a => 'b"
+    and \<tau> :: "'a => 'b"
+  assumes
+    "vertical_composite (\<cdot>\<^sub>A) (\<cdot>\<^sub>B) F G H \<sigma>
+      \<tau>"
+locale natural_isomorphism
+  fixes A :: "'a => 'a => 'a"  (infixr \<open>\<cdot>\<^sub>A\<close> 55)
+    and B :: "'b => 'b => 'b"  (infixr \<open>\<cdot>\<^sub>B\<close> 55)
+    and F :: "'a => 'b"
+    and G :: "'a => 'b"
+    and \<tau> :: "'a => 'b"
+  assumes
+    "natural_isomorphism (\<cdot>\<^sub>A) (\<cdot>\<^sub>B) F G \<tau>"
+locale inverse_transformation
+  fixes A :: "'a => 'a => 'a"  (infixr \<open>\<cdot>\<^sub>A\<close> 55)
+    and B :: "'b => 'b => 'b"  (infixr \<open>\<cdot>\<^sub>B\<close> 55)
+    and F :: "'a => 'b"
+    and G :: "'a => 'b"
+    and \<tau> :: "'a => 'b"
+  assumes
+    "inverse_transformation (\<cdot>\<^sub>A) (\<cdot>\<^sub>B) F G \<tau>"
+locale inverse_transformations
+  fixes A :: "'a => 'a => 'a"  (infixr \<open>\<cdot>\<^sub>A\<close> 55)
+    and B :: "'b => 'b => 'b"  (infixr \<open>\<cdot>\<^sub>B\<close> 55)
+    and F :: "'a => 'b"
+    and G :: "'a => 'b"
+    and \<tau> :: "'a => 'b"
+    and \<tau>' :: "'a => 'b"
+  assumes
+    "inverse_transformations (\<cdot>\<^sub>A) (\<cdot>\<^sub>B) F G \<tau>
+      \<tau>'"
+### theory "Draft.NaturalTransformation"
+### 1.697s elapsed time, 2.153s cpu time, 0.708s GC time
+Loading theory "Draft.NaturalTransformationTemplates"
+val templateLemmas =
+   [("NaturalTransformation.naturally_isomorphic_reflexive",
+     "functor ?A ?B ?F ==> naturally_isomorphic ?A ?B ?F ?F",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 1, template_var 2),
+                template_var 1),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 0, template_var 2),
+                 template_var 1),
+               template_var 0),
+             template_var 0)
+           ))),
+    ("NaturalTransformation.functor_is_transformation",
+     "functor ?A ?B ?F ==> natural_transformation ?A ?B ?F ?F ?F",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 1, template_var 2),
+                template_var 1),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_app (template_hole 0, template_var 2),
+                   template_var 1),
+                 template_var 0),
+               template_var 0),
+             template_var 0)
+           ))),
+    ("NaturalTransformation.naturally_isomorphic_symmetric",
+     "naturally_isomorphic ?A ?B ?F ?G ==>
+      naturally_isomorphic ?A ?B ?G ?F",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 0, template_var 3),
+                  template_var 2),
+                template_var 1),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 0, template_var 3),
+                 template_var 2),
+               template_var 0),
+             template_var 1)
+           ))),
+    ("NaturalTransformation.hcomp_ide_dom",
+     "natural_transformation ?A ?B ?F ?G ?\<tau> ==>
+      ?\<tau> o identity_functor.map ?A = ?\<tau>",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app (template_hole 3, template_var 4),
+                    template_var 3),
+                  template_var 2),
+                template_var 1),
+              template_var 0)
+            )],
+       template_equation
+        (template_app
+          (template_app (template_hole 1, template_var 0),
+           template_app (template_hole 0, template_var 4)),
+         template_var 0))),
+    ("NaturalTransformation.hcomp_ide_cod",
+     "natural_transformation ?A ?B ?F ?G ?\<tau> ==>
+      identity_functor.map ?B o ?\<tau> = ?\<tau>",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app (template_hole 3, template_var 4),
+                    template_var 3),
+                  template_var 2),
+                template_var 1),
+              template_var 0)
+            )],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 1,
+             template_app (template_hole 0, template_var 3)),
+           template_var 0),
+         template_var 0))),
+    ("NaturalTransformation.transformation_by_components_idem",
+     "natural_transformation ?A ?B ?F ?G ?\<tau> ==>
+      transformation_by_components.map ?A ?B ?F ?\<tau> = ?\<tau>",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app (template_hole 2, template_var 4),
+                    template_var 3),
+                  template_var 2),
+                template_var 1),
+              template_var 0)
+            )],
+       template_equation
+        (template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 0, template_var 4),
+               template_var 3),
+             template_var 2),
+           template_var 0),
+         template_var 0))),
+    ("NaturalTransformation.vcomp_ide_dom",
+     "natural_transformation ?A ?B ?F ?G ?\<tau> ==>
+      vertical_composite.map ?A ?B ?F ?\<tau> = ?\<tau>",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app (template_hole 2, template_var 4),
+                    template_var 3),
+                  template_var 2),
+                template_var 1),
+              template_var 0)
+            )],
+       template_equation
+        (template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 0, template_var 4),
+               template_var 3),
+             template_var 2),
+           template_var 0),
+         template_var 0))),
+    ("NaturalTransformation.vcomp_ide_cod",
+     "natural_transformation ?A ?B ?F ?G ?\<tau> ==>
+      vertical_composite.map ?A ?B ?\<tau> ?G = ?\<tau>",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app (template_hole 2, template_var 4),
+                    template_var 3),
+                  template_var 2),
+                template_var 1),
+              template_var 0)
+            )],
+       template_equation
+        (template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 0, template_var 4),
+               template_var 3),
+             template_var 0),
+           template_var 1),
+         template_var 0))),
+    ("NaturalTransformation.inverse_transformations_inverse",
+     "inverse_transformations ?A ?B ?F ?G ?\<sigma> ?\<sigma>' ==>
+      vertical_composite.map ?A ?B ?\<sigma> ?\<sigma>' = ?F",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app
+                     (template_app (template_hole 2, template_var 5),
+                      template_var 4),
+                    template_var 3),
+                  template_var 2),
+                template_var 1),
+              template_var 0)
+            )],
+       template_equation
+        (template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 0, template_var 5),
+               template_var 4),
+             template_var 1),
+           template_var 0),
+         template_var 3))),
+    ("NaturalTransformation.inverse_transformations_inverse",
+     "inverse_transformations ?A ?B ?F ?G ?\<sigma> ?\<sigma>' ==>
+      vertical_composite.map ?A ?B ?\<sigma>' ?\<sigma> = ?G",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app
+                     (template_app (template_hole 2, template_var 5),
+                      template_var 4),
+                    template_var 3),
+                  template_var 2),
+                template_var 1),
+              template_var 0)
+            )],
+       template_equation
+        (template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 0, template_var 5),
+               template_var 4),
+             template_var 0),
+           template_var 1),
+         template_var 2))),
+    ("NaturalTransformation.inverse_transformations_sym",
+     "inverse_transformations ?A ?B ?F ?G ?\<sigma> ?\<sigma>' ==>
+      inverse_transformations ?A ?B ?G ?F ?\<sigma>' ?\<sigma>",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app
+                     (template_app (template_hole 0, template_var 5),
+                      template_var 4),
+                    template_var 3),
+                  template_var 2),
+                template_var 1),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_app
+                    (template_app (template_hole 0, template_var 5),
+                     template_var 4),
+                   template_var 2),
+                 template_var 3),
+               template_var 0),
+             template_var 1)
+           ))),
+    ("NaturalTransformation.naturally_isomorphic_respects_faithful_functor",
+     "[| naturally_isomorphic ?A ?B ?F ?G; faithful_functor ?A ?B ?F |]
+      ==> faithful_functor ?A ?B ?G",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 1, template_var 3),
+                  template_var 2),
+                template_var 1),
+              template_var 0)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 0, template_var 3),
+                template_var 2),
+              template_var 1)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app (template_hole 0, template_var 3),
+               template_var 2),
+             template_var 0)
+           ))),
+    ("NaturalTransformation.naturally_isomorphic_respects_full_functor",
+     "[| naturally_isomorphic ?A ?B ?F ?G; full_functor ?A ?B ?F |]
+      ==> full_functor ?A ?B ?G",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 1, template_var 3),
+                  template_var 2),
+                template_var 1),
+              template_var 0)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 0, template_var 3),
+                template_var 2),
+              template_var 1)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app (template_hole 0, template_var 3),
+               template_var 2),
+             template_var 0)
+           ))),
+    ("NaturalTransformation.inverse_inverse_transformation",
+     "natural_isomorphism ?A ?B ?F ?G ?\<tau> ==>
+      inverse_transformation.map ?A ?B ?F
+       (inverse_transformation.map ?A ?B ?G ?\<tau>) =
+      ?\<tau>",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app (template_hole 2, template_var 4),
+                    template_var 3),
+                  template_var 2),
+                template_var 1),
+              template_var 0)
+            )],
+       template_equation
+        (template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 0, template_var 4),
+               template_var 3),
+             template_var 2),
+           template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 0, template_var 4),
+                 template_var 3),
+               template_var 1),
+             template_var 0)),
+         template_var 0))),
+    ("NaturalTransformation.vertical_composite_iso_inverse",
+     "natural_isomorphism ?A ?B ?F ?G ?\<tau> ==>
+      vertical_composite.map ?A ?B ?\<tau>
+       (inverse_transformation.map ?A ?B ?G ?\<tau>) =
+      ?F",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app (template_hole 3, template_var 4),
+                    template_var 3),
+                  template_var 2),
+                template_var 1),
+              template_var 0)
+            )],
+       template_equation
+        (template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 1, template_var 4),
+               template_var 3),
+             template_var 0),
+           template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 0, template_var 4),
+                 template_var 3),
+               template_var 1),
+             template_var 0)),
+         template_var 2))),
+    ("NaturalTransformation.vertical_composite_inverse_iso",
+     "natural_isomorphism ?A ?B ?F ?G ?\<tau> ==>
+      vertical_composite.map ?A ?B
+       (inverse_transformation.map ?A ?B ?G ?\<tau>) ?\<tau> =
+      ?G",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app (template_hole 3, template_var 4),
+                    template_var 3),
+                  template_var 2),
+                template_var 1),
+              template_var 0)
+            )],
+       template_equation
+        (template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 1, template_var 4),
+               template_var 3),
+             template_app
+              (template_app
+                (template_app
+                  (template_app (template_hole 0, template_var 4),
+                   template_var 3),
+                 template_var 1),
+               template_var 0)),
+           template_var 0),
+         template_var 1))),
+    ("NaturalTransformation.naturally_isomorphic_transitive",
+     "[| naturally_isomorphic ?A ?B ?F ?G;
+         naturally_isomorphic ?A ?B ?G ?H |]
+      ==> naturally_isomorphic ?A ?B ?F ?H",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 0, template_var 4),
+                  template_var 3),
+                template_var 2),
+              template_var 1)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 0, template_var 4),
+                  template_var 3),
+                template_var 1),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 0, template_var 4),
+                 template_var 3),
+               template_var 2),
+             template_var 0)
+           ))),
+    ("NaturalTransformation.natural_isomorphisms_compose",
+     "[| natural_isomorphism ?A ?B ?F ?G ?\<sigma>;
+         natural_isomorphism ?A ?B ?G ?H ?\<tau> |]
+      ==> natural_isomorphism ?A ?B ?F ?H
+           (vertical_composite.map ?A ?B ?\<sigma> ?\<tau>)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app (template_hole 1, template_var 6),
+                    template_var 5),
+                  template_var 4),
+                template_var 3),
+              template_var 2)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app (template_hole 1, template_var 6),
+                    template_var 5),
+                  template_var 3),
+                template_var 1),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_app (template_hole 1, template_var 6),
+                   template_var 5),
+                 template_var 4),
+               template_var 1),
+             template_app
+              (template_app
+                (template_app
+                  (template_app (template_hole 0, template_var 6),
+                   template_var 5),
+                 template_var 2),
+               template_var 0))
+           ))),
+    ("NaturalTransformation.horizontal_composite",
+     "[| natural_transformation ?A ?B ?F ?G ?\<sigma>;
+         natural_transformation ?B ?C ?H ?K ?\<tau> |]
+      ==> natural_transformation ?A ?C (?H o ?F) (?K o ?G)
+           (?\<tau> o ?\<sigma>)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app (template_hole 3, template_var 8),
+                    template_var 7),
+                  template_var 6),
+                template_var 5),
+              template_var 4)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app (template_hole 2, template_var 7),
+                    template_var 3),
+                  template_var 2),
+                template_var 1),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_app (template_hole 1, template_var 8),
+                   template_var 3),
+                 template_app
+                  (template_app (template_hole 0, template_var 2),
+                   template_var 6)),
+               template_app
+                (template_app (template_hole 0, template_var 1),
+                 template_var 5)),
+             template_app
+              (template_app (template_hole 0, template_var 0),
+               template_var 4))
+           ))),
+    ("NaturalTransformation.interchange_spc",
+     "[| natural_transformation ?B ?C ?F ?G ?\<sigma>;
+         natural_transformation ?C ?D ?H ?K ?\<tau> |]
+      ==> ?\<tau> o ?\<sigma> =
+          vertical_composite.map ?B ?D (?H o ?\<sigma>) (?\<tau> o ?G)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app (template_hole 4, template_var 8),
+                    template_var 7),
+                  template_var 6),
+                template_var 5),
+              template_var 4)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app (template_hole 3, template_var 7),
+                    template_var 3),
+                  template_var 2),
+                template_var 1),
+              template_var 0)
+            )],
+       template_equation
+        (template_app
+          (template_app (template_hole 1, template_var 0), template_var 4),
+         template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 0, template_var 8),
+               template_var 3),
+             template_app
+              (template_app (template_hole 1, template_var 2),
+               template_var 4)),
+           template_app
+            (template_app (template_hole 1, template_var 0),
+             template_var 5))))),
+    ("NaturalTransformation.interchange_spc",
+     "[| natural_transformation ?B ?C ?F ?G ?\<sigma>;
+         natural_transformation ?C ?D ?H ?K ?\<tau> |]
+      ==> ?\<tau> o ?\<sigma> =
+          vertical_composite.map ?B ?D (?\<tau> o ?F) (?K o ?\<sigma>)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app (template_hole 4, template_var 8),
+                    template_var 7),
+                  template_var 6),
+                template_var 5),
+              template_var 4)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app (template_hole 3, template_var 7),
+                    template_var 3),
+                  template_var 2),
+                template_var 1),
+              template_var 0)
+            )],
+       template_equation
+        (template_app
+          (template_app (template_hole 1, template_var 0), template_var 4),
+         template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 0, template_var 8),
+               template_var 3),
+             template_app
+              (template_app (template_hole 1, template_var 0),
+               template_var 6)),
+           template_app
+            (template_app (template_hole 1, template_var 1),
+             template_var 4))))),
+    ("NaturalTransformation.inverse_transformations_compose",
+     "[| inverse_transformations ?A ?B ?F ?G ?\<sigma> ?\<sigma>';
+         inverse_transformations ?A ?B ?G ?H ?\<tau> ?\<tau>' |]
+      ==> inverse_transformations ?A ?B ?F ?H
+           (vertical_composite.map ?A ?B ?\<sigma> ?\<tau>)
+           (vertical_composite.map ?A ?B ?\<tau>' ?\<sigma>')",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app
+                     (template_app (template_hole 1, template_var 8),
+                      template_var 7),
+                    template_var 6),
+                  template_var 5),
+                template_var 4),
+              template_var 3)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app
+                     (template_app (template_hole 1, template_var 8),
+                      template_var 7),
+                    template_var 5),
+                  template_var 2),
+                template_var 1),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_app
+                    (template_app (template_hole 1, template_var 8),
+                     template_var 7),
+                   template_var 6),
+                 template_var 2),
+               template_app
+                (template_app
+                  (template_app
+                    (template_app (template_hole 0, template_var 8),
+                     template_var 7),
+                   template_var 4),
+                 template_var 1)),
+             template_app
+              (template_app
+                (template_app
+                  (template_app (template_hole 0, template_var 8),
+                   template_var 7),
+                 template_var 0),
+               template_var 3))
+           ))),
+    ("NaturalTransformation.eqI",
+     "[| natural_transformation ?A ?B ?F ?G ?\<sigma>;
+         natural_transformation ?A ?B ?F ?G ?\<sigma>';
+         !!a. partial_magma.ide ?A a ==> ?\<sigma> a = ?\<sigma>' a |]
+      ==> ?\<sigma> = ?\<sigma>'",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app (template_hole 4, template_var 5),
+                    template_var 4),
+                  template_var 3),
+                template_var 2),
+              template_var 1)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app (template_hole 4, template_var 5),
+                    template_var 4),
+                  template_var 3),
+                template_var 2),
+              template_var 0)
+            ),
+        template_predicate (template_app (template_hole 3, t_empty))],
+       template_equation (template_var 1, template_var 0))),
+    ("NaturalTransformation.whisker_right",
+     "[| functor ?A ?B ?F; natural_transformation ?B ?C ?H ?K ?\<tau>;
+         natural_transformation ?B ?C ?K ?L ?\<tau>' |]
+      ==> vertical_composite.map ?B ?C ?\<tau> ?\<tau>' o ?F =
+          vertical_composite.map ?A ?C (?\<tau> o ?F) (?\<tau>' o ?F)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 5, template_var 8),
+                template_var 7),
+              template_var 6)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app (template_hole 4, template_var 7),
+                    template_var 5),
+                  template_var 4),
+                template_var 3),
+              template_var 2)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app (template_hole 4, template_var 7),
+                    template_var 5),
+                  template_var 3),
+                template_var 1),
+              template_var 0)
+            )],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 2,
+             template_app
+              (template_app
+                (template_app
+                  (template_app (template_hole 1, template_var 7),
+                   template_var 5),
+                 template_var 2),
+               template_var 0)),
+           template_var 6),
+         template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 0, template_var 8),
+               template_var 5),
+             template_app
+              (template_app (template_hole 2, template_var 2),
+               template_var 6)),
+           template_app
+            (template_app (template_hole 2, template_var 0),
+             template_var 6))))),
+    ("NaturalTransformation.whisker_left",
+     "[| functor ?B ?C ?K; natural_transformation ?A ?B ?F ?G ?\<tau>;
+         natural_transformation ?A ?B ?G ?H ?\<tau>' |]
+      ==> ?K o vertical_composite.map ?A ?B ?\<tau> ?\<tau>' =
+          vertical_composite.map ?A ?C (?K o ?\<tau>) (?K o ?\<tau>')",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 5, template_var 8),
+                template_var 7),
+              template_var 6)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app (template_hole 4, template_var 5),
+                    template_var 8),
+                  template_var 4),
+                template_var 3),
+              template_var 2)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app (template_hole 4, template_var 5),
+                    template_var 8),
+                  template_var 3),
+                template_var 1),
+              template_var 0)
+            )],
+       template_equation
+        (template_app
+          (template_app (template_hole 2, template_var 6),
+           template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 1, template_var 5),
+                 template_var 8),
+               template_var 2),
+             template_var 0)),
+         template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 0, template_var 5),
+               template_var 7),
+             template_app
+              (template_app (template_hole 2, template_var 6),
+               template_var 2)),
+           template_app
+            (template_app (template_hole 2, template_var 6),
+             template_var 0))))),
+    ("NaturalTransformation.vcomp_assoc",
+     "[| natural_transformation ?A ?B ?F ?G ?\<rho>;
+         natural_transformation ?A ?B ?G ?H ?\<sigma>;
+         natural_transformation ?A ?B ?H ?K ?\<tau> |]
+      ==> vertical_composite.map ?A ?B
+           (vertical_composite.map ?A ?B ?\<rho> ?\<sigma>) ?\<tau> =
+          vertical_composite.map ?A ?B ?\<rho>
+           (vertical_composite.map ?A ?B ?\<sigma> ?\<tau>)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app (template_hole 2, template_var 8),
+                    template_var 7),
+                  template_var 6),
+                template_var 5),
+              template_var 4)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app (template_hole 2, template_var 8),
+                    template_var 7),
+                  template_var 5),
+                template_var 3),
+              template_var 2)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app (template_hole 2, template_var 8),
+                    template_var 7),
+                  template_var 3),
+                template_var 1),
+              template_var 0)
+            )],
+       template_equation
+        (template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 0, template_var 8),
+               template_var 7),
+             template_app
+              (template_app
+                (template_app
+                  (template_app (template_hole 0, template_var 8),
+                   template_var 7),
+                 template_var 4),
+               template_var 2)),
+           template_var 0),
+         template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 0, template_var 8),
+               template_var 7),
+             template_var 4),
+           template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 0, template_var 8),
+                 template_var 7),
+               template_var 2),
+             template_var 0))))),
+    ("NaturalTransformation.interchange",
+     "[| natural_transformation ?B ?C ?F ?G ?\<tau>;
+         natural_transformation ?B ?C ?G ?H ?\<nu>;
+         natural_transformation ?C ?D ?K ?L ?\<sigma>;
+         natural_transformation ?C ?D ?L ?M ?\<mu> |]
+      ==> vertical_composite.map ?C ?D ?\<sigma> ?\<mu> o
+          vertical_composite.map ?B ?C ?\<tau> ?\<nu> =
+          vertical_composite.map ?B ?D (?\<sigma> o ?\<tau>)
+           (?\<mu> o ?\<nu>)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app (template_hole 6, template_var 12),
+                    template_var 11),
+                  template_var 10),
+                template_var 9),
+              template_var 8)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app (template_hole 6, template_var 12),
+                    template_var 11),
+                  template_var 9),
+                template_var 7),
+              template_var 6)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app (template_hole 5, template_var 11),
+                    template_var 5),
+                  template_var 4),
+                template_var 3),
+              template_var 2)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_app (template_hole 5, template_var 11),
+                    template_var 5),
+                  template_var 3),
+                template_var 1),
+              template_var 0)
+            )],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 3,
+             template_app
+              (template_app
+                (template_app
+                  (template_app (template_hole 2, template_var 11),
+                   template_var 5),
+                 template_var 2),
+               template_var 0)),
+           template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 1, template_var 12),
+                 template_var 11),
+               template_var 8),
+             template_var 6)),
+         template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 0, template_var 12),
+               template_var 5),
+             template_app
+              (template_app (template_hole 3, template_var 2),
+               template_var 8)),
+           template_app
+            (template_app (template_hole 3, template_var 0),
+             template_var 6)))))]:
+   (string * thm * template) list
+### theory "Draft.NaturalTransformationTemplates"
+### 0.328s elapsed time, 0.474s cpu time, 0.079s GC time
+val it = (): unit

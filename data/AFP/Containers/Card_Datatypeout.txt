@@ -1,0 +1,370 @@
+Loading theory "Draft.Card_Datatype" (required by "Draft.Card_DatatypeTemplates")
+Loading theory "Draft.Templates" (required by "Draft.Card_DatatypeTemplates" via "Draft.ExtrEqs")
+datatype template_term
+=
+     t_empty
+   | template_app of template_term * template_term
+   | template_hole of int
+   | template_var of int
+datatype sign
+= equals | greater_equals | greater_than | less_equals | less_than
+datatype template
+=
+     template_bimplication of template * template
+   | template_dunno
+   | template_equation of template_term * template_term
+   | template_implication of template list * template
+   | template_inequation of sign * template_term * template_term
+   | template_negation of template
+   | template_predicate of template_term
+constructor t_empty: template_term
+constructor template_app: template_term * template_term -> template_term
+constructor template_hole: int -> template_term
+constructor template_var: int -> template_term
+constructor equals: sign
+constructor greater_equals: sign
+constructor greater_than: sign
+constructor less_equals: sign
+constructor less_than: sign
+constructor template_bimplication: template * template -> template
+constructor template_dunno: template
+constructor template_equation: template_term * template_term -> template
+constructor template_implication: template list * template -> template
+constructor template_inequation:
+   sign * template_term * template_term -> template
+constructor template_negation: template -> template
+constructor template_predicate: template_term -> template
+val vfs = fn: term -> (indexname * typ) list * (string * typ) list
+val indexOf = fn: ''a list -> ''a -> int -> int
+val has_eq = fn: term -> bool
+val term2template = fn:
+   (indexname * typ) list -> (string * typ) list -> term -> template_term
+val lemma2predicate = fn: term -> term -> template
+val makeTemplatewithContext = fn: term -> term -> template
+val lemma2template = fn: term -> template
+val thm2template = fn: thm -> template
+val tterm2string = fn: template_term -> string
+val template2string = fn: template -> string
+val t = "height ?t <= size ?t": thm
+val th =
+   Const ("HOL.Trueprop", "bool => prop") $
+     (Const ("Orderings.ord_class.less_eq", "nat => nat => bool") $
+       (Const ("Tree.height_class.height", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree")) $
+       (Const ("Nat.size_class.size", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree"))):
+   term
+### theory "Draft.Templates"
+### 0.065s elapsed time, 0.159s cpu time, 0.000s GC time
+Loading theory "Draft.ExtrEqs" (required by "Draft.Card_DatatypeTemplates")
+structure Card_Simp_Rules: NAMED_THMS
+### theory "Draft.Card_Datatype"
+### 0.135s elapsed time, 0.305s cpu time, 0.041s GC time
+val eqpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Var (("_dummy_", 2), "?'a"))
+       ):
+   term Find_Theorems.criterion
+val badeqpattern = Pattern (Const ("Pure.eq", "?'a => ?'a => prop")):
+   term Find_Theorems.criterion
+val undefpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Const ("HOL.undefined", "?'a"))
+       ):
+   term Find_Theorems.criterion
+val thmpattern =
+   Pattern
+    (Const ("HOL.Trueprop", "bool => prop") $ Var (("_dummy_", 1), "bool")):
+   term Find_Theorems.criterion
+val badnames =
+   ["*nitpick*", "*Nitpick*", "*full_exhaustive*", "*_def*", "Enum.finite*",
+    "*Quickcheck*", "ATP*", "*Nunchaku*", "*Code*", "*BNF*", "*SMT*",
+    "*.*.*"]:
+   string list
+val unwanted_names =
+   [(false, Name "*nitpick*"), (false, Name "*Nitpick*"),
+    (false, Name "*full_exhaustive*"), (false, Name "*_def*"),
+    (false, Name "Enum.finite*"), (false, Name "*Quickcheck*"),
+    (false, Name "ATP*"), (false, Name "*Nunchaku*"),
+    (false, Name "*Code*"), (false, Name "*BNF*"), (false, Name "*SMT*"),
+    (false, Name "*.*.*")]:
+   (bool * term Find_Theorems.criterion) list
+val has_vars = fn: term -> bool
+val get_all_eqs = fn: string -> Proof.context -> (string * thm) list
+val get_all_thms = fn: string -> Proof.context -> (string * thm) list
+val get_noneq_thms = fn: string -> Proof.context -> (string * thm) list
+val template_eqs = fn:
+   string -> Proof.context -> (string * thm * template) list
+val template_thms = fn:
+   string -> Proof.context -> (string * thm * template) list
+### theory "Draft.ExtrEqs"
+### 0.464s elapsed time, 0.548s cpu time, 0.041s GC time
+Loading theory "Draft.Card_DatatypeTemplates"
+val templateLemmas =
+   [("Card_Datatype.finite_rangeC_singleton_const",
+     "finite (rangeC {%_. ?x})",
+     template_predicate
+      (
+         template_app
+          (template_hole 3,
+           template_app
+            (template_hole 2,
+             template_app
+              (template_app (template_hole 1, t_empty), template_hole 0)))
+         )),
+    ("Card_Datatype.in_rangeC_singleton_const", "?x : rangeC {%_. ?x}",
+     template_predicate
+      (
+         template_app
+          (template_app (template_hole 3, template_var 0),
+           template_app
+            (template_hole 2,
+             template_app
+              (template_app (template_hole 1, t_empty), template_hole 0)))
+         )),
+    ("Card_Datatype.in_rangeC_singleton", "?f ?x : rangeC {?f}",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_hole 3,
+             template_app (template_var 1, template_var 0)),
+           template_app
+            (template_hole 2,
+             template_app
+              (template_app (template_hole 1, template_var 1),
+               template_hole 0)))
+         )),
+    ("Card_Datatype.card_rangeC_singleton_const",
+     "card (rangeC {%_. ?f}) = 1",
+     template_equation
+      (template_app
+        (template_hole 4,
+         template_app
+          (template_hole 3,
+           template_app
+            (template_app (template_hole 2, t_empty), template_hole 1))),
+       template_hole 0)),
+    ("Card_Datatype.rangeC_eq_empty", "(rangeC ?A = {}) = (?A = {})",
+     template_bimplication
+      (template_equation
+        (template_app (template_hole 3, template_var 0), template_hole 2),
+       template_equation (template_var 0, template_hole 0))),
+    ("Card_Datatype.in_rangeC", "?f : ?A ==> ?f ?x : rangeC ?A",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 2, template_var 2),
+              template_var 1)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 1,
+               template_app (template_var 2, template_var 0)),
+             template_app (template_hole 0, template_var 1))
+           ))),
+    ("Card_Datatype.rangeC_rangeC",
+     "?f : rangeC ?A ==> ?f ?x : rangeC (rangeC ?A)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 3, template_var 2),
+              template_app (template_hole 2, template_var 1))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 1,
+               template_app (template_var 2, template_var 0)),
+             template_app
+              (template_hole 0,
+               template_app (template_hole 2, template_var 1)))
+           ))),
+    ("Card_Datatype.Ball_rangeC_singleton",
+     "(ALL x:rangeC {?f}. ?P x) = (ALL x. ?P (?f x))",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 4,
+           template_app
+            (template_hole 3,
+             template_app
+              (template_app (template_hole 2, template_var 1),
+               template_hole 1))),
+         t_empty),
+       template_app (template_hole 0, t_empty))),
+    ("Card_Datatype.Ball_rangeC_iff",
+     "(ALL x:rangeC ?A. ?P x) = (ALL f:?A. ALL x. ?P (f x))",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 3, template_app (template_hole 2, template_var 1)),
+         t_empty),
+       template_app
+        (template_app (template_hole 1, template_var 1), t_empty))),
+    ("Card_Datatype.Ball_rangeC_rangeC",
+     "(ALL x:rangeC (rangeC ?A). ?P x) =
+      (ALL f:rangeC ?A. ALL x. ?P (f x))",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 4,
+           template_app
+            (template_hole 3,
+             template_app (template_hole 2, template_var 1))),
+         t_empty),
+       template_app
+        (template_app
+          (template_hole 1, template_app (template_hole 2, template_var 1)),
+         t_empty))),
+    ("Card_Datatype.infinite_rangeIt",
+     "[| inj ?f; ALL y. ?x ~= ?f y |] ==> infinite (rangeIt ?x ?f)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 6, template_var 1),
+              template_hole 5)
+            ),
+        template_predicate (template_app (template_hole 4, t_empty))],
+       template_negation
+        (
+           template_predicate
+            (
+               template_app
+                (template_hole 1,
+                 template_app
+                  (template_app (template_hole 0, template_var 0),
+                   template_var 1))
+               )
+           ))),
+    ("Card_Datatype.card_Un",
+     "[| finite ?A; finite ?B |]
+      ==> card (?A Un ?B) = card ?A + card ?B - card (?A Int ?B)",
+     template_implication
+      ([template_predicate (template_app (template_hole 6, template_var 1)),
+        template_predicate
+         (template_app (template_hole 6, template_var 0))],
+       template_equation
+        (template_app
+          (template_hole 4,
+           template_app
+            (template_app (template_hole 3, template_var 1),
+             template_var 0)),
+         template_app
+          (template_app
+            (template_hole 2,
+             template_app
+              (template_app
+                (template_hole 1,
+                 template_app (template_hole 4, template_var 1)),
+               template_app (template_hole 4, template_var 0))),
+           template_app
+            (template_hole 4,
+             template_app
+              (template_app (template_hole 0, template_var 1),
+               template_var 0)))))),
+    ("Card_Datatype.rangeC_Int_rangeC",
+     "ALL f:?A. ALL g:?B. ALL x y. f x ~= g y ==>
+      rangeC ?A Int rangeC ?B = {}",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 10, template_var 1), t_empty)
+            )],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 3,
+             template_app (template_hole 2, template_var 1)),
+           template_app (template_hole 1, template_var 0)),
+         template_hole 0))),
+    ("Card_Datatype.in_rangeCE",
+     "[| ?y : rangeC ?A; !!f x. [| f : ?A; ?y = f x |] ==> ?thesis |]
+      ==> ?thesis",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 5, template_var 2),
+              template_app (template_hole 4, template_var 1))
+            ),
+        template_predicate (template_app (template_hole 3, t_empty))],
+       template_predicate (template_var 0))),
+    ("Card_Datatype.card_rangeC",
+     "[| ALL f:?A. inj f;
+         ALL f:?A. ALL g:?A. f ~= g --> (ALL x y. f x ~= g y) |]
+      ==> card (rangeC ?A) = CARD(?'a) * card ?A",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 13, template_var 0), t_empty)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 13, template_var 0), t_empty)
+            )],
+       template_equation
+        (template_app
+          (template_hole 4, template_app (template_hole 3, template_var 0)),
+         template_app
+          (template_app
+            (template_hole 2,
+             template_app (template_hole 1, template_hole 11)),
+           template_app (template_hole 0, template_var 0))))),
+    ("Card_Datatype.finite_rangeC",
+     "[| ALL f:?A. inj f;
+         ALL f:?A. ALL g:?A. f ~= g --> (ALL x y. f x ~= g y) |]
+      ==> finite (rangeC ?A) = (finite ?A & (?A ~= {} --> finite UNIV))",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 15, template_var 0), t_empty)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 15, template_var 0), t_empty)
+            )],
+       template_implication
+        ([template_predicate
+           (
+              template_app
+               (template_hole 6,
+                template_app (template_hole 5, template_var 0))
+              )],
+         template_predicate
+          (
+             template_app
+              (template_app
+                (template_hole 4,
+                 template_app (template_hole 3, template_var 0)),
+               template_app
+                (template_app
+                  (template_hole 12,
+                   template_app
+                    (template_hole 11,
+                     template_app
+                      (template_app (template_hole 2, template_var 0),
+                       template_hole 1))),
+                 template_app (template_hole 0, template_hole 13)))
+             ))))]:
+   (string * thm * template) list
+### theory "Draft.Card_DatatypeTemplates"
+### 0.363s elapsed time, 0.498s cpu time, 0.069s GC time
+val it = (): unit

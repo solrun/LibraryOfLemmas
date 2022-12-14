@@ -1,0 +1,550 @@
+Loading theory "HOL-Library.Function_Algebras" (required by "Draft.PeriodicTemplates" via "Draft.ExtrEqs" via "HOL-Library.BigO")
+Loading theory "Draft.Periodic" (required by "Draft.PeriodicTemplates")
+Loading theory "Draft.Templates" (required by "Draft.PeriodicTemplates" via "Draft.ExtrEqs")
+instantiation
+  fun :: (type, plus) plus
+  plus_fun == plus :: ('a => 'b) => ('a => 'b) => 'a => 'b
+instantiation
+  fun :: (type, zero) zero
+  zero_fun == zero_class.zero :: 'a => 'b
+instantiation
+  fun :: (type, times) times
+  times_fun == times :: ('a => 'b) => ('a => 'b) => 'a => 'b
+instantiation
+  fun :: (type, one) one
+  one_fun == one_class.one :: 'a => 'b
+### Ignoring duplicate introduction (intro)
+### ?N : null_sets lebesgue ==>
+### has_bochner_integral (lebesgue_on ?N) ?f (0::?'b)
+### Ignoring duplicate introduction (intro)
+### ?N : null_sets lebesgue ==>
+### has_bochner_integral (lebesgue_on ?N) ?f (0::?'b)
+datatype template_term
+=
+     t_empty
+   | template_app of template_term * template_term
+   | template_hole of int
+   | template_var of int
+datatype sign
+= equals | greater_equals | greater_than | less_equals | less_than
+datatype template
+=
+     template_bimplication of template * template
+   | template_dunno
+   | template_equation of template_term * template_term
+   | template_implication of template list * template
+   | template_inequation of sign * template_term * template_term
+   | template_negation of template
+   | template_predicate of template_term
+constructor t_empty: template_term
+constructor template_app: template_term * template_term -> template_term
+constructor template_hole: int -> template_term
+constructor template_var: int -> template_term
+constructor equals: sign
+constructor greater_equals: sign
+constructor greater_than: sign
+constructor less_equals: sign
+constructor less_than: sign
+constructor template_bimplication: template * template -> template
+constructor template_dunno: template
+constructor template_equation: template_term * template_term -> template
+constructor template_implication: template list * template -> template
+constructor template_inequation:
+   sign * template_term * template_term -> template
+constructor template_negation: template -> template
+constructor template_predicate: template_term -> template
+val vfs = fn: term -> (indexname * typ) list * (string * typ) list
+val indexOf = fn: ''a list -> ''a -> int -> int
+val has_eq = fn: term -> bool
+val term2template = fn:
+   (indexname * typ) list -> (string * typ) list -> term -> template_term
+val lemma2predicate = fn: term -> term -> template
+val makeTemplatewithContext = fn: term -> term -> template
+val lemma2template = fn: term -> template
+val thm2template = fn: thm -> template
+val tterm2string = fn: template_term -> string
+val template2string = fn: template -> string
+val t = "height ?t <= size ?t": thm
+val th =
+   Const ("HOL.Trueprop", "bool => prop") $
+     (Const ("Orderings.ord_class.less_eq", "nat => nat => bool") $
+       (Const ("Tree.height_class.height", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree")) $
+       (Const ("Nat.size_class.size", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree"))):
+   term
+### Ignoring duplicate rewrite rule:
+### ?N1 : null_sets lebesgue ==>
+### has_bochner_integral (lebesgue_on ?N1) ?f1 ?i1 == ?i1 = (0::?'b1)
+### theory "Draft.Templates"
+### 0.069s elapsed time, 0.248s cpu time, 0.000s GC time
+### theory "HOL-Library.Function_Algebras"
+### 0.111s elapsed time, 0.331s cpu time, 0.000s GC time
+Loading theory "HOL-Library.BigO" (required by "Draft.PeriodicTemplates" via "Draft.ExtrEqs")
+### theory "Draft.Periodic"
+### 0.147s elapsed time, 0.428s cpu time, 0.048s GC time
+### theory "HOL-Library.BigO"
+### 0.620s elapsed time, 0.648s cpu time, 0.000s GC time
+Loading theory "Draft.ExtrEqs" (required by "Draft.PeriodicTemplates")
+val eqpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Var (("_dummy_", 2), "?'a"))
+       ):
+   term Find_Theorems.criterion
+val badeqpattern = Pattern (Const ("Pure.eq", "?'a => ?'a => prop")):
+   term Find_Theorems.criterion
+val undefpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Const ("HOL.undefined", "?'a"))
+       ):
+   term Find_Theorems.criterion
+val thmpattern =
+   Pattern
+    (Const ("HOL.Trueprop", "bool => prop") $ Var (("_dummy_", 1), "bool")):
+   term Find_Theorems.criterion
+val badnames =
+   ["*nitpick*", "*Nitpick*", "*full_exhaustive*", "*_def*", "Enum.finite*",
+    "*Quickcheck*", "ATP*", "*Nunchaku*", "*Code*", "*BNF*", "*SMT*",
+    "*.*.*"]:
+   string list
+val unwanted_names =
+   [(false, Name "*nitpick*"), (false, Name "*Nitpick*"),
+    (false, Name "*full_exhaustive*"), (false, Name "*_def*"),
+    (false, Name "Enum.finite*"), (false, Name "*Quickcheck*"),
+    (false, Name "ATP*"), (false, Name "*Nunchaku*"),
+    (false, Name "*Code*"), (false, Name "*BNF*"), (false, Name "*SMT*"),
+    (false, Name "*.*.*")]:
+   (bool * term Find_Theorems.criterion) list
+val has_vars = fn: term -> bool
+val get_all_eqs = fn: string -> Proof.context -> (string * thm) list
+val get_all_thms = fn: string -> Proof.context -> (string * thm) list
+val get_noneq_thms = fn: string -> Proof.context -> (string * thm) list
+val template_eqs = fn:
+   string -> Proof.context -> (string * thm * template) list
+val template_thms = fn:
+   string -> Proof.context -> (string * thm * template) list
+### theory "Draft.ExtrEqs"
+### 0.494s elapsed time, 0.538s cpu time, 0.067s GC time
+Loading theory "Draft.PeriodicTemplates"
+val templateLemmas =
+   [("Periodic_Fun.cos_plus_pi", "cos (?z + of_real pi) = - cos ?z",
+     template_equation
+      (template_app
+        (template_hole 4,
+         template_app
+          (template_app (template_hole 3, template_var 0),
+           template_app (template_hole 2, template_hole 1))),
+       template_app
+        (template_hole 0, template_app (template_hole 4, template_var 0)))),
+    ("Periodic_Fun.sin_plus_pi", "sin (?z + of_real pi) = - sin ?z",
+     template_equation
+      (template_app
+        (template_hole 4,
+         template_app
+          (template_app (template_hole 3, template_var 0),
+           template_app (template_hole 2, template_hole 1))),
+       template_app
+        (template_hole 0, template_app (template_hole 4, template_var 0)))),
+    ("Periodic.has_bochner_integral_null",
+     "?N : null_sets lebesgue ==>
+      has_bochner_integral (lebesgue_on ?N) ?f (0::?'b)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 6, template_var 1),
+              template_app
+               (template_hole 5,
+                template_app (template_hole 4, template_hole 3)))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_hole 2,
+                 template_app
+                  (template_app
+                    (template_hole 1,
+                     template_app (template_hole 4, template_hole 3)),
+                   template_var 1)),
+               template_var 0),
+             template_hole 0)
+           ))),
+    ("Periodic.has_bochner_integral_null_eq",
+     "?N : null_sets lebesgue ==>
+      has_bochner_integral (lebesgue_on ?N) ?f ?i = (?i = (0::?'b))",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 8, template_var 2),
+              template_app
+               (template_hole 7,
+                template_app (template_hole 6, template_hole 5)))
+            )],
+       template_implication
+        ([template_predicate
+           (
+              template_app
+               (template_app
+                 (template_app
+                   (template_hole 3,
+                    template_app
+                     (template_app
+                       (template_hole 2,
+                        template_app (template_hole 6, template_hole 5)),
+                      template_var 2)),
+                  template_var 1),
+                template_var 0)
+              )],
+         template_equation (template_var 0, template_hole 0)))),
+    ("Periodic.periodic_integer_multiple",
+     "(ALL x. ?f (x + ?a) = ?f x) =
+      (ALL x. ALL n:\<int>. ?f (x + n * ?a) = ?f x)",
+     template_equation
+      (template_app (template_hole 5, t_empty),
+       template_app (template_hole 5, t_empty))),
+    ("Periodic.has_integral_offset",
+     "has_bochner_integral (lebesgue_on {?a..?b}) ?f ?i ==>
+      has_bochner_integral (lebesgue_on {?a - ?c..?b - ?c})
+       (%x. ?f (x + ?c)) ?i",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_hole 6,
+                  template_app
+                   (template_app
+                     (template_hole 5,
+                      template_app (template_hole 4, template_hole 3)),
+                    template_app
+                     (template_app (template_hole 2, template_var 4),
+                      template_var 3))),
+                template_var 2),
+              template_var 1)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_hole 6,
+                 template_app
+                  (template_app
+                    (template_hole 5,
+                     template_app (template_hole 4, template_hole 3)),
+                   template_app
+                    (template_app
+                      (template_hole 2,
+                       template_app
+                        (template_app (template_hole 1, template_var 4),
+                         template_var 0)),
+                     template_app
+                      (template_app (template_hole 1, template_var 3),
+                       template_var 0)))),
+               t_empty),
+             template_var 1)
+           ))),
+    ("Periodic.absolutely_integrable_periodic_offset",
+     "[| ?f absolutely_integrable_on {?a..?b};
+         !!x. ?f (x + (?b - ?a)) = ?f x |]
+      ==> (%x. ?f (x + ?c)) absolutely_integrable_on {?a..?b}",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_hole 7,
+                  template_app (template_hole 6, template_hole 5)),
+                template_app
+                 (template_app (template_hole 4, template_var 3),
+                  template_var 2)),
+              template_var 1)
+            ),
+        template_predicate (template_app (template_hole 3, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_hole 7,
+                 template_app (template_hole 6, template_hole 5)),
+               template_app
+                (template_app (template_hole 4, template_var 3),
+                 template_var 2)),
+             t_empty)
+           ))),
+    ("Periodic.absolutely_integrable_periodic_offset",
+     "[| ?f absolutely_integrable_on {?a..?b};
+         !!x. ?f (x + (?b - ?a)) = ?f x |]
+      ==> (%x. ?f (?c + x)) absolutely_integrable_on {?a..?b}",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_hole 7,
+                  template_app (template_hole 6, template_hole 5)),
+                template_app
+                 (template_app (template_hole 4, template_var 3),
+                  template_var 2)),
+              template_var 1)
+            ),
+        template_predicate (template_app (template_hole 3, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_hole 7,
+                 template_app (template_hole 6, template_hole 5)),
+               template_app
+                (template_app (template_hole 4, template_var 3),
+                 template_var 2)),
+             t_empty)
+           ))),
+    ("Periodic.integral_periodic_offset",
+     "(!!x. ?f (x + (?b - ?a)) = ?f x) ==>
+      LINT x|lebesgue_on {?a..?b}. ?f (x + ?c) =
+      integral\<^sup>L (lebesgue_on {?a..?b}) ?f",
+     template_implication
+      ([template_predicate (template_app (template_hole 9, t_empty))],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 4,
+             template_app
+              (template_app
+                (template_hole 3,
+                 template_app (template_hole 2, template_hole 1)),
+               template_app
+                (template_app (template_hole 0, template_var 1),
+                 template_var 2))),
+           t_empty),
+         template_app
+          (template_app
+            (template_hole 4,
+             template_app
+              (template_app
+                (template_hole 3,
+                 template_app (template_hole 2, template_hole 1)),
+               template_app
+                (template_app (template_hole 0, template_var 1),
+                 template_var 2))),
+           template_var 3)))),
+    ("Periodic.integrable_periodic_offset",
+     "[| integrable (lebesgue_on {?a..?b}) ?f;
+         !!x. ?f (x + (?b - ?a)) = ?f x |]
+      ==> integrable (lebesgue_on {?a..?b}) (%x. ?f (x + ?c))",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 8,
+                template_app
+                 (template_app
+                   (template_hole 7,
+                    template_app (template_hole 6, template_hole 5)),
+                  template_app
+                   (template_app (template_hole 4, template_var 3),
+                    template_var 2))),
+              template_var 1)
+            ),
+        template_predicate (template_app (template_hole 3, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 8,
+               template_app
+                (template_app
+                  (template_hole 7,
+                   template_app (template_hole 6, template_hole 5)),
+                 template_app
+                  (template_app (template_hole 4, template_var 3),
+                   template_var 2))),
+             t_empty)
+           ))),
+    ("Periodic.has_integral_periodic_offset",
+     "[| has_bochner_integral (lebesgue_on {?a..?b}) ?f ?i;
+         !!x. ?f (x + (?b - ?a)) = ?f x |]
+      ==> has_bochner_integral (lebesgue_on {?a..?b}) (%x. ?f (x + ?c)) ?i",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_hole 8,
+                  template_app
+                   (template_app
+                     (template_hole 7,
+                      template_app (template_hole 6, template_hole 5)),
+                    template_app
+                     (template_app (template_hole 4, template_var 4),
+                      template_var 3))),
+                template_var 2),
+              template_var 1)
+            ),
+        template_predicate (template_app (template_hole 3, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_hole 8,
+                 template_app
+                  (template_app
+                    (template_hole 7,
+                     template_app (template_hole 6, template_hole 5)),
+                   template_app
+                    (template_app (template_hole 4, template_var 4),
+                     template_var 3))),
+               t_empty),
+             template_var 1)
+           ))),
+    ("Periodic.has_integral_periodic_offset_lemma",
+     "[| !!x. ?f (x + (?b - ?a)) = ?f x;
+         has_bochner_integral (lebesgue_on {?a..?a + ?c}) ?f ?i |]
+      ==> has_bochner_integral (lebesgue_on {?b..?b + ?c}) ?f ?i",
+     template_implication
+      ([template_predicate (template_app (template_hole 9, t_empty)),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_hole 4,
+                  template_app
+                   (template_app
+                     (template_hole 3,
+                      template_app (template_hole 2, template_hole 1)),
+                    template_app
+                     (template_app (template_hole 0, template_var 2),
+                      template_app
+                       (template_app (template_hole 6, template_var 2),
+                        template_var 1)))),
+                template_var 4),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_hole 4,
+                 template_app
+                  (template_app
+                    (template_hole 3,
+                     template_app (template_hole 2, template_hole 1)),
+                   template_app
+                    (template_app (template_hole 0, template_var 3),
+                     template_app
+                      (template_app (template_hole 6, template_var 3),
+                       template_var 1)))),
+               template_var 4),
+             template_var 0)
+           ))),
+    ("Periodic.has_integral_periodic_offset_weak",
+     "[| has_bochner_integral (lebesgue_on {?a..?b}) ?f ?i;
+         !!x. ?f (x + (?b - ?a)) = ?f x; \<bar>?c\<bar> <= ?b - ?a |]
+      ==> has_bochner_integral (lebesgue_on {?a..?b}) (%x. ?f (x + ?c)) ?i",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_hole 10,
+                  template_app
+                   (template_app
+                     (template_hole 9,
+                      template_app (template_hole 8, template_hole 7)),
+                    template_app
+                     (template_app (template_hole 6, template_var 4),
+                      template_var 3))),
+                template_var 2),
+              template_var 1)
+            ),
+        template_predicate (template_app (template_hole 5, t_empty)),
+        template_inequation
+         (less_equals, template_app (template_hole 0, template_var 0),
+          template_app
+           (template_app (template_hole 2, template_var 3),
+            template_var 4))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_hole 10,
+                 template_app
+                  (template_app
+                    (template_hole 9,
+                     template_app (template_hole 8, template_hole 7)),
+                   template_app
+                    (template_app (template_hole 6, template_var 4),
+                     template_var 3))),
+               t_empty),
+             template_var 1)
+           ))),
+    ("Periodic.has_integral_periodic_offset_pos",
+     "[| has_bochner_integral (lebesgue_on {?a..?b}) ?f ?i;
+         !!x. ?f (x + (?b - ?a)) = ?f x; 0 <= ?c; ?a + ?c <= ?b |]
+      ==> has_bochner_integral (lebesgue_on {?a..?b}) (%x. ?f (x + ?c)) ?i",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_hole 10,
+                  template_app
+                   (template_app
+                     (template_hole 9,
+                      template_app (template_hole 8, template_hole 7)),
+                    template_app
+                     (template_app (template_hole 6, template_var 4),
+                      template_var 3))),
+                template_var 2),
+              template_var 1)
+            ),
+        template_predicate (template_app (template_hole 5, t_empty)),
+        template_inequation (less_equals, template_hole 0, template_var 0),
+        template_inequation
+         (less_equals,
+          template_app
+           (template_app (template_hole 3, template_var 4), template_var 0),
+          template_var 3)],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_hole 10,
+                 template_app
+                  (template_app
+                    (template_hole 9,
+                     template_app (template_hole 8, template_hole 7)),
+                   template_app
+                    (template_app (template_hole 6, template_var 4),
+                     template_var 3))),
+               t_empty),
+             template_var 1)
+           )))]:
+   (string * thm * template) list
+### theory "Draft.PeriodicTemplates"
+### 1.044s elapsed time, 1.339s cpu time, 0.143s GC time
+val it = (): unit

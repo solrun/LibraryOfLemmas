@@ -1,0 +1,1883 @@
+Loading theory "Draft.utp_parser_utils" (required by "Draft.utp_substTemplates" via "Draft.utp_subst" via "Draft.utp_expr" via "Draft.utp_var")
+Loading theory "Draft.Templates" (required by "Draft.utp_substTemplates" via "Draft.ExtrEqs")
+signature UTP_PARSER_UTILS =
+  sig
+    val mk_char: string -> Ast.ast
+    val mk_nib: int -> Ast.ast
+    val mk_string: string list -> Ast.ast
+    val string_ast_tr: Ast.ast list -> Ast.ast
+  end
+signature NAME_UTILS =
+  sig
+    val deep_unmark_const: term -> term
+    val last_char_str: string -> string
+    val mk_id: string -> term
+    val repeat_char: char -> int -> string
+    val right_crop_by: int -> string -> string
+  end
+structure Utp_Parser_Utils: UTP_PARSER_UTILS
+structure Name_Utils: NAME_UTILS
+### theory "Draft.utp_parser_utils"
+### 0.042s elapsed time, 0.111s cpu time, 0.000s GC time
+Loading theory "Draft.utp_var" (required by "Draft.utp_substTemplates" via "Draft.utp_subst" via "Draft.utp_expr")
+datatype template_term
+=
+     t_empty
+   | template_app of template_term * template_term
+   | template_hole of int
+   | template_var of int
+datatype sign
+= equals | greater_equals | greater_than | less_equals | less_than
+datatype template
+=
+     template_bimplication of template * template
+   | template_dunno
+   | template_equation of template_term * template_term
+   | template_implication of template list * template
+   | template_inequation of sign * template_term * template_term
+   | template_negation of template
+   | template_predicate of template_term
+constructor t_empty: template_term
+constructor template_app: template_term * template_term -> template_term
+constructor template_hole: int -> template_term
+constructor template_var: int -> template_term
+constructor equals: sign
+constructor greater_equals: sign
+constructor greater_than: sign
+constructor less_equals: sign
+constructor less_than: sign
+constructor template_bimplication: template * template -> template
+constructor template_dunno: template
+constructor template_equation: template_term * template_term -> template
+constructor template_implication: template list * template -> template
+constructor template_inequation:
+   sign * template_term * template_term -> template
+constructor template_negation: template -> template
+constructor template_predicate: template_term -> template
+val vfs = fn: term -> (indexname * typ) list * (string * typ) list
+val indexOf = fn: ''a list -> ''a -> int -> int
+val has_eq = fn: term -> bool
+val term2template = fn:
+   (indexname * typ) list -> (string * typ) list -> term -> template_term
+val lemma2predicate = fn: term -> term -> template
+val makeTemplatewithContext = fn: term -> term -> template
+val lemma2template = fn: term -> template
+val thm2template = fn: thm -> template
+val tterm2string = fn: template_term -> string
+val template2string = fn: template -> string
+val t = "height ?t <= size ?t": thm
+val th =
+   Const ("HOL.Trueprop", "bool => prop") $
+     (Const ("Orderings.ord_class.less_eq", "nat => nat => bool") $
+       (Const ("Tree.height_class.height", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree")) $
+       (Const ("Nat.size_class.size", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree"))):
+   term
+### theory "Draft.Templates"
+### 0.068s elapsed time, 0.167s cpu time, 0.000s GC time
+Loading theory "Draft.ExtrEqs" (required by "Draft.utp_substTemplates")
+val eqpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Var (("_dummy_", 2), "?'a"))
+       ):
+   term Find_Theorems.criterion
+val badeqpattern = Pattern (Const ("Pure.eq", "?'a => ?'a => prop")):
+   term Find_Theorems.criterion
+val undefpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Const ("HOL.undefined", "?'a"))
+       ):
+   term Find_Theorems.criterion
+val thmpattern =
+   Pattern
+    (Const ("HOL.Trueprop", "bool => prop") $ Var (("_dummy_", 1), "bool")):
+   term Find_Theorems.criterion
+val badnames =
+   ["*nitpick*", "*Nitpick*", "*full_exhaustive*", "*_def*", "Enum.finite*",
+    "*Quickcheck*", "ATP*", "*Nunchaku*", "*Code*", "*BNF*", "*SMT*",
+    "*.*.*"]:
+   string list
+val unwanted_names =
+   [(false, Name "*nitpick*"), (false, Name "*Nitpick*"),
+    (false, Name "*full_exhaustive*"), (false, Name "*_def*"),
+    (false, Name "Enum.finite*"), (false, Name "*Quickcheck*"),
+    (false, Name "ATP*"), (false, Name "*Nunchaku*"),
+    (false, Name "*Code*"), (false, Name "*BNF*"), (false, Name "*SMT*"),
+    (false, Name "*.*.*")]:
+   (bool * term Find_Theorems.criterion) list
+val has_vars = fn: term -> bool
+val get_all_eqs = fn: string -> Proof.context -> (string * thm) list
+val get_all_thms = fn: string -> Proof.context -> (string * thm) list
+val get_noneq_thms = fn: string -> Proof.context -> (string * thm) list
+val template_eqs = fn:
+   string -> Proof.context -> (string * thm * template) list
+val template_thms = fn:
+   string -> Proof.context -> (string * thm * template) list
+### theory "Draft.ExtrEqs"
+### 0.547s elapsed time, 1.101s cpu time, 0.099s GC time
+### theory "Draft.utp_var"
+### 0.642s elapsed time, 1.226s cpu time, 0.099s GC time
+Loading theory "Draft.utp_expr" (required by "Draft.utp_substTemplates" via "Draft.utp_subst")
+instantiation
+  uexpr :: (zero, type) zero
+  zero_uexpr == zero_class.zero :: ('a, 'b) uexpr
+instantiation
+  uexpr :: (one, type) one
+  one_uexpr == one_class.one :: ('a, 'b) uexpr
+instantiation
+  uexpr :: (plus, type) plus
+  plus_uexpr == plus :: ('a, 'b) uexpr => ('a, 'b) uexpr => ('a, 'b) uexpr
+instantiation
+  uexpr :: (ord, type) ord
+  less_eq_uexpr == less_eq :: ('a, 'b) uexpr => ('a, 'b) uexpr => bool
+  less_uexpr == less :: ('a, 'b) uexpr => ('a, 'b) uexpr => bool
+### theory "Draft.utp_expr"
+### 0.787s elapsed time, 0.817s cpu time, 0.055s GC time
+Loading theory "Draft.utp_expr_insts" (required by "Draft.utp_substTemplates" via "Draft.utp_subst" via "Draft.utp_unrest")
+instantiation
+  uexpr :: (uminus, type) uminus
+  uminus_uexpr == uminus :: ('a, 'b) uexpr => ('a, 'b) uexpr
+instantiation
+  uexpr :: (minus, type) minus
+  minus_uexpr == minus :: ('a, 'b) uexpr => ('a, 'b) uexpr => ('a, 'b) uexpr
+instantiation
+  uexpr :: (times, type) times
+  times_uexpr == times :: ('a, 'b) uexpr => ('a, 'b) uexpr => ('a, 'b) uexpr
+instantiation
+  uexpr :: (divide, type) divide
+  divide_uexpr == divide ::
+    ('a, 'b) uexpr => ('a, 'b) uexpr => ('a, 'b) uexpr
+instantiation
+  uexpr :: (inverse, type) inverse
+  inverse_uexpr == inverse :: ('a, 'b) uexpr => ('a, 'b) uexpr
+instantiation
+  uexpr :: (modulo, type) modulo
+  modulo_uexpr == modulo ::
+    ('a, 'b) uexpr => ('a, 'b) uexpr => ('a, 'b) uexpr
+instantiation
+  uexpr :: (sgn, type) sgn
+  sgn_uexpr == sgn :: ('a, 'b) uexpr => ('a, 'b) uexpr
+instantiation
+  uexpr :: (abs, type) abs
+  abs_uexpr == abs :: ('a, 'b) uexpr => ('a, 'b) uexpr
+### theory "Draft.utp_expr_insts"
+### 0.229s elapsed time, 0.230s cpu time, 0.000s GC time
+Loading theory "Draft.utp_unrest" (required by "Draft.utp_substTemplates" via "Draft.utp_subst")
+### theory "Draft.utp_unrest"
+### 0.225s elapsed time, 0.252s cpu time, 0.051s GC time
+Loading theory "Draft.utp_subst" (required by "Draft.utp_substTemplates")
+### theory "Draft.utp_subst"
+### 0.418s elapsed time, 0.443s cpu time, 0.049s GC time
+Loading theory "Draft.utp_substTemplates"
+val templateLemmas =
+   [("utp_subst.subst_mono", "mono ((\<dagger>) ?\<sigma>)",
+     template_predicate
+      (
+         template_app
+          (template_hole 1, template_app (template_hole 0, template_var 0))
+         )),
+    ("utp_subst.id_subst", "id \<dagger> ?v = ?v",
+     template_equation
+      (template_app
+        (template_app (template_hole 1, template_hole 0), template_var 0),
+       template_var 0)),
+    ("utp_subst.subst_one", "?\<sigma> \<dagger> 1 = 1",
+     template_equation
+      (template_app
+        (template_app (template_hole 2, template_var 0), template_hole 1),
+       template_hole 0)),
+    ("utp_subst.subst_zero", "?\<sigma> \<dagger> 0 = 0",
+     template_equation
+      (template_app
+        (template_app (template_hole 2, template_var 0), template_hole 1),
+       template_hole 0)),
+    ("utp_subst.usubst_cond_id",
+     "?\<sigma> \<triangleleft> ?b \<triangleright>\<^sub>s ?\<sigma> =
+      ?\<sigma>",
+     template_equation
+      (template_app
+        (template_app
+          (template_app (template_hole 0, template_var 1), template_var 0),
+         template_var 1),
+       template_var 1)),
+    ("utp_subst.usubst_lookup_id", "\<langle>id\<rangle>\<^sub>s ?x = ?x",
+     template_equation
+      (template_app
+        (template_app (template_hole 2, template_hole 1), template_var 0),
+       template_app (template_hole 0, template_var 0))),
+    ("utp_subst.subst_lit",
+     "?\<sigma> \<dagger> \<guillemotleft>?v\<guillemotright> =
+      \<guillemotleft>?v\<guillemotright>",
+     template_equation
+      (template_app
+        (template_app (template_hole 2, template_var 1),
+         template_app (template_hole 1, template_var 0)),
+       template_app (template_hole 0, template_var 0))),
+    ("utp_subst.unrest_usubst_id", "mwb_lens ?x ==> ?x \<sharp> id",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 2, template_var 0))],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 1, template_var 0),
+             template_hole 0)
+           ))),
+    ("utp_subst.subst_var",
+     "?\<sigma> \<dagger> ?x = \<langle>?\<sigma>\<rangle>\<^sub>s ?x",
+     template_equation
+      (template_app
+        (template_app (template_hole 2, template_var 1),
+         template_app (template_hole 1, template_var 0)),
+       template_app
+        (template_app (template_hole 0, template_var 1), template_var 0))),
+    ("utp_subst.usubst_abs",
+     "?\<sigma> \<dagger> \<bar>?x\<bar> =
+      \<bar>?\<sigma> \<dagger> ?x\<bar>",
+     template_equation
+      (template_app
+        (template_app (template_hole 2, template_var 1),
+         template_app (template_hole 1, template_var 0)),
+       template_app
+        (template_hole 0,
+         template_app
+          (template_app (template_hole 2, template_var 1),
+           template_var 0)))),
+    ("utp_subst.usubst_sgn",
+     "?\<sigma> \<dagger> sgn ?x = sgn (?\<sigma> \<dagger> ?x)",
+     template_equation
+      (template_app
+        (template_app (template_hole 2, template_var 1),
+         template_app (template_hole 1, template_var 0)),
+       template_app
+        (template_hole 0,
+         template_app
+          (template_app (template_hole 2, template_var 1),
+           template_var 0)))),
+    ("utp_subst.subst_uminus",
+     "?\<sigma> \<dagger> - ?x = - (?\<sigma> \<dagger> ?x)",
+     template_equation
+      (template_app
+        (template_app (template_hole 2, template_var 1),
+         template_app (template_hole 1, template_var 0)),
+       template_app
+        (template_hole 0,
+         template_app
+          (template_app (template_hole 2, template_var 1),
+           template_var 0)))),
+    ("utp_subst.subst_del_id", "vwb_lens ?x ==> id -\<^sub>s ?x = id",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 3, template_var 0))],
+       template_equation
+        (template_app
+          (template_app (template_hole 1, template_hole 0), template_var 0),
+         template_hole 0))),
+    ("utp_subst.subst_upd_id_lam",
+     "(%x. x)(?x \<mapsto>\<^sub>s ?v) = [?x \<mapsto>\<^sub>s ?v]",
+     template_equation
+      (template_app
+        (template_app
+          (template_app (template_hole 1, t_empty), template_var 1),
+         template_var 0),
+       template_app
+        (template_app
+          (template_app (template_hole 1, template_hole 0), template_var 1),
+         template_var 0))),
+    ("utp_subst.subst_upd_pr_var",
+     "?s(&?x \<mapsto>\<^sub>s ?v) = ?s(?x \<mapsto>\<^sub>s ?v)",
+     template_equation
+      (template_app
+        (template_app
+          (template_app (template_hole 1, template_var 2),
+           template_app (template_hole 0, template_var 1)),
+         template_var 0),
+       template_app
+        (template_app
+          (template_app (template_hole 1, template_var 2), template_var 1),
+         template_var 0))),
+    ("utp_subst.subst_uop",
+     "?\<sigma> \<dagger> uop ?f ?v = uop ?f (?\<sigma> \<dagger> ?v)",
+     template_equation
+      (template_app
+        (template_app (template_hole 3, template_var 2),
+         template_app
+          (template_app (template_hole 2, template_var 1), template_var 0)),
+       template_app
+        (template_app (template_hole 1, template_var 1),
+         template_app
+          (template_app (template_hole 0, template_var 2),
+           template_var 0)))),
+    ("utp_subst.subst_subst",
+     "?\<sigma> \<dagger> ?\<rho> \<dagger> ?e =
+      (?\<rho> o ?\<sigma>) \<dagger> ?e",
+     template_equation
+      (template_app
+        (template_app (template_hole 3, template_var 2),
+         template_app
+          (template_app (template_hole 2, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 1,
+           template_app
+            (template_app (template_hole 0, template_var 1),
+             template_var 2)),
+         template_var 0))),
+    ("utp_subst.usubst_upd_var_id",
+     "vwb_lens ?x ==> [?x \<mapsto>\<^sub>s ?x] = id",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 4, template_var 0))],
+       template_equation
+        (template_app
+          (template_app
+            (template_app (template_hole 2, template_hole 1),
+             template_var 0),
+           template_app (template_hole 0, template_var 0)),
+         template_hole 1))),
+    ("utp_subst.usubst_upd_pr_var_id",
+     "vwb_lens ?x ==> [?x \<mapsto>\<^sub>s &?x] = id",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 5, template_var 0))],
+       template_equation
+        (template_app
+          (template_app
+            (template_app (template_hole 3, template_hole 2),
+             template_var 0),
+           template_app
+            (template_hole 1,
+             template_app (template_hole 0, template_var 0))),
+         template_hole 2))),
+    ("utp_subst.usubst_lookup_upd",
+     "weak_lens ?x ==>
+      \<langle>?\<sigma>(?x \<mapsto>\<^sub>s ?v)\<rangle>\<^sub>s ?x = ?v",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 3, template_var 2))],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 1,
+             template_app
+              (template_app
+                (template_app (template_hole 0, template_var 1),
+                 template_var 2),
+               template_var 0)),
+           template_var 2),
+         template_var 0))),
+    ("utp_subst.subst_plus",
+     "?\<sigma> \<dagger> (?x + ?y) =
+      ?\<sigma> \<dagger> ?x + ?\<sigma> \<dagger> ?y",
+     template_equation
+      (template_app
+        (template_app (template_hole 2, template_var 2),
+         template_app
+          (template_app (template_hole 1, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 0,
+           template_app
+            (template_app (template_hole 2, template_var 2),
+             template_var 1)),
+         template_app
+          (template_app (template_hole 2, template_var 2),
+           template_var 0)))),
+    ("utp_subst.subst_minus",
+     "?\<sigma> \<dagger> (?x - ?y) =
+      ?\<sigma> \<dagger> ?x - ?\<sigma> \<dagger> ?y",
+     template_equation
+      (template_app
+        (template_app (template_hole 2, template_var 2),
+         template_app
+          (template_app (template_hole 1, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 0,
+           template_app
+            (template_app (template_hole 2, template_var 2),
+             template_var 1)),
+         template_app
+          (template_app (template_hole 2, template_var 2),
+           template_var 0)))),
+    ("utp_subst.subst_times",
+     "?\<sigma> \<dagger> (?x * ?y) =
+      ?\<sigma> \<dagger> ?x * ?\<sigma> \<dagger> ?y",
+     template_equation
+      (template_app
+        (template_app (template_hole 2, template_var 2),
+         template_app
+          (template_app (template_hole 1, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 0,
+           template_app
+            (template_app (template_hole 2, template_var 2),
+             template_var 1)),
+         template_app
+          (template_app (template_hole 2, template_var 2),
+           template_var 0)))),
+    ("utp_subst.subst_div",
+     "?\<sigma> \<dagger> (?x div ?y) =
+      ?\<sigma> \<dagger> ?x div ?\<sigma> \<dagger> ?y",
+     template_equation
+      (template_app
+        (template_app (template_hole 2, template_var 2),
+         template_app
+          (template_app (template_hole 1, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 0,
+           template_app
+            (template_app (template_hole 2, template_var 2),
+             template_var 1)),
+         template_app
+          (template_app (template_hole 2, template_var 2),
+           template_var 0)))),
+    ("utp_subst.subst_mod",
+     "?\<sigma> \<dagger> (?x mod ?y) =
+      ?\<sigma> \<dagger> ?x mod ?\<sigma> \<dagger> ?y",
+     template_equation
+      (template_app
+        (template_app (template_hole 2, template_var 2),
+         template_app
+          (template_app (template_hole 1, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 0,
+           template_app
+            (template_app (template_hole 2, template_var 2),
+             template_var 1)),
+         template_app
+          (template_app (template_hole 2, template_var 2),
+           template_var 0)))),
+    ("utp_subst.usubst_ulambda",
+     "?\<sigma> \<dagger> ulambda ?P =
+      (\<lambda> x \<bullet> ?\<sigma> \<dagger> ?P x)",
+     template_equation
+      (template_app
+        (template_app (template_hole 3, template_var 1),
+         template_app (template_hole 2, t_empty)),
+       template_app (template_hole 1, t_empty))),
+    ("utp_subst.subst_eq_upred",
+     "?\<sigma> \<dagger> (?x =\<^sub>u ?y) =
+      (?\<sigma> \<dagger> ?x =\<^sub>u ?\<sigma> \<dagger> ?y)",
+     template_equation
+      (template_app
+        (template_app (template_hole 3, template_var 2),
+         template_app
+          (template_app (template_hole 2, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 1,
+           template_app
+            (template_app (template_hole 0, template_var 2),
+             template_var 1)),
+         template_app
+          (template_app (template_hole 0, template_var 2),
+           template_var 0)))),
+    ("utp_subst.usubst_lookup_upd_pr_var",
+     "weak_lens ?x ==>
+      \<langle>?\<sigma>(?x \<mapsto>\<^sub>s ?v)\<rangle>\<^sub>s (&?x) =
+      ?v",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 4, template_var 2))],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 2,
+             template_app
+              (template_app
+                (template_app (template_hole 1, template_var 1),
+                 template_var 2),
+               template_var 0)),
+           template_app (template_hole 0, template_var 2)),
+         template_var 0))),
+    ("utp_subst.subst_del_upd_same",
+     "mwb_lens ?x ==>
+      ?\<sigma>(?x \<mapsto>\<^sub>s ?v) -\<^sub>s ?x =
+      ?\<sigma> -\<^sub>s ?x",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 3, template_var 2))],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 1,
+             template_app
+              (template_app
+                (template_app (template_hole 0, template_var 1),
+                 template_var 2),
+               template_var 0)),
+           template_var 2),
+         template_app
+          (template_app (template_hole 1, template_var 1),
+           template_var 2)))),
+    ("utp_subst.subst_upd_comp",
+     "?\<rho>(?x \<mapsto>\<^sub>s ?v) o ?\<sigma> = (?\<rho> o ?\<sigma>)
+      (?x \<mapsto>\<^sub>s ?\<sigma> \<dagger> ?v)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 3,
+           template_app
+            (template_app
+              (template_app (template_hole 2, template_var 3),
+               template_var 2),
+             template_var 1)),
+         template_var 0),
+       template_app
+        (template_app
+          (template_app
+            (template_hole 1,
+             template_app
+              (template_app (template_hole 3, template_var 3),
+               template_var 0)),
+           template_var 2),
+         template_app
+          (template_app (template_hole 0, template_var 0),
+           template_var 1)))),
+    ("utp_subst.subst_bop",
+     "?\<sigma> \<dagger> bop ?f ?u ?v =
+      bop ?f (?\<sigma> \<dagger> ?u) (?\<sigma> \<dagger> ?v)",
+     template_equation
+      (template_app
+        (template_app (template_hole 4, template_var 3),
+         template_app
+          (template_app
+            (template_app (template_hole 3, template_var 2),
+             template_var 1),
+           template_var 0)),
+       template_app
+        (template_app
+          (template_app (template_hole 2, template_var 2),
+           template_app
+            (template_app (template_hole 1, template_var 3),
+             template_var 1)),
+         template_app
+          (template_app (template_hole 0, template_var 3),
+           template_var 0)))),
+    ("utp_subst.par_subst_right_empty",
+     "vwb_lens ?A ==>
+      ?\<sigma> [?A|\<emptyset>]\<^sub>s ?\<rho> =
+      ?\<sigma> [?A|\<emptyset>]\<^sub>s id",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 4, template_var 2))],
+       template_equation
+        (template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 2, template_var 1),
+               template_var 2),
+             template_hole 1),
+           template_var 0),
+         template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 2, template_var 1),
+               template_var 2),
+             template_hole 1),
+           template_hole 0)))),
+    ("utp_subst.par_subst_left_empty",
+     "vwb_lens ?A ==>
+      ?\<sigma> [\<emptyset>|?A]\<^sub>s ?\<rho> =
+      id [\<emptyset>|?A]\<^sub>s ?\<rho>",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 4, template_var 2))],
+       template_equation
+        (template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 2, template_var 1),
+               template_hole 1),
+             template_var 2),
+           template_var 0),
+         template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 2, template_hole 0),
+               template_hole 1),
+             template_var 2),
+           template_var 0)))),
+    ("utp_subst.subst_unrest",
+     "?x \<sharp> ?P ==>
+      ?\<sigma>(?x \<mapsto>\<^sub>s ?v) \<dagger> ?P =
+      ?\<sigma> \<dagger> ?P",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 3, template_var 3),
+              template_var 2)
+            )],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 1,
+             template_app
+              (template_app
+                (template_app (template_hole 0, template_var 1),
+                 template_var 3),
+               template_var 0)),
+           template_var 2),
+         template_app
+          (template_app (template_hole 1, template_var 1),
+           template_var 2)))),
+    ("utp_subst.par_subst_id",
+     "[| vwb_lens ?A; vwb_lens ?B |] ==> id [?A|?B]\<^sub>s id = id",
+     template_implication
+      ([template_predicate (template_app (template_hole 4, template_var 1)),
+        template_predicate
+         (template_app (template_hole 3, template_var 0))],
+       template_equation
+        (template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 1, template_hole 0),
+               template_var 1),
+             template_var 0),
+           template_hole 0),
+         template_hole 0))),
+    ("utp_subst.usubst_apply_unrest",
+     "[| vwb_lens ?x; ?x \<sharp> ?\<sigma> |]
+      ==> \<langle>?\<sigma>\<rangle>\<^sub>s ?x = ?x",
+     template_implication
+      ([template_predicate (template_app (template_hole 4, template_var 1)),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 3, template_var 1),
+              template_var 0)
+            )],
+       template_equation
+        (template_app
+          (template_app (template_hole 1, template_var 0), template_var 1),
+         template_app (template_hole 0, template_var 1)))),
+    ("utp_subst.unrest_subst",
+     "[| ?x \<sharp> ?P; ?x \<sharp> ?\<sigma> |]
+      ==> ?x \<sharp> ?\<sigma> \<dagger> ?P",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 2, template_var 2),
+              template_var 1)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 1, template_var 2),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 2, template_var 2),
+             template_app
+              (template_app (template_hole 0, template_var 0),
+               template_var 1))
+           ))),
+    ("utp_subst.usubst_upd_idem",
+     "mwb_lens ?x ==>
+      ?\<sigma>(?x \<mapsto>\<^sub>s ?u, ?x \<mapsto>\<^sub>s ?v) =
+      ?\<sigma>(?x \<mapsto>\<^sub>s ?v)",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 2, template_var 3))],
+       template_equation
+        (template_app
+          (template_app
+            (template_app
+              (template_hole 0,
+               template_app
+                (template_app
+                  (template_app (template_hole 0, template_var 2),
+                   template_var 3),
+                 template_var 1)),
+             template_var 3),
+           template_var 0),
+         template_app
+          (template_app
+            (template_app (template_hole 0, template_var 2),
+             template_var 3),
+           template_var 0)))),
+    ("utp_subst.par_subst_comm",
+     "?A \<bowtie> ?B ==>
+      ?\<sigma> [?A|?B]\<^sub>s ?\<rho> =
+      ?\<rho> [?B|?A]\<^sub>s ?\<sigma>",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 3, template_var 3),
+              template_var 2)
+            )],
+       template_equation
+        (template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 1, template_var 1),
+               template_var 3),
+             template_var 2),
+           template_var 0),
+         template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 0, template_var 0),
+               template_var 2),
+             template_var 3),
+           template_var 1)))),
+    ("utp_subst.unrest_usubst_single",
+     "[| mwb_lens ?x; ?x \<sharp> ?v |]
+      ==> ?x \<sharp> ?P\<lbrakk>?v/?x\<rbrakk>",
+     template_implication
+      ([template_predicate (template_app (template_hole 5, template_var 2)),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 4, template_var 2),
+              template_var 1)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 3, template_var 2),
+             template_app
+              (template_app
+                (template_hole 2,
+                 template_app
+                  (template_app
+                    (template_app (template_hole 1, template_hole 0),
+                     template_var 2),
+                   template_var 1)),
+               template_var 0))
+           ))),
+    ("utp_subst.subst_del_upd_diff",
+     "?x \<bowtie> ?y ==>
+      ?\<sigma>(?y \<mapsto>\<^sub>s ?v) -\<^sub>s ?x =
+      (?\<sigma> -\<^sub>s ?x)(?y \<mapsto>\<^sub>s ?v)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 3, template_var 3),
+              template_var 2)
+            )],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 1,
+             template_app
+              (template_app
+                (template_app (template_hole 0, template_var 1),
+                 template_var 2),
+               template_var 0)),
+           template_var 3),
+         template_app
+          (template_app
+            (template_app
+              (template_hole 0,
+               template_app
+                (template_app (template_hole 1, template_var 1),
+                 template_var 3)),
+             template_var 2),
+           template_var 0)))),
+    ("utp_subst.subst_compose_upd",
+     "?x \<sharp> ?\<sigma> ==>
+      ?\<sigma> o ?\<rho>(?x \<mapsto>\<^sub>s ?v) = (?\<sigma> o ?\<rho>)
+      (?x \<mapsto>\<^sub>s ?v)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 3, template_var 3),
+              template_var 2)
+            )],
+       template_equation
+        (template_app
+          (template_app (template_hole 1, template_var 2),
+           template_app
+            (template_app
+              (template_app (template_hole 0, template_var 1),
+               template_var 3),
+             template_var 0)),
+         template_app
+          (template_app
+            (template_app
+              (template_hole 0,
+               template_app
+                (template_app (template_hole 1, template_var 2),
+                 template_var 1)),
+             template_var 3),
+           template_var 0)))),
+    ("utp_subst.subst_upd_lens_plus",
+     "?\<sigma>(?x +\<^sub>L ?y \<mapsto>\<^sub>s
+      \<guillemotleft>(?u, ?v)\<guillemotright>) = ?\<sigma>(?y 
+      \<mapsto>\<^sub>s \<guillemotleft>?v\<guillemotright>, ?x 
+      \<mapsto>\<^sub>s \<guillemotleft>?u\<guillemotright>)",
+     template_equation
+      (template_app
+        (template_app
+          (template_app (template_hole 7, template_var 4),
+           template_app
+            (template_app (template_hole 6, template_var 3),
+             template_var 2)),
+         template_app
+          (template_hole 5,
+           template_app
+            (template_app (template_hole 4, template_var 1),
+             template_var 0))),
+       template_app
+        (template_app
+          (template_app
+            (template_hole 3,
+             template_app
+              (template_app
+                (template_app (template_hole 2, template_var 4),
+                 template_var 2),
+               template_app (template_hole 1, template_var 0))),
+           template_var 3),
+         template_app (template_hole 0, template_var 1)))),
+    ("utp_subst.usubst_upd_comm_dash",
+     "?\<sigma>($?x\<acute> \<mapsto>\<^sub>s ?v, $?x \<mapsto>\<^sub>s
+      ?u) = ?\<sigma>($?x \<mapsto>\<^sub>s ?u, $?x\<acute> 
+      \<mapsto>\<^sub>s ?v)",
+     template_equation
+      (template_app
+        (template_app
+          (template_app
+            (template_hole 2,
+             template_app
+              (template_app
+                (template_app (template_hole 2, template_var 3),
+                 template_app (template_hole 1, template_var 2)),
+               template_var 1)),
+           template_app (template_hole 0, template_var 2)),
+         template_var 0),
+       template_app
+        (template_app
+          (template_app
+            (template_hole 2,
+             template_app
+              (template_app
+                (template_app (template_hole 2, template_var 3),
+                 template_app (template_hole 0, template_var 2)),
+               template_var 0)),
+           template_app (template_hole 1, template_var 2)),
+         template_var 1))),
+    ("utp_subst.subst_trop",
+     "?\<sigma> \<dagger> trop ?f ?u ?v ?w =
+      trop ?f (?\<sigma> \<dagger> ?u) (?\<sigma> \<dagger> ?v)
+       (?\<sigma> \<dagger> ?w)",
+     template_equation
+      (template_app
+        (template_app (template_hole 5, template_var 4),
+         template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 4, template_var 3),
+               template_var 2),
+             template_var 1),
+           template_var 0)),
+       template_app
+        (template_app
+          (template_app
+            (template_app (template_hole 3, template_var 3),
+             template_app
+              (template_app (template_hole 2, template_var 4),
+               template_var 2)),
+           template_app
+            (template_app (template_hole 1, template_var 4),
+             template_var 1)),
+         template_app
+          (template_app (template_hole 0, template_var 4),
+           template_var 0)))),
+    ("utp_subst.subst_case_prod",
+     "?\<sigma> \<dagger> (case ?v of (x, y) => ?P x y) =
+      (case ?v of (x, y) => ?\<sigma> \<dagger> ?P x y)",
+     template_equation
+      (template_app
+        (template_app (template_hole 2, template_var 2),
+         template_app
+          (template_app (template_hole 1, t_empty), template_var 0)),
+       template_app
+        (template_app (template_hole 0, t_empty), template_var 0))),
+    ("utp_subst.usubst_lookup_upd_indep",
+     "[| mwb_lens ?x; ?x \<bowtie> ?y |]
+      ==> \<langle>?\<sigma>(?y \<mapsto>\<^sub>s ?v)\<rangle>\<^sub>s ?x =
+          \<langle>?\<sigma>\<rangle>\<^sub>s ?x",
+     template_implication
+      ([template_predicate (template_app (template_hole 4, template_var 3)),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 3, template_var 3),
+              template_var 2)
+            )],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 1,
+             template_app
+              (template_app
+                (template_app (template_hole 0, template_var 1),
+                 template_var 2),
+               template_var 0)),
+           template_var 3),
+         template_app
+          (template_app (template_hole 1, template_var 1),
+           template_var 3)))),
+    ("utp_subst.usubst_upd_comm",
+     "?x \<bowtie> ?y ==>
+      ?\<sigma>(?x \<mapsto>\<^sub>s ?u, ?y \<mapsto>\<^sub>s ?v) =
+      ?\<sigma>(?y \<mapsto>\<^sub>s ?v, ?x \<mapsto>\<^sub>s ?u)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 3, template_var 4),
+              template_var 3)
+            )],
+       template_equation
+        (template_app
+          (template_app
+            (template_app
+              (template_hole 1,
+               template_app
+                (template_app
+                  (template_app (template_hole 0, template_var 2),
+                   template_var 4),
+                 template_var 1)),
+             template_var 3),
+           template_var 0),
+         template_app
+          (template_app
+            (template_app
+              (template_hole 0,
+               template_app
+                (template_app
+                  (template_app (template_hole 1, template_var 2),
+                   template_var 3),
+                 template_var 0)),
+             template_var 4),
+           template_var 1)))),
+    ("utp_subst.subst_singleton",
+     "?x \<sharp> ?\<sigma> ==>
+      ?\<sigma>(?x \<mapsto>\<^sub>s ?v) \<dagger> ?P =
+      (?\<sigma> \<dagger> ?P)\<lbrakk>?v/?x\<rbrakk>",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 4, template_var 3),
+              template_var 2)
+            )],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 2,
+             template_app
+              (template_app
+                (template_app (template_hole 1, template_var 2),
+                 template_var 3),
+               template_var 1)),
+           template_var 0),
+         template_app
+          (template_app
+            (template_hole 2,
+             template_app
+              (template_app
+                (template_app (template_hole 1, template_hole 0),
+                 template_var 3),
+               template_var 1)),
+           template_app
+            (template_app (template_hole 2, template_var 2),
+             template_var 0))))),
+    ("utp_subst.usubst_upd_idem_sub",
+     "[| ?x \<subseteq>\<^sub>L ?y; mwb_lens ?y |]
+      ==> ?\<sigma>(?x \<mapsto>\<^sub>s ?u, ?y \<mapsto>\<^sub>s ?v) =
+          ?\<sigma>(?y \<mapsto>\<^sub>s ?v)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 4, template_var 4),
+              template_var 3)
+            ),
+        template_predicate
+         (template_app (template_hole 3, template_var 3))],
+       template_equation
+        (template_app
+          (template_app
+            (template_app
+              (template_hole 1,
+               template_app
+                (template_app
+                  (template_app (template_hole 0, template_var 2),
+                   template_var 4),
+                 template_var 1)),
+             template_var 3),
+           template_var 0),
+         template_app
+          (template_app
+            (template_app (template_hole 1, template_var 2),
+             template_var 3),
+           template_var 0)))),
+    ("utp_subst.unrest_usubst_upd",
+     "[| ?x \<bowtie> ?y; ?x \<sharp> ?\<sigma>; ?x \<sharp> ?v |]
+      ==> ?x \<sharp> ?\<sigma>(?y \<mapsto>\<^sub>s ?v)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 3, template_var 3),
+              template_var 2)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 2, template_var 3),
+              template_var 1)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 1, template_var 3),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 2, template_var 3),
+             template_app
+              (template_app
+                (template_app (template_hole 0, template_var 1),
+                 template_var 2),
+               template_var 0))
+           ))),
+    ("utp_subst.usubst_cond_upd_1",
+     "?\<sigma>(?x \<mapsto>\<^sub>s
+         ?u) \<triangleleft> ?b \<triangleright>\<^sub>s ?\<rho>(?x 
+         \<mapsto>\<^sub>s ?v) =
+      (?\<sigma> \<triangleleft> ?b \<triangleright>\<^sub>s ?\<rho>)(?x 
+      \<mapsto>\<^sub>s ?u \<triangleleft> ?b \<triangleright> ?v)",
+     template_equation
+      (template_app
+        (template_app
+          (template_app
+            (template_hole 3,
+             template_app
+              (template_app
+                (template_app (template_hole 2, template_var 5),
+                 template_var 4),
+               template_var 3)),
+           template_var 2),
+         template_app
+          (template_app
+            (template_app (template_hole 2, template_var 1),
+             template_var 4),
+           template_var 0)),
+       template_app
+        (template_app
+          (template_app
+            (template_hole 2,
+             template_app
+              (template_app
+                (template_app (template_hole 3, template_var 5),
+                 template_var 2),
+               template_var 1)),
+           template_var 4),
+         template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 1, template_hole 0),
+               template_var 2),
+             template_var 3),
+           template_var 0)))),
+    ("utp_subst.subst_upd_in_lens_plus",
+     "?\<sigma>($(?x +\<^sub>L ?y) \<mapsto>\<^sub>s
+      \<guillemotleft>(?u, ?v)\<guillemotright>) = ?\<sigma>($?y 
+      \<mapsto>\<^sub>s \<guillemotleft>?v\<guillemotright>, $?x 
+      \<mapsto>\<^sub>s \<guillemotleft>?u\<guillemotright>)",
+     template_equation
+      (template_app
+        (template_app
+          (template_app (template_hole 10, template_var 4),
+           template_app
+            (template_hole 9,
+             template_app
+              (template_app (template_hole 8, template_var 3),
+               template_var 2))),
+         template_app
+          (template_hole 7,
+           template_app
+            (template_app (template_hole 6, template_var 1),
+             template_var 0))),
+       template_app
+        (template_app
+          (template_app
+            (template_hole 5,
+             template_app
+              (template_app
+                (template_app (template_hole 4, template_var 4),
+                 template_app (template_hole 3, template_var 2)),
+               template_app (template_hole 2, template_var 0))),
+           template_app (template_hole 1, template_var 3)),
+         template_app (template_hole 0, template_var 1)))),
+    ("utp_subst.subst_upd_out_lens_plus",
+     "?\<sigma>($(?x +\<^sub>L ?y)\<acute> \<mapsto>\<^sub>s
+      \<guillemotleft>(?u, ?v)\<guillemotright>) = ?\<sigma>($?y\<acute> 
+      \<mapsto>\<^sub>s \<guillemotleft>?v\<guillemotright>, $?x\<acute> 
+      \<mapsto>\<^sub>s \<guillemotleft>?u\<guillemotright>)",
+     template_equation
+      (template_app
+        (template_app
+          (template_app (template_hole 10, template_var 4),
+           template_app
+            (template_hole 9,
+             template_app
+              (template_app (template_hole 8, template_var 3),
+               template_var 2))),
+         template_app
+          (template_hole 7,
+           template_app
+            (template_app (template_hole 6, template_var 1),
+             template_var 0))),
+       template_app
+        (template_app
+          (template_app
+            (template_hole 5,
+             template_app
+              (template_app
+                (template_app (template_hole 4, template_var 4),
+                 template_app (template_hole 3, template_var 2)),
+               template_app (template_hole 2, template_var 0))),
+           template_app (template_hole 1, template_var 3)),
+         template_app (template_hole 0, template_var 1)))),
+    ("utp_subst.subst_qtop",
+     "?\<sigma> \<dagger> qtop ?f ?u ?v ?w ?x =
+      qtop ?f (?\<sigma> \<dagger> ?u) (?\<sigma> \<dagger> ?v)
+       (?\<sigma> \<dagger> ?w) (?\<sigma> \<dagger> ?x)",
+     template_equation
+      (template_app
+        (template_app (template_hole 6, template_var 5),
+         template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 5, template_var 4),
+                 template_var 3),
+               template_var 2),
+             template_var 1),
+           template_var 0)),
+       template_app
+        (template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 4, template_var 4),
+               template_app
+                (template_app (template_hole 3, template_var 5),
+                 template_var 3)),
+             template_app
+              (template_app (template_hole 2, template_var 5),
+               template_var 2)),
+           template_app
+            (template_app (template_hole 1, template_var 5),
+             template_var 1)),
+         template_app
+          (template_app (template_hole 0, template_var 5),
+           template_var 0)))),
+    ("utp_subst.subst_upd_plus",
+     "?x \<bowtie> ?y ==>
+      ?s(?x +\<^sub>L ?y \<mapsto>\<^sub>s ?e) = ?s(?x \<mapsto>\<^sub>s
+      \<pi>\<^sub>1(?e), ?y \<mapsto>\<^sub>s \<pi>\<^sub>2(?e))",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 9, template_var 3),
+              template_var 2)
+            )],
+       template_equation
+        (template_app
+          (template_app
+            (template_app (template_hole 7, template_var 1),
+             template_app
+              (template_app (template_hole 6, template_var 3),
+               template_var 2)),
+           template_var 0),
+         template_app
+          (template_app
+            (template_app
+              (template_hole 5,
+               template_app
+                (template_app
+                  (template_app (template_hole 4, template_var 1),
+                   template_var 3),
+                 template_app
+                  (template_app (template_hole 3, template_hole 2),
+                   template_var 0))),
+             template_var 2),
+           template_app
+            (template_app (template_hole 1, template_hole 0),
+             template_var 0))))),
+    ("utp_subst.par_subst_upd_left_out",
+     "[| vwb_lens ?A; ?x \<bowtie> ?A |]
+      ==> ?\<sigma>(?x \<mapsto>\<^sub>s ?v) [?A|?B]\<^sub>s ?\<rho> =
+          ?\<sigma> [?A|?B]\<^sub>s ?\<rho>",
+     template_implication
+      ([template_predicate (template_app (template_hole 4, template_var 5)),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 3, template_var 4),
+              template_var 5)
+            )],
+       template_equation
+        (template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_hole 1,
+                 template_app
+                  (template_app
+                    (template_app (template_hole 0, template_var 3),
+                     template_var 4),
+                   template_var 2)),
+               template_var 5),
+             template_var 1),
+           template_var 0),
+         template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 1, template_var 3),
+               template_var 5),
+             template_var 1),
+           template_var 0)))),
+    ("utp_subst.unrest_usubst_del",
+     "[| vwb_lens ?x; ?x \<sharp> \<langle>?\<sigma>\<rangle>\<^sub>s ?x;
+         ?x \<sharp> ?\<sigma> -\<^sub>s ?x |]
+      ==> ?x \<sharp> ?\<sigma> \<dagger> ?P",
+     template_implication
+      ([template_predicate (template_app (template_hole 6, template_var 2)),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 5, template_var 2),
+              template_app
+               (template_app (template_hole 4, template_var 1),
+                template_var 2))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 3, template_var 2),
+              template_app
+               (template_app (template_hole 2, template_var 1),
+                template_var 2))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 1, template_var 2),
+             template_app
+              (template_app (template_hole 0, template_var 1),
+               template_var 0))
+           ))),
+    ("utp_subst.usubst_upd_comm2",
+     "?z \<bowtie> ?y ==>
+      ?\<sigma>(?x \<mapsto>\<^sub>s ?u, ?y \<mapsto>\<^sub>s ?v, ?z 
+      \<mapsto>\<^sub>s ?s) = ?\<sigma>(?x \<mapsto>\<^sub>s ?u, ?z 
+      \<mapsto>\<^sub>s ?s, ?y \<mapsto>\<^sub>s ?v)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 4, template_var 6),
+              template_var 5)
+            )],
+       template_equation
+        (template_app
+          (template_app
+            (template_app
+              (template_hole 2,
+               template_app
+                (template_app
+                  (template_app
+                    (template_hole 1,
+                     template_app
+                      (template_app
+                        (template_app (template_hole 0, template_var 4),
+                         template_var 3),
+                       template_var 2)),
+                   template_var 5),
+                 template_var 1)),
+             template_var 6),
+           template_var 0),
+         template_app
+          (template_app
+            (template_app
+              (template_hole 1,
+               template_app
+                (template_app
+                  (template_app
+                    (template_hole 2,
+                     template_app
+                      (template_app
+                        (template_app (template_hole 0, template_var 4),
+                         template_var 3),
+                       template_var 2)),
+                   template_var 6),
+                 template_var 0)),
+             template_var 5),
+           template_var 1)))),
+    ("utp_subst.subst_unrest_2",
+     "[| ?x \<sharp> ?P; ?x \<bowtie> ?y |]
+      ==> ?\<sigma>(?x \<mapsto>\<^sub>s ?u, ?y \<mapsto>\<^sub>s
+          ?v) \<dagger> ?P =
+          ?\<sigma>(?y \<mapsto>\<^sub>s ?v) \<dagger> ?P",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 5, template_var 5),
+              template_var 4)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 4, template_var 5),
+              template_var 3)
+            )],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 2,
+             template_app
+              (template_app
+                (template_app
+                  (template_hole 1,
+                   template_app
+                    (template_app
+                      (template_app (template_hole 0, template_var 2),
+                       template_var 5),
+                     template_var 1)),
+                 template_var 3),
+               template_var 0)),
+           template_var 4),
+         template_app
+          (template_app
+            (template_hole 2,
+             template_app
+              (template_app
+                (template_app (template_hole 1, template_var 2),
+                 template_var 3),
+               template_var 0)),
+           template_var 4)))),
+    ("utp_subst.swap_usubst_inj",
+     "[| vwb_lens ?x; vwb_lens ?y; ?x \<bowtie> ?y |]
+      ==> inj [?x \<mapsto>\<^sub>s &?y, ?y \<mapsto>\<^sub>s &?x]",
+     template_implication
+      ([template_predicate (template_app (template_hole 7, template_var 1)),
+        template_predicate (template_app (template_hole 7, template_var 0)),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 6, template_var 1),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 5,
+               template_app
+                (template_app
+                  (template_app
+                    (template_hole 4,
+                     template_app
+                      (template_app
+                        (template_app (template_hole 4, template_hole 3),
+                         template_var 1),
+                       template_app
+                        (template_hole 2,
+                         template_app (template_hole 1, template_var 0)))),
+                   template_var 0),
+                 template_app
+                  (template_hole 2,
+                   template_app (template_hole 1, template_var 1)))),
+             template_hole 0)
+           ))),
+    ("utp_subst.par_subst_upd_right_out",
+     "[| vwb_lens ?B; ?A \<bowtie> ?B; ?x \<bowtie> ?B |]
+      ==> ?\<sigma> [?A|?B]\<^sub>s ?\<rho>(?x \<mapsto>\<^sub>s ?v) =
+          ?\<sigma> [?A|?B]\<^sub>s ?\<rho>",
+     template_implication
+      ([template_predicate (template_app (template_hole 5, template_var 5)),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 4, template_var 4),
+              template_var 5)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 3, template_var 3),
+              template_var 5)
+            )],
+       template_equation
+        (template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 1, template_var 2),
+               template_var 4),
+             template_var 5),
+           template_app
+            (template_app
+              (template_app (template_hole 0, template_var 1),
+               template_var 3),
+             template_var 0)),
+         template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 1, template_var 2),
+               template_var 4),
+             template_var 5),
+           template_var 1)))),
+    ("utp_subst.usubst_cond_upd_2",
+     "[| vwb_lens ?x; ?x \<sharp> ?\<rho> |]
+      ==> ?\<sigma>(?x \<mapsto>\<^sub>s
+             ?u) \<triangleleft> ?b \<triangleright>\<^sub>s ?\<rho> =
+          (?\<sigma> \<triangleleft> ?b \<triangleright>\<^sub>s ?\<rho>)
+          (?x \<mapsto>\<^sub>s
+          ?u \<triangleleft> ?b \<triangleright> &?x)",
+     template_implication
+      ([template_predicate (template_app (template_hole 8, template_var 4)),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 7, template_var 4),
+              template_var 3)
+            )],
+       template_equation
+        (template_app
+          (template_app
+            (template_app
+              (template_hole 5,
+               template_app
+                (template_app
+                  (template_app (template_hole 4, template_var 2),
+                   template_var 4),
+                 template_var 1)),
+             template_var 0),
+           template_var 3),
+         template_app
+          (template_app
+            (template_app
+              (template_hole 4,
+               template_app
+                (template_app
+                  (template_app (template_hole 5, template_var 2),
+                   template_var 0),
+                 template_var 3)),
+             template_var 4),
+           template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 3, template_hole 2),
+                 template_var 0),
+               template_var 1),
+             template_app
+              (template_hole 1,
+               template_app (template_hole 0, template_var 4))))))),
+    ("utp_subst.usubst_cond_upd_3",
+     "[| vwb_lens ?x; ?x \<sharp> ?\<sigma> |]
+      ==> ?\<sigma> \<triangleleft> ?b \<triangleright>\<^sub>s ?\<rho>(?x 
+             \<mapsto>\<^sub>s ?v) =
+          (?\<sigma> \<triangleleft> ?b \<triangleright>\<^sub>s ?\<rho>)
+          (?x \<mapsto>\<^sub>s
+          &?x \<triangleleft> ?b \<triangleright> ?v)",
+     template_implication
+      ([template_predicate (template_app (template_hole 8, template_var 4)),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 7, template_var 4),
+              template_var 3)
+            )],
+       template_equation
+        (template_app
+          (template_app
+            (template_app (template_hole 5, template_var 3),
+             template_var 2),
+           template_app
+            (template_app
+              (template_app (template_hole 4, template_var 1),
+               template_var 4),
+             template_var 0)),
+         template_app
+          (template_app
+            (template_app
+              (template_hole 4,
+               template_app
+                (template_app
+                  (template_app (template_hole 5, template_var 3),
+                   template_var 2),
+                 template_var 1)),
+             template_var 4),
+           template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 3, template_hole 2),
+                 template_var 2),
+               template_app
+                (template_hole 1,
+                 template_app (template_hole 0, template_var 4))),
+             template_var 0))))),
+    ("utp_subst.par_subst_upd_left_in",
+     "[| vwb_lens ?A; ?A \<bowtie> ?B; ?x \<subseteq>\<^sub>L ?A |]
+      ==> ?\<sigma>(?x \<mapsto>\<^sub>s ?v) [?A|?B]\<^sub>s ?\<rho> =
+          (?\<sigma> [?A|?B]\<^sub>s ?\<rho>)(?x \<mapsto>\<^sub>s ?v)",
+     template_implication
+      ([template_predicate (template_app (template_hole 5, template_var 5)),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 4, template_var 5),
+              template_var 4)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 3, template_var 3),
+              template_var 5)
+            )],
+       template_equation
+        (template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_hole 1,
+                 template_app
+                  (template_app
+                    (template_app (template_hole 0, template_var 2),
+                     template_var 3),
+                   template_var 1)),
+               template_var 5),
+             template_var 4),
+           template_var 0),
+         template_app
+          (template_app
+            (template_app
+              (template_hole 0,
+               template_app
+                (template_app
+                  (template_app
+                    (template_app (template_hole 1, template_var 2),
+                     template_var 5),
+                   template_var 4),
+                 template_var 0)),
+             template_var 3),
+           template_var 1)))),
+    ("utp_subst.par_subst_upd_right_in",
+     "[| vwb_lens ?B; ?A \<bowtie> ?B; ?x \<subseteq>\<^sub>L ?B |]
+      ==> ?\<sigma> [?A|?B]\<^sub>s ?\<rho>(?x \<mapsto>\<^sub>s ?v) =
+          (?\<sigma> [?A|?B]\<^sub>s ?\<rho>)(?x \<mapsto>\<^sub>s ?v)",
+     template_implication
+      ([template_predicate (template_app (template_hole 5, template_var 5)),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 4, template_var 4),
+              template_var 5)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 3, template_var 3),
+              template_var 5)
+            )],
+       template_equation
+        (template_app
+          (template_app
+            (template_app
+              (template_app (template_hole 1, template_var 2),
+               template_var 4),
+             template_var 5),
+           template_app
+            (template_app
+              (template_app (template_hole 0, template_var 1),
+               template_var 3),
+             template_var 0)),
+         template_app
+          (template_app
+            (template_app
+              (template_hole 0,
+               template_app
+                (template_app
+                  (template_app
+                    (template_app (template_hole 1, template_var 2),
+                     template_var 4),
+                   template_var 5),
+                 template_var 1)),
+             template_var 3),
+           template_var 0)))),
+    ("utp_subst.subst_unrest_3",
+     "[| ?x \<sharp> ?P; ?x \<bowtie> ?y; ?x \<bowtie> ?z |]
+      ==> ?\<sigma>(?x \<mapsto>\<^sub>s ?u, ?y \<mapsto>\<^sub>s ?v, ?z 
+          \<mapsto>\<^sub>s ?w) \<dagger> ?P =
+          ?\<sigma>(?y \<mapsto>\<^sub>s ?v, ?z \<mapsto>\<^sub>s
+          ?w) \<dagger> ?P",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 7, template_var 7),
+              template_var 6)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 6, template_var 7),
+              template_var 5)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 5, template_var 7),
+              template_var 4)
+            )],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 3,
+             template_app
+              (template_app
+                (template_app
+                  (template_hole 2,
+                   template_app
+                    (template_app
+                      (template_app
+                        (template_hole 1,
+                         template_app
+                          (template_app
+                            (template_app (template_hole 0, template_var 3),
+                             template_var 7),
+                           template_var 2)),
+                       template_var 5),
+                     template_var 1)),
+                 template_var 4),
+               template_var 0)),
+           template_var 6),
+         template_app
+          (template_app
+            (template_hole 3,
+             template_app
+              (template_app
+                (template_app
+                  (template_hole 2,
+                   template_app
+                    (template_app
+                      (template_app (template_hole 1, template_var 3),
+                       template_var 5),
+                     template_var 1)),
+                 template_var 4),
+               template_var 0)),
+           template_var 6)))),
+    ("utp_subst.subst_unrest_4",
+     "[| ?x \<sharp> ?P; ?x \<bowtie> ?y; ?x \<bowtie> ?z;
+         ?x \<bowtie> ?u |]
+      ==> ?\<sigma>(?x \<mapsto>\<^sub>s ?e, ?y \<mapsto>\<^sub>s ?f, ?z 
+          \<mapsto>\<^sub>s ?g, ?u \<mapsto>\<^sub>s ?h) \<dagger> ?P =
+          ?\<sigma>(?y \<mapsto>\<^sub>s ?f, ?z \<mapsto>\<^sub>s ?g, ?u 
+          \<mapsto>\<^sub>s ?h) \<dagger> ?P",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 9, template_var 9),
+              template_var 8)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 8, template_var 9),
+              template_var 7)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 7, template_var 9),
+              template_var 6)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 6, template_var 9),
+              template_var 5)
+            )],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 4,
+             template_app
+              (template_app
+                (template_app
+                  (template_hole 3,
+                   template_app
+                    (template_app
+                      (template_app
+                        (template_hole 2,
+                         template_app
+                          (template_app
+                            (template_app
+                              (template_hole 1,
+                               template_app
+                                (template_app
+                                  (template_app
+                                    (template_hole 0, template_var 4),
+                                   template_var 9),
+                                 template_var 3)),
+                             template_var 7),
+                           template_var 2)),
+                       template_var 6),
+                     template_var 1)),
+                 template_var 5),
+               template_var 0)),
+           template_var 8),
+         template_app
+          (template_app
+            (template_hole 4,
+             template_app
+              (template_app
+                (template_app
+                  (template_hole 3,
+                   template_app
+                    (template_app
+                      (template_app
+                        (template_hole 2,
+                         template_app
+                          (template_app
+                            (template_app (template_hole 1, template_var 4),
+                             template_var 7),
+                           template_var 2)),
+                       template_var 6),
+                     template_var 1)),
+                 template_var 5),
+               template_var 0)),
+           template_var 8)))),
+    ("utp_subst.subst_unrest_5",
+     "[| ?x \<sharp> ?P; ?x \<bowtie> ?y; ?x \<bowtie> ?z; ?x \<bowtie> ?u;
+         ?x \<bowtie> ?v |]
+      ==> ?\<sigma>(?x \<mapsto>\<^sub>s ?e, ?y \<mapsto>\<^sub>s ?f, ?z 
+          \<mapsto>\<^sub>s ?g, ?u \<mapsto>\<^sub>s ?h, ?v 
+          \<mapsto>\<^sub>s ?i) \<dagger> ?P =
+          ?\<sigma>(?y \<mapsto>\<^sub>s ?f, ?z \<mapsto>\<^sub>s ?g, ?u 
+          \<mapsto>\<^sub>s ?h, ?v \<mapsto>\<^sub>s ?i) \<dagger> ?P",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 11, template_var 11),
+              template_var 10)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 10, template_var 11),
+              template_var 9)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 9, template_var 11),
+              template_var 8)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 8, template_var 11),
+              template_var 7)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 7, template_var 11),
+              template_var 6)
+            )],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 5,
+             template_app
+              (template_app
+                (template_app
+                  (template_hole 4,
+                   template_app
+                    (template_app
+                      (template_app
+                        (template_hole 3,
+                         template_app
+                          (template_app
+                            (template_app
+                              (template_hole 2,
+                               template_app
+                                (template_app
+                                  (template_app
+                                    (template_hole 1,
+                                     template_app
+(template_app
+  (template_app (template_hole 0, template_var 5), template_var 11),
+ template_var 4)),
+                                   template_var 9),
+                                 template_var 3)),
+                             template_var 8),
+                           template_var 2)),
+                       template_var 7),
+                     template_var 1)),
+                 template_var 6),
+               template_var 0)),
+           template_var 10),
+         template_app
+          (template_app
+            (template_hole 5,
+             template_app
+              (template_app
+                (template_app
+                  (template_hole 4,
+                   template_app
+                    (template_app
+                      (template_app
+                        (template_hole 3,
+                         template_app
+                          (template_app
+                            (template_app
+                              (template_hole 2,
+                               template_app
+                                (template_app
+                                  (template_app
+                                    (template_hole 1, template_var 5),
+                                   template_var 9),
+                                 template_var 3)),
+                             template_var 8),
+                           template_var 2)),
+                       template_var 7),
+                     template_var 1)),
+                 template_var 6),
+               template_var 0)),
+           template_var 10))))]:
+   (string * thm * template) list
+### theory "Draft.utp_substTemplates"
+### 0.755s elapsed time, 1.172s cpu time, 0.421s GC time
+val it = (): unit

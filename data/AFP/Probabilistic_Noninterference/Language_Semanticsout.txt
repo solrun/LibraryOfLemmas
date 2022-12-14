@@ -1,0 +1,1128 @@
+Loading theory "HOL-Library.Function_Algebras" (required by "Draft.Language_SemanticsTemplates" via "Draft.ExtrEqs" via "HOL-Library.BigO")
+Loading theory "Draft.Interface" (required by "Draft.Language_SemanticsTemplates" via "Draft.Language_Semantics")
+Loading theory "Draft.Templates" (required by "Draft.Language_SemanticsTemplates" via "Draft.ExtrEqs")
+instantiation
+  fun :: (type, plus) plus
+  plus_fun == plus :: ('a => 'b) => ('a => 'b) => 'a => 'b
+instantiation
+  fun :: (type, zero) zero
+  zero_fun == zero_class.zero :: 'a => 'b
+instantiation
+  fun :: (type, times) times
+  times_fun == times :: ('a => 'b) => ('a => 'b) => 'a => 'b
+instantiation
+  fun :: (type, one) one
+  one_fun == one_class.one :: 'a => 'b
+datatype template_term
+=
+     t_empty
+   | template_app of template_term * template_term
+   | template_hole of int
+   | template_var of int
+datatype sign
+= equals | greater_equals | greater_than | less_equals | less_than
+datatype template
+=
+     template_bimplication of template * template
+   | template_dunno
+   | template_equation of template_term * template_term
+   | template_implication of template list * template
+   | template_inequation of sign * template_term * template_term
+   | template_negation of template
+   | template_predicate of template_term
+constructor t_empty: template_term
+constructor template_app: template_term * template_term -> template_term
+constructor template_hole: int -> template_term
+constructor template_var: int -> template_term
+constructor equals: sign
+constructor greater_equals: sign
+constructor greater_than: sign
+constructor less_equals: sign
+constructor less_than: sign
+constructor template_bimplication: template * template -> template
+constructor template_dunno: template
+constructor template_equation: template_term * template_term -> template
+constructor template_implication: template list * template -> template
+constructor template_inequation:
+   sign * template_term * template_term -> template
+constructor template_negation: template -> template
+constructor template_predicate: template_term -> template
+val vfs = fn: term -> (indexname * typ) list * (string * typ) list
+val indexOf = fn: ''a list -> ''a -> int -> int
+val has_eq = fn: term -> bool
+val term2template = fn:
+   (indexname * typ) list -> (string * typ) list -> term -> template_term
+val lemma2predicate = fn: term -> term -> template
+val makeTemplatewithContext = fn: term -> term -> template
+val lemma2template = fn: term -> template
+val thm2template = fn: thm -> template
+val tterm2string = fn: template_term -> string
+val template2string = fn: template -> string
+val t = "height ?t <= size ?t": thm
+val th =
+   Const ("HOL.Trueprop", "bool => prop") $
+     (Const ("Orderings.ord_class.less_eq", "nat => nat => bool") $
+       (Const ("Tree.height_class.height", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree")) $
+       (Const ("Nat.size_class.size", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree"))):
+   term
+### theory "Draft.Templates"
+### 0.070s elapsed time, 0.252s cpu time, 0.000s GC time
+### theory "HOL-Library.Function_Algebras"
+### 0.123s elapsed time, 0.366s cpu time, 0.042s GC time
+Loading theory "HOL-Library.BigO" (required by "Draft.Language_SemanticsTemplates" via "Draft.ExtrEqs")
+### theory "HOL-Library.BigO"
+### 0.606s elapsed time, 1.256s cpu time, 0.080s GC time
+Loading theory "Draft.ExtrEqs" (required by "Draft.Language_SemanticsTemplates")
+### theory "Draft.Interface"
+### 1.134s elapsed time, 2.462s cpu time, 0.186s GC time
+Loading theory "Draft.Language_Semantics" (required by "Draft.Language_SemanticsTemplates")
+val eqpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Var (("_dummy_", 2), "?'a"))
+       ):
+   term Find_Theorems.criterion
+val badeqpattern = Pattern (Const ("Pure.eq", "?'a => ?'a => prop")):
+   term Find_Theorems.criterion
+val undefpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Const ("HOL.undefined", "?'a"))
+       ):
+   term Find_Theorems.criterion
+val thmpattern =
+   Pattern
+    (Const ("HOL.Trueprop", "bool => prop") $ Var (("_dummy_", 1), "bool")):
+   term Find_Theorems.criterion
+val badnames =
+   ["*nitpick*", "*Nitpick*", "*full_exhaustive*", "*_def*", "Enum.finite*",
+    "*Quickcheck*", "ATP*", "*Nunchaku*", "*Code*", "*BNF*", "*SMT*",
+    "*.*.*"]:
+   string list
+val unwanted_names =
+   [(false, Name "*nitpick*"), (false, Name "*Nitpick*"),
+    (false, Name "*full_exhaustive*"), (false, Name "*_def*"),
+    (false, Name "Enum.finite*"), (false, Name "*Quickcheck*"),
+    (false, Name "ATP*"), (false, Name "*Nunchaku*"),
+    (false, Name "*Code*"), (false, Name "*BNF*"), (false, Name "*SMT*"),
+    (false, Name "*.*.*")]:
+   (bool * term Find_Theorems.criterion) list
+val has_vars = fn: term -> bool
+val get_all_eqs = fn: string -> Proof.context -> (string * thm) list
+val get_all_thms = fn: string -> Proof.context -> (string * thm) list
+val get_noneq_thms = fn: string -> Proof.context -> (string * thm) list
+val template_eqs = fn:
+   string -> Proof.context -> (string * thm * template) list
+val template_thms = fn:
+   string -> Proof.context -> (string * thm * template) list
+### theory "Draft.ExtrEqs"
+### 0.534s elapsed time, 1.132s cpu time, 0.168s GC time
+Found termination order: "size <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+locale PL
+  fixes aval :: "'atom => 'state => 'state"
+    and tval :: "'test => 'state => bool"
+    and cval :: "'choice => 'state => real"
+  assumes "PL cval"
+Found termination order: "size <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+Found termination order: "(%p. size (fst p)) <*mlex*> {}"
+### theory "Draft.Language_Semantics"
+### 3.034s elapsed time, 3.866s cpu time, 0.811s GC time
+Loading theory "Draft.Language_SemanticsTemplates"
+val templateLemmas =
+   [("Language_Semantics.inj_on_Plus", "inj_on ((+) ?a) ?A",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_hole 1,
+             template_app (template_hole 0, template_var 1)),
+           template_var 0)
+         )),
+    ("Language_Semantics.inj_Plus", "inj ((+) ?a)",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_hole 2,
+             template_app (template_hole 1, template_var 0)),
+           template_hole 0)
+         )),
+    ("Language_Semantics.lsum_simps", "lsum ?f [] = 0",
+     template_equation
+      (template_app
+        (template_app (template_hole 2, template_var 0), template_hole 1),
+       template_hole 0)),
+    ("Language_Semantics.finished_Par_finishedL",
+     "finished (Par ?cl) = finishedL ?cl",
+     template_equation
+      (template_app
+        (template_hole 2, template_app (template_hole 1, template_var 0)),
+       template_app (template_hole 0, template_var 0))),
+    ("Language_Semantics.finished_ParT_finishedL",
+     "finished (ParT ?cl) = finishedL ?cl",
+     template_equation
+      (template_app
+        (template_hole 2, template_app (template_hole 1, template_var 0)),
+       template_app (template_hole 0, template_var 0))),
+    ("Language_Semantics.fin_Par_noWhileL",
+     "noWhile (Par ?cl) = noWhileL ?cl",
+     template_equation
+      (template_app
+        (template_hole 2, template_app (template_hole 1, template_var 0)),
+       template_app (template_hole 0, template_var 0))),
+    ("Language_Semantics.fin_ParT_noWhileL",
+     "noWhile (ParT ?cl) = noWhileL ?cl",
+     template_equation
+      (template_app
+        (template_hole 2, template_app (template_hole 1, template_var 0)),
+       template_app (template_hole 0, template_var 0))),
+    ("Language_Semantics.take_length", "take (length ?al) ?al = ?al",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 1, template_app (template_hole 0, template_var 0)),
+         template_var 0),
+       template_var 0)),
+    ("Language_Semantics.finished_fin", "finished ?c ==> noWhile ?c",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 1, template_var 0))],
+       template_predicate
+        (template_app (template_hole 0, template_var 0)))),
+    ("Language_Semantics.finishedL_noWhileL",
+     "finishedL ?cl ==> noWhileL ?cl",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 1, template_var 0))],
+       template_predicate
+        (template_app (template_hole 0, template_var 0)))),
+    ("Language_Semantics.list_less_iff_prefix",
+     "(?a < ?b) = strict_prefix ?a ?b",
+     template_equation
+      (template_app
+        (template_app (template_hole 1, template_var 1), template_var 0),
+       template_app
+        (template_app (template_hole 0, template_var 1), template_var 0))),
+    ("Language_Semantics.lsum_take", "lsum ?f (take ?n ?al) <= lsum ?f ?al",
+     template_inequation
+      (less_equals,
+       template_app
+        (template_app (template_hole 1, template_var 2),
+         template_app
+          (template_app (template_hole 0, template_var 1), template_var 0)),
+       template_app
+        (template_app (template_hole 1, template_var 2), template_var 0))),
+    ("Language_Semantics.Plus_int", "(+) ?b ` {..<?a} = {?b..<?b + ?a}",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 3, template_app (template_hole 2, template_var 1)),
+         template_app (template_hole 1, template_var 0)),
+       template_app
+        (template_app (template_hole 0, template_var 1),
+         template_app
+          (template_app (template_hole 2, template_var 1),
+           template_var 0)))),
+    ("Language_Semantics.take_lt", "?n < length ?al ==> take ?n ?al < ?al",
+     template_implication
+      ([template_inequation
+         (less_than, template_var 1,
+          template_app (template_hole 2, template_var 0))],
+       template_inequation
+        (less_than,
+         template_app
+          (template_app (template_hole 0, template_var 1), template_var 0),
+         template_var 0))),
+    ("Language_Semantics.le_take",
+     "?n1.0 <= ?n2.0 ==> take ?n1.0 ?al <= take ?n2.0 ?al",
+     template_implication
+      ([template_inequation (less_equals, template_var 2, template_var 1)],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_app (template_hole 0, template_var 2), template_var 0),
+         template_app
+          (template_app (template_hole 0, template_var 1),
+           template_var 0)))),
+    ("Language_Semantics.lsum_mono",
+     "?al <= ?bl ==> lsum ?f ?al <= lsum ?f ?bl",
+     template_implication
+      ([template_inequation (less_equals, template_var 2, template_var 1)],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_app (template_hole 0, template_var 0), template_var 2),
+         template_app
+          (template_app (template_hole 0, template_var 0),
+           template_var 1)))),
+    ("Language_Semantics.finishedL_finished",
+     "[| finishedL ?cl; ?c : set ?cl |] ==> finished ?c",
+     template_implication
+      ([template_predicate (template_app (template_hole 3, template_var 1)),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 2, template_var 0),
+              template_app (template_hole 1, template_var 1))
+            )],
+       template_predicate
+        (template_app (template_hole 0, template_var 0)))),
+    ("Language_Semantics.noWhileL_fin",
+     "[| noWhileL ?cl; ?c : set ?cl |] ==> noWhile ?c",
+     template_implication
+      ([template_predicate (template_app (template_hole 3, template_var 1)),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 2, template_var 0),
+              template_app (template_hole 1, template_var 1))
+            )],
+       template_predicate
+        (template_app (template_hole 0, template_var 0)))),
+    ("Language_Semantics.sum_2", "sum ?f {..<2} = ?f 0 + ?f (Suc 0)",
+     template_equation
+      (template_app
+        (template_app (template_hole 7, template_var 0),
+         template_app
+          (template_hole 6,
+           template_app
+            (template_hole 5,
+             template_app (template_hole 4, template_hole 3)))),
+       template_app
+        (template_app
+          (template_hole 2, template_app (template_var 0, template_hole 1)),
+         template_app
+          (template_var 0,
+           template_app (template_hole 0, template_hole 1))))),
+    ("Language_Semantics.lsum_append",
+     "lsum ?f (?al @ ?bl) = lsum ?f ?al + lsum ?f ?bl",
+     template_equation
+      (template_app
+        (template_app (template_hole 2, template_var 2),
+         template_app
+          (template_app (template_hole 1, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 0,
+           template_app
+            (template_app (template_hole 2, template_var 2),
+             template_var 1)),
+         template_app
+          (template_app (template_hole 2, template_var 2),
+           template_var 0)))),
+    ("Language_Semantics.finishedL_update",
+     "[| finishedL ?cl; finished ?c' |] ==> finishedL (?cl[?n := ?c'])",
+     template_implication
+      ([template_predicate (template_app (template_hole 2, template_var 2)),
+        template_predicate
+         (template_app (template_hole 1, template_var 1))],
+       template_predicate
+        (
+           template_app
+            (template_hole 2,
+             template_app
+              (template_app
+                (template_app (template_hole 0, template_var 2),
+                 template_var 0),
+               template_var 1))
+           ))),
+    ("Language_Semantics.noWhileL_update",
+     "[| noWhileL ?cl; noWhile ?c' |] ==> noWhileL (?cl[?n := ?c'])",
+     template_implication
+      ([template_predicate (template_app (template_hole 2, template_var 2)),
+        template_predicate
+         (template_app (template_hole 1, template_var 1))],
+       template_predicate
+        (
+           template_app
+            (template_hole 2,
+             template_app
+              (template_app
+                (template_app (template_hole 0, template_var 2),
+                 template_var 0),
+               template_var 1))
+           ))),
+    ("Language_Semantics.lsum_simps",
+     "lsum ?f (?al @ [?a]) = lsum ?f ?al + ?f ?a",
+     template_equation
+      (template_app
+        (template_app (template_hole 4, template_var 2),
+         template_app
+          (template_app (template_hole 3, template_var 1),
+           template_app
+            (template_app (template_hole 2, template_var 0),
+             template_hole 1))),
+       template_app
+        (template_app
+          (template_hole 0,
+           template_app
+            (template_app (template_hole 4, template_var 2),
+             template_var 1)),
+         template_app (template_var 2, template_var 0)))),
+    ("Language_Semantics.finishedL_intro",
+     "(!!c. c : set ?cl ==> finished c) ==> finishedL ?cl",
+     template_implication
+      ([template_predicate (template_app (template_hole 5, t_empty))],
+       template_predicate
+        (template_app (template_hole 0, template_var 0)))),
+    ("Language_Semantics.noWhileL_intro",
+     "(!!c. c : set ?cl ==> noWhile c) ==> noWhileL ?cl",
+     template_implication
+      ([template_predicate (template_app (template_hole 5, t_empty))],
+       template_predicate
+        (template_app (template_hole 0, template_var 0)))),
+    ("Language_Semantics.sum_minus",
+     "sum ?f {?a..<?a + ?b} = (SUM x<?b. ?f (?a + x))",
+     template_equation
+      (template_app
+        (template_app (template_hole 3, template_var 2),
+         template_app
+          (template_app (template_hole 2, template_var 1),
+           template_app
+            (template_app (template_hole 1, template_var 1),
+             template_var 0))),
+       template_app
+        (template_app (template_hole 3, t_empty),
+         template_app (template_hole 0, template_var 0)))),
+    ("Language_Semantics.in_minus_Un",
+     "?i : ?I ==> {?i} Un (?I - {?i}) = ?I",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 5, template_var 1),
+              template_var 0)
+            )],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 3,
+             template_app
+              (template_app (template_hole 2, template_var 1),
+               template_hole 1)),
+           template_app
+            (template_app (template_hole 0, template_var 0),
+             template_app
+              (template_app (template_hole 2, template_var 1),
+               template_hole 1))),
+         template_var 0))),
+    ("Language_Semantics.in_minus_Un", "?i : ?I ==> ?I - {?i} Un {?i} = ?I",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 5, template_var 1),
+              template_var 0)
+            )],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 3,
+             template_app
+              (template_app (template_hole 2, template_var 0),
+               template_app
+                (template_app (template_hole 1, template_var 1),
+                 template_hole 0))),
+           template_app
+            (template_app (template_hole 1, template_var 1),
+             template_hole 0)),
+         template_var 0))),
+    ("Language_Semantics.nth_append_singl",
+     "?i < length ?al ==> (?al @ [?a]) ! ?i = ?al ! ?i",
+     template_implication
+      ([template_inequation
+         (less_than, template_var 2,
+          template_app (template_hole 5, template_var 1))],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 3,
+             template_app
+              (template_app (template_hole 2, template_var 1),
+               template_app
+                (template_app (template_hole 1, template_var 0),
+                 template_hole 0))),
+           template_var 2),
+         template_app
+          (template_app (template_hole 3, template_var 1),
+           template_var 2)))),
+    ("Language_Semantics.take_append_singl",
+     "?n < length ?al ==> take ?n (?al @ [?a]) = take ?n ?al",
+     template_implication
+      ([template_inequation
+         (less_than, template_var 2,
+          template_app (template_hole 5, template_var 1))],
+       template_equation
+        (template_app
+          (template_app (template_hole 3, template_var 2),
+           template_app
+            (template_app (template_hole 2, template_var 1),
+             template_app
+              (template_app (template_hole 1, template_var 0),
+               template_hole 0))),
+         template_app
+          (template_app (template_hole 3, template_var 2),
+           template_var 1)))),
+    ("Language_Semantics.take_le",
+     "?n < length ?al ==> take ?n ?al @ [?al ! ?n] <= ?al",
+     template_implication
+      ([template_inequation
+         (less_than, template_var 1,
+          template_app (template_hole 6, template_var 0))],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_app
+            (template_hole 4,
+             template_app
+              (template_app (template_hole 3, template_var 1),
+               template_var 0)),
+           template_app
+            (template_app
+              (template_hole 2,
+               template_app
+                (template_app (template_hole 1, template_var 0),
+                 template_var 1)),
+             template_hole 0)),
+         template_var 0))),
+    ("Language_Semantics.lt_take",
+     "[| ?n1.0 < ?n2.0; ?n2.0 <= length ?al |]
+      ==> take ?n1.0 ?al < take ?n2.0 ?al",
+     template_implication
+      ([template_inequation (less_than, template_var 2, template_var 1),
+        template_inequation
+         (less_equals, template_var 1,
+          template_app (template_hole 2, template_var 0))],
+       template_inequation
+        (less_than,
+         template_app
+          (template_app (template_hole 0, template_var 2), template_var 0),
+         template_app
+          (template_app (template_hole 0, template_var 1),
+           template_var 0)))),
+    ("Language_Semantics.length_unique_prefix",
+     "[| ?al1.0 <= ?al; ?al2.0 <= ?al; length ?al1.0 = length ?al2.0 |]
+      ==> ?al1.0 = ?al2.0",
+     template_implication
+      ([template_inequation (less_equals, template_var 2, template_var 1),
+        template_inequation (less_equals, template_var 0, template_var 1),
+        template_equation
+         (template_app (template_hole 1, template_var 2),
+          template_app (template_hole 1, template_var 0))],
+       template_equation (template_var 2, template_var 0))),
+    ("Language_Semantics.less_plus_cases",
+     "[| ?i < ?n1.0 ==> ?phi; !!i2. ?i = ?n1.0 + i2 ==> ?phi |] ==> ?phi",
+     template_implication
+      ([template_implication
+         ([template_inequation (less_than, template_var 2, template_var 1)],
+          template_predicate (template_var 0)),
+        template_predicate (template_app (template_hole 2, t_empty))],
+       template_predicate (template_var 0))),
+    ("Language_Semantics.lsum_cong",
+     "(!!a. a : set ?al ==> ?f a = ?g a) ==> lsum ?f ?al = lsum ?g ?al",
+     template_implication
+      ([template_predicate (template_app (template_hole 5, t_empty))],
+       template_equation
+        (template_app
+          (template_app (template_hole 0, template_var 1), template_var 2),
+         template_app
+          (template_app (template_hole 0, template_var 0),
+           template_var 2)))),
+    ("Language_Semantics.sum_all0_intro",
+     "[| ?b = (0::?'a); !!a. a : ?A ==> ?f a = (0::?'a) |]
+      ==> sum ?f ?A = ?b",
+     template_implication
+      ([template_equation (template_var 2, template_hole 3),
+        template_predicate (template_app (template_hole 2, t_empty))],
+       template_equation
+        (template_app
+          (template_app (template_hole 0, template_var 0), template_var 1),
+         template_var 2))),
+    ("Language_Semantics.inj_take",
+     "[| ?n1.0 <= length ?al; ?n2.0 <= length ?al |]
+      ==> (take ?n1.0 ?al = take ?n2.0 ?al) = (?n1.0 = ?n2.0)",
+     template_implication
+      ([template_inequation
+         (less_equals, template_var 2,
+          template_app (template_hole 4, template_var 1)),
+        template_inequation
+         (less_equals, template_var 0,
+          template_app (template_hole 4, template_var 1))],
+       template_bimplication
+        (template_equation
+          (template_app
+            (template_app (template_hole 1, template_var 2),
+             template_var 1),
+           template_app
+            (template_app (template_hole 1, template_var 0),
+             template_var 1)),
+         template_equation (template_var 2, template_var 0)))),
+    ("Language_Semantics.lsum_gt_0",
+     "[| ?al ~= []; !!a. a : set ?al ==> 0 < ?f a |] ==> 0 < lsum ?f ?al",
+     template_implication
+      ([template_negation
+         (template_equation (template_var 1, template_hole 6)),
+        template_predicate (template_app (template_hole 5, t_empty))],
+       template_inequation
+        (less_than, template_hole 1,
+         template_app
+          (template_app (template_hole 0, template_var 0),
+           template_var 1)))),
+    ("Language_Semantics.lsum_mono2",
+     "[| !!b. b : set ?bl ==> 0 < ?f b; ?al < ?bl |]
+      ==> lsum ?f ?al < lsum ?f ?bl",
+     template_implication
+      ([template_predicate (template_app (template_hole 7, t_empty)),
+        template_inequation (less_than, template_var 0, template_var 2)],
+       template_inequation
+        (less_than,
+         template_app
+          (template_app (template_hole 0, template_var 1), template_var 0),
+         template_app
+          (template_app (template_hole 0, template_var 1),
+           template_var 2)))),
+    ("Language_Semantics.locate_locate_pred_unique",
+     "[| !!a. a : set ?al ==> 0 < ?f a; locate_pred ?f ?al ?i ?n_j |]
+      ==> ?n_j = locate ?f ?al ?i",
+     template_implication
+      ([template_predicate (template_app (template_hole 8, t_empty)),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 2, template_var 2),
+                  template_var 3),
+                template_var 1),
+              template_var 0)
+            )],
+       template_equation
+        (template_var 0,
+         template_app
+          (template_app
+            (template_app (template_hole 0, template_var 2),
+             template_var 3),
+           template_var 1)))),
+    ("Language_Semantics.locate_pred_ex",
+     "[| !!a. a : set ?al ==> 0 < ?f a; ?i < lsum ?f ?al |]
+      ==> EX n_j. locate_pred ?f ?al ?i n_j",
+     template_implication
+      ([template_predicate (template_app (template_hole 8, t_empty)),
+        template_inequation
+         (less_than, template_var 0,
+          template_app
+           (template_app (template_hole 2, template_var 1),
+            template_var 2))],
+       template_predicate (template_app (template_hole 1, t_empty)))),
+    ("Language_Semantics.locate_locate_pred",
+     "[| !!a. a : set ?al ==> 0 < ?f a; ?i < lsum ?f ?al |]
+      ==> locate_pred ?f ?al ?i (locate ?f ?al ?i)",
+     template_implication
+      ([template_predicate (template_app (template_hole 8, t_empty)),
+        template_inequation
+         (less_than, template_var 0,
+          template_app
+           (template_app (template_hole 2, template_var 1),
+            template_var 2))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app (template_hole 1, template_var 1),
+                 template_var 2),
+               template_var 0),
+             template_app
+              (template_app
+                (template_app (template_hole 0, template_var 1),
+                 template_var 2),
+               template_var 0))
+           ))),
+    ("Language_Semantics.locate_pred_unique",
+     "[| !!a. a : set ?al ==> 0 < ?f a; locate_pred ?f ?al ?i ?n1_j1.0;
+         locate_pred ?f ?al ?i ?n2_j2.0 |]
+      ==> ?n1_j1.0 = ?n2_j2.0",
+     template_implication
+      ([template_predicate (template_app (template_hole 7, t_empty)),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 1, template_var 3),
+                  template_var 4),
+                template_var 2),
+              template_var 1)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 1, template_var 3),
+                  template_var 4),
+                template_var 2),
+              template_var 0)
+            )],
+       template_equation (template_var 1, template_var 0))),
+    ("Language_Semantics.less_plus_elim",
+     "[| ?i < ?n1.0 + ?n2.0; ?i < ?n1.0 ==> ?phi;
+         !!i2. [| i2 < ?n2.0; ?i = ?n1.0 + i2 |] ==> ?phi |]
+      ==> ?phi",
+     template_implication
+      ([template_inequation
+         (less_than, template_var 3,
+          template_app
+           (template_app (template_hole 2, template_var 2),
+            template_var 1)),
+        template_implication
+         ([template_inequation (less_than, template_var 3, template_var 2)],
+          template_predicate (template_var 0)),
+        template_predicate (template_app (template_hole 1, t_empty))],
+       template_predicate (template_var 0))),
+    ("Language_Semantics.sum_singl_intro",
+     "[| ?b = ?f ?a; finite ?A; ?a : ?A;
+         !!a'. [| a' : ?A; a' ~= ?a |] ==> ?f a' = (0::?'a) |]
+      ==> sum ?f ?A = ?b",
+     template_implication
+      ([template_equation
+         (template_var 3, template_app (template_var 2, template_var 1)),
+        template_predicate (template_app (template_hole 6, template_var 0)),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 5, template_var 1),
+              template_var 0)
+            ),
+        template_predicate (template_app (template_hole 4, t_empty))],
+       template_equation
+        (template_app
+          (template_app (template_hole 0, template_var 2), template_var 0),
+         template_var 3))),
+    ("Language_Semantics.sum_1",
+     "[| finite ?I; sum ?f ?I = 1; ?i : ?I - ?I1.0; ?I1.0 <= ?I;
+         !!i. i : ?I ==> 0 <= ?f i |]
+      ==> ?f ?i <= 1 - sum ?f ?I1.0",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 10, template_var 3)),
+        template_equation
+         (template_app
+           (template_app (template_hole 8, template_var 2), template_var 3),
+          template_hole 7),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 6, template_var 1),
+              template_app
+               (template_app (template_hole 5, template_var 3),
+                template_var 0))
+            ),
+        template_inequation (less_equals, template_var 0, template_var 3),
+        template_predicate (template_app (template_hole 3, t_empty))],
+       template_inequation
+        (less_equals, template_app (template_var 2, template_var 1),
+         template_app
+          (template_app (template_hole 0, template_hole 7),
+           template_app
+            (template_app (template_hole 8, template_var 2),
+             template_var 0))))),
+    ("Language_Semantics.sum_Un_introL",
+     "[| ?A1.0 = ?B1.0 Un ?C1.0; ?x = ?x1.0 + ?x2.0; finite ?A1.0;
+         ?B1.0 Int ?C1.0 = {}; sum ?f1.0 ?B1.0 = ?x1.0;
+         sum ?f1.0 ?C1.0 = ?x2.0 |]
+      ==> sum ?f1.0 ?A1.0 = ?x",
+     template_implication
+      ([template_equation
+         (template_var 6,
+          template_app
+           (template_app (template_hole 6, template_var 5),
+            template_var 4)),
+        template_equation
+         (template_var 3,
+          template_app
+           (template_app (template_hole 4, template_var 2),
+            template_var 1)),
+        template_predicate (template_app (template_hole 3, template_var 6)),
+        template_equation
+         (template_app
+           (template_app (template_hole 2, template_var 5), template_var 4),
+          template_hole 1),
+        template_equation
+         (template_app
+           (template_app (template_hole 0, template_var 0), template_var 5),
+          template_var 2),
+        template_equation
+         (template_app
+           (template_app (template_hole 0, template_var 0), template_var 4),
+          template_var 1)],
+       template_equation
+        (template_app
+          (template_app (template_hole 0, template_var 0), template_var 6),
+         template_var 3))),
+    ("Language_Semantics.less_lsum_nchotomy",
+     "[| !!a. a : set ?al ==> 0 < ?f a; ?i < lsum ?f ?al |]
+      ==> EX n j.
+             n < length ?al &
+             j < ?f (?al ! n) & ?i = lsum ?f (take n ?al) + j",
+     template_implication
+      ([template_predicate (template_app (template_hole 13, t_empty)),
+        template_inequation
+         (less_than, template_var 0,
+          template_app
+           (template_app (template_hole 7, template_var 1),
+            template_var 2))],
+       template_predicate (template_app (template_hole 6, t_empty)))),
+    ("Language_Semantics.locate_unique",
+     "[| !!a. a : set ?al ==> 0 < ?f a; ?n < length ?al; ?j < ?f (?al ! ?n);
+         ?i = lsum ?f (take ?n ?al) + ?j |]
+      ==> ?n = locate1 ?f ?al ?i & ?j = locate2 ?f ?al ?i",
+     template_implication
+      ([template_predicate (template_app (template_hole 14, t_empty)),
+        template_inequation
+         (less_than, template_var 2,
+          template_app (template_hole 8, template_var 4)),
+        template_inequation
+         (less_than, template_var 1,
+          template_app
+           (template_var 3,
+            template_app
+             (template_app (template_hole 7, template_var 4),
+              template_var 2))),
+        template_equation
+         (template_var 0,
+          template_app
+           (template_app
+             (template_hole 5,
+              template_app
+               (template_app (template_hole 4, template_var 3),
+                template_app
+                 (template_app (template_hole 3, template_var 2),
+                  template_var 4))),
+            template_var 1))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 2,
+               template_app
+                (template_app (template_hole 6, template_var 2),
+                 template_app
+                  (template_app
+                    (template_app (template_hole 1, template_var 3),
+                     template_var 4),
+                   template_var 0))),
+             template_app
+              (template_app (template_hole 6, template_var 1),
+               template_app
+                (template_app
+                  (template_app (template_hole 0, template_var 3),
+                   template_var 4),
+                 template_var 0)))
+           ))),
+    ("Language_Semantics.locate",
+     "[| !!a. a : set ?al ==> 0 < ?f a; ?i < lsum ?f ?al |]
+      ==> locate1 ?f ?al ?i < length ?al &
+          locate2 ?f ?al ?i < ?f (?al ! locate1 ?f ?al ?i) &
+          ?i = lsum ?f (take (locate1 ?f ?al ?i) ?al) + locate2 ?f ?al ?i",
+     template_implication
+      ([template_predicate (template_app (template_hole 14, t_empty)),
+        template_inequation
+         (less_than, template_var 0,
+          template_app
+           (template_app (template_hole 8, template_var 1),
+            template_var 2))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 7,
+               template_app
+                (template_app
+                  (template_hole 10,
+                   template_app
+                    (template_app
+                      (template_app (template_hole 6, template_var 1),
+                       template_var 2),
+                     template_var 0)),
+                 template_app (template_hole 5, template_var 2))),
+             template_app
+              (template_app
+                (template_hole 7,
+                 template_app
+                  (template_app
+                    (template_hole 10,
+                     template_app
+                      (template_app
+                        (template_app (template_hole 4, template_var 1),
+                         template_var 2),
+                       template_var 0)),
+                   template_app
+                    (template_var 1,
+                     template_app
+                      (template_app (template_hole 3, template_var 2),
+                       template_app
+                        (template_app
+                          (template_app (template_hole 6, template_var 1),
+                           template_var 2),
+                         template_var 0))))),
+               template_app
+                (template_app (template_hole 2, template_var 0),
+                 template_app
+                  (template_app
+                    (template_hole 1,
+                     template_app
+                      (template_app (template_hole 8, template_var 1),
+                       template_app
+                        (template_app
+                          (template_hole 0,
+                           template_app
+                            (template_app
+                              (template_app
+                                (template_hole 6, template_var 1),
+                               template_var 2),
+                             template_var 0)),
+                         template_var 2))),
+                   template_app
+                    (template_app
+                      (template_app (template_hole 4, template_var 1),
+                       template_var 2),
+                     template_var 0)))))
+           ))),
+    ("Language_Semantics.sum_Minus_intro",
+     "[| ?B1.0 = ?A1.0 - {?a1.0}; ?B2.0 = ?A2.0 - {?a2.0}; ?a1.0 : ?A1.0;
+         ?a2.0 : ?A2.0; finite ?A1.0; finite ?A2.0;
+         sum ?f1.0 ?A1.0 = sum ?f2.0 ?A2.0; ?f1.0 ?a1.0 = ?f2.0 ?a2.0 |]
+      ==> sum ?f1.0 ?B1.0 = sum ?f2.0 ?B2.0",
+     template_implication
+      ([template_equation
+         (template_var 7,
+          template_app
+           (template_app (template_hole 13, template_var 6),
+            template_app
+             (template_app (template_hole 12, template_var 5),
+              template_hole 11))),
+        template_equation
+         (template_var 4,
+          template_app
+           (template_app (template_hole 9, template_var 3),
+            template_app
+             (template_app (template_hole 8, template_var 2),
+              template_hole 7))),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 6, template_var 5),
+              template_var 6)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 5, template_var 2),
+              template_var 3)
+            ),
+        template_predicate (template_app (template_hole 4, template_var 6)),
+        template_predicate (template_app (template_hole 3, template_var 3)),
+        template_equation
+         (template_app
+           (template_app (template_hole 1, template_var 1), template_var 6),
+          template_app
+           (template_app (template_hole 0, template_var 0),
+            template_var 3)),
+        template_equation
+         (template_app (template_var 1, template_var 5),
+          template_app (template_var 0, template_var 2))],
+       template_equation
+        (template_app
+          (template_app (template_hole 1, template_var 1), template_var 7),
+         template_app
+          (template_app (template_hole 0, template_var 0),
+           template_var 4)))),
+    ("Language_Semantics.sum_Un_intro",
+     "[| ?A1.0 = ?B1.0 Un ?C1.0; ?A2.0 = ?B2.0 Un ?C2.0; finite ?A1.0;
+         finite ?A2.0; ?B1.0 Int ?C1.0 = {}; ?B2.0 Int ?C2.0 = {};
+         sum ?f1.0 ?B1.0 = sum ?f2.0 ?B2.0;
+         sum ?f1.0 ?C1.0 = sum ?f2.0 ?C2.0 |]
+      ==> sum ?f1.0 ?A1.0 = sum ?f2.0 ?A2.0",
+     template_implication
+      ([template_equation
+         (template_var 7,
+          template_app
+           (template_app (template_hole 11, template_var 6),
+            template_var 5)),
+        template_equation
+         (template_var 4,
+          template_app
+           (template_app (template_hole 9, template_var 3),
+            template_var 2)),
+        template_predicate (template_app (template_hole 8, template_var 7)),
+        template_predicate (template_app (template_hole 7, template_var 4)),
+        template_equation
+         (template_app
+           (template_app (template_hole 6, template_var 6), template_var 5),
+          template_hole 5),
+        template_equation
+         (template_app
+           (template_app (template_hole 4, template_var 3), template_var 2),
+          template_hole 3),
+        template_equation
+         (template_app
+           (template_app (template_hole 1, template_var 1), template_var 6),
+          template_app
+           (template_app (template_hole 0, template_var 0),
+            template_var 3)),
+        template_equation
+         (template_app
+           (template_app (template_hole 1, template_var 1), template_var 5),
+          template_app
+           (template_app (template_hole 0, template_var 0),
+            template_var 2))],
+       template_equation
+        (template_app
+          (template_app (template_hole 1, template_var 1), template_var 7),
+         template_app
+          (template_app (template_hole 0, template_var 0),
+           template_var 4)))),
+    ("Language_Semantics.less_lsum_unique",
+     "[| !!a. a : set ?al ==> 0 < ?f a;
+         ?n1.0 < length ?al & ?j1.0 < ?f (?al ! ?n1.0);
+         ?n2.0 < length ?al & ?j2.0 < ?f (?al ! ?n2.0);
+         lsum ?f (take ?n1.0 ?al) + ?j1.0 =
+         lsum ?f (take ?n2.0 ?al) + ?j2.0 |]
+      ==> ?n1.0 = ?n2.0 & ?j1.0 = ?j2.0",
+     template_implication
+      ([template_predicate (template_app (template_hole 12, t_empty)),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 6,
+                template_app
+                 (template_app (template_hole 8, template_var 3),
+                  template_app (template_hole 5, template_var 5))),
+              template_app
+               (template_app (template_hole 8, template_var 2),
+                template_app
+                 (template_var 4,
+                  template_app
+                   (template_app (template_hole 4, template_var 5),
+                    template_var 3))))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 6,
+                template_app
+                 (template_app (template_hole 8, template_var 1),
+                  template_app (template_hole 5, template_var 5))),
+              template_app
+               (template_app (template_hole 8, template_var 0),
+                template_app
+                 (template_var 4,
+                  template_app
+                   (template_app (template_hole 4, template_var 5),
+                    template_var 1))))
+            ),
+        template_equation
+         (template_app
+           (template_app
+             (template_hole 2,
+              template_app
+               (template_app (template_hole 1, template_var 4),
+                template_app
+                 (template_app (template_hole 0, template_var 3),
+                  template_var 5))),
+            template_var 2),
+          template_app
+           (template_app
+             (template_hole 2,
+              template_app
+               (template_app (template_hole 1, template_var 4),
+                template_app
+                 (template_app (template_hole 0, template_var 1),
+                  template_var 5))),
+            template_var 0))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 6,
+               template_app
+                (template_app (template_hole 3, template_var 3),
+                 template_var 1)),
+             template_app
+              (template_app (template_hole 3, template_var 2),
+               template_var 0))
+           ))),
+    ("Language_Semantics.sum_UN_introL",
+     "[| ?A1.0 = \<Union> (?B1.0 ` ?N); ?a2.0 = sum ?b2.0 ?N; finite ?N;
+         !!n. n : ?N ==> finite (?B1.0 n);
+         !!m n. {m, n} <= ?N & m ~= n ==> ?B1.0 m Int ?B1.0 n = {};
+         !!n. n : ?N ==> sum ?f1.0 (?B1.0 n) = ?b2.0 n |]
+      ==> sum ?f1.0 ?A1.0 = ?a2.0",
+     template_implication
+      ([template_equation
+         (template_var 5,
+          template_app
+           (template_hole 16,
+            template_app
+             (template_app (template_hole 15, t_empty), template_var 3))),
+        template_equation
+         (template_var 2,
+          template_app
+           (template_app (template_hole 13, template_var 1),
+            template_var 3)),
+        template_predicate
+         (template_app (template_hole 12, template_var 3)),
+        template_predicate (template_app (template_hole 11, t_empty)),
+        template_predicate (template_app (template_hole 11, t_empty)),
+        template_predicate (template_app (template_hole 11, t_empty))],
+       template_equation
+        (template_app
+          (template_app (template_hole 0, template_var 0), template_var 5),
+         template_var 2))),
+    ("Language_Semantics.sum_UN_intro",
+     "[| ?A1.0 = \<Union> (?B1.0 ` ?N); ?A2.0 = \<Union> (?B2.0 ` ?N);
+         finite ?N; !!n. n : ?N ==> finite (?B1.0 n) & finite (?B2.0 n);
+         !!m n. {m, n} <= ?N & m ~= n ==> ?B1.0 m Int ?B1.0 n = {};
+         !!m n. {m, n} <= ?N ==> ?B2.0 m Int ?B2.0 n = {};
+         !!n. n : ?N ==> sum ?f1.0 (?B1.0 n) = sum ?f2.0 (?B2.0 n) |]
+      ==> sum ?f1.0 ?A1.0 = sum ?f2.0 ?A2.0",
+     template_implication
+      ([template_equation
+         (template_var 6,
+          template_app
+           (template_hole 22,
+            template_app
+             (template_app (template_hole 21, t_empty), template_var 4))),
+        template_equation
+         (template_var 3,
+          template_app
+           (template_hole 19,
+            template_app
+             (template_app (template_hole 18, t_empty), template_var 4))),
+        template_predicate
+         (template_app (template_hole 17, template_var 4)),
+        template_predicate (template_app (template_hole 16, t_empty)),
+        template_predicate (template_app (template_hole 16, t_empty)),
+        template_predicate (template_app (template_hole 16, t_empty)),
+        template_predicate (template_app (template_hole 16, t_empty))],
+       template_equation
+        (template_app
+          (template_app (template_hole 1, template_var 1), template_var 6),
+         template_app
+          (template_app (template_hole 0, template_var 0),
+           template_var 3))))]:
+   (string * thm * template) list
+### theory "Draft.Language_SemanticsTemplates"
+### 1.428s elapsed time, 2.212s cpu time, 0.772s GC time
+val it = (): unit

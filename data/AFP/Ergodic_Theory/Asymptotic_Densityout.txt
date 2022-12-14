@@ -1,0 +1,716 @@
+Loading theory "HOL-Library.Function_Algebras" (required by "Draft.Asymptotic_DensityTemplates" via "Draft.ExtrEqs" via "HOL-Library.BigO")
+Loading theory "Draft.SG_Library_Complement" (required by "Draft.Asymptotic_DensityTemplates" via "Draft.Asymptotic_Density")
+Loading theory "Draft.Templates" (required by "Draft.Asymptotic_DensityTemplates" via "Draft.ExtrEqs")
+instantiation
+  fun :: (type, plus) plus
+  plus_fun == plus :: ('a => 'b) => ('a => 'b) => 'a => 'b
+instantiation
+  fun :: (type, zero) zero
+  zero_fun == zero_class.zero :: 'a => 'b
+instantiation
+  fun :: (type, times) times
+  times_fun == times :: ('a => 'b) => ('a => 'b) => 'a => 'b
+instantiation
+  fun :: (type, one) one
+  one_fun == one_class.one :: 'a => 'b
+datatype template_term
+=
+     t_empty
+   | template_app of template_term * template_term
+   | template_hole of int
+   | template_var of int
+datatype sign
+= equals | greater_equals | greater_than | less_equals | less_than
+datatype template
+=
+     template_bimplication of template * template
+   | template_dunno
+   | template_equation of template_term * template_term
+   | template_implication of template list * template
+   | template_inequation of sign * template_term * template_term
+   | template_negation of template
+   | template_predicate of template_term
+constructor t_empty: template_term
+constructor template_app: template_term * template_term -> template_term
+constructor template_hole: int -> template_term
+constructor template_var: int -> template_term
+constructor equals: sign
+constructor greater_equals: sign
+constructor greater_than: sign
+constructor less_equals: sign
+constructor less_than: sign
+constructor template_bimplication: template * template -> template
+constructor template_dunno: template
+constructor template_equation: template_term * template_term -> template
+constructor template_implication: template list * template -> template
+constructor template_inequation:
+   sign * template_term * template_term -> template
+constructor template_negation: template -> template
+constructor template_predicate: template_term -> template
+val vfs = fn: term -> (indexname * typ) list * (string * typ) list
+val indexOf = fn: ''a list -> ''a -> int -> int
+val has_eq = fn: term -> bool
+val term2template = fn:
+   (indexname * typ) list -> (string * typ) list -> term -> template_term
+val lemma2predicate = fn: term -> term -> template
+val makeTemplatewithContext = fn: term -> term -> template
+val lemma2template = fn: term -> template
+val thm2template = fn: thm -> template
+val tterm2string = fn: template_term -> string
+val template2string = fn: template -> string
+val t = "height ?t <= size ?t": thm
+val th =
+   Const ("HOL.Trueprop", "bool => prop") $
+     (Const ("Orderings.ord_class.less_eq", "nat => nat => bool") $
+       (Const ("Tree.height_class.height", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree")) $
+       (Const ("Nat.size_class.size", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree"))):
+   term
+### theory "Draft.Templates"
+### 0.080s elapsed time, 0.271s cpu time, 0.000s GC time
+### theory "HOL-Library.Function_Algebras"
+### 0.109s elapsed time, 0.329s cpu time, 0.000s GC time
+Loading theory "HOL-Library.BigO" (required by "Draft.Asymptotic_DensityTemplates" via "Draft.ExtrEqs")
+### Ignoring duplicate rewrite rule:
+### ?x1 + \<top> == \<top>
+locale finite_borel_measure'
+  fixes M :: "'a measure"
+  assumes "finite_borel_measure' M"
+### theory "Draft.SG_Library_Complement"
+### 0.493s elapsed time, 1.120s cpu time, 0.155s GC time
+Loading theory "Draft.Asymptotic_Density" (required by "Draft.Asymptotic_DensityTemplates")
+### theory "Draft.Asymptotic_Density"
+### 0.232s elapsed time, 0.506s cpu time, 0.107s GC time
+### theory "HOL-Library.BigO"
+### 0.640s elapsed time, 1.341s cpu time, 0.202s GC time
+Loading theory "Draft.ExtrEqs" (required by "Draft.Asymptotic_DensityTemplates")
+val eqpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Var (("_dummy_", 2), "?'a"))
+       ):
+   term Find_Theorems.criterion
+val badeqpattern = Pattern (Const ("Pure.eq", "?'a => ?'a => prop")):
+   term Find_Theorems.criterion
+val undefpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Const ("HOL.undefined", "?'a"))
+       ):
+   term Find_Theorems.criterion
+val thmpattern =
+   Pattern
+    (Const ("HOL.Trueprop", "bool => prop") $ Var (("_dummy_", 1), "bool")):
+   term Find_Theorems.criterion
+val badnames =
+   ["*nitpick*", "*Nitpick*", "*full_exhaustive*", "*_def*", "Enum.finite*",
+    "*Quickcheck*", "ATP*", "*Nunchaku*", "*Code*", "*BNF*", "*SMT*",
+    "*.*.*"]:
+   string list
+val unwanted_names =
+   [(false, Name "*nitpick*"), (false, Name "*Nitpick*"),
+    (false, Name "*full_exhaustive*"), (false, Name "*_def*"),
+    (false, Name "Enum.finite*"), (false, Name "*Quickcheck*"),
+    (false, Name "ATP*"), (false, Name "*Nunchaku*"),
+    (false, Name "*Code*"), (false, Name "*BNF*"), (false, Name "*SMT*"),
+    (false, Name "*.*.*")]:
+   (bool * term Find_Theorems.criterion) list
+val has_vars = fn: term -> bool
+val get_all_eqs = fn: string -> Proof.context -> (string * thm) list
+val get_all_thms = fn: string -> Proof.context -> (string * thm) list
+val get_noneq_thms = fn: string -> Proof.context -> (string * thm) list
+val template_eqs = fn:
+   string -> Proof.context -> (string * thm * template) list
+val template_thms = fn:
+   string -> Proof.context -> (string * thm * template) list
+### theory "Draft.ExtrEqs"
+### 0.496s elapsed time, 0.555s cpu time, 0.085s GC time
+Loading theory "Draft.Asymptotic_DensityTemplates"
+val templateLemmas =
+   [("Asymptotic_Density.lower_asymptotic_density_in_01",
+     "0 <= lower_asymptotic_density ?A",
+     template_inequation
+      (less_equals, template_hole 1,
+       template_app (template_hole 0, template_var 0))),
+    ("Asymptotic_Density.upper_asymptotic_density_in_01",
+     "0 <= upper_asymptotic_density ?A",
+     template_inequation
+      (less_equals, template_hole 1,
+       template_app (template_hole 0, template_var 0))),
+    ("Asymptotic_Density.lower_asymptotic_density_in_01",
+     "lower_asymptotic_density ?A <= 1",
+     template_inequation
+      (less_equals, template_app (template_hole 1, template_var 0),
+       template_hole 0)),
+    ("Asymptotic_Density.upper_asymptotic_density_in_01",
+     "upper_asymptotic_density ?A <= 1",
+     template_inequation
+      (less_equals, template_app (template_hole 1, template_var 0),
+       template_hole 0)),
+    ("Asymptotic_Density.lower_asymptotic_density_infinite_interval",
+     "lower_asymptotic_density {?N..} = 1",
+     template_equation
+      (template_app
+        (template_hole 2, template_app (template_hole 1, template_var 0)),
+       template_hole 0)),
+    ("Asymptotic_Density.lower_asymptotic_density_bdd_interval",
+     "lower_asymptotic_density {..?N} = 0",
+     template_equation
+      (template_app
+        (template_hole 2, template_app (template_hole 1, template_var 0)),
+       template_hole 0)),
+    ("Asymptotic_Density.lower_asymptotic_density_infinite_interval",
+     "lower_asymptotic_density {?N<..} = 1",
+     template_equation
+      (template_app
+        (template_hole 2, template_app (template_hole 1, template_var 0)),
+       template_hole 0)),
+    ("Asymptotic_Density.lower_asymptotic_density_bdd_interval",
+     "lower_asymptotic_density {..<?N} = 0",
+     template_equation
+      (template_app
+        (template_hole 2, template_app (template_hole 1, template_var 0)),
+       template_hole 0)),
+    ("Asymptotic_Density.upper_asymptotic_density_infinite_interval",
+     "upper_asymptotic_density {?N..} = 1",
+     template_equation
+      (template_app
+        (template_hole 2, template_app (template_hole 1, template_var 0)),
+       template_hole 0)),
+    ("Asymptotic_Density.upper_asymptotic_density_bdd_interval",
+     "upper_asymptotic_density {..?N} = 0",
+     template_equation
+      (template_app
+        (template_hole 2, template_app (template_hole 1, template_var 0)),
+       template_hole 0)),
+    ("Asymptotic_Density.upper_asymptotic_density_infinite_interval",
+     "upper_asymptotic_density {?N<..} = 1",
+     template_equation
+      (template_app
+        (template_hole 2, template_app (template_hole 1, template_var 0)),
+       template_hole 0)),
+    ("Asymptotic_Density.upper_asymptotic_density_bdd_interval",
+     "upper_asymptotic_density {..<?N} = 0",
+     template_equation
+      (template_app
+        (template_hole 2, template_app (template_hole 1, template_var 0)),
+       template_hole 0)),
+    ("Asymptotic_Density.lower_asymptotic_density_le_upper",
+     "lower_asymptotic_density ?A <= upper_asymptotic_density ?A",
+     template_inequation
+      (less_equals, template_app (template_hole 1, template_var 0),
+       template_app (template_hole 0, template_var 0))),
+    ("Asymptotic_Density.lower_asymptotic_density_bdd_interval",
+     "lower_asymptotic_density {?n..?N} = 0",
+     template_equation
+      (template_app
+        (template_hole 2,
+         template_app
+          (template_app (template_hole 1, template_var 1), template_var 0)),
+       template_hole 0)),
+    ("Asymptotic_Density.lower_asymptotic_density_bdd_interval",
+     "lower_asymptotic_density {?n..<?N} = 0",
+     template_equation
+      (template_app
+        (template_hole 2,
+         template_app
+          (template_app (template_hole 1, template_var 1), template_var 0)),
+       template_hole 0)),
+    ("Asymptotic_Density.lower_asymptotic_density_bdd_interval",
+     "lower_asymptotic_density {?n<..?N} = 0",
+     template_equation
+      (template_app
+        (template_hole 2,
+         template_app
+          (template_app (template_hole 1, template_var 1), template_var 0)),
+       template_hole 0)),
+    ("Asymptotic_Density.lower_asymptotic_density_bdd_interval",
+     "lower_asymptotic_density {?n<..<?N} = 0",
+     template_equation
+      (template_app
+        (template_hole 2,
+         template_app
+          (template_app (template_hole 1, template_var 1), template_var 0)),
+       template_hole 0)),
+    ("Asymptotic_Density.upper_asymptotic_density_bdd_interval",
+     "upper_asymptotic_density {?n..?N} = 0",
+     template_equation
+      (template_app
+        (template_hole 2,
+         template_app
+          (template_app (template_hole 1, template_var 1), template_var 0)),
+       template_hole 0)),
+    ("Asymptotic_Density.upper_asymptotic_density_bdd_interval",
+     "upper_asymptotic_density {?n..<?N} = 0",
+     template_equation
+      (template_app
+        (template_hole 2,
+         template_app
+          (template_app (template_hole 1, template_var 1), template_var 0)),
+       template_hole 0)),
+    ("Asymptotic_Density.upper_asymptotic_density_bdd_interval",
+     "upper_asymptotic_density {?n<..?N} = 0",
+     template_equation
+      (template_app
+        (template_hole 2,
+         template_app
+          (template_app (template_hole 1, template_var 1), template_var 0)),
+       template_hole 0)),
+    ("Asymptotic_Density.upper_asymptotic_density_bdd_interval",
+     "upper_asymptotic_density {?n<..<?N} = 0",
+     template_equation
+      (template_app
+        (template_hole 2,
+         template_app
+          (template_app (template_hole 1, template_var 1), template_var 0)),
+       template_hole 0)),
+    ("Asymptotic_Density.lower_asymptotic_density_finite",
+     "finite ?A ==> lower_asymptotic_density ?A = 0",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 3, template_var 0))],
+       template_equation
+        (template_app (template_hole 1, template_var 0), template_hole 0))),
+    ("Asymptotic_Density.upper_asymptotic_density_finite",
+     "finite ?A ==> upper_asymptotic_density ?A = 0",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 3, template_var 0))],
+       template_equation
+        (template_app (template_hole 1, template_var 0), template_hole 0))),
+    ("Asymptotic_Density.lower_upper_asymptotic_density_complement",
+     "lower_asymptotic_density ?A =
+      1 - upper_asymptotic_density (UNIV - ?A)",
+     template_equation
+      (template_app (template_hole 5, template_var 0),
+       template_app
+        (template_app (template_hole 4, template_hole 3),
+         template_app
+          (template_hole 2,
+           template_app
+            (template_app (template_hole 1, template_hole 0),
+             template_var 0))))),
+    ("Asymptotic_Density.upper_asymptotic_density_union",
+     "upper_asymptotic_density (?A Un ?B)
+      <= upper_asymptotic_density ?A + upper_asymptotic_density ?B",
+     template_inequation
+      (less_equals,
+       template_app
+        (template_hole 2,
+         template_app
+          (template_app (template_hole 1, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 0, template_app (template_hole 2, template_var 1)),
+         template_app (template_hole 2, template_var 0)))),
+    ("Asymptotic_Density.lower_asymptotic_density_subset",
+     "?A <= ?B ==>
+      lower_asymptotic_density ?A <= lower_asymptotic_density ?B",
+     template_implication
+      ([template_inequation (less_equals, template_var 1, template_var 0)],
+       template_inequation
+        (less_equals, template_app (template_hole 0, template_var 1),
+         template_app (template_hole 0, template_var 0)))),
+    ("Asymptotic_Density.upper_asymptotic_density_subset",
+     "?A <= ?B ==>
+      upper_asymptotic_density ?A <= upper_asymptotic_density ?B",
+     template_implication
+      ([template_inequation (less_equals, template_var 1, template_var 0)],
+       template_inequation
+        (less_equals, template_app (template_hole 0, template_var 1),
+         template_app (template_hole 0, template_var 0)))),
+    ("Asymptotic_Density.lower_asymptotic_density_intersection",
+     "lower_asymptotic_density ?A + lower_asymptotic_density ?B
+      <= lower_asymptotic_density (?A Int ?B) + 1",
+     template_inequation
+      (less_equals,
+       template_app
+        (template_app
+          (template_hole 3, template_app (template_hole 2, template_var 1)),
+         template_app (template_hole 2, template_var 0)),
+       template_app
+        (template_app
+          (template_hole 3,
+           template_app
+            (template_hole 2,
+             template_app
+              (template_app (template_hole 1, template_var 1),
+               template_var 0))),
+         template_hole 0))),
+    ("Asymptotic_Density.lower_asymptotic_density_in_01",
+     "ereal (lower_asymptotic_density ?A) =
+      liminf (%x. ereal (real (card (?A Int {..<x})) / real x))",
+     template_equation
+      (template_app
+        (template_hole 8, template_app (template_hole 7, template_var 0)),
+       template_app
+        (template_app (template_hole 6, template_hole 5), t_empty))),
+    ("Asymptotic_Density.upper_asymptotic_density_in_01",
+     "ereal (upper_asymptotic_density ?A) =
+      limsup (%x. ereal (real (card (?A Int {..<x})) / real x))",
+     template_equation
+      (template_app
+        (template_hole 8, template_app (template_hole 7, template_var 0)),
+       template_app
+        (template_app (template_hole 6, template_hole 5), t_empty))),
+    ("Asymptotic_Density.upper_asymptotic_density_0_Delta",
+     "upper_asymptotic_density (?A \<Delta> ?B) = 0 ==>
+      upper_asymptotic_density ?A = upper_asymptotic_density ?B",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_hole 3,
+            template_app
+             (template_app
+               (template_hole 2,
+                template_app
+                 (template_app (template_hole 1, template_var 1),
+                  template_var 0)),
+              template_app
+               (template_app (template_hole 1, template_var 0),
+                template_var 1))),
+          template_hole 0)],
+       template_equation
+        (template_app (template_hole 3, template_var 1),
+         template_app (template_hole 3, template_var 0)))),
+    ("Asymptotic_Density.upper_asymptotic_density_finite_Union",
+     "finite ?I ==>
+      upper_asymptotic_density (\<Union> (?A ` ?I))
+      <= (SUM i:?I. upper_asymptotic_density (?A i))",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 5, template_var 1))],
+       template_inequation
+        (less_equals,
+         template_app
+          (template_hole 3,
+           template_app
+            (template_hole 2,
+             template_app
+              (template_app (template_hole 1, t_empty), template_var 1))),
+         template_app
+          (template_app (template_hole 0, t_empty), template_var 1)))),
+    ("Asymptotic_Density.upper_asymptotic_density_0_diff",
+     "[| ?A <= ?B; upper_asymptotic_density (?B - ?A) = 0 |]
+      ==> upper_asymptotic_density ?A = upper_asymptotic_density ?B",
+     template_implication
+      ([template_inequation (less_equals, template_var 1, template_var 0),
+        template_equation
+         (template_app
+           (template_hole 2,
+            template_app
+             (template_app (template_hole 1, template_var 0),
+              template_var 1)),
+          template_hole 0)],
+       template_equation
+        (template_app (template_hole 2, template_var 1),
+         template_app (template_hole 2, template_var 0)))),
+    ("Asymptotic_Density.lower_asymptotic_density_one_intersection",
+     "[| lower_asymptotic_density ?A = 1; lower_asymptotic_density ?B = 1 |]
+      ==> lower_asymptotic_density (?A Int ?B) = 1",
+     template_implication
+      ([template_equation
+         (template_app (template_hole 2, template_var 1), template_hole 1),
+        template_equation
+         (template_app (template_hole 2, template_var 0), template_hole 1)],
+       template_equation
+        (template_app
+          (template_hole 2,
+           template_app
+            (template_app (template_hole 0, template_var 1),
+             template_var 0)),
+         template_hole 1))),
+    ("Asymptotic_Density.upper_asymptotic_density_zero_union",
+     "[| upper_asymptotic_density ?A = 0; upper_asymptotic_density ?B = 0 |]
+      ==> upper_asymptotic_density (?A Un ?B) = 0",
+     template_implication
+      ([template_equation
+         (template_app (template_hole 2, template_var 1), template_hole 1),
+        template_equation
+         (template_app (template_hole 2, template_var 0), template_hole 1)],
+       template_equation
+        (template_app
+          (template_hole 2,
+           template_app
+            (template_app (template_hole 0, template_var 1),
+             template_var 0)),
+         template_hole 1))),
+    ("Asymptotic_Density.lower_asymptotic_density_one_lim",
+     "lower_asymptotic_density ?A = 1 ==>
+      (%n. real (card (?A Int {..<n})) / real n)
+      \<longlonglongrightarrow> 1",
+     template_implication
+      ([template_equation
+         (template_app (template_hole 9, template_var 0), template_hole 8)],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app (template_hole 7, t_empty),
+               template_app (template_hole 1, template_hole 8)),
+             template_hole 0)
+           ))),
+    ("Asymptotic_Density.upper_asymptotic_density_zero_lim",
+     "upper_asymptotic_density ?A = 0 ==>
+      (%n. real (card (?A Int {..<n})) / real n)
+      \<longlonglongrightarrow> 0",
+     template_implication
+      ([template_equation
+         (template_app (template_hole 9, template_var 0), template_hole 8)],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app (template_hole 7, t_empty),
+               template_app (template_hole 1, template_hole 8)),
+             template_hole 0)
+           ))),
+    ("Asymptotic_Density.lower_asymptotic_densityD",
+     "?l < lower_asymptotic_density ?A ==>
+      \<forall>\<^sub>F n in sequentially.
+         ?l * real n < real (card (?A Int {..<n}))",
+     template_implication
+      ([template_inequation
+         (less_than, template_var 1,
+          template_app (template_hole 7, template_var 0))],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 6, t_empty), template_hole 0)
+           ))),
+    ("Asymptotic_Density.upper_asymptotic_densityD",
+     "upper_asymptotic_density ?A < ?l ==>
+      \<forall>\<^sub>F n in sequentially.
+         real (card (?A Int {..<n})) < ?l * real n",
+     template_implication
+      ([template_inequation
+         (less_than, template_app (template_hole 7, template_var 1),
+          template_var 0)],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 6, t_empty), template_hole 0)
+           ))),
+    ("Asymptotic_Density.lower_asymptotic_densityI",
+     "\<forall>\<^sub>F n in sequentially.
+         ?l * real n <= real (card (?A Int {..<n})) ==>
+      ?l <= lower_asymptotic_density ?A",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 8, t_empty), template_hole 1)
+            )],
+       template_inequation
+        (less_equals, template_var 1,
+         template_app (template_hole 0, template_var 0)))),
+    ("Asymptotic_Density.upper_asymptotic_densityI",
+     "\<forall>\<^sub>F n in sequentially.
+         real (card (?A Int {..<n})) <= ?l * real n ==>
+      upper_asymptotic_density ?A <= ?l",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 8, t_empty), template_hole 1)
+            )],
+       template_inequation
+        (less_equals, template_app (template_hole 0, template_var 1),
+         template_var 0))),
+    ("Asymptotic_Density.lower_asymptotic_density_lim",
+     "(%n. real (card (?A Int {..<n})) / real n)
+      \<longlonglongrightarrow> ?l ==>
+      lower_asymptotic_density ?A = ?l",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 9, t_empty),
+                template_app (template_hole 3, template_var 0)),
+              template_hole 2)
+            )],
+       template_equation
+        (template_app (template_hole 0, template_var 1), template_var 0))),
+    ("Asymptotic_Density.upper_asymptotic_density_lim",
+     "(%n. real (card (?A Int {..<n})) / real n)
+      \<longlonglongrightarrow> ?l ==>
+      upper_asymptotic_density ?A = ?l",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 9, t_empty),
+                template_app (template_hole 3, template_var 0)),
+              template_hole 2)
+            )],
+       template_equation
+        (template_app (template_hole 0, template_var 1), template_var 0))),
+    ("Asymptotic_Density.upper_asymptotic_density_shift",
+     "ereal (upper_asymptotic_density ?A) =
+      limsup
+       (%x. ereal (real (card (?A Int {?k..nat (int x + ?l)})) / real x))",
+     template_equation
+      (template_app
+        (template_hole 11, template_app (template_hole 10, template_var 2)),
+       template_app
+        (template_app (template_hole 9, template_hole 8), t_empty))),
+    ("Asymptotic_Density.upper_asymptotic_density_meas",
+     "(!!n. Measurable.pred ?M (?P n)) ==>
+      (%x. upper_asymptotic_density {n. ?P n x}) : borel_measurable ?M",
+     template_implication
+      ([template_predicate (template_app (template_hole 10, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 4, t_empty),
+             template_app
+              (template_app (template_hole 1, template_var 0),
+               template_hole 0))
+           ))),
+    ("Asymptotic_Density.lem_ge_sum",
+     "?x + ?y < ?l ==> EX lx ly. ?l = lx + ly & ?x < lx & ?y < ly",
+     template_implication
+      ([template_inequation
+         (less_than,
+          template_app
+           (template_app (template_hole 3, template_var 2), template_var 1),
+          template_var 0)],
+       template_predicate (template_app (template_hole 2, t_empty)))),
+    ("Asymptotic_Density.lower_asymptotic_density_eq_upper",
+     "[| lower_asymptotic_density ?A = ?l;
+         upper_asymptotic_density ?A = ?l |]
+      ==> (%n. real (card (?A Int {..<n})) / real n)
+          \<longlonglongrightarrow> ?l",
+     template_implication
+      ([template_equation
+         (template_app (template_hole 9, template_var 1), template_var 0),
+        template_equation
+         (template_app (template_hole 8, template_var 1), template_var 0)],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app (template_hole 7, t_empty),
+               template_app (template_hole 1, template_var 0)),
+             template_hole 0)
+           ))),
+    ("Asymptotic_Density.lower_asymptotic_density_one_Inter",
+     "(!!n. lower_asymptotic_density (?A n) = 1) ==>
+      EX B. lower_asymptotic_density B = 1 &
+            (ALL n. EX N. B Int {N..} <= ?A n)",
+     template_implication
+      ([template_predicate (template_app (template_hole 11, t_empty))],
+       template_predicate (template_app (template_hole 6, t_empty)))),
+    ("Asymptotic_Density.upper_asymptotic_density_zero_Union",
+     "(!!n. upper_asymptotic_density (?A n) = 0) ==>
+      EX B. upper_asymptotic_density B = 0 &
+            (ALL n. EX N. ?A n Int {N..} <= B)",
+     template_implication
+      ([template_predicate (template_app (template_hole 11, t_empty))],
+       template_predicate (template_app (template_hole 6, t_empty)))),
+    ("Asymptotic_Density.lower_asymptotic_density_one_finite_Intersection",
+     "[| finite ?I; !!i. i : ?I ==> lower_asymptotic_density (?A i) = 1 |]
+      ==> lower_asymptotic_density (\<Inter> (?A ` ?I)) = 1",
+     template_implication
+      ([template_predicate (template_app (template_hole 7, template_var 1)),
+        template_predicate (template_app (template_hole 6, t_empty))],
+       template_equation
+        (template_app
+          (template_hole 3,
+           template_app
+            (template_hole 1,
+             template_app
+              (template_app (template_hole 0, t_empty), template_var 1))),
+         template_hole 2))),
+    ("Asymptotic_Density.upper_asymptotic_density_zero_finite_Union",
+     "[| finite ?I; !!i. i : ?I ==> upper_asymptotic_density (?A i) = 0 |]
+      ==> upper_asymptotic_density (\<Union> (?A ` ?I)) = 0",
+     template_implication
+      ([template_predicate (template_app (template_hole 7, template_var 1)),
+        template_predicate (template_app (template_hole 6, t_empty))],
+       template_equation
+        (template_app
+          (template_hole 3,
+           template_app
+            (template_hole 1,
+             template_app
+              (template_app (template_hole 0, t_empty), template_var 1))),
+         template_hole 2))),
+    ("Asymptotic_Density.upper_asymptotic_density_Union",
+     "summable (%n. upper_asymptotic_density (?A n)) ==>
+      EX B. upper_asymptotic_density B
+            <= (\<Sum>n. upper_asymptotic_density (?A n)) &
+            (ALL n. EX N. ?A n Int {N..} <= B)",
+     template_implication
+      ([template_predicate (template_app (template_hole 10, t_empty))],
+       template_predicate (template_app (template_hole 8, t_empty)))),
+    ("Asymptotic_Density.lower_asymptotic_density_decseq_Inter",
+     "[| !!n. ?l <= lower_asymptotic_density (?A n); decseq ?A |]
+      ==> EX B. ?l <= lower_asymptotic_density B &
+                (ALL n. EX N. B Int {N..} <= ?A n)",
+     template_implication
+      ([template_predicate (template_app (template_hole 11, t_empty)),
+        template_predicate
+         (template_app (template_hole 7, template_var 0))],
+       template_predicate (template_app (template_hole 6, t_empty)))),
+    ("Asymptotic_Density.upper_asymptotic_density_incseq_Union",
+     "[| !!n. upper_asymptotic_density (?A n) <= ?l; incseq ?A |]
+      ==> EX B. upper_asymptotic_density B <= ?l &
+                (ALL n. EX N. ?A n Int {N..} <= B)",
+     template_implication
+      ([template_predicate (template_app (template_hole 11, t_empty)),
+        template_predicate
+         (template_app (template_hole 7, template_var 1))],
+       template_predicate (template_app (template_hole 6, t_empty)))),
+    ("Asymptotic_Density.cesaro_imp_density_one",
+     "[| !!n. 0 <= ?u n;
+         (%n. sum ?u {..<n} / real n) \<longlonglongrightarrow> 0 |]
+      ==> EX A. lower_asymptotic_density A = 1 &
+                (%n. ?u n * indicat_real A n) \<longlonglongrightarrow> 0",
+     template_implication
+      ([template_predicate (template_app (template_hole 17, t_empty)),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 13, t_empty),
+                template_app (template_hole 8, template_hole 14)),
+              template_hole 7)
+            )],
+       template_predicate (template_app (template_hole 6, t_empty)))),
+    ("Asymptotic_Density.density_one_imp_cesaro",
+     "[| !!n. 0 <= ?u n; !!n. ?u n <= ?C; lower_asymptotic_density ?A = 1;
+         (%n. ?u n * indicat_real ?A n) \<longlonglongrightarrow> 0 |]
+      ==> (%n. sum ?u {..<n} / real n) \<longlonglongrightarrow> 0",
+     template_implication
+      ([template_predicate (template_app (template_hole 15, t_empty)),
+        template_predicate (template_app (template_hole 15, t_empty)),
+        template_equation
+         (template_app (template_hole 10, template_var 0), template_hole 9),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app (template_hole 8, t_empty),
+                template_app (template_hole 5, template_hole 12)),
+              template_hole 4)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app (template_hole 8, t_empty),
+               template_app (template_hole 5, template_hole 12)),
+             template_hole 4)
+           )))]:
+   (string * thm * template) list
+### theory "Draft.Asymptotic_DensityTemplates"
+### 1.380s elapsed time, 2.033s cpu time, 0.663s GC time
+val it = (): unit

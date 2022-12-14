@@ -1,0 +1,962 @@
+Loading theory "Draft.StandardBorel" (required by "Draft.CoProduct_QuasiBorelTemplates" via "Draft.CoProduct_QuasiBorel" via "Draft.Product_QuasiBorel" via "Draft.Binary_Product_QuasiBorel" via "Draft.Measure_QuasiBorel_Adjunction" via "Draft.QuasiBorel")
+Loading theory "HOL-Library.Function_Algebras" (required by "Draft.CoProduct_QuasiBorelTemplates" via "Draft.ExtrEqs" via "HOL-Library.BigO")
+Loading theory "Draft.Templates" (required by "Draft.CoProduct_QuasiBorelTemplates" via "Draft.ExtrEqs")
+instantiation
+  fun :: (type, plus) plus
+  plus_fun == plus :: ('a => 'b) => ('a => 'b) => 'a => 'b
+instantiation
+  fun :: (type, zero) zero
+  zero_fun == zero_class.zero :: 'a => 'b
+instantiation
+  fun :: (type, times) times
+  times_fun == times :: ('a => 'b) => ('a => 'b) => 'a => 'b
+instantiation
+  fun :: (type, one) one
+  one_fun == one_class.one :: 'a => 'b
+datatype template_term
+=
+     t_empty
+   | template_app of template_term * template_term
+   | template_hole of int
+   | template_var of int
+datatype sign
+= equals | greater_equals | greater_than | less_equals | less_than
+datatype template
+=
+     template_bimplication of template * template
+   | template_dunno
+   | template_equation of template_term * template_term
+   | template_implication of template list * template
+   | template_inequation of sign * template_term * template_term
+   | template_negation of template
+   | template_predicate of template_term
+constructor t_empty: template_term
+constructor template_app: template_term * template_term -> template_term
+constructor template_hole: int -> template_term
+constructor template_var: int -> template_term
+constructor equals: sign
+constructor greater_equals: sign
+constructor greater_than: sign
+constructor less_equals: sign
+constructor less_than: sign
+constructor template_bimplication: template * template -> template
+constructor template_dunno: template
+constructor template_equation: template_term * template_term -> template
+constructor template_implication: template list * template -> template
+constructor template_inequation:
+   sign * template_term * template_term -> template
+constructor template_negation: template -> template
+constructor template_predicate: template_term -> template
+val vfs = fn: term -> (indexname * typ) list * (string * typ) list
+val indexOf = fn: ''a list -> ''a -> int -> int
+val has_eq = fn: term -> bool
+val term2template = fn:
+   (indexname * typ) list -> (string * typ) list -> term -> template_term
+val lemma2predicate = fn: term -> term -> template
+val makeTemplatewithContext = fn: term -> term -> template
+val lemma2template = fn: term -> template
+val thm2template = fn: thm -> template
+val tterm2string = fn: template_term -> string
+val template2string = fn: template -> string
+val t = "height ?t <= size ?t": thm
+val th =
+   Const ("HOL.Trueprop", "bool => prop") $
+     (Const ("Orderings.ord_class.less_eq", "nat => nat => bool") $
+       (Const ("Tree.height_class.height", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree")) $
+       (Const ("Nat.size_class.size", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree"))):
+   term
+### theory "Draft.Templates"
+### 0.071s elapsed time, 0.247s cpu time, 0.000s GC time
+locale standard_borel
+  fixes M :: "'a measure"
+  assumes "standard_borel M"
+### theory "HOL-Library.Function_Algebras"
+### 0.107s elapsed time, 0.316s cpu time, 0.000s GC time
+Loading theory "HOL-Library.BigO" (required by "Draft.CoProduct_QuasiBorelTemplates" via "Draft.ExtrEqs")
+locale standard_borel_space_UNIV
+  fixes M :: "'a measure"
+  assumes "standard_borel_space_UNIV M"
+Found termination order: "(%p. size (snd p)) <*mlex*> {}"
+locale pair_standard_borel
+  fixes M :: "'a measure"
+    and N :: "'b measure"
+  assumes "pair_standard_borel M N"
+locale pair_standard_borel_space_UNIV
+  fixes M :: "'a measure"
+    and N :: "'b measure"
+  assumes "pair_standard_borel_space_UNIV M N"
+### theory "HOL-Library.BigO"
+### 0.625s elapsed time, 1.320s cpu time, 0.167s GC time
+Loading theory "Draft.ExtrEqs" (required by "Draft.CoProduct_QuasiBorelTemplates")
+### theory "Draft.StandardBorel"
+### 0.748s elapsed time, 1.637s cpu time, 0.215s GC time
+Loading theory "Draft.QuasiBorel" (required by "Draft.CoProduct_QuasiBorelTemplates" via "Draft.CoProduct_QuasiBorel" via "Draft.Product_QuasiBorel" via "Draft.Binary_Product_QuasiBorel" via "Draft.Measure_QuasiBorel_Adjunction")
+Proofs for inductive predicate(s) "generating_Mxp"
+  Proving monotonicity ...
+instantiation
+  quasi_borel :: (type) order_bot
+  bot_quasi_borel == bot :: 'a quasi_borel
+  less_eq_quasi_borel == less_eq :: 'a quasi_borel => 'a quasi_borel => bool
+  less_quasi_borel == less :: 'a quasi_borel => 'a quasi_borel => bool
+Proofs for inductive predicate(s) "less_eq_quasi_borel"
+  Proving monotonicity ...
+instantiation
+  quasi_borel :: (type) semilattice_sup
+  sup_quasi_borel == sup ::
+    'a quasi_borel => 'a quasi_borel => 'a quasi_borel
+val eqpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Var (("_dummy_", 2), "?'a"))
+       ):
+   term Find_Theorems.criterion
+val badeqpattern = Pattern (Const ("Pure.eq", "?'a => ?'a => prop")):
+   term Find_Theorems.criterion
+val undefpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Const ("HOL.undefined", "?'a"))
+       ):
+   term Find_Theorems.criterion
+val thmpattern =
+   Pattern
+    (Const ("HOL.Trueprop", "bool => prop") $ Var (("_dummy_", 1), "bool")):
+   term Find_Theorems.criterion
+val badnames =
+   ["*nitpick*", "*Nitpick*", "*full_exhaustive*", "*_def*", "Enum.finite*",
+    "*Quickcheck*", "ATP*", "*Nunchaku*", "*Code*", "*BNF*", "*SMT*",
+    "*.*.*"]:
+   string list
+val unwanted_names =
+   [(false, Name "*nitpick*"), (false, Name "*Nitpick*"),
+    (false, Name "*full_exhaustive*"), (false, Name "*_def*"),
+    (false, Name "Enum.finite*"), (false, Name "*Quickcheck*"),
+    (false, Name "ATP*"), (false, Name "*Nunchaku*"),
+    (false, Name "*Code*"), (false, Name "*BNF*"), (false, Name "*SMT*"),
+    (false, Name "*.*.*")]:
+   (bool * term Find_Theorems.criterion) list
+val has_vars = fn: term -> bool
+val get_all_eqs = fn: string -> Proof.context -> (string * thm) list
+val get_all_thms = fn: string -> Proof.context -> (string * thm) list
+val get_noneq_thms = fn: string -> Proof.context -> (string * thm) list
+val template_eqs = fn:
+   string -> Proof.context -> (string * thm * template) list
+val template_thms = fn:
+   string -> Proof.context -> (string * thm * template) list
+### theory "Draft.ExtrEqs"
+### 0.490s elapsed time, 1.000s cpu time, 0.056s GC time
+### theory "Draft.QuasiBorel"
+### 0.502s elapsed time, 1.037s cpu time, 0.096s GC time
+Loading theory "Draft.Measure_QuasiBorel_Adjunction" (required by "Draft.CoProduct_QuasiBorelTemplates" via "Draft.CoProduct_QuasiBorel" via "Draft.Product_QuasiBorel" via "Draft.Binary_Product_QuasiBorel")
+### theory "Draft.Measure_QuasiBorel_Adjunction"
+### 0.158s elapsed time, 0.158s cpu time, 0.000s GC time
+Loading theory "Draft.Binary_Product_QuasiBorel" (required by "Draft.CoProduct_QuasiBorelTemplates" via "Draft.CoProduct_QuasiBorel" via "Draft.Product_QuasiBorel")
+Loading theory "Draft.Binary_CoProduct_QuasiBorel" (required by "Draft.CoProduct_QuasiBorelTemplates" via "Draft.CoProduct_QuasiBorel")
+### theory "Draft.Binary_Product_QuasiBorel"
+### 0.168s elapsed time, 0.375s cpu time, 0.096s GC time
+Loading theory "Draft.Product_QuasiBorel" (required by "Draft.CoProduct_QuasiBorelTemplates" via "Draft.CoProduct_QuasiBorel")
+### theory "Draft.Binary_CoProduct_QuasiBorel"
+### 0.165s elapsed time, 0.369s cpu time, 0.096s GC time
+### theory "Draft.Product_QuasiBorel"
+### 0.103s elapsed time, 0.103s cpu time, 0.000s GC time
+Loading theory "Draft.CoProduct_QuasiBorel" (required by "Draft.CoProduct_QuasiBorelTemplates")
+Found termination order: "length <*mlex*> {}"
+Found termination order: "(%p. size (fst p)) <*mlex*> {}"
+### theory "Draft.CoProduct_QuasiBorel"
+### 0.783s elapsed time, 1.139s cpu time, 0.504s GC time
+Loading theory "Draft.CoProduct_QuasiBorelTemplates"
+val templateLemmas =
+   [("Binary_CoProduct_QuasiBorel.copair_qbs_closed1",
+     "qbs_closed1 (copair_qbs_Mx ?X ?Y)",
+     template_predicate
+      (
+         template_app
+          (template_hole 1,
+           template_app
+            (template_app (template_hole 0, template_var 1),
+             template_var 0))
+         )),
+    ("CoProduct_QuasiBorel.coprod_qbs_closed1",
+     "qbs_closed1 (coprod_qbs_Mx ?I ?X)",
+     template_predicate
+      (
+         template_app
+          (template_hole 1,
+           template_app
+            (template_app (template_hole 0, template_var 1),
+             template_var 0))
+         )),
+    ("Binary_CoProduct_QuasiBorel.copair_qbs_closed3",
+     "qbs_closed3 (copair_qbs_Mx ?X ?Y)",
+     template_predicate
+      (
+         template_app
+          (template_hole 1,
+           template_app
+            (template_app (template_hole 0, template_var 1),
+             template_var 0))
+         )),
+    ("CoProduct_QuasiBorel.coprod_qbs_closed3",
+     "qbs_closed3 (coprod_qbs_Mx ?I ?X)",
+     template_predicate
+      (
+         template_app
+          (template_hole 1,
+           template_app
+            (template_app (template_hole 0, template_var 1),
+             template_var 0))
+         )),
+    ("CoProduct_QuasiBorel.from_list_length",
+     "fst (from_list ?l) = length ?l",
+     template_equation
+      (template_app
+        (template_hole 2, template_app (template_hole 1, template_var 0)),
+       template_app (template_hole 0, template_var 0))),
+    ("CoProduct_QuasiBorel.from_list_to_list_ident",
+     "(to_list o from_list) ?l = ?l",
+     template_equation
+      (template_app
+        (template_app
+          (template_app (template_hole 2, template_hole 1),
+           template_hole 0),
+         template_var 0),
+       template_var 0)),
+    ("Binary_CoProduct_QuasiBorel.copair_qbs_Mx_equiv",
+     "copair_qbs_Mx ?X ?Y = copair_qbs_Mx2 ?X ?Y",
+     template_equation
+      (template_app
+        (template_app (template_hole 1, template_var 1), template_var 0),
+       template_app
+        (template_app (template_hole 0, template_var 1), template_var 0))),
+    ("CoProduct_QuasiBorel.coproduct_qbs_Mx_eq",
+     "coprod_qbs_Mx ?I ?X = coprod_qbs_Mx' ?I ?X",
+     template_equation
+      (template_app
+        (template_app (template_hole 1, template_var 1), template_var 0),
+       template_app
+        (template_app (template_hole 0, template_var 1), template_var 0))),
+    ("Binary_CoProduct_QuasiBorel.Inl_qbs_morphism",
+     "Inl : ?X \<rightarrow>\<^sub>Q ?X <+>\<^sub>Q ?Y",
+     template_predicate
+      (
+         template_app
+          (template_app (template_hole 3, template_hole 2),
+           template_app
+            (template_app (template_hole 1, template_var 1),
+             template_app
+              (template_app (template_hole 0, template_var 1),
+               template_var 0)))
+         )),
+    ("Binary_CoProduct_QuasiBorel.Inr_qbs_morphism",
+     "Inr : ?Y \<rightarrow>\<^sub>Q ?X <+>\<^sub>Q ?Y",
+     template_predicate
+      (
+         template_app
+          (template_app (template_hole 3, template_hole 2),
+           template_app
+            (template_app (template_hole 1, template_var 1),
+             template_app
+              (template_app (template_hole 0, template_var 0),
+               template_var 1)))
+         )),
+    ("Binary_CoProduct_QuasiBorel.copair_qbs_Mx",
+     "qbs_Mx (?X <+>\<^sub>Q ?Y) = copair_qbs_Mx ?X ?Y",
+     template_equation
+      (template_app
+        (template_hole 2,
+         template_app
+          (template_app (template_hole 1, template_var 1), template_var 0)),
+       template_app
+        (template_app (template_hole 0, template_var 1), template_var 0))),
+    ("CoProduct_QuasiBorel.coproduct_qbs_Mx",
+     "qbs_Mx (coprod_qbs ?I ?X) = coprod_qbs_Mx ?I ?X",
+     template_equation
+      (template_app
+        (template_hole 2,
+         template_app
+          (template_app (template_hole 1, template_var 1), template_var 0)),
+       template_app
+        (template_app (template_hole 0, template_var 1), template_var 0))),
+    ("CoProduct_QuasiBorel.rec_list'_simp1",
+     "rec_list' ?t ?f list_nil = ?t",
+     template_equation
+      (template_app
+        (template_app
+          (template_app (template_hole 3, template_var 1), template_var 0),
+         template_app
+          (template_app (template_hole 2, template_hole 1), t_empty)),
+       template_var 1)),
+    ("Binary_CoProduct_QuasiBorel.copair_qbs_closed2",
+     "qbs_closed2 (qbs_space ?X <+> qbs_space ?Y) (copair_qbs_Mx ?X ?Y)",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_hole 4,
+             template_app
+              (template_app
+                (template_hole 3,
+                 template_app (template_hole 2, template_var 1)),
+               template_app (template_hole 1, template_var 0))),
+           template_app
+            (template_app (template_hole 0, template_var 1),
+             template_var 0))
+         )),
+    ("Binary_CoProduct_QuasiBorel.copair_qbs_space",
+     "qbs_space (?X <+>\<^sub>Q ?Y) = qbs_space ?X <+> qbs_space ?Y",
+     template_equation
+      (template_app
+        (template_hole 4,
+         template_app
+          (template_app (template_hole 3, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 2, template_app (template_hole 1, template_var 1)),
+         template_app (template_hole 0, template_var 0)))),
+    ("CoProduct_QuasiBorel.coprod_qbs_closed2",
+     "qbs_closed2 (SIGMA i:?I. qbs_space (?X i)) (coprod_qbs_Mx ?I ?X)",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_hole 3,
+             template_app
+              (template_app (template_hole 2, template_var 1), t_empty)),
+           template_app
+            (template_app (template_hole 0, template_var 1),
+             template_var 0))
+         )),
+    ("CoProduct_QuasiBorel.coproduct_qbs_space",
+     "qbs_space (coprod_qbs ?I ?X) = (SIGMA i:?I. qbs_space (?X i))",
+     template_equation
+      (template_app
+        (template_hole 3,
+         template_app
+          (template_app (template_hole 2, template_var 1), template_var 0)),
+       template_app
+        (template_app (template_hole 1, template_var 1), t_empty))),
+    ("Binary_CoProduct_QuasiBorel.copair_qbs_f",
+     "copair_qbs_Mx ?X ?Y
+      <= UNIV \<rightarrow> qbs_space ?X <+> qbs_space ?Y",
+     template_inequation
+      (less_equals,
+       template_app
+        (template_app (template_hole 5, template_var 1), template_var 0),
+       template_app
+        (template_app (template_hole 4, template_hole 3), t_empty))),
+    ("CoProduct_QuasiBorel.coprod_qbs_f",
+     "coprod_qbs_Mx ?I ?X
+      <= UNIV \<rightarrow> (SIGMA i:?I. qbs_space (?X i))",
+     template_inequation
+      (less_equals,
+       template_app
+        (template_app (template_hole 4, template_var 1), template_var 0),
+       template_app
+        (template_app (template_hole 3, template_hole 2), t_empty))),
+    ("Binary_CoProduct_QuasiBorel.copair_qbs_correct",
+     "Rep_quasi_borel (?X <+>\<^sub>Q ?Y) =
+      (qbs_space ?X <+> qbs_space ?Y, copair_qbs_Mx ?X ?Y)",
+     template_equation
+      (template_app
+        (template_hole 6,
+         template_app
+          (template_app (template_hole 5, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 4,
+           template_app
+            (template_app
+              (template_hole 3,
+               template_app (template_hole 2, template_var 1)),
+             template_app (template_hole 1, template_var 0))),
+         template_app
+          (template_app (template_hole 0, template_var 1),
+           template_var 0)))),
+    ("CoProduct_QuasiBorel.list_simp6", "list_nil : qbs_space (list_of ?X)",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_hole 8,
+             template_app
+              (template_app (template_hole 7, template_hole 6), t_empty)),
+           template_app
+            (template_hole 4,
+             template_app
+              (template_app (template_hole 3, template_hole 2), t_empty)))
+         )),
+    ("CoProduct_QuasiBorel.coprod_qbs_correct",
+     "Rep_quasi_borel (coprod_qbs ?I ?X) =
+      (SIGMA i:?I. qbs_space (?X i), coprod_qbs_Mx ?I ?X)",
+     template_equation
+      (template_app
+        (template_hole 5,
+         template_app
+          (template_app (template_hole 4, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 3,
+           template_app
+            (template_app (template_hole 2, template_var 1), t_empty)),
+         template_app
+          (template_app (template_hole 0, template_var 1),
+           template_var 0)))),
+    ("CoProduct_QuasiBorel.from_list_in_list_of'",
+     "from_list ?l : qbs_space (list_of (Abs_quasi_borel (UNIV, UNIV)))",
+     template_predicate
+      (
+         template_app
+          (template_app
+            (template_hole 10,
+             template_app (template_hole 9, template_var 0)),
+           template_app
+            (template_hole 8,
+             template_app
+              (template_app (template_hole 7, template_hole 6), t_empty)))
+         )),
+    ("CoProduct_QuasiBorel.list_simp3", "list_head (list_cons ?a ?l) = ?a",
+     template_equation
+      (template_app
+        (template_hole 9,
+         template_app
+          (template_app
+            (template_hole 8,
+             template_app
+              (template_hole 7,
+               template_app (template_hole 6, template_var 1))),
+           t_empty)),
+       template_var 0)),
+    ("CoProduct_QuasiBorel.ini_morphism",
+     "?j : ?I ==> Pair ?j : ?X ?j \<rightarrow>\<^sub>Q coprod_qbs ?I ?X",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 4, template_var 2),
+              template_var 1)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 3, t_empty),
+             template_app
+              (template_app
+                (template_hole 1,
+                 template_app (template_var 0, template_var 2)),
+               template_app
+                (template_app (template_hole 0, template_var 1), t_empty)))
+           ))),
+    ("CoProduct_QuasiBorel.from_list_in_list_of",
+     "set ?l <= qbs_space ?X ==> from_list ?l : qbs_space (list_of ?X)",
+     template_implication
+      ([template_inequation
+         (less_equals, template_app (template_hole 8, template_var 1),
+          template_app (template_hole 7, template_var 0))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 6,
+               template_app (template_hole 5, template_var 1)),
+             template_app
+              (template_hole 4,
+               template_app
+                (template_app (template_hole 3, template_hole 2), t_empty)))
+           ))),
+    ("CoProduct_QuasiBorel.to_list_from_list_ident",
+     "?l : qbs_space (list_of ?X) ==> (from_list o to_list) ?l = ?l",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 9, template_var 1),
+              template_app
+               (template_hole 8,
+                template_app
+                 (template_app (template_hole 7, template_hole 6),
+                  t_empty)))
+            )],
+       template_equation
+        (template_app
+          (template_app
+            (template_app (template_hole 2, template_hole 1),
+             template_hole 0),
+           template_var 1),
+         template_var 1))),
+    ("CoProduct_QuasiBorel.list_simp1", "list_nil ~= list_cons ?x ?l",
+     template_negation
+      (
+         template_equation
+          (template_app
+            (template_app (template_hole 9, template_hole 8), t_empty),
+           template_app
+            (template_app
+              (template_hole 9,
+               template_app
+                (template_hole 6,
+                 template_app (template_hole 5, template_var 1))),
+             t_empty))
+         )),
+    ("Binary_CoProduct_QuasiBorel.case_sum_preserves_morphisms",
+     "[| ?f : ?X \<rightarrow>\<^sub>Q ?Z;
+         ?g : ?Y \<rightarrow>\<^sub>Q ?Z |]
+      ==> case_sum ?f ?g : ?X <+>\<^sub>Q ?Y \<rightarrow>\<^sub>Q ?Z",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 7, template_var 4),
+              template_app
+               (template_app (template_hole 6, template_var 3),
+                template_var 2))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 5, template_var 1),
+              template_app
+               (template_app (template_hole 4, template_var 0),
+                template_var 2))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 3,
+               template_app
+                (template_app (template_hole 2, template_var 4),
+                 template_var 1)),
+             template_app
+              (template_app
+                (template_hole 1,
+                 template_app
+                  (template_app (template_hole 0, template_var 3),
+                   template_var 0)),
+               template_var 2))
+           ))),
+    ("Binary_CoProduct_QuasiBorel.map_sum_preserves_morphisms",
+     "[| ?f : ?X \<rightarrow>\<^sub>Q ?Y;
+         ?g : ?X' \<rightarrow>\<^sub>Q ?Y' |]
+      ==> map_sum ?f ?g
+          : ?X <+>\<^sub>Q ?X' \<rightarrow>\<^sub>Q ?Y <+>\<^sub>Q ?Y'",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 8, template_var 5),
+              template_app
+               (template_app (template_hole 7, template_var 4),
+                template_var 3))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 6, template_var 2),
+              template_app
+               (template_app (template_hole 5, template_var 1),
+                template_var 0))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 4,
+               template_app
+                (template_app (template_hole 3, template_var 5),
+                 template_var 2)),
+             template_app
+              (template_app
+                (template_hole 2,
+                 template_app
+                  (template_app (template_hole 1, template_var 4),
+                   template_var 1)),
+               template_app
+                (template_app (template_hole 0, template_var 3),
+                 template_var 0)))
+           ))),
+    ("CoProduct_QuasiBorel.list_simp4",
+     "?l : qbs_space (list_of ?X) ==> list_tail (list_cons ?a ?l) = ?l",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 16, template_var 2),
+              template_app
+               (template_hole 15,
+                template_app
+                 (template_app (template_hole 14, template_hole 13),
+                  t_empty)))
+            )],
+       template_equation
+        (template_app
+          (template_hole 9,
+           template_app
+            (template_app
+              (template_hole 8,
+               template_app
+                (template_hole 7,
+                 template_app (template_hole 6, template_var 2))),
+             t_empty)),
+         template_var 2))),
+    ("CoProduct_QuasiBorel.coprod_qbs_canonical1'",
+     "[| countable ?I;
+         !!i. i : ?I ==> (%x. ?f (i, x)) : ?X i \<rightarrow>\<^sub>Q ?Y |]
+      ==> ?f : coprod_qbs ?I ?X \<rightarrow>\<^sub>Q ?Y",
+     template_implication
+      ([template_predicate (template_app (template_hole 8, template_var 3)),
+        template_predicate (template_app (template_hole 7, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 2, template_var 2),
+             template_app
+              (template_app
+                (template_hole 1,
+                 template_app
+                  (template_app (template_hole 0, template_var 3),
+                   t_empty)),
+               template_var 0))
+           ))),
+    ("CoProduct_QuasiBorel.to_list_simp2",
+     "?l : qbs_space (list_of ?X) ==>
+      to_list (list_cons ?a ?l) = ?a # to_list ?l",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 17, template_var 2),
+              template_app
+               (template_hole 16,
+                template_app
+                 (template_app (template_hole 15, template_hole 14),
+                  t_empty)))
+            )],
+       template_equation
+        (template_app
+          (template_hole 10,
+           template_app
+            (template_app
+              (template_hole 9,
+               template_app
+                (template_hole 8,
+                 template_app (template_hole 7, template_var 2))),
+             t_empty)),
+         template_app
+          (template_app (template_hole 0, template_var 0),
+           template_app (template_hole 10, template_var 2))))),
+    ("CoProduct_QuasiBorel.coprod_qbs_canonical1",
+     "[| countable ?I;
+         !!i. i : ?I ==> ?f i : ?X i \<rightarrow>\<^sub>Q ?Y |]
+      ==> (%(i, x). ?f i x) : coprod_qbs ?I ?X \<rightarrow>\<^sub>Q ?Y",
+     template_implication
+      ([template_predicate (template_app (template_hole 8, template_var 3)),
+        template_predicate (template_app (template_hole 7, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 3, template_app (template_hole 2, t_empty)),
+             template_app
+              (template_app
+                (template_hole 1,
+                 template_app
+                  (template_app (template_hole 0, template_var 3),
+                   t_empty)),
+               template_var 0))
+           ))),
+    ("CoProduct_QuasiBorel.list_cons_in_list_of",
+     "set (?a # ?l) <= qbs_space ?X ==>
+      list_cons ?a (from_list ?l) : qbs_space (list_of ?X)",
+     template_implication
+      ([template_inequation
+         (less_equals,
+          template_app
+           (template_hole 18,
+            template_app
+             (template_app (template_hole 17, template_var 2),
+              template_var 1)),
+          template_app (template_hole 16, template_var 0))],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 15,
+               template_app
+                (template_app
+                  (template_hole 14,
+                   template_app
+                    (template_hole 13,
+                     template_app
+                      (template_hole 12,
+                       template_app (template_hole 11, template_var 1)))),
+                 t_empty)),
+             template_app
+              (template_hole 4,
+               template_app
+                (template_app (template_hole 3, template_hole 2), t_empty)))
+           ))),
+    ("CoProduct_QuasiBorel.list_simp2",
+     "list_cons ?a ?al = list_cons ?b ?bl ==> ?a = ?b",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app
+             (template_hole 9,
+              template_app
+               (template_hole 8,
+                template_app (template_hole 7, template_var 3))),
+            t_empty),
+          template_app
+           (template_app
+             (template_hole 9,
+              template_app
+               (template_hole 8,
+                template_app (template_hole 7, template_var 1))),
+            t_empty))],
+       template_equation (template_var 2, template_var 0))),
+    ("CoProduct_QuasiBorel.list_simp2",
+     "list_cons ?a ?al = list_cons ?b ?bl ==> ?al = ?bl",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app
+             (template_hole 8,
+              template_app
+               (template_hole 7,
+                template_app (template_hole 6, template_var 3))),
+            t_empty),
+          template_app
+           (template_app
+             (template_hole 8,
+              template_app
+               (template_hole 7,
+                template_app (template_hole 6, template_var 1))),
+            t_empty))],
+       template_equation (template_var 3, template_var 1))),
+    ("CoProduct_QuasiBorel.coprod_qbs_MxI",
+     "[| ?f : real_borel \<rightarrow>\<^sub>M count_space ?I;
+         !!i. i : range ?f ==> ?\<alpha> i : qbs_Mx (?X i) |]
+      ==> (%r. (?f r, ?\<alpha> (?f r) r)) : coprod_qbs_Mx ?I ?X",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 12, template_var 3),
+              template_app
+               (template_app (template_hole 11, template_hole 10),
+                template_app (template_hole 9, template_var 2)))
+            ),
+        template_predicate (template_app (template_hole 8, t_empty))],
+       template_predicate
+        (
+           template_app
+            (template_app (template_hole 2, t_empty),
+             template_app
+              (template_app (template_hole 0, template_var 2),
+               template_var 0))
+           ))),
+    ("CoProduct_QuasiBorel.rec_list'_simp2",
+     "?l : qbs_space (list_of ?X) ==>
+      rec_list' ?t ?f (list_cons ?x ?l) = ?f ?x ?l (rec_list' ?t ?f ?l)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 16, template_var 4),
+              template_app
+               (template_hole 15,
+                template_app
+                 (template_app (template_hole 14, template_hole 13),
+                  t_empty)))
+            )],
+       template_equation
+        (template_app
+          (template_app
+            (template_app (template_hole 9, template_var 2),
+             template_var 1),
+           template_app
+            (template_app
+              (template_hole 8,
+               template_app
+                (template_hole 7,
+                 template_app (template_hole 6, template_var 4))),
+             t_empty)),
+         template_app
+          (template_app
+            (template_app (template_var 1, template_var 0), template_var 4),
+           template_app
+            (template_app
+              (template_app (template_hole 9, template_var 2),
+               template_var 1),
+             template_var 4))))),
+    ("CoProduct_QuasiBorel.list_simp5",
+     "[| ?l : qbs_space (list_of ?X); ?l ~= list_nil |]
+      ==> ?l = list_cons (list_head ?l) (list_tail ?l)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 19, template_var 1),
+              template_app
+               (template_hole 18,
+                template_app
+                 (template_app (template_hole 17, template_hole 16),
+                  t_empty)))
+            ),
+        template_negation
+         (
+            template_equation
+             (template_var 1,
+              template_app
+               (template_app (template_hole 11, template_hole 10), t_empty))
+            )],
+       template_equation
+        (template_var 1,
+         template_app
+          (template_app
+            (template_hole 11,
+             template_app
+              (template_hole 8,
+               template_app
+                (template_hole 7,
+                 template_app (template_hole 6, template_var 1)))),
+           t_empty)))),
+    ("CoProduct_QuasiBorel.coproduct_binary_coproduct",
+     "EX f g.
+         f : (\<amalg>\<^sub>Q i\<in>UNIV.
+                 if i then ?X else ?Y) \<rightarrow>\<^sub>Q
+             ?X <+>\<^sub>Q ?Y &
+         g : ?X <+>\<^sub>Q ?Y \<rightarrow>\<^sub>Q
+             (\<amalg>\<^sub>Q i\<in>UNIV. if i then ?X else ?Y) &
+         g o f = id & f o g = id",
+     template_predicate (template_app (template_hole 16, t_empty))),
+    ("CoProduct_QuasiBorel.list_simp7",
+     "[| ?a : qbs_space ?X; ?l : qbs_space (list_of ?X) |]
+      ==> list_cons ?a ?l : qbs_space (list_of ?X)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 16, template_var 2),
+              template_app (template_hole 15, template_var 1))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 14, template_var 0),
+              template_app
+               (template_hole 13,
+                template_app
+                 (template_app (template_hole 12, template_hole 11),
+                  t_empty)))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 14,
+               template_app
+                (template_app
+                  (template_hole 8,
+                   template_app
+                    (template_hole 7,
+                     template_app (template_hole 6, template_var 0))),
+                 t_empty)),
+             template_app
+              (template_hole 13,
+               template_app
+                (template_app (template_hole 12, template_hole 11),
+                 t_empty)))
+           ))),
+    ("CoProduct_QuasiBorel.list_decomp1",
+     "?l : qbs_space (list_of ?X) ==>
+      ?l = list_nil |
+      (EX a l'.
+          a : qbs_space ?X &
+          l' : qbs_space (list_of ?X) & ?l = list_cons a l')",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 22, template_var 1),
+              template_app
+               (template_hole 21,
+                template_app
+                 (template_app (template_hole 20, template_hole 19),
+                  t_empty)))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 16,
+               template_app
+                (template_app (template_hole 15, template_var 1),
+                 template_app
+                  (template_app (template_hole 14, template_hole 13),
+                   t_empty))),
+             template_app (template_hole 11, t_empty))
+           ))),
+    ("CoProduct_QuasiBorel.list_destruct_rule",
+     "[| ?l : qbs_space (list_of ?X); ?P list_nil;
+         !!a l'.
+            [| a : qbs_space ?X; l' : qbs_space (list_of ?X) |]
+            ==> ?P (list_cons a l') |]
+      ==> ?P ?l",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 19, template_var 2),
+              template_app
+               (template_hole 18,
+                template_app
+                 (template_app (template_hole 17, template_hole 16),
+                  t_empty)))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_var 0,
+              template_app
+               (template_app (template_hole 13, template_hole 12), t_empty))
+            ),
+        template_predicate (template_app (template_hole 10, t_empty))],
+       template_predicate (template_app (template_var 0, template_var 2)))),
+    ("CoProduct_QuasiBorel.list_induct_rule",
+     "[| ?l : qbs_space (list_of ?X); ?P list_nil;
+         !!a l'.
+            [| a : qbs_space ?X; l' : qbs_space (list_of ?X); ?P l' |]
+            ==> ?P (list_cons a l') |]
+      ==> ?P ?l",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 19, template_var 2),
+              template_app
+               (template_hole 18,
+                template_app
+                 (template_app (template_hole 17, template_hole 16),
+                  t_empty)))
+            ),
+        template_predicate
+         (
+            template_app
+             (template_var 0,
+              template_app
+               (template_app (template_hole 13, template_hole 12), t_empty))
+            ),
+        template_predicate (template_app (template_hole 10, t_empty))],
+       template_predicate
+        (template_app (template_var 0, template_var 2))))]:
+   (string * thm * template) list
+### theory "Draft.CoProduct_QuasiBorelTemplates"
+### 1.256s elapsed time, 1.618s cpu time, 0.256s GC time
+val it = (): unit

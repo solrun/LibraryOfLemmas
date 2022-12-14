@@ -1,0 +1,94 @@
+   [("Geometric.lossless_geometric",
+     "lossless_spmf (geometric_spmf ?p) = (0 < ?p)",
+     template_equation
+      (template_app
+        (template_hole 3, template_app (template_hole 2, template_var 0)),
+       template_app
+        (template_app (template_hole 1, template_hole 0), template_var 0))),
+    ("Geometric.spmf_geometric_nonpos",
+     "?p <= 0 ==> geometric_spmf ?p = return_pmf None",
+     template_implication
+      ([template_inequation (less_equals, template_var 0, template_hole 4)],
+       template_equation
+        (template_app (template_hole 2, template_var 0),
+         template_app (template_hole 1, template_hole 0)))),
+    ("Geometric.spmf_geometric_ge_1",
+     "1 <= ?p ==> geometric_spmf ?p = return_spmf 0",
+     template_implication
+      ([template_inequation (less_equals, template_hole 5, template_var 0)],
+       template_equation
+        (template_app (template_hole 3, template_var 0),
+         template_app
+          (template_hole 2,
+           template_app (template_hole 1, template_hole 0))))),
+    ("Geometric.spmf_geometric",
+     "[| 0 < ?p; ?p < 1 |]
+      ==> spmf (geometric_spmf ?p) ?n = (1 - ?p) ^ ?n * ?p",
+     template_implication
+      ([template_inequation (less_than, template_hole 8, template_var 1),
+        template_inequation (less_than, template_var 1, template_hole 7)],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 5,
+             template_app (template_hole 4, template_var 1)),
+           template_app (template_hole 3, template_var 0)),
+         template_app
+          (template_app
+            (template_hole 2,
+             template_app
+              (template_app
+                (template_hole 1,
+                 template_app
+                  (template_app (template_hole 0, template_hole 7),
+                   template_var 1)),
+               template_var 0)),
+           template_var 1)))),
+    ("Geometric.geometric_spmf_conv_while",
+     "geometric_spmf ?p =
+      map_spmf snd
+       (loop_spmf.while fst
+         (%(b, x).
+             map_spmf (%b'. (~ b', x + (if b' then 0 else 1)))
+              (bernoulli ?p))
+         (True, 0))",
+     template_equation
+      (template_app (template_hole 16, template_var 0),
+       template_app
+        (template_app
+          (template_hole 15,
+           template_app (template_hole 14, template_hole 13)),
+         template_app
+          (template_app
+            (template_app (template_hole 12, template_hole 11),
+             template_app (template_hole 10, t_empty)),
+           template_app
+            (template_app (template_hole 7, template_hole 0),
+             template_hole 3))))),
+    ("Geometric.geometric_spmf_fixp_induct",
+     "[| spmf.admissible ?P; ?P (%geometric_spmf. return_pmf None);
+         !!geometric_spmf'.
+            ?P geometric_spmf' ==>
+            ?P (%p. bernoulli p >>=
+                    (%b. if b then return_spmf 0
+                         else map_spmf ((+) 1) (geometric_spmf' p))) |]
+      ==> ?P geometric_spmf",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_hole 19,
+                  template_app (template_hole 18, template_hole 17)),
+                template_app
+                 (template_hole 16,
+                  template_app
+                   (template_hole 15,
+                    template_app (template_hole 14, template_hole 13)))),
+              template_var 0)
+            ),
+        template_predicate (template_app (template_var 0, t_empty)),
+        template_predicate (template_app (template_hole 10, t_empty))],
+       template_predicate
+        (template_app (template_var 0, template_hole 0))))]

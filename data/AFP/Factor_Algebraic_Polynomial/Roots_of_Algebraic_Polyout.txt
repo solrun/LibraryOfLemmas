@@ -1,0 +1,842 @@
+Loading theory "Draft.Is_Int_To_Int" (required by "Draft.Roots_of_Algebraic_PolyTemplates" via "Draft.Roots_of_Algebraic_Poly")
+Loading theory "Draft.Poly_Connection" (required by "Draft.Roots_of_Algebraic_PolyTemplates" via "Draft.Roots_of_Algebraic_Poly" via "Draft.Multivariate_Resultant")
+Loading theory "Draft.MPoly_Container" (required by "Draft.Roots_of_Algebraic_PolyTemplates" via "Draft.Roots_of_Algebraic_Poly" via "Draft.Multivariate_Resultant")
+Loading theory "Draft.Templates" (required by "Draft.Roots_of_Algebraic_PolyTemplates" via "Draft.ExtrEqs")
+### theory "Draft.Is_Int_To_Int"
+### 0.069s elapsed time, 0.341s cpu time, 0.000s GC time
+datatype template_term
+=
+     t_empty
+   | template_app of template_term * template_term
+   | template_hole of int
+   | template_var of int
+datatype sign
+= equals | greater_equals | greater_than | less_equals | less_than
+datatype template
+=
+     template_bimplication of template * template
+   | template_dunno
+   | template_equation of template_term * template_term
+   | template_implication of template list * template
+   | template_inequation of sign * template_term * template_term
+   | template_negation of template
+   | template_predicate of template_term
+constructor t_empty: template_term
+constructor template_app: template_term * template_term -> template_term
+constructor template_hole: int -> template_term
+constructor template_var: int -> template_term
+constructor equals: sign
+constructor greater_equals: sign
+constructor greater_than: sign
+constructor less_equals: sign
+constructor less_than: sign
+constructor template_bimplication: template * template -> template
+constructor template_dunno: template
+constructor template_equation: template_term * template_term -> template
+constructor template_implication: template list * template -> template
+constructor template_inequation:
+   sign * template_term * template_term -> template
+constructor template_negation: template -> template
+constructor template_predicate: template_term -> template
+val vfs = fn: term -> (indexname * typ) list * (string * typ) list
+val indexOf = fn: ''a list -> ''a -> int -> int
+val has_eq = fn: term -> bool
+val term2template = fn:
+   (indexname * typ) list -> (string * typ) list -> term -> template_term
+val lemma2predicate = fn: term -> term -> template
+val makeTemplatewithContext = fn: term -> term -> template
+val lemma2template = fn: term -> template
+val thm2template = fn: thm -> template
+val tterm2string = fn: template_term -> string
+val template2string = fn: template -> string
+val t = "height ?t <= size ?t": thm
+val th =
+   Const ("HOL.Trueprop", "bool => prop") $
+     (Const ("Orderings.ord_class.less_eq", "nat => nat => bool") $
+       (Const ("Tree.height_class.height", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree")) $
+       (Const ("Nat.size_class.size", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree"))):
+   term
+### theory "Draft.Templates"
+### 0.120s elapsed time, 0.465s cpu time, 0.060s GC time
+Loading theory "Draft.ExtrEqs" (required by "Draft.Roots_of_Algebraic_PolyTemplates")
+deriving "ceq" instance for type "Poly_Mapping.poly_mapping" via "="
+derived is_ceq_poly_mapping-lemma
+use dlist as set_impl for type poly_mapping
+registered poly_mapping in class set_impl
+use None as trivial implementation of ccompare for type poly_mapping
+registered poly_mapping in class ccompare
+### theory "Draft.MPoly_Container"
+### 0.602s elapsed time, 1.900s cpu time, 0.176s GC time
+val eqpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Var (("_dummy_", 2), "?'a"))
+       ):
+   term Find_Theorems.criterion
+val badeqpattern = Pattern (Const ("Pure.eq", "?'a => ?'a => prop")):
+   term Find_Theorems.criterion
+val undefpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Const ("HOL.undefined", "?'a"))
+       ):
+   term Find_Theorems.criterion
+val thmpattern =
+   Pattern
+    (Const ("HOL.Trueprop", "bool => prop") $ Var (("_dummy_", 1), "bool")):
+   term Find_Theorems.criterion
+val badnames =
+   ["*nitpick*", "*Nitpick*", "*full_exhaustive*", "*_def*", "Enum.finite*",
+    "*Quickcheck*", "ATP*", "*Nunchaku*", "*Code*", "*BNF*", "*SMT*",
+    "*.*.*"]:
+   string list
+val unwanted_names =
+   [(false, Name "*nitpick*"), (false, Name "*Nitpick*"),
+    (false, Name "*full_exhaustive*"), (false, Name "*_def*"),
+    (false, Name "Enum.finite*"), (false, Name "*Quickcheck*"),
+    (false, Name "ATP*"), (false, Name "*Nunchaku*"),
+    (false, Name "*Code*"), (false, Name "*BNF*"), (false, Name "*SMT*"),
+    (false, Name "*.*.*")]:
+   (bool * term Find_Theorems.criterion) list
+val has_vars = fn: term -> bool
+val get_all_eqs = fn: string -> Proof.context -> (string * thm) list
+val get_all_thms = fn: string -> Proof.context -> (string * thm) list
+val get_noneq_thms = fn: string -> Proof.context -> (string * thm) list
+val template_eqs = fn:
+   string -> Proof.context -> (string * thm * template) list
+val template_thms = fn:
+   string -> Proof.context -> (string * thm * template) list
+### theory "Draft.ExtrEqs"
+### 0.581s elapsed time, 1.630s cpu time, 0.116s GC time
+### Ambiguous input (line 246 of "$AFP/Factor_Algebraic_Polynomial/Poly_Connection.thy") produces 2 parse trees:
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" mpoly_to_mpoly_poly)
+###       ("_cargs" ("_position" x) ("_position" p)))
+###     ("\<^const>Series.suminf_binder" ("_position" m)
+###       ("_applC" ("_position" Polynomial.monom)
+###         ("_cargs"
+###           ("_applC" ("_position" MPoly_Type.monom)
+###             ("_cargs"
+###               ("_applC" ("_position" remove_key)
+###                 ("_cargs" ("_position" x) ("_position" m)))
+###               ("_applC" ("_position" MPoly_Type.coeff)
+###                 ("_cargs" ("_position" p) ("_position" m)))))
+###           ("_applC" ("_position" lookup)
+###             ("_cargs" ("_position" m) ("_position" x))))))))
+### ("\<^const>HOL.Trueprop"
+###   ("\<^const>HOL.eq"
+###     ("_applC" ("_position" mpoly_to_mpoly_poly)
+###       ("_cargs" ("_position" x) ("_position" p)))
+###     ("_Sum_any" ("_position" m)
+###       ("_applC" ("_position" Polynomial.monom)
+###         ("_cargs"
+###           ("_applC" ("_position" MPoly_Type.monom)
+###             ("_cargs"
+###               ("_applC" ("_position" remove_key)
+###                 ("_cargs" ("_position" x) ("_position" m)))
+###               ("_applC" ("_position" MPoly_Type.coeff)
+###                 ("_cargs" ("_position" p) ("_position" m)))))
+###           ("_applC" ("_position" lookup)
+###             ("_cargs" ("_position" m) ("_position" x))))))))
+### Fortunately, only one parse tree is well-formed and type-correct,
+### but you may still want to disambiguate your grammar or your input.
+locale transfer_mpoly_to_mpoly_poly
+  fixes x :: "nat"
+### theory "Draft.Poly_Connection"
+### 1.386s elapsed time, 2.806s cpu time, 0.253s GC time
+Loading theory "Draft.MPoly_Divide" (required by "Draft.Roots_of_Algebraic_PolyTemplates" via "Draft.Roots_of_Algebraic_Poly" via "Draft.Multivariate_Resultant" via "Draft.MPoly_Divide_Code")
+instantiation
+  mpoly :: (comm_semiring_1) divide
+  divide_mpoly == divide :: 'a mpoly => 'a mpoly => 'a mpoly
+instantiation
+  mpoly :: ({idom,normalization_semidom}) normalization_semidom
+  normalize_mpoly == normalize :: 'a mpoly => 'a mpoly
+  unit_factor_mpoly == unit_factor :: 'a mpoly => 'a mpoly
+### theory "Draft.MPoly_Divide"
+### 0.272s elapsed time, 0.307s cpu time, 0.070s GC time
+Loading theory "Draft.MPoly_Divide_Code" (required by "Draft.Roots_of_Algebraic_PolyTemplates" via "Draft.Roots_of_Algebraic_Poly" via "Draft.Multivariate_Resultant")
+Found termination order:
+  "(%p. size_list (%p. size (fst p)) (fst (snd p))) <*mlex*> {}"
+### theory "Draft.MPoly_Divide_Code"
+### 0.570s elapsed time, 0.610s cpu time, 0.069s GC time
+Loading theory "Draft.Multivariate_Resultant" (required by "Draft.Roots_of_Algebraic_PolyTemplates" via "Draft.Roots_of_Algebraic_Poly")
+"[:MPoly (Pm_fmap (fmap_of_list [(Pm_fmap (fmap_of_list [(1, 2)]), 1)])),
+   MPoly (Pm_fmap (fmap_of_list [(Pm_fmap (fmap_of_list [(1, 1)]), 1)])),
+   MPoly (Pm_fmap (fmap_of_list [(Pm_fmap (fmap_of_list []), 1)])):]"
+  :: "int mpoly poly"
+### theory "Draft.Multivariate_Resultant"
+### 1.987s elapsed time, 5.308s cpu time, 0.744s GC time
+Loading theory "Draft.Roots_of_Algebraic_Poly" (required by "Draft.Roots_of_Algebraic_PolyTemplates")
+"MPoly
+  (Pm_fmap
+    (fmap_of_list
+      [(Pm_fmap (fmap_of_list [(0, 2)]), 1),
+       (Pm_fmap (fmap_of_list [(1, 1), (0, 1)]), 1)]))"
+  :: "int mpoly"
+locale comm_monoid_add_hom
+  fixes hom :: "'a => 'b"
+  assumes "comm_monoid_add_hom hom"
+locale comm_ring_hom
+  fixes hom :: "'a => 'b"
+  assumes "comm_ring_hom hom"
+locale inj_comm_ring_hom
+  fixes hom :: "'a => 'b"
+  assumes "inj_comm_ring_hom hom"
+Found termination order: "(%p. size_list size (snd (snd p))) <*mlex*> {}"
+### theory "Draft.Roots_of_Algebraic_Poly"
+### 1.942s elapsed time, 3.058s cpu time, 0.704s GC time
+Loading theory "Draft.Roots_of_Algebraic_PolyTemplates"
+val templateLemmas =
+   [("Roots_of_Algebraic_Poly.map_mpoly_Var",
+     "?f (1::?'b) = (1::?'a) ==> map_mpoly ?f (Var ?i) = Var ?i",
+     template_implication
+      ([template_equation
+         (template_app (template_var 1, template_hole 5), template_hole 4)],
+       template_equation
+        (template_app
+          (template_app (template_hole 2, template_var 1),
+           template_app (template_hole 1, template_var 0)),
+         template_app (template_hole 0, template_var 0)))),
+    ("Roots_of_Algebraic_Poly.remove_key_single'",
+     "remove_key ?v (monomial ?n ?w) =
+      (if ?v = ?w then 0 else monomial ?n ?w)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app (template_hole 4, template_var 2),
+              template_app
+               (template_app (template_hole 3, template_var 1),
+                template_var 0))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_hole 2,
+                 template_app
+                  (template_app (template_hole 1, template_var 2),
+                   template_var 1)),
+               template_hole 0),
+             template_app
+              (template_app (template_hole 3, template_var 1),
+               template_var 0))
+           ))),
+    ("Roots_of_Algebraic_Poly.map_mpoly_Const",
+     "?f (0::?'b) = (0::?'a) ==> map_mpoly ?f (Const ?i) = Const (?f ?i)",
+     template_implication
+      ([template_equation
+         (template_app (template_var 1, template_hole 5), template_hole 4)],
+       template_equation
+        (template_app
+          (template_app (template_hole 2, template_var 1),
+           template_app (template_hole 1, template_var 0)),
+         template_app
+          (template_hole 0,
+           template_app (template_var 1, template_var 0))))),
+    ("Roots_of_Algebraic_Poly.finite_resultant_mpoly_polys_empty",
+     "finite {\<alpha>. mpoly_polys_zero_solution ?p ?qs {} \<alpha>} ==>
+      ?p ~= 0",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_hole 6, template_app (template_hole 5, t_empty))
+            )],
+       template_negation
+        (template_equation (template_var 1, template_hole 0)))),
+    ("Roots_of_Algebraic_Poly.initial_root_problem_complex_of_real_poly",
+     "initial_root_problem (map_poly complex_of_real ?p) =
+      map_prod id (map (map_prod id (map_prod complex_of_real id)))
+       (initial_root_problem ?p)",
+     template_equation
+      (template_app
+        (template_hole 10,
+         template_app
+          (template_app (template_hole 9, template_hole 8),
+           template_var 0)),
+       template_app
+        (template_app
+          (template_app (template_hole 7, template_hole 6),
+           template_app
+            (template_hole 5,
+             template_app
+              (template_app (template_hole 4, template_hole 3),
+               template_app
+                (template_app (template_hole 2, template_hole 8),
+                 template_hole 1)))),
+         template_app (template_hole 0, template_var 0)))),
+    ("Roots_of_Algebraic_Poly.eliminate_aux_vars_of_int_poly",
+     "eliminate_aux_vars (map_mpoly of_int ?mp) (of_int_poly o ?qs) ?is =
+      of_int_poly (eliminate_aux_vars ?mp ?qs ?is)",
+     template_equation
+      (template_app
+        (template_app
+          (template_app
+            (template_hole 5,
+             template_app
+              (template_app (template_hole 4, template_hole 3),
+               template_var 2)),
+           template_app
+            (template_app
+              (template_hole 2,
+               template_app (template_hole 1, template_hole 3)),
+             template_var 1)),
+         template_var 0),
+       template_app
+        (template_app (template_hole 1, template_hole 3),
+         template_app
+          (template_app
+            (template_app (template_hole 0, template_var 2),
+             template_var 1),
+           template_var 0)))),
+    ("Roots_of_Algebraic_Poly.map_mpoly_monom",
+     "?f (0::?'b) = (0::?'a) ==>
+      map_mpoly ?f (MPoly_Type.monom ?m ?a) = MPoly_Type.monom ?m (?f ?a)",
+     template_implication
+      ([template_equation
+         (template_app (template_var 2, template_hole 5), template_hole 4)],
+       template_equation
+        (template_app
+          (template_app (template_hole 2, template_var 2),
+           template_app
+            (template_app (template_hole 1, template_var 1),
+             template_var 0)),
+         template_app
+          (template_app (template_hole 0, template_var 1),
+           template_app (template_var 2, template_var 0))))),
+    ("Roots_of_Algebraic_Poly.resultant_zero_iff_coprime",
+     "?f ~= 0 | ?g ~= 0 ==>
+      (resultant ?f ?g = (0::?'a)) =
+      (~ comm_monoid_mult_class.coprime ?f ?g)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 8,
+                template_app
+                 (template_hole 7,
+                  template_app
+                   (template_app (template_hole 6, template_var 1),
+                    template_hole 5))),
+              template_app
+               (template_hole 7,
+                template_app
+                 (template_app (template_hole 6, template_var 0),
+                  template_hole 5)))
+            )],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 3,
+             template_app
+              (template_app (template_hole 2, template_var 1),
+               template_var 0)),
+           template_hole 1),
+         template_app
+          (template_hole 7,
+           template_app
+            (template_app (template_hole 0, template_var 1),
+             template_var 0))))),
+    ("Roots_of_Algebraic_Poly.resultant_iff_coprime_main",
+     "0 < degree ?f | 0 < degree ?g ==>
+      (resultant ?f ?g = (0::?'a)) =
+      (~ comm_monoid_mult_class.coprime ?f ?g)",
+     template_implication
+      ([template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 9,
+                template_app
+                 (template_app (template_hole 8, template_hole 7),
+                  template_app (template_hole 6, template_var 1))),
+              template_app
+               (template_app (template_hole 8, template_hole 7),
+                template_app (template_hole 6, template_var 0)))
+            )],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 4,
+             template_app
+              (template_app (template_hole 3, template_var 1),
+               template_var 0)),
+           template_hole 2),
+         template_app
+          (template_hole 1,
+           template_app
+            (template_app (template_hole 0, template_var 1),
+             template_var 0))))),
+    ("Roots_of_Algebraic_Poly.complex_algebraic_numbers_are_algebraically_closed",
+     "[| ~ constant (poly ?p); Ball (set (coeffs ?p)) algebraic |]
+      ==> EX z. algebraic z & poly ?p z = 0",
+     template_implication
+      ([template_negation
+         (
+            template_predicate
+             (
+                template_app
+                 (template_hole 9,
+                  template_app (template_hole 8, template_var 0))
+                )
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 7,
+                template_app
+                 (template_hole 6,
+                  template_app (template_hole 5, template_var 0))),
+              template_hole 4)
+            )],
+       template_predicate (template_app (template_hole 3, t_empty)))),
+    ("Roots_of_Algebraic_Poly.representative_poly_real",
+     "[| ?p ~= 0; Ball (set (coeffs ?p)) algebraic; poly ?p ?x = 0 |]
+      ==> representative_poly ?p represents ?x",
+     template_implication
+      ([template_negation
+         (template_equation (template_var 1, template_hole 9)),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 8,
+                template_app
+                 (template_hole 7,
+                  template_app (template_hole 6, template_var 1))),
+              template_hole 5)
+            ),
+        template_equation
+         (template_app
+           (template_app (template_hole 3, template_var 1), template_var 0),
+          template_hole 2)],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 1,
+               template_app (template_hole 0, template_var 1)),
+             template_var 0)
+           ))),
+    ("Roots_of_Algebraic_Poly.representative_poly_complex",
+     "[| ?p ~= 0; Ball (set (coeffs ?p)) algebraic; poly ?p ?x = 0 |]
+      ==> representative_poly ?p represents ?x",
+     template_implication
+      ([template_negation
+         (template_equation (template_var 1, template_hole 9)),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 8,
+                template_app
+                 (template_hole 7,
+                  template_app (template_hole 6, template_var 1))),
+              template_hole 5)
+            ),
+        template_equation
+         (template_app
+           (template_app (template_hole 3, template_var 1), template_var 0),
+          template_hole 2)],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 1,
+               template_app (template_hole 0, template_var 1)),
+             template_var 0)
+           ))),
+    ("Roots_of_Algebraic_Poly.resultant_zero_iff_common_root_complex",
+     "?g ~= 0 ==>
+      (resultant ?f ?g = 0) = (EX x. poly ?f x = 0 & poly ?g x = 0)",
+     template_implication
+      ([template_negation
+         (template_equation (template_var 1, template_hole 7))],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 5,
+             template_app
+              (template_app (template_hole 4, template_var 0),
+               template_var 1)),
+           template_hole 3),
+         template_app (template_hole 2, t_empty)))),
+    ("Roots_of_Algebraic_Poly.map_sort_key",
+     "(!!x y. (?g1.0 x <= ?g1.0 y) = (?g2.0 (?f x) <= ?g2.0 (?f y))) ==>
+      map ?f (sort_key ?g1.0 ?xs) = sort_key ?g2.0 (map ?f ?xs)",
+     template_implication
+      ([template_predicate (template_app (template_hole 8, t_empty))],
+       template_equation
+        (template_app
+          (template_app (template_hole 2, template_var 1),
+           template_app
+            (template_app (template_hole 1, template_var 3),
+             template_var 0)),
+         template_app
+          (template_app (template_hole 0, template_var 2),
+           template_app
+            (template_app (template_hole 2, template_var 1),
+             template_var 0))))),
+    ("Roots_of_Algebraic_Poly.resultant_zero_iff_common_root_irreducible",
+     "[| irreducible ?g; poly ?g ?a = (0::?'a) |]
+      ==> (resultant ?f ?g = (0::?'a)) =
+          (EX x. poly ?f x = (0::?'a) & poly ?g x = (0::?'a))",
+     template_implication
+      ([template_predicate (template_app (template_hole 7, template_var 2)),
+        template_equation
+         (template_app
+           (template_app (template_hole 5, template_var 2), template_var 1),
+          template_hole 4)],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 6,
+             template_app
+              (template_app (template_hole 2, template_var 0),
+               template_var 2)),
+           template_hole 4),
+         template_app (template_hole 1, t_empty)))),
+    ("Roots_of_Algebraic_Poly.map_insort_key",
+     "(!!x y. (?g1.0 x <= ?g1.0 y) = (?g2.0 (?f x) <= ?g2.0 (?f y))) ==>
+      map ?f (insort_key ?g1.0 ?a ?xs) =
+      insort_key ?g2.0 (?f ?a) (map ?f ?xs)",
+     template_implication
+      ([template_predicate (template_app (template_hole 8, t_empty))],
+       template_equation
+        (template_app
+          (template_app (template_hole 2, template_var 2),
+           template_app
+            (template_app
+              (template_app (template_hole 1, template_var 4),
+               template_var 1),
+             template_var 0)),
+         template_app
+          (template_app
+            (template_app (template_hole 0, template_var 3),
+             template_app (template_var 2, template_var 1)),
+           template_app
+            (template_app (template_hole 2, template_var 2),
+             template_var 0))))),
+    ("Roots_of_Algebraic_Poly.resultant_mpoly_polys_zero_solution",
+     "[| 0 ~: ?qs ` ?N; ?i : ?N;
+         mpoly_polys_zero_solution ?p ?qs ?N ?\<alpha> |]
+      ==> mpoly_polys_zero_solution
+           (resultant_mpoly_poly (Suc ?i) ?p (?qs ?i)) ?qs (?N - {?i})
+           (?\<alpha>(Suc ?i := 0))",
+     template_implication
+      ([template_negation
+         (
+            template_predicate
+             (
+                template_app
+                 (template_app (template_hole 11, template_hole 10),
+                  template_app
+                   (template_app (template_hole 9, template_var 4),
+                    template_var 3))
+                )
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 8, template_var 2),
+              template_var 3)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 7, template_var 1),
+                  template_var 4),
+                template_var 3),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_app
+                (template_app
+                  (template_hole 7,
+                   template_app
+                    (template_app
+                      (template_app
+                        (template_hole 6,
+                         template_app (template_hole 5, template_var 2)),
+                       template_var 1),
+                     template_app (template_var 4, template_var 2))),
+                 template_var 4),
+               template_app
+                (template_app (template_hole 4, template_var 3),
+                 template_app
+                  (template_app (template_hole 3, template_var 2),
+                   template_hole 2))),
+             template_app
+              (template_app
+                (template_app (template_hole 1, template_var 0),
+                 template_app (template_hole 5, template_var 2)),
+               template_hole 0))
+           ))),
+    ("Roots_of_Algebraic_Poly.resultant_mpoly_polys_solution",
+     "[| 0 ~: ?qs ` ?N; ?i : ?N |]
+      ==> mpoly_polys_solution (resultant_mpoly_poly (Suc ?i) ?p (?qs ?i))
+           ?qs (?N - {?i}) ?\<alpha> =
+          (EX v. mpoly_polys_solution ?p ?qs ?N (?\<alpha>(Suc ?i := v)))",
+     template_implication
+      ([template_negation
+         (
+            template_predicate
+             (
+                template_app
+                 (template_app (template_hole 12, template_hole 11),
+                  template_app
+                   (template_app (template_hole 10, template_var 4),
+                    template_var 3))
+                )
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 9, template_var 2),
+              template_var 3)
+            )],
+       template_equation
+        (template_app
+          (template_app
+            (template_app
+              (template_app
+                (template_hole 7,
+                 template_app
+                  (template_app
+                    (template_app
+                      (template_hole 6,
+                       template_app (template_hole 5, template_var 2)),
+                     template_var 1),
+                   template_app (template_var 4, template_var 2))),
+               template_var 4),
+             template_app
+              (template_app (template_hole 4, template_var 3),
+               template_app
+                (template_app (template_hole 3, template_var 2),
+                 template_hole 2))),
+           template_var 0),
+         template_app (template_hole 1, t_empty)))),
+    ("Roots_of_Algebraic_Poly.finite_resultant_mpoly_polys_non_empty",
+     "[| 0 ~: ?qs ` ?N; ?i : ?N;
+         finite {\<alpha>. mpoly_polys_zero_solution ?p ?qs ?N \<alpha>} |]
+      ==> finite
+           {\<alpha>.
+            mpoly_polys_zero_solution
+             (resultant_mpoly_poly (Suc ?i) ?p (?qs ?i)) ?qs (?N - {?i})
+             \<alpha>}",
+     template_implication
+      ([template_negation
+         (
+            template_predicate
+             (
+                template_app
+                 (template_app (template_hole 11, template_hole 10),
+                  template_app
+                   (template_app (template_hole 9, template_var 3),
+                    template_var 2))
+                )
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 8, template_var 1),
+              template_var 2)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_hole 7, template_app (template_hole 6, t_empty))
+            )],
+       template_predicate
+        (
+           template_app
+            (template_hole 7, template_app (template_hole 6, t_empty))
+           ))),
+    ("Roots_of_Algebraic_Poly.resultant_mpoly_polys_zero_solution",
+     "[| 0 ~: ?qs ` ?N; ?i : ?N;
+         mpoly_polys_zero_solution
+          (resultant_mpoly_poly (Suc ?i) ?p (?qs ?i)) ?qs (?N - {?i})
+          ?\<alpha> |]
+      ==> EX v. mpoly_polys_zero_solution ?p ?qs ?N
+                 (?\<alpha>(Suc ?i := v))",
+     template_implication
+      ([template_negation
+         (
+            template_predicate
+             (
+                template_app
+                 (template_app (template_hole 11, template_hole 10),
+                  template_app
+                   (template_app (template_hole 9, template_var 4),
+                    template_var 3))
+                )
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app (template_hole 8, template_var 2),
+              template_var 3)
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app
+                   (template_hole 7,
+                    template_app
+                     (template_app
+                       (template_app
+                         (template_hole 6,
+                          template_app (template_hole 5, template_var 2)),
+                        template_var 1),
+                      template_app (template_var 4, template_var 2))),
+                  template_var 4),
+                template_app
+                 (template_app (template_hole 4, template_var 3),
+                  template_app
+                   (template_app (template_hole 3, template_var 2),
+                    template_hole 2))),
+              template_var 0)
+            )],
+       template_predicate (template_app (template_hole 1, t_empty)))),
+    ("Roots_of_Algebraic_Poly.get_representative_complex",
+     "[| ?p ~= 0; Ball (set (coeffs ?p)) algebraic;
+         initial_root_problem ?p = (?mp, ?triples); ?is = map fst ?triples;
+         !!j. j < length ?is ==> ?qs j = snd (snd (?triples ! j));
+         poly ?p ?x = 0 |]
+      ==> eliminate_aux_vars ?mp ?qs ?is represents ?x",
+     template_implication
+      ([template_negation
+         (template_equation (template_var 5, template_hole 22)),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_hole 21,
+                template_app
+                 (template_hole 20,
+                  template_app (template_hole 19, template_var 5))),
+              template_hole 18)
+            ),
+        template_equation
+         (template_app (template_hole 16, template_var 5),
+          template_app
+           (template_app (template_hole 15, template_var 4),
+            template_var 3)),
+        template_equation
+         (template_var 2,
+          template_app
+           (template_app (template_hole 13, template_hole 12),
+            template_var 3)),
+        template_predicate (template_app (template_hole 11, t_empty)),
+        template_equation
+         (template_app
+           (template_app (template_hole 3, template_var 5), template_var 0),
+          template_hole 2)],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 1,
+               template_app
+                (template_app
+                  (template_app (template_hole 0, template_var 4),
+                   template_var 1),
+                 template_var 2)),
+             template_var 0)
+           ))),
+    ("Roots_of_Algebraic_Poly.eliminate_aux_vars",
+     "[| distinct ?is; vars ?p <= insert 0 (Suc ` set ?is);
+         finite
+          {\<alpha>. mpoly_polys_zero_solution ?p ?qs (set ?is) \<alpha>};
+         0 ~: ?qs ` set ?is;
+         mpoly_polys_solution ?p ?qs (set ?is) ?\<alpha> |]
+      ==> poly (eliminate_aux_vars ?p ?qs ?is) (?\<alpha> 0) = 0 &
+          eliminate_aux_vars ?p ?qs ?is ~= 0",
+     template_implication
+      ([template_predicate
+         (template_app (template_hole 21, template_var 3)),
+        template_inequation
+         (less_equals, template_app (template_hole 19, template_var 2),
+          template_app
+           (template_app (template_hole 18, template_hole 17),
+            template_app
+             (template_app (template_hole 16, template_hole 15),
+              template_app (template_hole 14, template_var 3)))),
+        template_predicate
+         (
+            template_app
+             (template_hole 13, template_app (template_hole 12, t_empty))
+            ),
+        template_negation
+         (
+            template_predicate
+             (
+                template_app
+                 (template_app (template_hole 9, template_hole 8),
+                  template_app
+                   (template_app (template_hole 7, template_var 1),
+                    template_app (template_hole 14, template_var 3)))
+                )
+            ),
+        template_predicate
+         (
+            template_app
+             (template_app
+               (template_app
+                 (template_app (template_hole 6, template_var 2),
+                  template_var 1),
+                template_app (template_hole 14, template_var 3)),
+              template_var 0)
+            )],
+       template_predicate
+        (
+           template_app
+            (template_app
+              (template_hole 5,
+               template_app
+                (template_app
+                  (template_hole 4,
+                   template_app
+                    (template_app
+                      (template_hole 3,
+                       template_app
+                        (template_app
+                          (template_app (template_hole 2, template_var 2),
+                           template_var 1),
+                         template_var 3)),
+                     template_app (template_var 0, template_hole 17))),
+                 template_hole 1)),
+             template_app
+              (template_hole 10,
+               template_app
+                (template_app
+                  (template_hole 0,
+                   template_app
+                    (template_app
+                      (template_app (template_hole 2, template_var 2),
+                       template_var 1),
+                     template_var 3)),
+                 template_hole 8)))
+           )))]:
+   (string * thm * template) list
+### theory "Draft.Roots_of_Algebraic_PolyTemplates"
+### 3.687s elapsed time, 4.721s cpu time, 1.162s GC time
+val it = (): unit

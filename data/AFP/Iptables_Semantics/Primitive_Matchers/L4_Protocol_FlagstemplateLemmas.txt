@@ -1,0 +1,161 @@
+   [("L4_Protocol_Flags.ipt_tcp_flags_Any",
+     "match_tcp_flags ipt_tcp_flags_Any ?pkt",
+     template_predicate
+      (
+         template_app
+          (template_app (template_hole 1, template_hole 0), template_var 0)
+         )),
+    ("L4_Protocol_Flags.ipt_tcp_flags_NoMatch",
+     "~ match_tcp_flags ipt_tcp_flags_NoMatch ?pkt",
+     template_negation
+      (
+         template_predicate
+          (
+             template_app
+              (template_app (template_hole 1, template_hole 0),
+               template_var 0)
+             )
+         )),
+    ("L4_Protocol_Flags.match_tcp_flags_nomatch",
+     "~ ?c <= ?fmask ==> ~ match_tcp_flags (TCP_Flags ?fmask ?c) ?pkt",
+     template_implication
+      ([template_negation
+         (
+            template_inequation
+             (less_equals, template_var 2, template_var 1)
+            )],
+       template_negation
+        (
+           template_predicate
+            (
+               template_app
+                (template_app
+                  (template_hole 1,
+                   template_app
+                    (template_app (template_hole 0, template_var 1),
+                     template_var 2)),
+                 template_var 0)
+               )
+           ))),
+    ("L4_Protocol_Flags.ipt_tcp_flags_equal",
+     "ipt_tcp_flags_equal ?f1.0 ?f2.0 =
+      (ALL pkt. match_tcp_flags ?f1.0 pkt = match_tcp_flags ?f2.0 pkt)",
+     template_equation
+      (template_app
+        (template_app (template_hole 2, template_var 1), template_var 0),
+       template_app (template_hole 1, t_empty))),
+    ("L4_Protocol_Flags.match_tcp_flags_conjunct",
+     "match_tcp_flags (match_tcp_flags_conjunct ?f1.0 ?f2.0) ?pkt =
+      (match_tcp_flags ?f1.0 ?pkt & match_tcp_flags ?f2.0 ?pkt)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 2,
+           template_app
+            (template_app (template_hole 1, template_var 2),
+             template_var 1)),
+         template_var 0),
+       template_app
+        (template_app
+          (template_hole 0,
+           template_app
+            (template_app (template_hole 2, template_var 2),
+             template_var 0)),
+         template_app
+          (template_app (template_hole 2, template_var 1),
+           template_var 0)))),
+    ("L4_Protocol_Flags.ipt_tcp_flags_Any_isUNIV",
+     "(?fmask = {} & ?c = {}) =
+      (ALL pkt. match_tcp_flags (TCP_Flags ?fmask ?c) pkt)",
+     template_equation
+      (template_app
+        (template_app
+          (template_hole 5,
+           template_app
+            (template_app (template_hole 4, template_var 1),
+             template_hole 3)),
+         template_app
+          (template_app (template_hole 4, template_var 0),
+           template_hole 3)),
+       template_app (template_hole 2, t_empty))),
+    ("L4_Protocol_Flags.match_tcp_flags_conjunct_option_None",
+     "match_tcp_flags_conjunct_option ?f1.0 ?f2.0 = None ==>
+      ~ (match_tcp_flags ?f1.0 ?pkt & match_tcp_flags ?f2.0 ?pkt)",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app (template_hole 4, template_var 2), template_var 1),
+          template_hole 3)],
+       template_negation
+        (
+           template_predicate
+            (
+               template_app
+                (template_app
+                  (template_hole 1,
+                   template_app
+                    (template_app (template_hole 0, template_var 2),
+                     template_var 0)),
+                 template_app
+                  (template_app (template_hole 0, template_var 1),
+                   template_var 0))
+               )
+           ))),
+    ("L4_Protocol_Flags.match_tcp_flags_conjunct_option",
+     "(case match_tcp_flags_conjunct_option ?f1.0 ?f2.0 of None => False
+       | Some f3 => match_tcp_flags f3 ?pkt) =
+      (match_tcp_flags ?f1.0 ?pkt & match_tcp_flags ?f2.0 ?pkt)",
+     template_equation
+      (template_app
+        (template_app
+          (template_app (template_hole 4, template_hole 3), t_empty),
+         template_app
+          (template_app (template_hole 1, template_var 1), template_var 0)),
+       template_app
+        (template_app
+          (template_hole 0,
+           template_app
+            (template_app (template_hole 2, template_var 1),
+             template_var 2)),
+         template_app
+          (template_app (template_hole 2, template_var 0),
+           template_var 2)))),
+    ("L4_Protocol_Flags.match_tcp_flags_conjunct_option_Some",
+     "match_tcp_flags_conjunct_option ?f1.0 ?f2.0 = Some ?f3.0 ==>
+      (match_tcp_flags ?f1.0 ?pkt & match_tcp_flags ?f2.0 ?pkt) =
+      match_tcp_flags ?f3.0 ?pkt",
+     template_implication
+      ([template_equation
+         (template_app
+           (template_app (template_hole 4, template_var 3), template_var 2),
+          template_app (template_hole 3, template_var 1))],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 1,
+             template_app
+              (template_app (template_hole 0, template_var 3),
+               template_var 0)),
+           template_app
+            (template_app (template_hole 0, template_var 2),
+             template_var 0)),
+         template_app
+          (template_app (template_hole 0, template_var 1),
+           template_var 0)))),
+    ("L4_Protocol_Flags.funny_set_falg_fmask_helper",
+     "?c2.0 <= ?fmask2.0 ==>
+      (?c1.0 = ?c2.0 & ?fmask1.0 = ?fmask2.0) =
+      (ALL pkt. (pkt Int ?fmask1.0 = ?c1.0) = (pkt Int ?fmask2.0 = ?c2.0))",
+     template_implication
+      ([template_inequation (less_equals, template_var 3, template_var 2)],
+       template_equation
+        (template_app
+          (template_app
+            (template_hole 3,
+             template_app
+              (template_app (template_hole 2, template_var 1),
+               template_var 3)),
+           template_app
+            (template_app (template_hole 2, template_var 0),
+             template_var 2)),
+         template_app (template_hole 1, t_empty))))]

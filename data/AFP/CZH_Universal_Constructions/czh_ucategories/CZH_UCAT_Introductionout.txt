@@ -1,0 +1,975 @@
+Loading theory "CZH_Foundations.CZH_Sets_MIF" (required by "Draft.CZH_UCAT_IntroductionMoreTemplates" via "Draft.CZH_UCAT_Introduction" via "CZH_Elementary_Categories.CZH_ECAT_Introduction" via "CZH_Foundations.CZH_DG_Introduction" via "CZH_Foundations.CZH_Sets_NOP" via "CZH_Foundations.CZH_Sets_FBRelations" via "CZH_Foundations.CZH_Sets_FSequences" via "CZH_Foundations.CZH_Sets_Cardinality" via "CZH_Foundations.CZH_Sets_Nat" via "CZH_Foundations.CZH_Sets_Sets" via "CZH_Foundations.CZH_Sets_Introduction")
+Loading theory "HOL-Eisbach.Eisbach" (required by "Draft.CZH_UCAT_IntroductionMoreTemplates" via "Draft.CZH_UCAT_Introduction" via "CZH_Elementary_Categories.CZH_ECAT_Introduction" via "CZH_Foundations.CZH_DG_Introduction" via "CZH_Foundations.CZH_Sets_NOP" via "CZH_Foundations.CZH_Sets_FBRelations" via "CZH_Foundations.CZH_Sets_FSequences" via "CZH_Foundations.CZH_Sets_Cardinality" via "CZH_Foundations.CZH_Sets_Nat" via "CZH_Foundations.CZH_Sets_Sets" via "CZH_Foundations.CZH_Sets_Introduction")
+Loading theory "CZH_Foundations.CZH_Utilities" (required by "Draft.CZH_UCAT_IntroductionMoreTemplates" via "Draft.CZH_UCAT_Introduction" via "CZH_Elementary_Categories.CZH_ECAT_Introduction" via "CZH_Foundations.CZH_DG_Introduction" via "CZH_Foundations.CZH_Sets_NOP" via "CZH_Foundations.CZH_Sets_FBRelations" via "CZH_Foundations.CZH_Sets_FSequences" via "CZH_Foundations.CZH_Sets_Cardinality" via "CZH_Foundations.CZH_Sets_Nat" via "CZH_Foundations.CZH_Sets_Sets" via "CZH_Foundations.CZH_Sets_Introduction")
+Loading theory "Conditional_Simplification.CS_Tools" (required by "Draft.CZH_UCAT_IntroductionMoreTemplates" via "Draft.CZH_UCAT_Introduction" via "CZH_Elementary_Categories.CZH_ECAT_Introduction" via "CZH_Foundations.CZH_DG_Introduction" via "CZH_Foundations.CZH_Sets_NOP" via "CZH_Foundations.CZH_Sets_FBRelations" via "CZH_Foundations.CZH_Sets_FSequences" via "CZH_Foundations.CZH_Sets_Cardinality" via "CZH_Foundations.CZH_Sets_Nat" via "CZH_Foundations.CZH_Sets_Sets" via "CZH_Foundations.CZH_Sets_Introduction" via "Conditional_Simplification.IHOL_CS")
+signature PARSE_TOOLS =
+  sig
+    val is_real_val: ('a, 'b) parse_val -> bool
+    val name_term: (term, string) parse_val parser
+    val parse_term_val: 'a parser -> (term, 'a) parse_val parser
+    val parse_thm_val: 'a parser -> (thm, 'a) parse_val parser
+    datatype ('a, 'b) parse_val
+    = Parse_Val of 'b * ('a -> unit) | Real_Val of 'a
+    val parse_val_cases:
+       ('a -> 'b) -> ('b, 'a) parse_val -> 'b * ('b -> unit)
+    val the_parse_fun: ('a, 'b) parse_val -> 'a -> unit
+    val the_parse_val: ('a, 'b) parse_val -> 'b
+    val the_real_val: ('a, 'b) parse_val -> 'a
+  end
+structure Parse_Tools: PARSE_TOOLS
+signature TACTICAL =
+  sig
+    val ALLGOALS: (int -> tactic) -> tactic
+    val APPEND: tactic * tactic -> tactic
+    val APPEND': ('a -> tactic) * ('a -> tactic) -> 'a -> tactic
+    val ASSERT_SUBGOAL: (int -> tactic) -> int -> tactic
+    val CHANGED: tactic -> tactic
+    val CHANGED_GOAL: (int -> tactic) -> int -> tactic
+    val CHANGED_PROP: tactic -> tactic
+    val COND: (thm -> bool) -> tactic -> tactic -> tactic
+    val CONVERSION: conv -> int -> tactic
+    val CSUBGOAL: (cterm * int -> tactic) -> int -> tactic
+    val DETERM: tactic -> tactic
+    val EVERY: tactic list -> tactic
+    val EVERY': ('a -> tactic) list -> 'a -> tactic
+    val EVERY1: (int -> tactic) list -> tactic
+    val FILTER: (thm -> bool) -> tactic -> tactic
+    val FIRST: tactic list -> tactic
+    val FIRST': ('a -> tactic) list -> 'a -> tactic
+    val FIRST1: (int -> tactic) list -> tactic
+    val FIRSTGOAL: (int -> tactic) -> tactic
+    val FIRST_APPEND': ('a -> tactic) list -> 'a -> tactic
+    val HEADGOAL: (int -> tactic) -> tactic
+    val ORELSE: tactic * tactic -> tactic
+    val ORELSE': ('a -> tactic) * ('a -> tactic) -> 'a -> tactic
+    val PRIMITIVE: (thm -> thm) -> tactic
+    val PRIMSEQ: (thm -> thm Seq.seq) -> tactic
+    val RANGE: (int -> tactic) list -> int -> tactic
+    val REPEAT: tactic -> tactic
+    val REPEAT1: tactic -> tactic
+    val REPEAT_ALL_NEW: (int -> tactic) -> int -> tactic
+    val REPEAT_DETERM: tactic -> tactic
+    val REPEAT_DETERM1: tactic -> tactic
+    val REPEAT_DETERM_FIRST: (int -> tactic) -> tactic
+    val REPEAT_DETERM_N: int -> tactic -> tactic
+    val REPEAT_DETERM_SOME: (int -> tactic) -> tactic
+    val REPEAT_FIRST: (int -> tactic) -> tactic
+    val REPEAT_SOME: (int -> tactic) -> tactic
+    val SINGLE: tactic -> thm -> thm option
+    val SOLVED': (int -> tactic) -> int -> tactic
+    val SOMEGOAL: (int -> tactic) -> tactic
+    val SUBGOAL: (term * int -> tactic) -> int -> tactic
+    val THEN: tactic * tactic -> tactic
+    val THEN': ('a -> tactic) * ('a -> tactic) -> 'a -> tactic
+    val THEN_ALL_NEW: (int -> tactic) * (int -> tactic) -> int -> tactic
+    val THEN_ELSE: tactic * (tactic * tactic) -> tactic
+    val TRY: tactic -> tactic
+    val TRYALL: (int -> tactic) -> tactic
+    val all_tac: tactic
+    val no_tac: tactic
+    val print_tac: Proof.context -> string -> tactic
+    type tactic = thm -> thm Seq.seq
+  end
+structure Tactical: TACTICAL
+type tactic = thm -> thm Seq.seq
+val FILTER = fn: (thm -> bool) -> tactic -> tactic
+val REPEAT1 = fn: tactic -> tactic
+val TRYALL = fn: (int -> tactic) -> tactic
+val THEN = fn: tactic * tactic -> tactic
+val COND = fn: (thm -> bool) -> tactic -> tactic -> tactic
+val REPEAT = fn: tactic -> tactic
+val ASSERT_SUBGOAL = fn: (int -> tactic) -> int -> tactic
+val REPEAT_SOME = fn: (int -> tactic) -> tactic
+val ORELSE' = fn: ('a -> tactic) * ('a -> tactic) -> 'a -> tactic
+val print_tac = fn: Proof.context -> string -> tactic
+val REPEAT_DETERM1 = fn: tactic -> tactic
+val CONVERSION = fn: conv -> int -> tactic
+val EVERY = fn: tactic list -> tactic
+val ORELSE = fn: tactic * tactic -> tactic
+val FIRST_APPEND' = fn: ('a -> tactic) list -> 'a -> tactic
+val FIRST = fn: tactic list -> tactic
+val SOMEGOAL = fn: (int -> tactic) -> tactic
+val REPEAT_FIRST = fn: (int -> tactic) -> tactic
+val APPEND' = fn: ('a -> tactic) * ('a -> tactic) -> 'a -> tactic
+val SINGLE = fn: tactic -> thm -> thm option
+val THEN_ELSE = fn: tactic * (tactic * tactic) -> tactic
+val no_tac = fn: tactic
+val ALLGOALS = fn: (int -> tactic) -> tactic
+val THEN' = fn: ('a -> tactic) * ('a -> tactic) -> 'a -> tactic
+val SUBGOAL = fn: (term * int -> tactic) -> int -> tactic
+val REPEAT_DETERM = fn: tactic -> tactic
+val CSUBGOAL = fn: (cterm * int -> tactic) -> int -> tactic
+val APPEND = fn: tactic * tactic -> tactic
+val PRIMITIVE = fn: (thm -> thm) -> tactic
+val THEN_ALL_NEW = fn: (int -> tactic) * (int -> tactic) -> int -> tactic
+val REPEAT_ALL_NEW = fn: (int -> tactic) -> int -> tactic
+val EVERY1 = fn: (int -> tactic) list -> tactic
+val FIRSTGOAL = fn: (int -> tactic) -> tactic
+val RANGE = fn: (int -> tactic) list -> int -> tactic
+val all_tac = fn: tactic
+val FIRST1 = fn: (int -> tactic) list -> tactic
+val REPEAT_DETERM_N = fn: int -> tactic -> tactic
+val PRIMSEQ = fn: (thm -> thm Seq.seq) -> tactic
+val CHANGED_GOAL = fn: (int -> tactic) -> int -> tactic
+val TRY = fn: tactic -> tactic
+val EVERY' = fn: ('a -> tactic) list -> 'a -> tactic
+val HEADGOAL = fn: (int -> tactic) -> tactic
+val FIRST' = fn: ('a -> tactic) list -> 'a -> tactic
+val CHANGED_PROP = fn: tactic -> tactic
+val REPEAT_DETERM_SOME = fn: (int -> tactic) -> tactic
+val REPEAT_DETERM_FIRST = fn: (int -> tactic) -> tactic
+val SOLVED' = fn: (int -> tactic) -> int -> tactic
+val DETERM = fn: tactic -> tactic
+val CHANGED = fn: tactic -> tactic
+signature CS_STATS = sig val basic_stats: real list -> real list end
+structure CS_Stats: CS_STATS
+### theory "CZH_Foundations.CZH_Utilities"
+### 0.035s elapsed time, 0.135s cpu time, 0.000s GC time
+Loading theory "HOL-Cardinals.Fun_More" (required by "Draft.CZH_UCAT_IntroductionMoreTemplates" via "Draft.CZH_UCAT_Introduction" via "CZH_Elementary_Categories.CZH_ECAT_Introduction" via "CZH_Foundations.CZH_DG_Introduction" via "CZH_Foundations.CZH_Sets_NOP" via "CZH_Foundations.CZH_Sets_FBRelations" via "CZH_Foundations.CZH_Sets_FSequences" via "CZH_Foundations.CZH_Sets_Cardinality" via "CZH_Foundations.CZH_Sets_Nat" via "CZH_Foundations.CZH_Sets_Sets" via "CZH_Foundations.CZH_Sets_Introduction" via "CZH_Foundations.CZH_Introduction" via "ZFC_in_HOL.ZFC_Typeclasses" via "ZFC_in_HOL.ZFC_Cardinals" via "ZFC_in_HOL.ZFC_in_HOL" via "ZFC_in_HOL.ZFC_Library" via "HOL-Cardinals.Cardinals" via "HOL-Cardinals.Ordinal_Arithmetic" via "HOL-Cardinals.Wellorder_Constructions" via "HOL-Cardinals.Wellorder_Embedding")
+### theory "Conditional_Simplification.CS_Tools"
+### 0.036s elapsed time, 0.141s cpu time, 0.000s GC time
+Loading theory "Conditional_Simplification.IHOL_CS" (required by "Draft.CZH_UCAT_IntroductionMoreTemplates" via "Draft.CZH_UCAT_Introduction" via "CZH_Elementary_Categories.CZH_ECAT_Introduction" via "CZH_Foundations.CZH_DG_Introduction" via "CZH_Foundations.CZH_Sets_NOP" via "CZH_Foundations.CZH_Sets_FBRelations" via "CZH_Foundations.CZH_Sets_FSequences" via "CZH_Foundations.CZH_Sets_Cardinality" via "CZH_Foundations.CZH_Sets_Nat" via "CZH_Foundations.CZH_Sets_Sets" via "CZH_Foundations.CZH_Sets_Introduction")
+### theory "CZH_Foundations.CZH_Sets_MIF"
+### 0.036s elapsed time, 0.141s cpu time, 0.000s GC time
+Loading theory "HOL-Cardinals.Order_Relation_More" (required by "Draft.CZH_UCAT_IntroductionMoreTemplates" via "Draft.CZH_UCAT_Introduction" via "CZH_Elementary_Categories.CZH_ECAT_Introduction" via "CZH_Foundations.CZH_DG_Introduction" via "CZH_Foundations.CZH_Sets_NOP" via "CZH_Foundations.CZH_Sets_FBRelations" via "CZH_Foundations.CZH_Sets_FSequences" via "CZH_Foundations.CZH_Sets_Cardinality" via "CZH_Foundations.CZH_Sets_Nat" via "CZH_Foundations.CZH_Sets_Sets" via "CZH_Foundations.CZH_Sets_Introduction" via "CZH_Foundations.CZH_Introduction" via "ZFC_in_HOL.ZFC_Typeclasses" via "ZFC_in_HOL.ZFC_Cardinals" via "ZFC_in_HOL.ZFC_in_HOL" via "ZFC_in_HOL.ZFC_Library" via "HOL-Cardinals.Cardinals" via "HOL-Cardinals.Ordinal_Arithmetic" via "HOL-Cardinals.Wellorder_Constructions" via "HOL-Cardinals.Wellorder_Embedding" via "HOL-Cardinals.Wellorder_Relation" via "HOL-Cardinals.Wellfounded_More")
+signature METHOD_CLOSURE =
+  sig
+    val apply_method:
+       Proof.context ->
+         string ->
+           term list ->
+             thm list list ->
+               (Proof.context -> Method.method) list ->
+                 Proof.context -> thm list -> context_tactic
+    val method:
+       binding ->
+         (binding * typ option * mixfix) list ->
+           binding list ->
+             binding list ->
+               binding list ->
+                 Token.src -> local_theory -> string * local_theory
+    val method_cmd:
+       binding ->
+         (binding * string option * mixfix) list ->
+           binding list ->
+             binding list ->
+               binding list ->
+                 Token.src -> local_theory -> string * local_theory
+  end
+structure Method_Closure: METHOD_CLOSURE
+### theory "HOL-Cardinals.Fun_More"
+### 0.073s elapsed time, 0.276s cpu time, 0.035s GC time
+Loading theory "HOL-Cardinals.Order_Union" (required by "Draft.CZH_UCAT_IntroductionMoreTemplates" via "Draft.CZH_UCAT_Introduction" via "CZH_Elementary_Categories.CZH_ECAT_Introduction" via "CZH_Foundations.CZH_DG_Introduction" via "CZH_Foundations.CZH_Sets_NOP" via "CZH_Foundations.CZH_Sets_FBRelations" via "CZH_Foundations.CZH_Sets_FSequences" via "CZH_Foundations.CZH_Sets_Cardinality" via "CZH_Foundations.CZH_Sets_Nat" via "CZH_Foundations.CZH_Sets_Sets" via "CZH_Foundations.CZH_Sets_Introduction" via "CZH_Foundations.CZH_Introduction" via "ZFC_in_HOL.ZFC_Typeclasses" via "ZFC_in_HOL.ZFC_Cardinals" via "ZFC_in_HOL.ZFC_in_HOL" via "ZFC_in_HOL.ZFC_Library" via "HOL-Cardinals.Cardinals" via "HOL-Cardinals.Ordinal_Arithmetic" via "HOL-Cardinals.Wellorder_Constructions")
+signature CS_TIMEIT =
+  sig
+    val TIMEIT: int -> (thm -> thm Seq.seq) -> tactic
+    val mtimeit: int -> Method.text -> Proof.context -> Method.method
+    val timing_report: Timing.timing list -> unit
+    val timing_stats: Timing.timing list -> Timing.timing list
+  end
+structure CS_TimeIt: CS_TIMEIT
+signature CS_UM =
+  sig
+    val match_inst:
+       ((thm -> term) ->
+          (thm -> bool) ->
+            Proof.context -> thm -> term -> Envir.env list -> thm list)
+         ->
+         (thm -> term) ->
+           (thm -> bool) -> Proof.context -> thm -> term -> thm list
+    val match_inst_list:
+       (thm -> term) ->
+         (thm -> bool) ->
+           Proof.context -> thm -> term -> Envir.env list -> thm list
+    val match_inst_rec:
+       (thm -> term) ->
+         (thm -> bool) ->
+           Proof.context -> thm -> term -> Envir.env list -> thm list
+  end
+structure CS_UM: CS_UM
+structure Eisbach_Rule_Insts: sig end
+### theory "HOL-Cardinals.Order_Union"
+### 0.100s elapsed time, 0.402s cpu time, 0.000s GC time
+Loading theory "HOL-Cardinals.Wellorder_Extension" (required by "Draft.CZH_UCAT_IntroductionMoreTemplates" via "Draft.CZH_UCAT_Introduction" via "CZH_Elementary_Categories.CZH_ECAT_Introduction" via "CZH_Foundations.CZH_DG_Introduction" via "CZH_Foundations.CZH_Sets_NOP" via "CZH_Foundations.CZH_Sets_FBRelations" via "CZH_Foundations.CZH_Sets_FSequences" via "CZH_Foundations.CZH_Sets_Cardinality" via "CZH_Foundations.CZH_Sets_Nat" via "CZH_Foundations.CZH_Sets_Sets" via "CZH_Foundations.CZH_Sets_Introduction" via "CZH_Foundations.CZH_Introduction" via "ZFC_in_HOL.ZFC_Typeclasses" via "ZFC_in_HOL.ZFC_Cardinals" via "ZFC_in_HOL.ZFC_in_HOL" via "ZFC_in_HOL.ZFC_Library" via "HOL-Cardinals.Cardinals")
+signature CS_COND_SIMP =
+  sig
+    val concl_simp_of_simp: thm -> thm
+    val cs_concl:
+       Proof.context ->
+         int -> bool -> match -> ist -> is_thm list -> Method.method
+    val cs_concl_step:
+       Proof.context -> bool -> match -> thm list -> Method.method
+    val cs_concl_step_tac:
+       Proof.context -> bool -> match -> thm list -> int -> tactic
+    val cs_concl_tac:
+       Proof.context -> bool -> match -> ist -> is_thm list -> int -> tactic
+    val cs_intro_search_tac:
+       Proof.context -> bool -> thm list -> int -> tactic
+    val cs_intro_step_tac:
+       Proof.context -> bool -> thm list -> int -> tactic
+    val cs_prems:
+       Proof.context ->
+         int -> bool -> match -> ist -> is_thm list -> Method.method
+    val cs_prems_atom_step:
+       Proof.context -> match -> thm list -> Method.method
+    val cs_prems_atom_step_tac:
+       Proof.context -> match -> thm list -> int -> tactic
+    val cs_prems_step:
+       Proof.context -> bool -> match -> ist -> is_thm list -> Method.method
+    val cs_prems_step_tac:
+       Proof.context ->
+         bool ->
+           match ->
+             ist -> thm list -> is_thm list -> int -> thm -> thm Seq.seq
+    val cs_prems_tac:
+       Proof.context ->
+         bool -> match -> ist -> thm list -> is_thm list -> tactic
+    datatype is_thm = cs_intro of thm list | cs_simp of thm list
+    datatype ist = ist_compound | ist_simple
+    datatype match = mdefault | mfull
+    val prems_simp_of_simp: thm -> thm
+    val remdups_tac: Proof.context -> int -> tactic
+  end
+structure CS_Cond_Simp: CS_COND_SIMP
+### theory "Conditional_Simplification.IHOL_CS"
+### 0.249s elapsed time, 0.963s cpu time, 0.116s GC time
+Loading theory "HOL-Library.FuncSet" (required by "Draft.CZH_UCAT_IntroductionMoreTemplates" via "Draft.CZH_UCAT_Introduction" via "CZH_Elementary_Categories.CZH_ECAT_Introduction" via "CZH_Foundations.CZH_DG_Introduction" via "CZH_Foundations.CZH_Sets_NOP" via "CZH_Foundations.CZH_Sets_FBRelations" via "CZH_Foundations.CZH_Sets_FSequences" via "CZH_Foundations.CZH_Sets_Cardinality" via "CZH_Foundations.CZH_Sets_Nat" via "CZH_Foundations.CZH_Sets_Sets" via "CZH_Foundations.CZH_Sets_Introduction" via "CZH_Foundations.CZH_Introduction" via "ZFC_in_HOL.ZFC_Typeclasses" via "ZFC_in_HOL.ZFC_Cardinals" via "ZFC_in_HOL.ZFC_in_HOL" via "ZFC_in_HOL.ZFC_Library" via "HOL-Library.Equipollence")
+### theory "HOL-Cardinals.Order_Relation_More"
+### 0.241s elapsed time, 0.937s cpu time, 0.116s GC time
+Loading theory "HOL-Cardinals.Wellfounded_More" (required by "Draft.CZH_UCAT_IntroductionMoreTemplates" via "Draft.CZH_UCAT_Introduction" via "CZH_Elementary_Categories.CZH_ECAT_Introduction" via "CZH_Foundations.CZH_DG_Introduction" via "CZH_Foundations.CZH_Sets_NOP" via "CZH_Foundations.CZH_Sets_FBRelations" via "CZH_Foundations.CZH_Sets_FSequences" via "CZH_Foundations.CZH_Sets_Cardinality" via "CZH_Foundations.CZH_Sets_Nat" via "CZH_Foundations.CZH_Sets_Sets" via "CZH_Foundations.CZH_Sets_Introduction" via "CZH_Foundations.CZH_Introduction" via "ZFC_in_HOL.ZFC_Typeclasses" via "ZFC_in_HOL.ZFC_Cardinals" via "ZFC_in_HOL.ZFC_in_HOL" via "ZFC_in_HOL.ZFC_Library" via "HOL-Cardinals.Cardinals" via "HOL-Cardinals.Ordinal_Arithmetic" via "HOL-Cardinals.Wellorder_Constructions" via "HOL-Cardinals.Wellorder_Embedding" via "HOL-Cardinals.Wellorder_Relation")
+### theory "HOL-Cardinals.Wellorder_Extension"
+### 0.089s elapsed time, 0.332s cpu time, 0.082s GC time
+Loading theory "HOL-Library.Function_Algebras" (required by "Draft.CZH_UCAT_IntroductionMoreTemplates" via "Draft.ExtrEqs" via "HOL-Library.BigO")
+### theory "HOL-Cardinals.Wellfounded_More"
+### 0.032s elapsed time, 0.128s cpu time, 0.000s GC time
+Loading theory "HOL-Cardinals.Wellorder_Relation" (required by "Draft.CZH_UCAT_IntroductionMoreTemplates" via "Draft.CZH_UCAT_Introduction" via "CZH_Elementary_Categories.CZH_ECAT_Introduction" via "CZH_Foundations.CZH_DG_Introduction" via "CZH_Foundations.CZH_Sets_NOP" via "CZH_Foundations.CZH_Sets_FBRelations" via "CZH_Foundations.CZH_Sets_FSequences" via "CZH_Foundations.CZH_Sets_Cardinality" via "CZH_Foundations.CZH_Sets_Nat" via "CZH_Foundations.CZH_Sets_Sets" via "CZH_Foundations.CZH_Sets_Introduction" via "CZH_Foundations.CZH_Introduction" via "ZFC_in_HOL.ZFC_Typeclasses" via "ZFC_in_HOL.ZFC_Cardinals" via "ZFC_in_HOL.ZFC_in_HOL" via "ZFC_in_HOL.ZFC_Library" via "HOL-Cardinals.Cardinals" via "HOL-Cardinals.Ordinal_Arithmetic" via "HOL-Cardinals.Wellorder_Constructions" via "HOL-Cardinals.Wellorder_Embedding")
+instantiation
+  fun :: (type, plus) plus
+  plus_fun == plus :: ('a => 'b) => ('a => 'b) => 'a => 'b
+instantiation
+  fun :: (type, zero) zero
+  zero_fun == zero_class.zero :: 'a => 'b
+instantiation
+  fun :: (type, times) times
+  times_fun == times :: ('a => 'b) => ('a => 'b) => 'a => 'b
+locale wo_rel
+  fixes r :: "('a * 'a) set"
+  assumes "wo_rel r"
+instantiation
+  fun :: (type, one) one
+  one_fun == one_class.one :: 'a => 'b
+### ML warning (line 170 of "~~/src/HOL/Eisbach/match_method.ML"):
+### Pattern is not exhaustive.
+### ML warning (line 187 of "~~/src/HOL/Eisbach/match_method.ML"):
+### Pattern is not exhaustive.
+### ML warning (line 309 of "~~/src/HOL/Eisbach/match_method.ML"):
+### Pattern is not exhaustive.
+signature MATCH_METHOD =
+  sig
+    val focus_params: Proof.context -> term list
+    val focus_schematics: Proof.context -> Envir.tenv
+  end
+structure Match_Method: MATCH_METHOD
+val method_evaluate = fn: Method.text -> Proof.context -> thm list -> tactic
+### theory "HOL-Library.Function_Algebras"
+### 0.110s elapsed time, 0.432s cpu time, 0.059s GC time
+Loading theory "HOL-Library.Infinite_Set" (required by "Draft.CZH_UCAT_IntroductionMoreTemplates" via "Draft.CZH_UCAT_Introduction" via "CZH_Elementary_Categories.CZH_ECAT_Introduction" via "CZH_Foundations.CZH_DG_Introduction" via "CZH_Foundations.CZH_Sets_NOP" via "CZH_Foundations.CZH_Sets_FBRelations" via "CZH_Foundations.CZH_Sets_FSequences" via "CZH_Foundations.CZH_Sets_Cardinality" via "CZH_Foundations.CZH_Sets_Nat" via "CZH_Foundations.CZH_Sets_Sets" via "CZH_Foundations.CZH_Sets_Introduction" via "CZH_Foundations.CZH_Introduction" via "ZFC_in_HOL.ZFC_Typeclasses" via "ZFC_in_HOL.ZFC_Cardinals" via "ZFC_in_HOL.ZFC_in_HOL" via "ZFC_in_HOL.ZFC_Library" via "HOL-Library.Countable_Set")
+### theory "HOL-Eisbach.Eisbach"
+### 0.432s elapsed time, 1.681s cpu time, 0.175s GC time
+Loading theory "HOL-Library.Nat_Bijection" (required by "Draft.CZH_UCAT_IntroductionMoreTemplates" via "Draft.ExtrEqs" via "HOL-Library.Stream")
+### theory "HOL-Cardinals.Wellorder_Relation"
+### 0.160s elapsed time, 0.668s cpu time, 0.059s GC time
+Loading theory "HOL-Cardinals.Wellorder_Embedding" (required by "Draft.CZH_UCAT_IntroductionMoreTemplates" via "Draft.CZH_UCAT_Introduction" via "CZH_Elementary_Categories.CZH_ECAT_Introduction" via "CZH_Foundations.CZH_DG_Introduction" via "CZH_Foundations.CZH_Sets_NOP" via "CZH_Foundations.CZH_Sets_FBRelations" via "CZH_Foundations.CZH_Sets_FSequences" via "CZH_Foundations.CZH_Sets_Cardinality" via "CZH_Foundations.CZH_Sets_Nat" via "CZH_Foundations.CZH_Sets_Sets" via "CZH_Foundations.CZH_Sets_Introduction" via "CZH_Foundations.CZH_Introduction" via "ZFC_in_HOL.ZFC_Typeclasses" via "ZFC_in_HOL.ZFC_Cardinals" via "ZFC_in_HOL.ZFC_in_HOL" via "ZFC_in_HOL.ZFC_Library" via "HOL-Cardinals.Cardinals" via "HOL-Cardinals.Ordinal_Arithmetic" via "HOL-Cardinals.Wellorder_Constructions")
+Found termination order: "(%p. size (snd p)) <*mlex*> {}"
+consts
+  enumerate :: "'a set => nat => 'a"
+Found termination order: "size_list size <*mlex*> {}"
+### theory "HOL-Cardinals.Wellorder_Embedding"
+### 0.175s elapsed time, 0.676s cpu time, 0.147s GC time
+Loading theory "HOL-Cardinals.Wellorder_Constructions" (required by "Draft.CZH_UCAT_IntroductionMoreTemplates" via "Draft.CZH_UCAT_Introduction" via "CZH_Elementary_Categories.CZH_ECAT_Introduction" via "CZH_Foundations.CZH_DG_Introduction" via "CZH_Foundations.CZH_Sets_NOP" via "CZH_Foundations.CZH_Sets_FBRelations" via "CZH_Foundations.CZH_Sets_FSequences" via "CZH_Foundations.CZH_Sets_Cardinality" via "CZH_Foundations.CZH_Sets_Nat" via "CZH_Foundations.CZH_Sets_Sets" via "CZH_Foundations.CZH_Sets_Introduction" via "CZH_Foundations.CZH_Introduction" via "ZFC_in_HOL.ZFC_Typeclasses" via "ZFC_in_HOL.ZFC_Cardinals" via "ZFC_in_HOL.ZFC_in_HOL" via "ZFC_in_HOL.ZFC_Library" via "HOL-Cardinals.Cardinals" via "HOL-Cardinals.Ordinal_Arithmetic")
+### theory "HOL-Library.FuncSet"
+### 0.380s elapsed time, 1.523s cpu time, 0.205s GC time
+Loading theory "HOL-Library.Equipollence" (required by "Draft.CZH_UCAT_IntroductionMoreTemplates" via "Draft.CZH_UCAT_Introduction" via "CZH_Elementary_Categories.CZH_ECAT_Introduction" via "CZH_Foundations.CZH_DG_Introduction" via "CZH_Foundations.CZH_Sets_NOP" via "CZH_Foundations.CZH_Sets_FBRelations" via "CZH_Foundations.CZH_Sets_FSequences" via "CZH_Foundations.CZH_Sets_Cardinality" via "CZH_Foundations.CZH_Sets_Nat" via "CZH_Foundations.CZH_Sets_Sets" via "CZH_Foundations.CZH_Sets_Introduction" via "CZH_Foundations.CZH_Introduction" via "ZFC_in_HOL.ZFC_Typeclasses" via "ZFC_in_HOL.ZFC_Cardinals" via "ZFC_in_HOL.ZFC_in_HOL" via "ZFC_in_HOL.ZFC_Library")
+### theory "HOL-Library.Infinite_Set"
+### 0.264s elapsed time, 1.068s cpu time, 0.147s GC time
+Loading theory "HOL-Library.Old_Datatype" (required by "Draft.CZH_UCAT_IntroductionMoreTemplates" via "Draft.CZH_UCAT_Introduction" via "CZH_Elementary_Categories.CZH_ECAT_Introduction" via "CZH_Foundations.CZH_DG_Introduction" via "CZH_Foundations.CZH_Sets_NOP" via "CZH_Foundations.CZH_Sets_FBRelations" via "CZH_Foundations.CZH_Sets_FSequences" via "CZH_Foundations.CZH_Sets_Cardinality" via "CZH_Foundations.CZH_Sets_Nat" via "CZH_Foundations.CZH_Sets_Sets" via "CZH_Foundations.CZH_Sets_Introduction" via "CZH_Foundations.CZH_Introduction" via "ZFC_in_HOL.ZFC_Typeclasses" via "ZFC_in_HOL.ZFC_Cardinals" via "ZFC_in_HOL.ZFC_in_HOL" via "ZFC_in_HOL.ZFC_Library" via "HOL-Library.Countable_Set" via "HOL-Library.Countable")
+### theory "HOL-Library.Nat_Bijection"
+### 0.299s elapsed time, 1.209s cpu time, 0.147s GC time
+Loading theory "HOL-Library.Stream" (required by "Draft.CZH_UCAT_IntroductionMoreTemplates" via "Draft.ExtrEqs")
+### theory "HOL-Library.Equipollence"
+### 0.372s elapsed time, 1.344s cpu time, 0.528s GC time
+Loading theory "HOL-Library.Rewrite" (required by "Draft.CZH_UCAT_IntroductionMoreTemplates" via "Draft.CZH_UCAT_Introduction" via "CZH_Elementary_Categories.CZH_ECAT_Introduction" via "CZH_Foundations.CZH_DG_Introduction")
+locale wo_rel
+  fixes r :: "('a * 'a) set"
+  assumes "wo_rel r"
+infix 1 then_cconv
+infix 0 else_cconv
+type cconv = conv
+signature BASIC_CCONV =
+  sig
+    val CCONVERSION: cconv -> int -> tactic
+    type cconv = conv
+    val else_cconv: cconv * cconv -> cconv
+    val then_cconv: cconv * cconv -> cconv
+  end
+signature CCONV =
+  sig
+    val CCONVERSION: cconv -> int -> tactic
+    val abs_cconv:
+       (cterm * Proof.context -> cconv) -> Proof.context -> cconv
+    val all_cconv: cconv
+    val arg1_cconv: cconv -> cconv
+    val arg_cconv: cconv -> cconv
+    type cconv = conv
+    val comb_cconv: cconv -> cconv
+    val combination_cconv: cconv -> cconv -> cconv
+    val concl_cconv: int -> cconv -> cconv
+    val else_cconv: cconv * cconv -> cconv
+    val fconv_rule: cconv -> thm -> thm
+    val first_cconv: cconv list -> cconv
+    val fun2_cconv: cconv -> cconv
+    val fun_cconv: cconv -> cconv
+    val gconv_rule: cconv -> int -> thm -> thm
+    val no_cconv: cconv
+    val params_cconv:
+       int -> (Proof.context -> cconv) -> Proof.context -> cconv
+    val prems_cconv: int -> cconv -> cconv
+    val rewr_cconv: thm -> cconv
+    val rewrs_cconv: thm list -> cconv
+    val then_cconv: cconv * cconv -> cconv
+    val with_prems_cconv: int -> cconv -> cconv
+  end
+structure CConv: CCONV
+structure Basic_CConv: BASIC_CCONV
+val then_cconv = fn: cconv * cconv -> cconv
+val CCONVERSION = fn: cconv -> int -> tactic
+val else_cconv = fn: cconv * cconv -> cconv
+signature OLD_DATATYPE =
+  sig
+    val check_specs: spec list -> theory -> spec list * Proof.context
+    type config = {quiet: bool, strict: bool}
+    val default_config: config
+    type descr =
+       (int * (string * dtyp list * (string * dtyp list) list)) list
+    val distinct_lemma: thm
+    datatype dtyp
+    = DtRec of int | DtTFree of string * sort | DtType of string * dtyp list
+    type info =
+       {case_cong: thm,
+        case_cong_weak: thm,
+        case_name: string,
+        case_rewrites: thm list,
+        descr: descr,
+        distinct: thm list,
+        exhaust: thm,
+        index: int,
+        induct: thm,
+        inducts: thm list,
+        inject: thm list,
+        nchotomy: thm,
+        rec_names: string list,
+        rec_rewrites: thm list, split: thm, split_asm: thm}
+    val read_specs: spec_cmd list -> theory -> spec list * Proof.context
+    type spec =
+       (binding * (string * sort) list * mixfix) *
+       (binding * typ list * mixfix) list
+    type spec_cmd =
+       (binding * (string * string option) list * mixfix) *
+       (binding * string list * mixfix) list
+  end
+structure Old_Datatype: OLD_DATATYPE
+### theory "HOL-Library.Old_Datatype"
+### 0.547s elapsed time, 2.030s cpu time, 0.617s GC time
+Loading theory "HOL-Library.Set_Algebras" (required by "Draft.CZH_UCAT_IntroductionMoreTemplates" via "Draft.ExtrEqs" via "HOL-Library.BigO")
+instantiation
+  set :: (plus) plus
+  plus_set == plus :: 'a set => 'a set => 'a set
+instantiation
+  set :: (times) times
+  times_set == times :: 'a set => 'a set => 'a set
+instantiation
+  set :: (zero) zero
+  zero_set == zero_class.zero :: 'a set
+instantiation
+  set :: (one) one
+  one_set == one_class.one :: 'a set
+consts
+  shift :: "'a list => 'a stream => 'a stream"
+infix 1 then_pconv
+infix 0 else_pconv
+signature REWRITE =
+  sig
+    val abs_pconv: patconv -> string option * typ -> patconv
+    val all_pconv: patconv
+    val arg_pconv: patconv -> patconv
+    val asm_pconv: patconv -> patconv
+    val asms_pconv: patconv -> patconv
+    val concl_pconv: patconv -> patconv
+    val else_pconv: patconv * patconv -> patconv
+    val for_pconv: patconv -> (string option * typ option) list -> patconv
+    val forall_pconv: patconv -> string option * typ option -> patconv
+    val fun_pconv: patconv -> patconv
+    val imp_pconv: patconv -> patconv
+    val in_pconv: patconv -> patconv
+    val judgment_pconv: patconv -> patconv
+    val match_pconv: patconv -> term * (string option * typ) list -> patconv
+    val mk_hole: int -> typ -> term
+    val params_pconv: patconv -> patconv
+    type patconv =
+       Proof.context -> Type.tyenv * (string * term) list -> cconv
+    datatype ('a, 'b) pattern
+    = Asm | At | Concl | For of 'b list | In | Term of 'a
+    val rewrite_conv:
+       Proof.context ->
+         (term * (string * typ) list, string * typ option) pattern list *
+         term option
+           -> thm list -> conv
+    val rewrs_pconv: term option -> thm list -> patconv
+    val then_pconv: patconv * patconv -> patconv
+  end
+structure Rewrite: REWRITE
+### theory "HOL-Library.Rewrite"
+### 0.289s elapsed time, 1.138s cpu time, 0.142s GC time
+Loading theory "HOL-Library.Tree" (required by "Draft.CZH_UCAT_IntroductionMoreTemplates" via "Draft.ExtrEqs" via "Draft.Templates")
+Proofs for coinductive predicate(s) "streamsp"
+  Proving monotonicity ...
+consts
+  snth :: "'a stream => nat => 'a"
+consts
+  stake :: "nat => 'a stream => 'a list"
+### theory "HOL-Library.Set_Algebras"
+### 0.192s elapsed time, 0.757s cpu time, 0.053s GC time
+consts
+  sdrop :: "nat => 'a stream => 'a stream"
+Loading theory "HOL-Library.Countable" (required by "Draft.CZH_UCAT_IntroductionMoreTemplates" via "Draft.CZH_UCAT_Introduction" via "CZH_Elementary_Categories.CZH_ECAT_Introduction" via "CZH_Foundations.CZH_DG_Introduction" via "CZH_Foundations.CZH_Sets_NOP" via "CZH_Foundations.CZH_Sets_FBRelations" via "CZH_Foundations.CZH_Sets_FSequences" via "CZH_Foundations.CZH_Sets_Cardinality" via "CZH_Foundations.CZH_Sets_Nat" via "CZH_Foundations.CZH_Sets_Sets" via "CZH_Foundations.CZH_Sets_Introduction" via "CZH_Foundations.CZH_Introduction" via "ZFC_in_HOL.ZFC_Typeclasses" via "ZFC_in_HOL.ZFC_Cardinals" via "ZFC_in_HOL.ZFC_in_HOL" via "ZFC_in_HOL.ZFC_Library" via "HOL-Library.Countable_Set")
+consts
+  sfilter :: "('a => bool) => 'a stream => 'a stream"
+### theory "HOL-Cardinals.Wellorder_Constructions"
+### 0.839s elapsed time, 3.177s cpu time, 0.736s GC time
+Loading theory "HOL-Cardinals.Cardinal_Order_Relation" (required by "Draft.CZH_UCAT_IntroductionMoreTemplates" via "Draft.CZH_UCAT_Introduction" via "CZH_Elementary_Categories.CZH_ECAT_Introduction" via "CZH_Foundations.CZH_DG_Introduction" via "CZH_Foundations.CZH_Sets_NOP" via "CZH_Foundations.CZH_Sets_FBRelations" via "CZH_Foundations.CZH_Sets_FSequences" via "CZH_Foundations.CZH_Sets_Cardinality" via "CZH_Foundations.CZH_Sets_Nat" via "CZH_Foundations.CZH_Sets_Sets" via "CZH_Foundations.CZH_Sets_Introduction" via "CZH_Foundations.CZH_Introduction" via "ZFC_in_HOL.ZFC_Typeclasses" via "ZFC_in_HOL.ZFC_Cardinals" via "ZFC_in_HOL.ZFC_in_HOL" via "ZFC_in_HOL.ZFC_Library" via "HOL-Cardinals.Cardinals" via "HOL-Cardinals.Cardinal_Arithmetic")
+consts
+  cycle :: "'a list => 'a stream"
+consts
+  siterate :: "('a => 'a) => 'a => 'a stream"
+consts
+  flat :: "'a list stream => 'a stream"
+consts
+  sinterleave :: "'a stream => 'a stream => 'a stream"
+consts
+  szip :: "'a stream => 'b stream => ('a * 'b) stream"
+consts
+  smap2 :: "('a => 'b => 'c) => 'a stream => 'b stream => 'c stream"
+### theory "HOL-Library.Stream"
+### 0.987s elapsed time, 3.760s cpu time, 0.827s GC time
+Loading theory "HOL-Cardinals.Ordinal_Arithmetic" (required by "Draft.CZH_UCAT_IntroductionMoreTemplates" via "Draft.CZH_UCAT_Introduction" via "CZH_Elementary_Categories.CZH_ECAT_Introduction" via "CZH_Foundations.CZH_DG_Introduction" via "CZH_Foundations.CZH_Sets_NOP" via "CZH_Foundations.CZH_Sets_FBRelations" via "CZH_Foundations.CZH_Sets_FSequences" via "CZH_Foundations.CZH_Sets_Cardinality" via "CZH_Foundations.CZH_Sets_Nat" via "CZH_Foundations.CZH_Sets_Sets" via "CZH_Foundations.CZH_Sets_Introduction" via "CZH_Foundations.CZH_Introduction" via "ZFC_in_HOL.ZFC_Typeclasses" via "ZFC_in_HOL.ZFC_Cardinals" via "ZFC_in_HOL.ZFC_in_HOL" via "ZFC_in_HOL.ZFC_Library" via "HOL-Cardinals.Cardinals")
+### Additional type variable(s) in locale specification "countable": 'a
+class countable = type +
+  assumes "ex_inj": "EX to_nat. inj to_nat"
+consts
+  left :: "'a tree => 'a tree"
+consts
+  right :: "'a tree => 'a tree"
+Found termination order: "size <*mlex*> {}"
+locale wo_rel
+  fixes r :: "('a * 'a) set"
+  assumes "wo_rel r"
+Found termination order: "size <*mlex*> {}"
+locale wo_rel2
+  fixes r :: "('a * 'a) set"
+    and s :: "('b * 'b) set"
+  assumes "wo_rel2 r s"
+Proofs for inductive predicate(s) "finite_item"
+  Proving monotonicity ...
+Found termination order: "size <*mlex*> {}"
+class height = type +
+  fixes height :: "'a => nat"
+instantiation
+  tree :: (type) height
+  height_tree == height :: 'a tree => nat
+Found termination order: "size <*mlex*> {}"
+### theory "HOL-Cardinals.Cardinal_Order_Relation"
+### 0.665s elapsed time, 2.605s cpu time, 0.380s GC time
+Loading theory "HOL-Cardinals.Cardinal_Arithmetic" (required by "Draft.CZH_UCAT_IntroductionMoreTemplates" via "Draft.CZH_UCAT_Introduction" via "CZH_Elementary_Categories.CZH_ECAT_Introduction" via "CZH_Foundations.CZH_DG_Introduction" via "CZH_Foundations.CZH_Sets_NOP" via "CZH_Foundations.CZH_Sets_FBRelations" via "CZH_Foundations.CZH_Sets_FSequences" via "CZH_Foundations.CZH_Sets_Cardinality" via "CZH_Foundations.CZH_Sets_Nat" via "CZH_Foundations.CZH_Sets_Sets" via "CZH_Foundations.CZH_Sets_Introduction" via "CZH_Foundations.CZH_Introduction" via "ZFC_in_HOL.ZFC_Typeclasses" via "ZFC_in_HOL.ZFC_Cardinals" via "ZFC_in_HOL.ZFC_in_HOL" via "ZFC_in_HOL.ZFC_Library" via "HOL-Cardinals.Cardinals")
+val old_countable_datatype_tac = fn: Proof.context -> int -> tactic
+Found termination order: "size <*mlex*> {}"
+### ML warning (line 93 of "~~/src/HOL/Tools/BNF/bnf_lfp_countable.ML"):
+### Pattern is not exhaustive.
+### ML warning (line 139 of "~~/src/HOL/Tools/BNF/bnf_lfp_countable.ML"):
+### Pattern is not exhaustive.
+### ML warning (line 143 of "~~/src/HOL/Tools/BNF/bnf_lfp_countable.ML"):
+### Matches are not exhaustive.
+### ML warning (line 145 of "~~/src/HOL/Tools/BNF/bnf_lfp_countable.ML"):
+### Matches are not exhaustive.
+### ML warning (line 156 of "~~/src/HOL/Tools/BNF/bnf_lfp_countable.ML"):
+### Pattern is not exhaustive.
+signature BNF_LFP_COUNTABLE =
+  sig
+    val countable_datatype_tac: Proof.context -> tactic
+    val derive_encode_injectives_thms:
+       Proof.context -> string list -> thm list
+  end
+structure BNF_LFP_Countable: BNF_LFP_COUNTABLE
+val countable_datatype_tac = fn: Proof.context -> thm -> thm Seq.seq
+val countable_tac = fn: Proof.context -> int -> tactic
+Found termination order: "size <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+### theory "HOL-Cardinals.Cardinal_Arithmetic"
+### 0.455s elapsed time, 1.649s cpu time, 0.977s GC time
+Loading theory "HOL-Library.BigO" (required by "Draft.CZH_UCAT_IntroductionMoreTemplates" via "Draft.ExtrEqs")
+Found termination order: "size <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+### theory "HOL-Cardinals.Ordinal_Arithmetic"
+### 1.008s elapsed time, 3.819s cpu time, 1.233s GC time
+Loading theory "HOL-Cardinals.Cardinals" (required by "Draft.CZH_UCAT_IntroductionMoreTemplates" via "Draft.CZH_UCAT_Introduction" via "CZH_Elementary_Categories.CZH_ECAT_Introduction" via "CZH_Foundations.CZH_DG_Introduction" via "CZH_Foundations.CZH_Sets_NOP" via "CZH_Foundations.CZH_Sets_FBRelations" via "CZH_Foundations.CZH_Sets_FSequences" via "CZH_Foundations.CZH_Sets_Cardinality" via "CZH_Foundations.CZH_Sets_Nat" via "CZH_Foundations.CZH_Sets_Sets" via "CZH_Foundations.CZH_Sets_Introduction" via "CZH_Foundations.CZH_Introduction" via "ZFC_in_HOL.ZFC_Typeclasses" via "ZFC_in_HOL.ZFC_Cardinals" via "ZFC_in_HOL.ZFC_in_HOL" via "ZFC_in_HOL.ZFC_Library")
+### theory "HOL-Library.Countable"
+### 1.365s elapsed time, 5.223s cpu time, 1.470s GC time
+Loading theory "HOL-Library.Countable_Set" (required by "Draft.CZH_UCAT_IntroductionMoreTemplates" via "Draft.CZH_UCAT_Introduction" via "CZH_Elementary_Categories.CZH_ECAT_Introduction" via "CZH_Foundations.CZH_DG_Introduction" via "CZH_Foundations.CZH_Sets_NOP" via "CZH_Foundations.CZH_Sets_FBRelations" via "CZH_Foundations.CZH_Sets_FSequences" via "CZH_Foundations.CZH_Sets_Cardinality" via "CZH_Foundations.CZH_Sets_Nat" via "CZH_Foundations.CZH_Sets_Sets" via "CZH_Foundations.CZH_Sets_Introduction" via "CZH_Foundations.CZH_Introduction" via "ZFC_in_HOL.ZFC_Typeclasses" via "ZFC_in_HOL.ZFC_Cardinals" via "ZFC_in_HOL.ZFC_in_HOL" via "ZFC_in_HOL.ZFC_Library")
+Found termination order: "size <*mlex*> {}"
+Found termination order: "(%p. size (fst p)) <*mlex*> {}"
+Found termination order: "size <*mlex*> {}"
+### theory "HOL-Cardinals.Cardinals"
+### 0.224s elapsed time, 0.891s cpu time, 0.052s GC time
+Loading theory "Intro_Dest_Elim.IDE_Tools" (required by "Draft.CZH_UCAT_IntroductionMoreTemplates" via "Draft.CZH_UCAT_Introduction" via "CZH_Elementary_Categories.CZH_ECAT_Introduction" via "CZH_Foundations.CZH_DG_Introduction" via "CZH_Foundations.CZH_Sets_NOP" via "CZH_Foundations.CZH_Sets_FBRelations" via "CZH_Foundations.CZH_Sets_FSequences" via "CZH_Foundations.CZH_Sets_Cardinality" via "CZH_Foundations.CZH_Sets_Nat" via "CZH_Foundations.CZH_Sets_Sets" via "CZH_Foundations.CZH_Sets_Introduction" via "Intro_Dest_Elim.IHOL_IDE")
+signature IDE_UTILITIES =
+  sig
+    val thm_printer: Proof.context -> bool -> string -> thm list -> unit
+  end
+structure IDE_Utilities: IDE_UTILITIES
+### theory "Intro_Dest_Elim.IDE_Tools"
+### 0.028s elapsed time, 0.121s cpu time, 0.000s GC time
+Loading theory "Intro_Dest_Elim.IHOL_IDE" (required by "Draft.CZH_UCAT_IntroductionMoreTemplates" via "Draft.CZH_UCAT_Introduction" via "CZH_Elementary_Categories.CZH_ECAT_Introduction" via "CZH_Foundations.CZH_DG_Introduction" via "CZH_Foundations.CZH_Sets_NOP" via "CZH_Foundations.CZH_Sets_FBRelations" via "CZH_Foundations.CZH_Sets_FSequences" via "CZH_Foundations.CZH_Sets_Cardinality" via "CZH_Foundations.CZH_Sets_Nat" via "CZH_Foundations.CZH_Sets_Sets" via "CZH_Foundations.CZH_Sets_Introduction")
+Found termination order: "(%p. size (snd p)) <*mlex*> {}"
+locale comm_monoid_set
+  fixes f :: "'a => 'a => 'a"  (infixl \<open>\<^bold>*\<close> 70)
+    and z :: "'a"  (\<open>\<^bold>1\<close>)
+  assumes "comm_monoid_set (\<^bold>*) \<^bold>1"
+signature IDE =
+  sig
+    val mk_dest: Proof.context -> thm -> thm list
+    val mk_elim: Proof.context -> thm -> thm list
+    val mk_intro: Proof.context -> thm -> thm list
+  end
+structure IDE: IDE
+### theory "Intro_Dest_Elim.IHOL_IDE"
+### 0.058s elapsed time, 0.229s cpu time, 0.000s GC time
+### theory "HOL-Library.Countable_Set"
+### 0.425s elapsed time, 1.579s cpu time, 0.111s GC time
+Loading theory "ZFC_in_HOL.ZFC_Library" (required by "Draft.CZH_UCAT_IntroductionMoreTemplates" via "Draft.CZH_UCAT_Introduction" via "CZH_Elementary_Categories.CZH_ECAT_Introduction" via "CZH_Foundations.CZH_DG_Introduction" via "CZH_Foundations.CZH_Sets_NOP" via "CZH_Foundations.CZH_Sets_FBRelations" via "CZH_Foundations.CZH_Sets_FSequences" via "CZH_Foundations.CZH_Sets_Cardinality" via "CZH_Foundations.CZH_Sets_Nat" via "CZH_Foundations.CZH_Sets_Sets" via "CZH_Foundations.CZH_Sets_Introduction" via "CZH_Foundations.CZH_Introduction" via "ZFC_in_HOL.ZFC_Typeclasses" via "ZFC_in_HOL.ZFC_Cardinals" via "ZFC_in_HOL.ZFC_in_HOL")
+Found termination order: "size <*mlex*> {}"
+### theory "HOL-Library.BigO"
+### 0.761s elapsed time, 2.740s cpu time, 0.228s GC time
+### theory "HOL-Library.Tree"
+### 2.476s elapsed time, 9.057s cpu time, 2.825s GC time
+Loading theory "Draft.Templates" (required by "Draft.CZH_UCAT_IntroductionMoreTemplates" via "Draft.ExtrEqs")
+datatype template_term
+=
+     t_empty
+   | template_app of template_term * template_term
+   | template_hole of int
+   | template_var of int
+datatype sign
+= equals | greater_equals | greater_than | less_equals | less_than
+datatype template
+=
+     template_bimplication of template * template
+   | template_dunno
+   | template_equation of template_term * template_term
+   | template_implication of template list * template
+   | template_inequation of sign * template_term * template_term
+   | template_negation of template
+   | template_predicate of template_term
+constructor t_empty: template_term
+constructor template_app: template_term * template_term -> template_term
+constructor template_hole: int -> template_term
+constructor template_var: int -> template_term
+constructor equals: sign
+constructor greater_equals: sign
+constructor greater_than: sign
+constructor less_equals: sign
+constructor less_than: sign
+constructor template_bimplication: template * template -> template
+constructor template_dunno: template
+constructor template_equation: template_term * template_term -> template
+constructor template_implication: template list * template -> template
+constructor template_inequation:
+   sign * template_term * template_term -> template
+constructor template_negation: template -> template
+constructor template_predicate: template_term -> template
+val vfs = fn: term -> (indexname * typ) list * (string * typ) list
+val indexOf = fn: ''a list -> ''a -> int -> int
+val has_eq = fn: term -> bool
+val term2template = fn:
+   (indexname * typ) list -> (string * typ) list -> term -> template_term
+val lemma2predicate = fn: term -> term -> template
+val makeTemplatewithContext = fn: term -> term -> template
+val lemma2template = fn: term -> template
+val thm2template = fn: thm -> template
+val tterm2string = fn: template_term -> string
+val template2string = fn: template -> string
+val t = "height ?t <= size ?t": thm
+val th =
+   Const ("HOL.Trueprop", "bool => prop") $
+     (Const ("Orderings.ord_class.less_eq", "nat => nat => bool") $
+       (Const ("Tree.height_class.height", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree")) $
+       (Const ("Nat.size_class.size", "?'a tree => nat") $
+         Var (("t", 0), "?'a tree"))):
+   term
+### theory "Draft.Templates"
+### 0.073s elapsed time, 0.175s cpu time, 0.000s GC time
+Loading theory "Draft.ExtrEqs" (required by "Draft.CZH_UCAT_IntroductionMoreTemplates")
+### theory "ZFC_in_HOL.ZFC_Library"
+### 0.760s elapsed time, 2.253s cpu time, 1.280s GC time
+Loading theory "ZFC_in_HOL.ZFC_in_HOL" (required by "Draft.CZH_UCAT_IntroductionMoreTemplates" via "Draft.CZH_UCAT_Introduction" via "CZH_Elementary_Categories.CZH_ECAT_Introduction" via "CZH_Foundations.CZH_DG_Introduction" via "CZH_Foundations.CZH_Sets_NOP" via "CZH_Foundations.CZH_Sets_FBRelations" via "CZH_Foundations.CZH_Sets_FSequences" via "CZH_Foundations.CZH_Sets_Cardinality" via "CZH_Foundations.CZH_Sets_Nat" via "CZH_Foundations.CZH_Sets_Sets" via "CZH_Foundations.CZH_Sets_Introduction" via "CZH_Foundations.CZH_Introduction" via "ZFC_in_HOL.ZFC_Typeclasses" via "ZFC_in_HOL.ZFC_Cardinals")
+instantiation
+  V :: zero
+  zero_V == zero_class.zero :: V
+instantiation
+  V :: one
+  one_V == one_class.one :: V
+instantiation
+  V :: distrib_lattice
+  inf_V == inf :: V => V => V
+  sup_V == sup :: V => V => V
+  less_eq_V == less_eq :: V => V => bool
+  less_V == less :: V => V => bool
+instantiation
+  V :: Sup
+  Sup_V == Sup :: V set => V
+instantiation
+  V :: Inf
+  Inf_V == Inf :: V set => V
+instantiation
+  V :: conditionally_complete_lattice
+instantiation
+  V :: zero_neq_one
+instantiation
+  V :: zero_less_one
+consts
+  ord_of_nat :: "nat => V"
+val eqpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Var (("_dummy_", 2), "?'a"))
+       ):
+   term Find_Theorems.criterion
+val badeqpattern = Pattern (Const ("Pure.eq", "?'a => ?'a => prop")):
+   term Find_Theorems.criterion
+val undefpattern =
+   Pattern
+    (
+       Const ("HOL.Trueprop", "bool => prop") $
+         (Const ("HOL.eq", "?'a => ?'a => bool") $
+           Var (("_dummy_", 1), "?'a") $ Const ("HOL.undefined", "?'a"))
+       ):
+   term Find_Theorems.criterion
+val thmpattern =
+   Pattern
+    (Const ("HOL.Trueprop", "bool => prop") $ Var (("_dummy_", 1), "bool")):
+   term Find_Theorems.criterion
+val badnames =
+   ["*nitpick*", "*Nitpick*", "*full_exhaustive*", "*_def*", "Enum.finite*",
+    "*Quickcheck*", "ATP*", "*Nunchaku*", "*Code*", "*BNF*", "*SMT*",
+    "*.*.*"]:
+   string list
+val unwanted_names =
+   [(false, Name "*nitpick*"), (false, Name "*Nitpick*"),
+    (false, Name "*full_exhaustive*"), (false, Name "*_def*"),
+    (false, Name "Enum.finite*"), (false, Name "*Quickcheck*"),
+    (false, Name "ATP*"), (false, Name "*Nunchaku*"),
+    (false, Name "*Code*"), (false, Name "*BNF*"), (false, Name "*SMT*"),
+    (false, Name "*.*.*")]:
+   (bool * term Find_Theorems.criterion) list
+val has_vars = fn: term -> bool
+val get_all_eqs = fn: string -> Proof.context -> (string * thm) list
+val get_all_thms = fn: string -> Proof.context -> (string * thm) list
+val get_noneq_thms = fn: string -> Proof.context -> (string * thm) list
+val template_eqs = fn:
+   string -> Proof.context -> (string * thm * template) list
+val template_thms = fn:
+   string -> Proof.context -> (string * thm * template) list
+### theory "Draft.ExtrEqs"
+### 0.595s elapsed time, 1.255s cpu time, 0.133s GC time
+### theory "ZFC_in_HOL.ZFC_in_HOL"
+### 0.494s elapsed time, 1.023s cpu time, 0.097s GC time
+Loading theory "ZFC_in_HOL.ZFC_Cardinals" (required by "Draft.CZH_UCAT_IntroductionMoreTemplates" via "Draft.CZH_UCAT_Introduction" via "CZH_Elementary_Categories.CZH_ECAT_Introduction" via "CZH_Foundations.CZH_DG_Introduction" via "CZH_Foundations.CZH_Sets_NOP" via "CZH_Foundations.CZH_Sets_FBRelations" via "CZH_Foundations.CZH_Sets_FSequences" via "CZH_Foundations.CZH_Sets_Cardinality" via "CZH_Foundations.CZH_Sets_Nat" via "CZH_Foundations.CZH_Sets_Sets" via "CZH_Foundations.CZH_Sets_Introduction" via "CZH_Foundations.CZH_Introduction" via "ZFC_in_HOL.ZFC_Typeclasses")
+### theory "ZFC_in_HOL.ZFC_Cardinals"
+### 0.730s elapsed time, 0.876s cpu time, 0.200s GC time
+Loading theory "ZFC_in_HOL.Kirby" (required by "Draft.CZH_UCAT_IntroductionMoreTemplates" via "Draft.CZH_UCAT_Introduction" via "CZH_Elementary_Categories.CZH_ECAT_Introduction" via "CZH_Foundations.CZH_DG_Introduction" via "CZH_Foundations.CZH_Sets_NOP" via "CZH_Foundations.CZH_Sets_FBRelations" via "CZH_Foundations.CZH_Sets_FSequences" via "CZH_Foundations.CZH_Sets_Cardinality" via "CZH_Foundations.CZH_Sets_Nat" via "CZH_Foundations.CZH_Sets_Sets" via "CZH_Foundations.CZH_Sets_Introduction" via "ZFC_in_HOL.Cantor_NF" via "ZFC_in_HOL.Ordinal_Exp")
+Loading theory "ZFC_in_HOL.ZFC_Typeclasses" (required by "Draft.CZH_UCAT_IntroductionMoreTemplates" via "Draft.CZH_UCAT_Introduction" via "CZH_Elementary_Categories.CZH_ECAT_Introduction" via "CZH_Foundations.CZH_DG_Introduction" via "CZH_Foundations.CZH_Sets_NOP" via "CZH_Foundations.CZH_Sets_FBRelations" via "CZH_Foundations.CZH_Sets_FSequences" via "CZH_Foundations.CZH_Sets_Cardinality" via "CZH_Foundations.CZH_Sets_Nat" via "CZH_Foundations.CZH_Sets_Sets" via "CZH_Foundations.CZH_Sets_Introduction" via "CZH_Foundations.CZH_Introduction")
+instantiation
+  V :: plus
+  plus_V == plus :: V => V => V
+instantiation
+  V :: monoid_add
+instantiation
+  V :: times
+  times_V == times :: V => V => V
+instantiation
+  V :: monoid_mult
+### Additional type variable(s) in locale specification "embeddable": 'a
+### theory "ZFC_in_HOL.Kirby"
+### 0.740s elapsed time, 2.131s cpu time, 1.498s GC time
+Loading theory "ZFC_in_HOL.Ordinal_Exp" (required by "Draft.CZH_UCAT_IntroductionMoreTemplates" via "Draft.CZH_UCAT_Introduction" via "CZH_Elementary_Categories.CZH_ECAT_Introduction" via "CZH_Foundations.CZH_DG_Introduction" via "CZH_Foundations.CZH_Sets_NOP" via "CZH_Foundations.CZH_Sets_FBRelations" via "CZH_Foundations.CZH_Sets_FSequences" via "CZH_Foundations.CZH_Sets_Cardinality" via "CZH_Foundations.CZH_Sets_Nat" via "CZH_Foundations.CZH_Sets_Sets" via "CZH_Foundations.CZH_Sets_Introduction" via "ZFC_in_HOL.Cantor_NF")
+class embeddable = type +
+  assumes "ex_inj": "EX V_of. inj V_of"
+class countable = type +
+  assumes "ex_inj": "EX to_nat. inj to_nat"
+### theory "ZFC_in_HOL.Ordinal_Exp"
+### 0.131s elapsed time, 0.262s cpu time, 0.000s GC time
+Loading theory "ZFC_in_HOL.Cantor_NF" (required by "Draft.CZH_UCAT_IntroductionMoreTemplates" via "Draft.CZH_UCAT_Introduction" via "CZH_Elementary_Categories.CZH_ECAT_Introduction" via "CZH_Foundations.CZH_DG_Introduction" via "CZH_Foundations.CZH_Sets_NOP" via "CZH_Foundations.CZH_Sets_FBRelations" via "CZH_Foundations.CZH_Sets_FSequences" via "CZH_Foundations.CZH_Sets_Cardinality" via "CZH_Foundations.CZH_Sets_Nat" via "CZH_Foundations.CZH_Sets_Sets" via "CZH_Foundations.CZH_Sets_Introduction")
+consts
+  V_of_list :: "('a => V) => 'a list => V"
+### Additional type variable(s) in locale specification "small": 'a
+Found termination order: "(%p. size_list size (snd p)) <*mlex*> {}"
+class small = type +
+  assumes "small": "small UNIV"
+Found termination order: "length <*mlex*> {}"
+Found termination order: "(%p. size_list size (snd p)) <*mlex*> {}"
+class countable = embeddable +
+  assumes "ex_inj": "EX to_nat. inj to_nat"
+### theory "ZFC_in_HOL.Cantor_NF"
+### 0.430s elapsed time, 0.944s cpu time, 0.160s GC time
+### theory "ZFC_in_HOL.ZFC_Typeclasses"
+### 1.430s elapsed time, 3.509s cpu time, 1.658s GC time
+Loading theory "CZH_Foundations.CZH_Introduction" (required by "Draft.CZH_UCAT_IntroductionMoreTemplates" via "Draft.CZH_UCAT_Introduction" via "CZH_Elementary_Categories.CZH_ECAT_Introduction" via "CZH_Foundations.CZH_DG_Introduction" via "CZH_Foundations.CZH_Sets_NOP" via "CZH_Foundations.CZH_Sets_FBRelations" via "CZH_Foundations.CZH_Sets_FSequences" via "CZH_Foundations.CZH_Sets_Cardinality" via "CZH_Foundations.CZH_Sets_Nat" via "CZH_Foundations.CZH_Sets_Sets" via "CZH_Foundations.CZH_Sets_Introduction")
+### theory "CZH_Foundations.CZH_Introduction"
+### 0.029s elapsed time, 0.029s cpu time, 0.000s GC time
+Loading theory "CZH_Foundations.CZH_Sets_Introduction" (required by "Draft.CZH_UCAT_IntroductionMoreTemplates" via "Draft.CZH_UCAT_Introduction" via "CZH_Elementary_Categories.CZH_ECAT_Introduction" via "CZH_Foundations.CZH_DG_Introduction" via "CZH_Foundations.CZH_Sets_NOP" via "CZH_Foundations.CZH_Sets_FBRelations" via "CZH_Foundations.CZH_Sets_FSequences" via "CZH_Foundations.CZH_Sets_Cardinality" via "CZH_Foundations.CZH_Sets_Nat" via "CZH_Foundations.CZH_Sets_Sets")
+### theory "CZH_Foundations.CZH_Sets_Introduction"
+### 0.903s elapsed time, 0.934s cpu time, 0.042s GC time
+Loading theory "CZH_Foundations.CZH_Sets_Sets" (required by "Draft.CZH_UCAT_IntroductionMoreTemplates" via "Draft.CZH_UCAT_Introduction" via "CZH_Elementary_Categories.CZH_ECAT_Introduction" via "CZH_Foundations.CZH_DG_Introduction" via "CZH_Foundations.CZH_Sets_NOP" via "CZH_Foundations.CZH_Sets_FBRelations" via "CZH_Foundations.CZH_Sets_FSequences" via "CZH_Foundations.CZH_Sets_Cardinality" via "CZH_Foundations.CZH_Sets_Nat")
+### theory "CZH_Foundations.CZH_Sets_Sets"
+### 0.407s elapsed time, 0.480s cpu time, 0.098s GC time
+Loading theory "CZH_Foundations.CZH_Sets_BRelations" (required by "Draft.CZH_UCAT_IntroductionMoreTemplates" via "Draft.CZH_UCAT_Introduction" via "CZH_Elementary_Categories.CZH_ECAT_Introduction" via "CZH_Foundations.CZH_DG_Introduction" via "CZH_Foundations.CZH_Sets_NOP" via "CZH_Foundations.CZH_Sets_FBRelations" via "CZH_Foundations.CZH_Sets_FSequences" via "CZH_Foundations.CZH_Sets_Cardinality" via "CZH_Foundations.CZH_Sets_Equipollence" via "CZH_Foundations.CZH_Sets_IF")
+Loading theory "CZH_Foundations.CZH_Sets_Nat" (required by "Draft.CZH_UCAT_IntroductionMoreTemplates" via "Draft.CZH_UCAT_Introduction" via "CZH_Elementary_Categories.CZH_ECAT_Introduction" via "CZH_Foundations.CZH_DG_Introduction" via "CZH_Foundations.CZH_Sets_NOP" via "CZH_Foundations.CZH_Sets_FBRelations" via "CZH_Foundations.CZH_Sets_FSequences" via "CZH_Foundations.CZH_Sets_Cardinality")
+### theory "CZH_Foundations.CZH_Sets_Nat"
+### 0.217s elapsed time, 0.495s cpu time, 0.123s GC time
+locale vbrelation
+  fixes r :: "V"
+  assumes "vbrelation r"
+locale vsv
+  fixes r :: "V"
+  assumes "vsv r"
+theorem
+  vsvI:
+    [| vbrelation ?r;
+       !!a b c.
+          [| <a, b> \<in>\<^sub>\<circ> ?r; <a, c> \<in>\<^sub>\<circ> ?r |]
+          ==> b = c |]
+    ==> vsv ?r
+theorem
+  vsvD:
+    vsv ?r ==> vbrelation ?r
+    [| vsv ?r; <?a, ?b> \<in>\<^sub>\<circ> ?r;
+       <?a, ?c> \<in>\<^sub>\<circ> ?r |]
+    ==> ?b = ?c
+theorem
+  vsvE:
+    [| vsv ?r;
+       [| vbrelation ?r;
+          !!a b c.
+             [| <a, b> \<in>\<^sub>\<circ> ?r;
+                <a, c> \<in>\<^sub>\<circ> ?r |]
+             ==> b = c |]
+       ==> ?W |]
+    ==> ?W
+locale vsv
+  fixes r :: "V"
+  assumes "vsv r"
+locale vsv
+  fixes r :: "V"
+  assumes "vsv r"
+locale v11
+  fixes r :: "V"
+  assumes "v11 r"
+theorem v11I: [| vsv ?r; vsv (?r\<inverse>\<^sub>\<circ>) |] ==> v11 ?r
+theorem v11D:
+          v11 ?r ==> vsv ?r
+          v11 ?r ==> vsv (?r\<inverse>\<^sub>\<circ>)
+theorem
+  v11E:
+    [| v11 ?r; [| vsv ?r; vsv (?r\<inverse>\<^sub>\<circ>) |] ==> ?W |]
+    ==> ?W
+locale v11
+  fixes r :: "V"
+  assumes "v11 r"
+locale v11
+  fixes r :: "V"
+  assumes "v11 r"
+val pure_unfold = fn: Proof.context -> thm list -> thm -> thm
+val msg_args = "mk_VLambda: invalid arguments": string
+val vsv_VLambda_thm = "vsv (VLambda ?A ?f)": thm
+val vsv_VLambda_match =
+   Const ("ZFC_Cardinals.VLambda", "V => (V => V) => V") $
+     Var (("A", 0), "V") $
+     Abs ("a", "V", Var (("f", 0), "V => V") $ Bound 0):
+   term
+val vdomain_VLambda_thm = "\<D>\<^sub>\<circ> (VLambda ?A ?f) = ?A": thm
+val vdomain_VLambda_match =
+   Const ("ZFC_Cardinals.VLambda", "V => (V => V) => V") $
+     Var (("A", 0), "V") $
+     Abs ("a", "V", Var (("f", 0), "V => V") $ Bound 0):
+   term
+val app_VLambda_thm =
+   "?x \<in>\<^sub>\<circ> ?A ==> VLambda ?A ?b\<lparr>?x\<rparr> = ?b ?x":
+   thm
+val app_VLambda_match =
+   Const ("ZFC_Cardinals.VLambda", "V => (V => V) => V") $
+     Var (("A", 0), "V") $ Var (("b", 0), "V => V"):
+   term
+val mk_VLabmda_thm = fn: term -> thm -> Proof.context -> thm -> thm
+val mk_VLambda_vsv = fn: Proof.context -> thm -> thm
+val mk_VLambda_vdomain = fn: Proof.context -> thm -> thm
+val mk_VLambda_app = fn: Proof.context -> thm -> thm
+val mk_VLambda_parser = fn:
+   Token.T list ->
+     ((Facts.ref * Token.src list) * (string * Attrib.binding) list) *
+     Token.T list
+val process_mk_VLambda_thm = fn:
+   (Proof.context -> 'a -> thm) ->
+     (binding * Token.src list) * 'a -> Proof.context -> local_theory
+val folder_mk_VLambda = fn:
+   (string * (binding * Token.src list)) * thm ->
+     Proof.context -> local_theory
+val process_mk_VLambda = fn:
+   (Facts.ref * Token.src list) * (string * (binding * Token.src list)) list
+     -> Proof.context -> Proof.context
+### theory "CZH_Foundations.CZH_Sets_BRelations"
+### 1.726s elapsed time, 3.427s cpu time, 2.126s GC time
+Loading theory "CZH_Foundations.CZH_Sets_IF" (required by "Draft.CZH_UCAT_IntroductionMoreTemplates" via "Draft.CZH_UCAT_Introduction" via "CZH_Elementary_Categories.CZH_ECAT_Introduction" via "CZH_Foundations.CZH_DG_Introduction" via "CZH_Foundations.CZH_Sets_NOP" via "CZH_Foundations.CZH_Sets_FBRelations" via "CZH_Foundations.CZH_Sets_FSequences" via "CZH_Foundations.CZH_Sets_Cardinality" via "CZH_Foundations.CZH_Sets_Equipollence")
+theorem vprojection_vsv: vsv (vprojection ?I ?A ?i)
+theorem
+  vprojection_vdomain:
+    \<D>\<^sub>\<circ> (vprojection ?I ?A ?i) = vproduct ?I ?A
+theorem
+  vprojection_app:
+    ?x \<in>\<^sub>\<circ> vproduct ?I ?A ==>
+    vprojection ?I ?A ?i\<lparr>?x\<rparr> = ?x\<lparr>?i\<rparr>
+### theory "CZH_Foundations.CZH_Sets_IF"
+### 0.396s elapsed time, 0.470s cpu time, 0.086s GC time
+Loading theory "CZH_Foundations.CZH_Sets_Equipollence" (required by "Draft.CZH_UCAT_IntroductionMoreTemplates" via "Draft.CZH_UCAT_Introduction" via "CZH_Elementary_Categories.CZH_ECAT_Introduction" via "CZH_Foundations.CZH_DG_Introduction" via "CZH_Foundations.CZH_Sets_NOP" via "CZH_Foundations.CZH_Sets_FBRelations" via "CZH_Foundations.CZH_Sets_FSequences" via "CZH_Foundations.CZH_Sets_Cardinality")
+Loading theory "CZH_Foundations.CZH_Sets_Ordinals" (required by "Draft.CZH_UCAT_IntroductionMoreTemplates" via "Draft.CZH_UCAT_Introduction" via "CZH_Elementary_Categories.CZH_ECAT_Introduction" via "CZH_Foundations.CZH_DG_Introduction" via "CZH_Foundations.CZH_Sets_VNHS")
+### theory "CZH_Foundations.CZH_Sets_Equipollence"
+### 0.107s elapsed time, 0.267s cpu time, 0.104s GC time
+Loading theory "CZH_Foundations.CZH_Sets_Cardinality" (required by "Draft.CZH_UCAT_IntroductionMoreTemplates" via "Draft.CZH_UCAT_Introduction" via "CZH_Elementary_Categories.CZH_ECAT_Introduction" via "CZH_Foundations.CZH_DG_Introduction" via "CZH_Foundations.CZH_Sets_NOP" via "CZH_Foundations.CZH_Sets_FBRelations" via "CZH_Foundations.CZH_Sets_FSequences")
+### theory "CZH_Foundations.CZH_Sets_Ordinals"
+### 0.261s elapsed time, 0.576s cpu time, 0.104s GC time
+### theory "CZH_Foundations.CZH_Sets_Cardinality"
+### 0.309s elapsed time, 0.562s cpu time, 0.127s GC time
+Loading theory "CZH_Foundations.CZH_Sets_FSequences" (required by "Draft.CZH_UCAT_IntroductionMoreTemplates" via "Draft.CZH_UCAT_Introduction" via "CZH_Elementary_Categories.CZH_ECAT_Introduction" via "CZH_Foundations.CZH_DG_Introduction" via "CZH_Foundations.CZH_Sets_NOP" via "CZH_Foundations.CZH_Sets_FBRelations")
+locale vfsequence
+  fixes xs :: "V"
+  assumes "vfsequence xs"
+locale vfsequence_pair
+  fixes xs\<^sub>1 :: "V"
+    and xs\<^sub>2 :: "V"
+  assumes "vfsequence_pair xs\<^sub>1 xs\<^sub>2"
+locale vfsequence_pair
+  fixes xs\<^sub>1 :: "V"
+    and xs\<^sub>2 :: "V"
+  assumes "vfsequence_pair xs\<^sub>1 xs\<^sub>2"
+consts
+  vfsequence_of_vlist :: "V list => V"
+### theory "CZH_Foundations.CZH_Sets_FSequences"
+### 0.552s elapsed time, 0.668s cpu time, 0.152s GC time
+Loading theory "CZH_Foundations.CZH_Sets_FBRelations" (required by "Draft.CZH_UCAT_IntroductionMoreTemplates" via "Draft.CZH_UCAT_Introduction" via "CZH_Elementary_Categories.CZH_ECAT_Introduction" via "CZH_Foundations.CZH_DG_Introduction" via "CZH_Foundations.CZH_Sets_NOP")
+locale fbrelation
+  fixes r :: "V"
+  assumes "fbrelation r"
+locale fbrelation_pair
+  fixes r\<^sub>1 :: "V"
+    and r\<^sub>2 :: "V"
+  assumes "fbrelation_pair r\<^sub>1 r\<^sub>2"
+### theory "CZH_Foundations.CZH_Sets_FBRelations"
+### 0.600s elapsed time, 0.780s cpu time, 0.238s GC time
+Loading theory "CZH_Foundations.CZH_Sets_NOP" (required by "Draft.CZH_UCAT_IntroductionMoreTemplates" via "Draft.CZH_UCAT_Introduction" via "CZH_Elementary_Categories.CZH_ECAT_Introduction" via "CZH_Foundations.CZH_DG_Introduction")
+Loading theory "CZH_Foundations.CZH_Sets_VNHS" (required by "Draft.CZH_UCAT_IntroductionMoreTemplates" via "Draft.CZH_UCAT_Introduction" via "CZH_Elementary_Categories.CZH_ECAT_Introduction" via "CZH_Foundations.CZH_DG_Introduction")
+locale pnop
+  fixes A :: "V"
+    and n :: "V"
+    and f :: "V"
+  assumes "pnop A n f"
+locale nop
+  fixes A :: "V"
+    and n :: "V"
+    and f :: "V"
+  assumes "nop A n f"
+locale nop_v11
+  fixes A :: "V"
+    and n :: "V"
+    and f :: "V"
+  assumes "nop_v11 A n f"
+locale nop_onto
+  fixes A :: "V"
+    and n :: "V"
+    and f :: "V"
+  assumes "nop_onto A n f"
+locale nop_bij
+  fixes A :: "V"
+    and n :: "V"
+    and f :: "V"
+  assumes "nop_bij A n f"
+locale scalar
+  fixes A :: "V"
+    and f :: "V"
+  assumes "scalar A f"
+locale unop
+  fixes A :: "V"
+    and f :: "V"
+  assumes "unop A f"
+locale unop_v11
+  fixes A :: "V"
+    and f :: "V"
+  assumes "unop_v11 A f"
+locale \<Z>
+  fixes \<alpha> :: "V"
+  assumes "\<Z> \<alpha>"
+locale unop_onto
+  fixes A :: "V"
+    and f :: "V"
+  assumes "unop_onto A f"
+locale unop_bij
+  fixes A :: "V"
+    and f :: "V"
+  assumes "unop_bij A f"
+### theory "CZH_Foundations.CZH_Sets_VNHS"
+### 0.474s elapsed time, 1.087s cpu time, 0.268s GC time
+locale pbinop
+  fixes A :: "V"
+    and f :: "V"
+  assumes "pbinop A f"
+locale binop
+  fixes A :: "V"
+    and f :: "V"
+  assumes "binop A f"
+locale binop_v11
+  fixes A :: "V"
+    and f :: "V"
+  assumes "binop_v11 A f"
+locale binop_onto
+  fixes A :: "V"
+    and f :: "V"
+  assumes "binop_onto A f"
+locale binop_bij
+  fixes A :: "V"
+    and f :: "V"
+  assumes "binop_bij A f"
+### theory "CZH_Foundations.CZH_Sets_NOP"
+### 0.780s elapsed time, 1.503s cpu time, 0.400s GC time
+Loading theory "CZH_Foundations.CZH_DG_Introduction" (required by "Draft.CZH_UCAT_IntroductionMoreTemplates" via "Draft.CZH_UCAT_Introduction" via "CZH_Elementary_Categories.CZH_ECAT_Introduction")
+### theory "CZH_Foundations.CZH_DG_Introduction"
+### 2.405s elapsed time, 2.565s cpu time, 0.209s GC time
+Loading theory "CZH_Elementary_Categories.CZH_ECAT_Introduction" (required by "Draft.CZH_UCAT_IntroductionMoreTemplates" via "Draft.CZH_UCAT_Introduction")
+### theory "CZH_Elementary_Categories.CZH_ECAT_Introduction"
+### 0.486s elapsed time, 0.487s cpu time, 0.000s GC time
+Loading theory "Draft.CZH_UCAT_Introduction" (required by "Draft.CZH_UCAT_IntroductionMoreTemplates")
+### theory "Draft.CZH_UCAT_Introduction"
+### 0.026s elapsed time, 0.026s cpu time, 0.000s GC time
+Loading theory "Draft.CZH_UCAT_IntroductionMoreTemplates"
+val templateLemmas = []: (string * thm * template) list
+### theory "Draft.CZH_UCAT_IntroductionMoreTemplates"
+### 0.437s elapsed time, 0.621s cpu time, 0.101s GC time
+val it = (): unit
