@@ -34,7 +34,6 @@ fun term2template vars funs t = case t of
                       | _                 => t_empty
 
 (* Template representation of a lemma *)
-(* Let's assume the lemma is an equation for the time being *)
 fun lemma2predicate c l = template_predicate (term2template 
                     (Term.add_vars c []) (Term.add_consts c []) l);
 (* FIXME: what if we have more than 3 equality signs? *)
@@ -54,10 +53,28 @@ fun makeTemplatewithContext c t = case t of
                     else
                     template_equation 
                     (term2template (Term.add_vars c []) (Term.add_consts c []) t1
-                    ,term2template (Term.add_vars c []) (Term.add_consts c [])t2)
-                  | _ => template_dunno
+                    ,term2template (Term.add_vars c []) (Term.add_consts c []) t2)
+                  | (Const ("Orderings.ord_class.less_eq",_)) $ t1 $ t2 =>
+                    template_inequation (less_equals, term2template (Term.add_vars c []) (Term.add_consts c []) t1
+                    ,term2template (Term.add_vars c []) (Term.add_consts c []) t2)
+                  | (Const ("Orderings.ord_class.less",_)) $ t1 $ t2 =>
+                    template_inequation (less_than, term2template (Term.add_vars c []) (Term.add_consts c []) t1
+                    ,term2template (Term.add_vars c []) (Term.add_consts c []) t2)
+                  | (Const ("Orderings.ord_class.greater_eq",_)) $ t1 $ t2 =>
+                    template_inequation (greater_equals, term2template (Term.add_vars c []) (Term.add_consts c []) t1
+                    ,term2template (Term.add_vars c []) (Term.add_consts c []) t2)
+                  | (Const ("Orderings.ord_class.greater",_)) $ t1 $ t2 =>
+                    template_inequation (greater_than, term2template (Term.add_vars c []) (Term.add_consts c []) t1
+                    ,term2template (Term.add_vars c []) (Term.add_consts c []) t2)
+                  | (Const ("Pure.imp",_)) $ p1 $ p2 => 
+                    template_implication ([makeTemplatewithContext c p1], 
+                     makeTemplatewithContext c p2)
+                  | _ => lemma2predicate c t
 fun lemma2template l = makeTemplatewithContext l l
-fun thm2template t = lemma2template (Thm.concl_of t);
+fun thm2template t = if (Thm.no_prems t) then lemma2template (Thm.concl_of t)
+                     else template_implication (
+                          map (makeTemplatewithContext (Thm.prop_of t)) (Thm.prems_of t), 
+                          makeTemplatewithContext (Thm.prop_of t) (Thm.concl_of t));
 
 fun tterm2string t = case t of 
                  template_var k => "X" ^ (Int.toString k)
@@ -74,6 +91,9 @@ fun template2string t = case t of
                         (template2string t1) ^ " <=> " ^ (template2string t2)
                       | template_predicate t => tterm2string t
                       | _                    => ""
+val t = @{thm Tree.height_le_size_tree};
+val th = Thm.concl_of t;
+
 \<close>
 
 end
