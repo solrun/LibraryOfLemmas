@@ -37,6 +37,7 @@ fun term2template vars funs t = case t of
 fun lemma2predicate c l = template_predicate (term2template 
                     (Term.add_vars c []) (Term.add_consts c []) l);
 (* FIXME: what if we have more than 3 equality signs? *)
+(* Did I already fix that? *)
 fun makeTemplatewithContext c t = case t of
                     Const _ => lemma2predicate c t
                   | Var _   => lemma2predicate c t
